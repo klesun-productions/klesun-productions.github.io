@@ -32,13 +32,14 @@
 
     <script src="/util/TableGenerator.js" type="text/javascript"></script> <!-- used in main_page.js -->
     <script src="/util/PianoLayoutPanel.js" type="text/javascript"></script> <!-- used in main_page.js -->
+    <script src="/util/Playback.js" type="text/javascript"></script> <!-- used in main_page.js -->
     <script src="/templates/main_page.js" type="text/javascript"></script> <!-- requires TableGenerator.js; PianoLayoutPanel.js ! -->
 </head>
 
 <body>
 
 <div class="main-cont" style="border: 1px solid;"  align="center">
-	<h1 class="main-caption">Да будет такая Шмидузыка!</h1>
+	<h1 class="main-caption">Да будет такая Шмидузыка</h1>
 	
 	<div class="topic-links-cont">
 		<a class="topic-option" href="">my midi collection</a>
@@ -81,7 +82,7 @@
 
 	MIDI.loadPlugin({
 		soundfontUrl: "/libs/MIDI.js/examples/soundfont/",
-		instrument: "acoustic_grand_piano",
+		instrument: "acoustic_grand_piano"
 	});
 
 	var mainPage = MainPage($('#pianoLayoutPanel'));

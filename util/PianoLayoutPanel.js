@@ -35,17 +35,50 @@ Util.PianoLayoutPanel = function ($canvas) {
         return context;
     };
 
-    /** @param tuneList - list of midi tunes that should be highlighted */
-    var drawBase = function (noteList) {
+    /** @return list - [r,g,b] */
+    var channelColor = function(channelNumber) {
+        return [
+		    [0,0,0], // black
+			[192,0,0], // red
+			[0,148,0], // green
+			[60,60,255], // blue
+			[152,152,0], // yellow
+			[0,152,152], // cyan
+			[192,0,192], // magenta
+			[255,128,0], // orange
+			[91,0,255] // bluish magenta
+        ][channelNumber];
+    }
+
+    /** @param noteList - list of shmidusic Note json representations */
+    var repaint = function (noteList) {
+
+        // TODO: it definitely would be good for performance if we repainted Note-s by one, not whole piano!
+        context.clearRect(0, 0, $canvas[0].width, $canvas[0].height);
 
         var hasFlat = [1,2,4,5,6]; // re, mi, sol, la, ti
 
         for (var i = 0; i <= IVORY_COUNT; ++i) {
+
+            var octave = Math.floor(i / 7);
+            var tune = FIRST_TUNE + octave * 12 + [0,2,4,5,7,9,11][i % 7];
+
             var x = i * IVORY_WIDTH;
             drawLine(x, 0, x, IVORY_LENGTH);
+
+            var matches = noteList.filter(n => n['tune'] == tune);
+            if (matches.length > 0) {
+                var color = channelColor(matches[0].channel);
+                fillRect(x - IVORY_WIDTH, EBONY_LENGTH, IVORY_WIDTH, IVORY_LENGTH - EBONY_LENGTH, color);
+            }
+
             if (hasFlat.indexOf(i % 7) > -1) {
-                var color = noteList.indexOf(i - 1) > -1
-                        ? [0,0,0] // highlight
+
+                --tune;
+
+                var matches = noteList.filter(n => n['tune'] == tune);
+                var color = matches.length > 0
+                        ? channelColor(matches[0].channel) // highlight
                         : [191,191,191]; // don't highlight
 
                 x -= EBONY_WIDTH / 2;
@@ -58,27 +91,21 @@ Util.PianoLayoutPanel = function ($canvas) {
         drawLine(0, IVORY_LENGTH, IVORY_COUNT * IVORY_WIDTH, IVORY_LENGTH);
     };
 
-    var clear = function () {
-//        for (var i = 0; i < pressedNotes.length; ++i) {
-//            // TODO: fill them with white (or black if ebony)
-//        }
-        pressedNotes = [];
-
-        context.rect(0, 0, $canvas[0].width, $canvas[0].height);
-        context.fillStyle="white";
-        context.fill();
-        drawBase([]);
+    var highlight = function (channel, tune) {
+        console.log('highlight! ' + channel + ' ' + tune);
+        // TODO: implement
     };
 
-    /** @param tuneList - list of midi tunes that should be highlighted */
-    var repaint = function (noteList) {
-        // TODO: implement!
-        pressedNotes = noteList;
+    var unhighlight = function (channel, tune) {
+        console.log('unhighlight! ' + channel + ' ' + tune);
+        // TODO: implement
     };
 
-    drawBase([]);
+    repaint([]);
 
     return {
-        repaint: repaint
+        repaint: repaint,
+        highlight: highlight,
+        unhighlight: unhighlight,
     };
 }

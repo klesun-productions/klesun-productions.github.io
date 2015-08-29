@@ -5,17 +5,17 @@
 var MainPage = function($pianoCanvas) {
 
     var pianoLayoutPanel = Util.PianoLayoutPanel($pianoCanvas);
+    var playback = Util.Playback(pianoLayoutPanel);
 
     var init = function () {
 
         var play = function () {
-            console.log("Playing!");
-            MIDI.noteOn(0, 50, 127, 0);
-			MIDI.noteOff(0, 50, 0 + 0.75);
+            playback.play();
         };
 
         var playButtonFormatter = function (cell, row) {
-            return $('<input type="button" value="Play!"/>').click(play);
+            return $('<input type="button" value="Play!"/>')
+                    .click(() => playback.play(row['sheetMusic']));
         };
 
         var initIchigosMidiList = function () {
@@ -26,7 +26,7 @@ var MainPage = function($pianoCanvas) {
                 {'name': 'fileName', 'caption': 'File Name'},
                 {'name': 'length', 'caption': 'Length'},
                 {'name': 'score', 'caption': 'My Score'},
-                {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
+                {'name': 'playButton', 'caption': 'Play', formatter: () => $('<input type="button" value="Play!"/>').click(() => alert('Midi File Playback Not Implemented Yet!'))}
             ];
 
             var caption = 'Some random midi files from my collection provided by <a href="http://ichigos.com">ichigos.com</a>';
