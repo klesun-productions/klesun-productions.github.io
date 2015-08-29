@@ -1,0 +1,76 @@
+		
+	body {
+	    background-color: #40f;
+		background-image: url("/imgs/denya.png");
+		background-repeat: no-repeat;
+	}
+	.main-cont * {
+		font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+		font-size: 12px;
+	}
+	.nostretch-td {
+		width:1%;
+		white-space:nowrap;
+	}
+	.canvas-cont {
+	    background-color: white;
+	    display: inline-block;
+	}
+
+	/* TODO: maybe make it all id-s? they are unique!*/
+	.main-cont {
+		background-color: rgba(0, 0, 255, 0.5);
+		background-image: url("/imgs/shmidusic-port.png");
+		background-repeat: no-repeat;
+		background-position: right top;
+	}
+	.main-caption {
+		display: text;
+		color: cyan;
+		text-shadow: -1px 0 darkgreen, 0 1px darkgreen, 1px 0 darkgreen, 0 -1px darkgreen;
+		font-size: 30px;
+	}
+	.topic-links-cont {
+		background-color: rgba(192, 192, 255, 0.5);
+	}
+	.topic-option, a:visited {
+		border: 2px solid;
+		background-color: #fc8;
+		color: darkmagenta;
+		text-decoration: none;
+		padding: 4px;
+		font-weight: bold;
+		font-size: 16px;
+	}
+	.content-block-table {
+		width: 100%;
+	}
+	.content-block-table tr td {
+		background-color: rgba(255,0,255,0.3);
+	}
+	.greeting-text-cont {
+		background-color: white;
+		border: 2px solid green;
+		font-size: 12;
+		text-align: left;
+		width: 550;
+		padding: 4px;
+	}
+	.random-midi-list-cont {
+		width: 100%;
+		background-color: orange;
+		height: 500px;
+		overflow-y: scroll;
+	}
+	.random-midi-list-cont table tr:not(.table-generator-title-tr) td {
+		background-color: #444;
+		color: yellow;
+	}
+	.something-left-cont {
+	    width: 200px;
+	}
+	.something-left-cont table tr td {
+        max-width: 100px;
+        background-color: #ffc;
+        overflow: hidden;
+	}

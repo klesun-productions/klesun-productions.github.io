@@ -1,94 +1,66 @@
+<!DOCTYPE html>
+<html xmlns = "http://www.w3.org/1999/xhtml">
+
 <head>
 	<meta charset="utf-8"/>
+	<link rel="stylesheet" type="text/css" href="/templates/main_page.css">
+
+    <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+
+    <!-- ==================== -->
+    <!-- For midi playback <> -->
+    <!-- ==================== -->
+
+    <!-- polyfill -->
+	<script src="/libs/MIDI.js/inc/shim/Base64.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/inc/shim/Base64binary.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+	<!-- midi.js package -->
+	<script src="/libs/MIDI.js/js/midi/audioDetect.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/js/midi/gm.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/js/midi/loader.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/js/midi/plugin.audiotag.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/js/midi/plugin.webaudio.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/js/midi/plugin.webmidi.js" type="text/javascript"></script>
+	<!-- utils -->
+	<script src="/libs/MIDI.js/js/util/dom_request_xhr.js" type="text/javascript"></script>
+	<script src="/libs/MIDI.js/js/util/dom_request_script.js" type="text/javascript"></script>
+
+    <!-- ===================== -->
+    <!-- For midi playback </> -->
+    <!-- ===================== -->
+
+    <script src="/util/TableGenerator.js" type="text/javascript"></script> <!-- used in main_page.js -->
+    <script src="/util/PianoLayoutPanel.js" type="text/javascript"></script> <!-- used in main_page.js -->
+    <script src="/templates/main_page.js" type="text/javascript"></script> <!-- requires TableGenerator.js; PianoLayoutPanel.js ! -->
 </head>
 
-<style>
-	body { background-color: #40f; }
-	.main-cont * {
-		font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
-		font-size: 12px;
-	}
-	.nostretch-td {
-		width:1%;
-    	white-space:nowrap;
-	}
-	
-	/* TODO: maybe make it all id-s? they are unique!*/
-	.main-cont {
-		background-color: darkblue;
-		background-image: url("/imgs/shmidusic-port.png"); /* TODO: make it smaller a bit */
-		background-repeat: no-repeat;
-	}
-	.main-caption {
-		display: text;
-		color: cyan;
-		text-shadow: -1px 0 darkgreen, 0 1px darkgreen, 1px 0 darkgreen, 0 -1px darkgreen;
-		font-size: 30px;
-	}
-	.topic-links-cont {
-		background-color: rgba(192, 192, 255, 0.5);
-	}
-	.topic-option, a:visited {
-		border: 2px solid;
-		background-color: #fc8;
-		color: darkmagenta;
-		text-decoration: none;
-		padding: 4px;
-		font-weight: bold;
-		font-size: 16px;
-	}
-	.content-block-table {
-		width: 100%;
-	}
-	.content-block-table tr td {
-		background-color: purple;
-	}
-	.greeting-text-cont {
-		background-color: white;
-		border: 2px solid green;
-		font-size: 12;
-		text-align: left;
-		width: 600;
-		padding: 4px;
-	}
-	.random-midi-list-cont {
-		width: 100%;
-		background-color: orange;
-	}
-	.random-midi-list-cont table tr:not(.table-generator-title-tr) td {
-		background-color: #444;
-		color: yellow;
-	}
-	.something-left-cont {
-		background-color: yellow;
-	}
-	
-</style>
-
 <body>
-<div align="center">
 
-<div class="main-cont" style="border: 1px solid;">
-	<h1 class="main-caption">Шмидузыка!</h1>
+<div class="main-cont" style="border: 1px solid;"  align="center">
+	<h1 class="main-caption">Да будет такая Шмидузыка!</h1>
 	
 	<div class="topic-links-cont">
-		<a class="topic-option" href="">shmidusic tutorials</a>
 		<a class="topic-option" href="">my midi collection</a>
+        <a class="topic-option" href="">random midi player</a> <!-- tell you what: there are thousands midi-s, but not even 10th part of them is quality enough for being worth for you to waste time listening to them (u'r busy man, aint ya?). Help me filter em if you don't mind? -->
 		<a class="topic-option" href="">MY music</a>
+        <a class="topic-option" href="">shmidusic tutorials</a>
 		<a class="topic-option" href="">about project</a>
 	</div>
 	<br/>
-	
+
+    <div class="canvas-cont">
+        <canvas id="pianoLayoutPanel" width="420px" height="30px"></canvas>
+    </div>
+
 	<table class="content-block-table">
 	<tr>
 		
-	<td class="nostretch-td">
-	<div class="something-left-cont">
-		<h2>random text</h2>
-	</div>
+	<td class="nostretch-td" valign="top">
+	<div class="something-left-cont"></div>
 	</td>
 	
-	<td class="nostretch-td">
+	<td class="nostretch-td" valign="top">
 	<div class="greeting-text-cont">
 		<p>Hi.</p>
 		<p>This is site of the Great and Majestic Artur Klesun.</p>
@@ -105,29 +77,21 @@
 </div>
 </body>
 
-<script type="text/javascript">
-    document.write("\<script src='http://code.jquery.com/jquery-latest.min.js' type='text/javascript'>\<\/script>");
-</script>
-<script src="http://88.135.140.205/TableGenerator.js"></script>
 <script>
-	
-	var rowList = [
-		{'fileName': 'ololo.mid', 'length': '63.234 seconds', 'score': 'b1'},
-		{'fileName': 'guzno.mid', 'length': '91.731 seconds', 'score': 'a9'}
-	];
-	
-	onLoad = function()
-	{
-		var colModel = [
-			{'name': 'fileName', 'caption': 'File Name'},
-			{'name': 'length', 'caption': 'Length'},
-			{'name': 'score', 'caption': 'My Score'}
-		];	
-		
-		var table = Util.TableGenerator().generateTable(colModel, rowList, 'Some random midi files from mine db');
-		$('.random-midi-list-cont').append(table);
-	};
-	
-	window.addEventListener('load', onLoad, false); // dunno what third arg is
-	
+
+	MIDI.loadPlugin({
+		soundfontUrl: "/libs/MIDI.js/examples/soundfont/",
+		instrument: "acoustic_grand_piano",
+	});
+
+	var mainPage = MainPage($('#pianoLayoutPanel'));
+
+    var onLoad = function () {
+        mainPage.init(); // defined in main_page.js
+    };
+
+    window.addEventListener('load', onLoad, false);
+
 </script>
+
+</html>
