@@ -12,10 +12,6 @@
 		width:1%;
 		white-space:nowrap;
 	}
-	.canvas-cont {
-	    background-color: white;
-	    display: inline-block;
-	}
 
 	/* TODO: maybe make it all id-s? they are unique!*/
 	.main-cont {
@@ -48,6 +44,29 @@
 	.content-block-table tr td {
 		background-color: rgba(255,0,255,0.3);
 	}
+
+	#pianoControlDiv {
+	    width: 900px;
+        margin-left: auto ;
+        margin-right: auto ;
+	}
+	.piano-cont {
+	    background-color: white;
+	    display: inline-block;
+	    float: left;
+	}
+	.piano-side-div {
+    	width: 200px;
+    	float: left;
+    	border: 1px solid rgba(255,0,0,0.0); /* invisible border - to ensure that these divs _do_ take these 200px */
+	}
+	.piano-side-div input {
+    	float: left;
+    	/*border: 3px solid rgba(255,127,0,0.3);*/
+    	background: white;
+    	max-width: 190px;
+	}
+
 	.greeting-text-cont {
 		background-color: white;
 		border: 2px solid green;

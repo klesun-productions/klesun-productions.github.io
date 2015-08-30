@@ -39,10 +39,10 @@
 <body>
 
 <div class="main-cont" style="border: 1px solid;"  align="center">
-	<h1 class="main-caption">Да будет такая Шмидузыка</h1>
+	<h1 class="main-caption">Да будет такая Шмидузыка!</h1>
 	
 	<div class="topic-links-cont">
-		<a class="topic-option" href="">my midi collection</a>
+		<a class="topic-option" href="/midiCollection">my midi collection</a>
         <a class="topic-option" href="">random midi player</a> <!-- tell you what: there are thousands midi-s, but not even 10th part of them is quality enough for being worth for you to waste time listening to them (u'r busy man, aint ya?). Help me filter em if you don't mind? -->
 		<a class="topic-option" href="">MY music</a>
         <a class="topic-option" href="">shmidusic tutorials</a>
@@ -50,8 +50,14 @@
 	</div>
 	<br/>
 
-    <div class="canvas-cont">
-        <canvas id="pianoLayoutPanel" width="420px" height="30px"></canvas>
+    <div id="pianoControlDiv" align="center">
+        <div class="piano-side-div"></div> <!-- to keep piano centered-->
+        <div class="piano-cont">
+            <canvas id="pianoLayoutPanel" width="420px" height="30px"></canvas>
+        </div>
+        <div class="piano-side-div">
+            <input id="startDemoButton" type="button" value="Нажми и тебе будет хорошо"/>
+        </div>
     </div>
 
 	<table class="content-block-table">
@@ -80,19 +86,31 @@
 
 <script>
 
+	// checking for ECMA 6 cuz nothing will work elsewhere
+	ECMA6 = false;
+	setTimeout(function () {
+		if (!ECMA6) {
+			alert('Do you hate me? You want me to write \n"list.filter(function (a) { return a.isok; })" instead of just \n"list.filter(a => a.isok)" ?\n' + 
+				'Please, install Chrome 45 or higher or whatever browser you use so it fitted ECMA 6 standard and then come back.');
+		}
+	}, 3000);
+
 	MIDI.loadPlugin({
 		soundfontUrl: "/libs/MIDI.js/examples/soundfont/",
 		instrument: "acoustic_grand_piano"
 	});
 
-	var mainPage = MainPage($('#pianoLayoutPanel'));
+	var mainPage = MainPage($('#pianoLayoutPanel')); // defined in main_page.js
 
-    var onLoad = function () {
-        mainPage.init(); // defined in main_page.js
-    };
+	var onLoad = function () {
+		mainPage.init();
+		$('#startDemoButton').click(mainPage.playDemo);
+	};
+	
+	ECMA6 = true;
 
-    window.addEventListener('load', onLoad, false);
-
+	window.addEventListener('load', onLoad, false);
+	
 </script>
 
 </html>

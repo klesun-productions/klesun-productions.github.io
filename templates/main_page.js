@@ -9,10 +9,6 @@ var MainPage = function($pianoCanvas) {
 
     var init = function () {
 
-        var play = function () {
-            playback.play();
-        };
-
         var playButtonFormatter = function (cell, row) {
             return $('<input type="button" value="Play!"/>')
                     .click(() => playback.play(row['sheetMusic']));
@@ -57,7 +53,12 @@ var MainPage = function($pianoCanvas) {
         initMyMusicList();
     };
 
+    var playDemo = function () {
+        playback.play(Globals.shmidusicList.filter(s => s.fileName === 'opus89_4uvstva_yuzefi.midi.json')[0].sheetMusic);
+    };
+
     return {
-        init: init // TODO: split to initShmidusicList() and initIchigosMidiList()
+        init: init, // TODO: split to initShmidusicList() and initIchigosMidiList()
+        playDemo: playDemo
     };
 };

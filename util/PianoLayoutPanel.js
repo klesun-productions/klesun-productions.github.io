@@ -69,7 +69,7 @@ Util.PianoLayoutPanel = function ($canvas) {
             var matches = noteList.filter(n => n['tune'] == tune);
             if (matches.length > 0) {
                 var color = channelColor(matches[0].channel);
-                fillRect(x - IVORY_WIDTH, EBONY_LENGTH, IVORY_WIDTH, IVORY_LENGTH - EBONY_LENGTH, color);
+                fillRect(x, EBONY_LENGTH, IVORY_WIDTH, IVORY_LENGTH - EBONY_LENGTH, color);
             }
 
             if (hasFlat.indexOf(i % 7) > -1) {

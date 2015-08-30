@@ -1,0 +1,72 @@
+<!-- 
+ ClientId: 521166378127-6hmr4e9rspkj2amipftmkt4qukb1ljr4.apps.googleusercontent.com 
+ ClientSecret: cAmoY7-Sf3_eSX0NncIam09j 
+-->
+
+<head>
+	<meta charset="utf-8"/>
+	<script src="https://apis.google.com/js/client.js" type="text/javascript"></script>
+</head>
+
+<h2>Testing Google Api!</h2>
+
+	<!--Add a button for the user to click to initiate auth sequence -->
+	<button id="authorize-button" style="visibility: hidden">Authorize</button>
+	<script type="text/javascript">
+
+		var executeScript = function () {
+			
+			// i got these two when registered shmidusic.lv on the Google Console
+			var clientId = '521166378127-6hmr4e9rspkj2amipftmkt4qukb1ljr4.apps.googleusercontent.com';
+			var apiKey = 'cAmoY7-Sf3_eSX0NncIam09j';
+
+			var scopes = [
+				'https://www.googleapis.com/auth/userinfo.profile'
+			];
+
+			// gapi defined in https://apis.google.com/js/client.js
+			gapi.client.setApiKey(apiKey);
+			checkAuth();			
+
+			function checkAuth() {
+				gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
+			}
+
+			function handleAuthResult(authResult) {
+				
+				var authorizeButton = document.getElementById('authorize-button');
+				if (authResult && !authResult.error) {
+				  authorizeButton.style.visibility = 'hidden';
+				  makeApiCall(authResult);
+				} else {
+				  authorizeButton.style.visibility = '';
+				  authorizeButton.onclick = handleAuthClick;
+				}
+			}
+
+			function handleAuthClick(event) {
+				gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
+				return false;
+			}
+
+			function makeApiCall(authResult) {
+				
+				var getInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + authResult['access_token'];
+				
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = () => { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var userInfo = JSON.parse(xmlHttp.responseText);
+						console.log('zhopa ' + userInfo.id);
+						console.log(userInfo);
+					}
+				}
+				xmlHttp.open("GET", getInfoUrl, true); // true for asynchronous 
+				xmlHttp.send(null);
+			}
+		};
+		
+		window.addEventListener('load', executeScript, false);
+		
+	</script>
+	// Step 1: Load JavaScript client library
