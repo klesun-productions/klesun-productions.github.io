@@ -9,10 +9,7 @@ cgitb.enable()
 import json
 import os
 
-os.chdir('cgi-bin')
 from classes.MidiFileProvider import MidiFileProvider
-os.chdir('..')
-
 
 def pass_server_data_to_js():
 
@@ -33,6 +30,7 @@ def pass_server_data_to_js():
 def execute_script():
     print("Content-Type: text/html")
     print('')
+    print('<meta charset="utf-8"/>');
 
     pass_server_data_to_js()
 

@@ -70,14 +70,15 @@
 	.greeting-text-cont {
 		background-color: white;
 		border: 2px solid green;
-		font-size: 12;
+		font-size: 12px;
 		text-align: left;
-		width: 550;
+        width: 100%;
+		width: 450px;
 		padding: 4px;
 	}
 	.random-midi-list-cont {
-		width: 100%;
 		background-color: orange;
+		width: 100%;
 		height: 500px;
 		overflow-y: scroll;
 	}
@@ -89,7 +90,7 @@
 	    width: 200px;
 	}
 	.something-left-cont table tr td {
-        max-width: 100px;
+        max-width: 150px;
         background-color: #ffc;
         overflow: hidden;
 	}

@@ -1,6 +1,7 @@
 
-// requires TableGenerator.js !
-// requires PianoLayoutPanel.js !
+// requires Util.TableGenerator.js !
+// requires Util.PianoLayoutPanel.js !
+// requires Util.Playback.js !
 
 var MainPage = function($pianoCanvas) {
 
@@ -54,7 +55,7 @@ var MainPage = function($pianoCanvas) {
     };
 
     var playDemo = function () {
-        playback.play(Globals.shmidusicList.filter(s => s.fileName === 'opus89_4uvstva_yuzefi.midi.json')[0].sheetMusic);
+        playback.play(Globals.shmidusicList.filter(s => s.fileName === 'opus89_4uvstva_yuzefi.mid.js')[0].sheetMusic);
     };
 
     return {

@@ -33,7 +33,7 @@ class MidiFileProvider(object):
 
         dir = '/home/klesun/Dropbox/yuzefa_git/a_opuses_json'
         for file in os.listdir(dir):
-            if file.endswith(".midi.json"):
+            if file.endswith(".mid.js"):
 
                 with open(dir + "/" + file) as content:
                     content_json = json.load(content)

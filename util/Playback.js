@@ -6,8 +6,6 @@ var Util = Util || {};
 /** @param piano - PianoLayoutPanel instance */
 Util.Playback = function (piano) {
 
-    // TODO: write some script to transform ALL files to new format. It's what i had to do ages ago.
-
     var tempo = 120;
 
     var toMillis = function (length) {
@@ -32,10 +30,12 @@ Util.Playback = function (piano) {
     /** @param - json in shmidusic program format */
     var play = function (shmidusicJson) { // TODO: add stop() method
 
-        for (staff of shmidusicJson['SheetMusic']['staffList']) {
+        for (staff of shmidusicJson['staffList']) {
 
             // flat map hujap
-            var chordList = [].concat.apply([], staff['tactList'].map(t => t['chordList']));
+            var chordList = ('tactList' in staff) 
+					? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
+					: staff['chordList'];
 
             var playNext = idx => {
                 if (idx < chordList.length) {
@@ -51,7 +51,7 @@ Util.Playback = function (piano) {
 
             playNext(0);
 
-            // i'd like to use this approach if (a) they provided api to stop it and (b) they provided addEventListener() for this way to play music
+            // i'd love to use this approach if (a) they provided api to stop it and (b) they provided addEventListener() for this way to play music
             // as i understand, we may add event listener only when playing a file, cuz elsewhere MIDI.Player just have no properties
 //            var curPos = 0.0;
 //            chordList.forEach(c => {
