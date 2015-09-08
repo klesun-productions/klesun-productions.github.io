@@ -13,14 +13,12 @@ from classes.MidiFileProvider import MidiFileProvider
 
 def pass_server_data_to_js():
 
-    midi_file_list = MidiFileProvider.get_info_list()
     shmidusic_list = MidiFileProvider.get_shmidusic_list()
 
     print('''
     <script>
         var Globals = {
-			midiFileList: ''' + json.dumps(midi_file_list) + ''',
-			shmidusicList: ''' + json.dumps(shmidusic_list) + ''',
+			shmidusicList: ''' + json.dumps(shmidusic_list) + '''
         };
     </script>
     ''');

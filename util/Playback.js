@@ -72,10 +72,10 @@ Util.Playback = function (piano) {
             var playNext = idx => {
                 if (idx < chordList.length) {
 
-                    c = chordList[idx];
+                    var c = chordList[idx];
                     c['notaList'].forEach(n => playNote(n, 0));
                     piano.repaint(c['notaList']);
-                    chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
+                    var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
 
                     setTimeout(() => playNext(idx + 1), toMillis(chordLength));
                 } else {

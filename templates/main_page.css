@@ -12,16 +12,23 @@
 		width:1%;
 		white-space:nowrap;
 	}
+	.radio-cont {
+		color: yellow;
+		width: 100px;
+		float:right;
+
+		/** @debug */
+		border: 1px solid white;
+	}
 
 	/* TODO: maybe make it all id-s? they are unique!*/
 	.main-cont {
-		background-color: rgba(0, 0, 255, 0.5);
+		background-color: rgba(127, 127, 255, 0.5);
 		background-image: url("/imgs/shmidusic-port.png");
 		background-repeat: no-repeat;
 		background-position: right top;
 	}
 	.main-caption {
-		display: text;
 		color: cyan;
 		text-shadow: -1px 0 darkgreen, 0 1px darkgreen, 1px 0 darkgreen, 0 -1px darkgreen;
 		font-size: 30px;
@@ -68,7 +75,6 @@
 	}
 
 	.greeting-text-cont {
-		background-color: white;
 		border: 2px solid green;
 		font-size: 12px;
 		text-align: left;
