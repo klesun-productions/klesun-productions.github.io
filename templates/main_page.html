@@ -61,9 +61,9 @@
     <div id="pianoControlDiv" align="center">
         <div class="piano-side-div">
             <select style="float: right; margin-right: 10px;">
-                <option value="feulner">feulner</option>
-                <option value="klesynth">klesynth</option>
-                <option value="mudcube">mudcube</option>
+                <option value="oscillator">Oscillator</option>
+                <option value="feulner">Feulner</option>
+                <option value="mudcube">Mudcube</option>
             </select>
         </div>
         <div class="piano-cont">
@@ -82,7 +82,10 @@
 	</td>
 	
 	<td class="nostretch-td" valign="top">
-	<div class="greeting-text-cont">
+	<div class="main-middle-cont">
+		<div id="oscillatorControlCont"></div>
+        <br clear="all"/>
+        <br/>
         <div style="background-color: white;">
             Sheet Music<br/>
             <h1 style="font-size: 50px;">Soon</h1>
@@ -91,7 +94,7 @@
         <div style="background-color: white;">
             <p>Hi.</p>
             <p>This is site of the Great and Majestic Artur Klesun.</p>
-        <div>
+        </div>
 	</div>
 	</td>
 	
@@ -131,6 +134,7 @@
 
 	var onLoad = function () {
 		mainPage.init();
+		mainPage.initOscillatorControl($('#oscillatorControlCont'));
 		$('#startDemoButton').click(mainPage.playDemo);
 	};
 

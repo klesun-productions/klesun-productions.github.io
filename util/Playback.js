@@ -4,7 +4,10 @@ var Util = Util || {};
 // This class destiny is to read shmidusic json structure and send events to MIDI.js and PianoLayoutPanel
 
 /** @param piano - PianoLayoutPanel instance */
-Util.Playback = function (piano) {
+Util.Playback = function (piano, audioCtx) {
+
+    var gainNode = audioCtx.createGain();
+    gainNode.connect(audioCtx.destination);
 
     var tempo = 120;
 
@@ -27,12 +30,37 @@ Util.Playback = function (piano) {
         console.log('Your browser does not support midi Devices. Pity, you could listen to music on your mega-device if you used chrome =P');
     }
 
+    var tuneToFrequency = function(tune) {
+
+		var shift = tune - 69; // 69 - LA, 440 hz
+		var la = 440.0;
+		return la * Math.pow(2, shift / 12.0);
+    };
+
     var toMillis = function (length) {
         return 1000 * length * tempo / 60; // because 1 / 4 = 1000 ms when tempo is 60
     };
 
     var toFloat = function (fractionString) {
         return eval(fractionString);
+    };
+
+    var playNoteOnOscillator = function(noteJs) {
+
+        // TODO: make some research and find such proportion so bases did not sound _way_ too quiet (4 or so times than sopranos they sound now)
+
+        var oscillator = audioCtx.createOscillator();
+
+        var volume = 0.03;
+
+        oscillator.type = 'square';
+        oscillator.connect(gainNode);
+        oscillator.frequency.value = tuneToFrequency(noteJs.tune + 12); // + 12 cuz bases sound very quiet
+        gainNode.gain.value = volume;
+        oscillator.start(0);
+
+        var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1));
+        setTimeout(() => oscillator.stop(), duration);
     };
 
     /** @param noteJs - shmidusic Note external representation
@@ -48,6 +76,8 @@ Util.Playback = function (piano) {
             output.send( [0x90 + noteJs.channel, noteJs.tune, 127] );  // 0x90 = noteOn, 0x7F max velocity
             output.send( [0x80 + noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration ); // Inlined array creation- note off, middle C,
         }
+
+        playNoteOnOscillator(noteJs);
 
         // does not work in chromium. due to mp3 and proprietarity i suppose
 

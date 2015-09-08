@@ -50,7 +50,7 @@ Util.PianoLayoutPanel = function ($canvas) {
         ][channelNumber];
     }
 
-    /** @param noteList - list of shmidusic Note json representations */
+    /** @param noteList - list of shmidusic Note json representations OR just something with fields "tune" and "channel" */
     var repaint = function (noteList) {
 
         // TODO: it definitely would be good for performance if we repainted Note-s by one, not whole piano!
