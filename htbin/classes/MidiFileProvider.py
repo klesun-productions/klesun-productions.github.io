@@ -18,7 +18,7 @@ class MidiFileProvider(object):
 
         pattern = re.compile('^0_([a-zA-Z0-9]{2,})_(.*)$')
 
-        for file in os.listdir('/home/klesun/Dropbox/midiCollection/ichigos/assorted'):
+        for file in os.listdir('/home/klesun/Dropbox/midiCollection/'):
             matches = pattern.findall(file)
             if len(matches):
                 result.append({"fileName": matches[0][1], "score": matches[0][0]})

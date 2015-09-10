@@ -1,6 +1,6 @@
 		
 	body {
-	    background-color: #40f;
+	    background-color: #666;
 		background-image: url("/imgs/denya.png");
 		background-repeat: no-repeat;
 	}
@@ -79,12 +79,12 @@
 		font-size: 12px;
 		text-align: left;
         width: 100%;
-		width: 450px;
 		padding: 4px;
 	}
 	.random-midi-list-cont {
+		float: right;
 		background-color: orange;
-		width: 100%;
+		width: 300px;
 		height: 500px;
 		overflow-y: scroll;
 	}
@@ -94,9 +94,12 @@
 	}
 	.something-left-cont {
 	    width: 200px;
+	    height: 500px;
+		overflow-y: scroll;
 	}
 	.something-left-cont table tr td {
-        max-width: 150px;
-        background-color: #ffc;
+        max-width: 120px;
+		background-color: #444;
+		color: cyan;
         overflow: hidden;
 	}

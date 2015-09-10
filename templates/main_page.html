@@ -43,7 +43,7 @@
 <body>
 
 <div class="main-cont" style="border: 1px solid;"  align="center">
-	<h1 class="main-caption">Да будет такая Шмидузыка!</h1>
+	<h1 class="main-caption">Да будет этакая музыка!</h1>
 
 	<!-- @debug -->
 	<input type="button" onClick="MIDIjs.play('/midiCollection/ichigos/assorted/0_a9b9_Terranigma - Europe (1).mid');" value="Play Europe!">
@@ -54,7 +54,6 @@
         <a class="topic-option" href="">random midi player</a> <!-- tell you what: there are thousands midi-s, but not even 10th part of them is quality enough for being worth for you to waste time listening to them (u'r busy man, aint ya?). Help me filter em if you don't mind? -->
 		<a class="topic-option" href="">MY music</a>
         <a class="topic-option" href="">tutorials</a>
-		<a class="topic-option" href="">about</a>
 	</div>
 	<br/>
 
@@ -77,13 +76,12 @@
 	<table class="content-block-table">
 	<tr>
 		
-	<td class="nostretch-td" valign="top">
+	<td valign="top">
 	<div class="something-left-cont"></div>
 	</td>
-	
-	<td class="nostretch-td" valign="top">
+
+	<td valign="top">
 	<div class="main-middle-cont">
-		<div id="oscillatorControlCont"></div>
         <br clear="all"/>
         <br/>
         <div style="background-color: white;">
@@ -97,11 +95,11 @@
         </div>
 	</div>
 	</td>
-	
+
 	<td valign="top">
 	<div class="random-midi-list-cont"></div>
 	</td>
-	
+
 	</tr>
 	</table>
 	
@@ -134,7 +132,6 @@
 
 	var onLoad = function () {
 		mainPage.init();
-		mainPage.initOscillatorControl($('#oscillatorControlCont'));
 		$('#startDemoButton').click(mainPage.playDemo);
 	};
 

@@ -15,8 +15,6 @@ Util.Playback = function (piano, audioCtx) {
     /** @debug */
     MIDI_OUTPUT_LIST_HUJ = midiOutputList;
 
-    var gotMidi = ma => ma.outputs.forEach(outputList.push);
-
     // TODO: for now calling navigator.requestMIDIAccess() blocks devices for other programs
     // investigate, how to free devices (output.open() ?). we should free them each time playback finished
     // upd.: open() does not help midiana, but it may be her problems. Musescore works alright with input
@@ -45,22 +43,35 @@ Util.Playback = function (piano, audioCtx) {
         return eval(fractionString);
     };
 
-    var playNoteOnOscillator = function(noteJs) {
+    var noteThreads = [];
+    var stopNote = function (noteThread) {
+        if (!noteThread.interrupted) {
 
-        // TODO: make some research and find such proportion so bases did not sound _way_ too quiet (4 or so times than sopranos they sound now)
+            noteThread.oscillator.stop();
+
+            noteThread.interrupted = true;
+            var index = noteThreads.indexOf(noteThread);
+            noteThreads.splice(index, 1);
+        }
+    };
+
+    var playNoteOnOscillator = function(noteJs) {
 
         var oscillator = audioCtx.createOscillator();
 
-        var volume = 0.03;
+        var volume = 0.02;
 
+        // ["sine", "square", "saw", "triangle", "custom"]
         oscillator.type = 'square';
         oscillator.connect(gainNode);
-        oscillator.frequency.value = tuneToFrequency(noteJs.tune + 12); // + 12 cuz bases sound very quiet
+        oscillator.frequency.value = tuneToFrequency(noteJs.tune - -12); // + 12 cuz bases sound very quiet
         gainNode.gain.value = volume;
         oscillator.start(0);
 
         var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1));
-        setTimeout(() => oscillator.stop(), duration);
+        var thread = {oscillator: oscillator, interrupted: false};
+        noteThreads.push(thread);
+        setTimeout(() => stopNote(thread), duration);
     };
 
     /** @param noteJs - shmidusic Note external representation
@@ -89,8 +100,18 @@ Util.Playback = function (piano, audioCtx) {
         // TODO: write bug report, they don't sound when channel is not 0
     };
 
+    var playingThreads = [];
+    var stop = () => {
+        noteThreads.slice().forEach(stopNote);
+        playingThreads.forEach(t => t.interrupted = true);
+    }
+
     /** @param - json in shmidusic program format */
-    var play = function (shmidusicJson) { // TODO: add stop() method
+    var play = function (shmidusicJson) {
+
+        stop();
+        var thread = {interrupted: false};
+        playingThreads.push(thread);
 
         for (staff of shmidusicJson['staffList']) {
 
@@ -100,7 +121,7 @@ Util.Playback = function (piano, audioCtx) {
 					: staff['chordList'];
 
             var playNext = idx => {
-                if (idx < chordList.length) {
+                if (idx < chordList.length && !thread.interrupted) {
 
                     var c = chordList[idx];
                     c['notaList'].forEach(n => playNote(n, 0));
@@ -110,21 +131,12 @@ Util.Playback = function (piano, audioCtx) {
                     setTimeout(() => playNext(idx + 1), toMillis(chordLength));
                 } else {
                     midiOutputList.forEach(o => o.open());
+                    var index = playingThreads.indexOf(thread);
+                    playingThreads.splice(index, 1);
                 }
             };
 
             playNext(0);
-
-            // i'd love to use this approach if (a) they provided api to stop it and (b) they provided addEventListener() for this way to play music
-            // as i understand, we may add event listener only when playing a file, cuz elsewhere MIDI.Player just have no properties
-//            var curPos = 0.0;
-//            chordList.forEach(c => {
-//                if (c.notaList.length) {
-//                    c['notaList'].forEach(n => playNote(n, curPos));
-//                    chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
-//                    curPos += chordLength;
-//                }
-//            });
         }
     };
 
