@@ -1,10 +1,10 @@
 
 var Util = Util || {};
 
-/** @param $canvas should have 420x30 size */
+/** @param $canvas should have 490x30 size */
 Util.PianoLayoutPanel = function ($canvas) {
 
-    var TUNE_COUNT = 72; // 6 octaves
+    var TUNE_COUNT = 84; // 7 octaves
     var IVORY_COUNT = TUNE_COUNT * 7/12
 	var FIRST_TUNE = 24;
 

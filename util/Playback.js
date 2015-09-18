@@ -99,6 +99,13 @@ Util.Playback = function (piano, audioCtx) {
             output.send( [0x80 - -noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration ); 
         });
     };
+    
+    /** @param instrumentEntry - dict: {channel: int, instrument: int} */
+    var changeInstrumentOnDevice = function (instrumentEntry)
+    {
+		// 0xC0 - program change
+		midiOutputList.forEach(o => o.send([0xC0 - -instrumentEntry.channel, instrumentEntry.instrument]));
+	};
 
     var synths = {
         oscillator: {
@@ -166,7 +173,13 @@ Util.Playback = function (piano, audioCtx) {
         var thread = {interrupted: false};
         playingThreads.push(thread);
 
-        var tempo = smf.standard_midi_file.tempoEventList.filter(t => t.time == 0)[0].tempo || 120;
+		if (synth === 'midiDevice') {
+			smf.standard_midi_file.instrumentEventList.filter(i => i.time == 0).forEach(changeInstrumentOnDevice);
+		}
+
+		var tempoEntry = smf.standard_midi_file.tempoEventList.filter(t => t.time == 0)[0] || 
+				smf.standard_midi_file.tempoEventList[0] || {tempo: 120};
+        var tempo = tempoEntry.tempo;
         var division = smf.standard_midi_file.division * 4;
 
         var chordList = [];

@@ -22,12 +22,14 @@
 	<h1 class="main-caption">Да будет этакая музыка!</h1>
 
 	<!-- @debug -->
+	<!-- 
 	<input type="button" onClick="MIDIjs.play('/midiCollection/0_a9b9_Terranigma - Europe (1).mid');" value="Play Europe!">
     <input type="button" onClick="MIDIjs.stop();" value="Stop MIDI Playback!">
+    -->
 	
 	<div class="topic-links-cont">
 		<a class="topic-option" href="/midiCollection">my midi collection</a>
-        <a class="topic-option" href="">random midi player</a> <!-- tell you what: there are thousands midi-s, but not even 10th part of them is quality enough for being worth for you to waste time listening to them (u'r busy man, aint ya?). Help me filter em if you don't mind? -->
+        <a class="topic-option" href="">random midi player</a>
 		<a class="topic-option" href="">MY music</a>
         <a class="topic-option" href="">tutorials</a>
 	</div>
@@ -35,20 +37,19 @@
 
     <div id="pianoControlDiv" align="center">
         <div class="piano-side-div">
-            <select id="synthDropdown" style="float: right; margin-right: 10px;">
+			<select id="synthDropdown" style="float: right; margin-right: 10px; background-color: rgba(255, 63, 0, 0.2)">
                 <option value="oscillator">Oscillator</option>
                 <option value="mudcube">Mudcube</option>
                 <option value="midiDevice">Midi Device</option>
                 <option value="feulner">Feulner</option>
             </select>
-            <br/>
-            <input id="playRandomButton" type="button" value="Play Random" style="float:right"/>
         </div>
         <div class="piano-cont">
-            <canvas id="pianoLayoutPanel" width="420px" height="30px"></canvas>
+            <canvas id="pianoLayoutPanel" width="490px" height="30px"></canvas>
         </div>
         <div class="piano-side-div">
             <input id="startDemoButton" type="button" value="Нажми и тебе будет хорошо"/>
+            <input id="playRandomButton" type="button" value="Play Random" style="float:right"/>
         </div>
     </div>
 
