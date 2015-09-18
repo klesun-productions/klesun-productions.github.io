@@ -9,8 +9,6 @@ Util.Playback = function (piano, audioCtx) {
     var gainNode = audioCtx.createGain();
     gainNode.connect(audioCtx.destination);
 
-    var tempo = 120;
-
     var midiOutputList = [];
     /** @debug */
     MIDI_OUTPUT_LIST_HUJ = midiOutputList;
@@ -35,9 +33,7 @@ Util.Playback = function (piano, audioCtx) {
 		return la * Math.pow(2, shift / 12.0);
     };
 
-    var toMillis = function (length) {
-        return 1000 * length * tempo / 60; // because 1 / 4 = 1000 ms when tempo is 60
-    };
+    var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
 
     var toFloat = function (fractionString) {
         return eval(fractionString);
@@ -57,28 +53,32 @@ Util.Playback = function (piano, audioCtx) {
     };
 
     /** @param noteJs - shmidusic Note external representation */
-    var playNoteOnOscillator = function(noteJs) {
+    var playNoteOnOscillator = function(noteJs, tempo) {
 
         // TODO: firefox got some problems with it, he ignores not play half of notes
 
-        var oscillator = audioCtx.createOscillator();
+        if (noteJs.channel != 9) {
+            var oscillator = audioCtx.createOscillator();
 
-        var volume = 0.02;
+            var volume = 0.02;
 
-        // ["sine", "square", "saw", "triangle", "custom"]
-        oscillator.type = 'square';
-        oscillator.connect(gainNode);
-        oscillator.frequency.value = tuneToFrequency(noteJs.tune - -12); // + 12 cuz bases sound very quiet
-        gainNode.gain.value = volume;
-        oscillator.start(0);
+            // ["sine", "square", "saw", "triangle", "custom"]
+            oscillator.type = 'square';
+            oscillator.connect(gainNode);
+            oscillator.frequency.value = tuneToFrequency(noteJs.tune - -12); // + 12 cuz bases sound very quiet
+            gainNode.gain.value = volume;
+            oscillator.start(0);
 
-        var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1));
-        var thread = {oscillator: oscillator, interrupted: false};
-        noteThreads.push(thread);
-        setTimeout(() => stopNote(thread), duration);
+            var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
+            var thread = {oscillator: oscillator, interrupted: false};
+            noteThreads.push(thread);
+            setTimeout(() => stopNote(thread), duration);
+        } else {
+            // TODO: this is drum - think something about this!
+        }
     };
 
-    var playNoteOnMudcube = function(noteJs) {
+    var playNoteOnMudcube = function(noteJs, tempo) {
         // does not work in chromium. due to mp3 and proprietarity i suppose
 
         var position = 0; // offset. could be of use if they provided api to stop it (possibly they do, but it's not user-friendly enough)
@@ -89,16 +89,15 @@ Util.Playback = function (piano, audioCtx) {
         // TODO: write bug report, they don't sound when channel is not 0
     };
 
-    var playNoteOnMidiDevice = function(noteJs) {
-        for (var output of midiOutputList) {
+    var playNoteOnMidiDevice = function(noteJs, tempo) {
+		midiOutputList.forEach(output => {
 
-            // looks like output undefined for some reason
+            var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
 
-            var duration = toMillis(toFloat(noteJs.length));
-
-            output.send( [0x90 + noteJs.channel, noteJs.tune, 127] );  // 0x90 = noteOn, 0x7F max velocity
-            output.send( [0x80 + noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration ); // Inlined array creation- note off, middle C,
-        }
+            output.send( [0x90 - -noteJs.channel, noteJs.tune, 127] );  // 0x90 = noteOn, 0x7F max velocity
+            //setTimeout(() => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]), duration); // Inlined array creation- note off, middle C,
+            output.send( [0x80 - -noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration ); 
+        });
     };
 
     var synths = {
@@ -116,37 +115,13 @@ Util.Playback = function (piano, audioCtx) {
         }
     };
     var synth = 'oscillator';
-    var playNote = noteJs => synths[synth].playNote(noteJs);
+    var playNote = (noteJs, tempo) => synths[synth].playNote(noteJs, tempo);
 
     var playingThreads = [];
     var stop = () => {
         noteThreads.slice().forEach(stopNote);
         playingThreads.forEach(t => t.interrupted = true);
     }
-
-    var playChordList = function(chordList) {
-
-        var thread = {interrupted: false};
-        playingThreads.push(thread);
-
-        var playNext = idx => {
-            if (idx < chordList.length && !thread.interrupted) {
-
-                var c = chordList[idx];
-                c['notaList'].forEach(n => playNote(n));
-                piano.repaint(c['notaList']);
-                var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
-
-                setTimeout(() => playNext(idx + 1), toMillis(chordLength));
-            } else {
-                midiOutputList.forEach(o => o.open());
-                var index = playingThreads.indexOf(thread);
-                playingThreads.splice(index, 1);
-            }
-        };
-
-        playNext(0);
-    };
 
     /** @param - json in shmidusic program format */
     var play = function (shmidusicJson) {
@@ -155,32 +130,51 @@ Util.Playback = function (piano, audioCtx) {
 
         for (var staff of shmidusicJson['staffList']) {
 
+            var tempo = staff.staffConfig.tempo;
+
             // flat map hujap
             var chordList = ('tactList' in staff) 
 					? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
 					: staff['chordList'];
 
-            playChordList(chordList);
+            var thread = {interrupted: false};
+            playingThreads.push(thread);
+
+            var playNext = idx => {
+                if (idx < chordList.length && !thread.interrupted) {
+
+                    var c = chordList[idx];
+                    c['notaList'].forEach(n => playNote(n, tempo));
+                    piano.repaint(c['notaList']);
+                    var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
+
+                    setTimeout(() => playNext(idx + 1), toMillis(chordLength, tempo));
+                } else {
+                    midiOutputList.forEach(o => o.open());
+                    var index = playingThreads.indexOf(thread);
+                    playingThreads.splice(index, 1);
+                }
+            };
+
+            playNext(0);
         }
     };
 
     var playStandardMidiFile = function (smf) {
-        /** @debug */
-        console.log(smf);
 
         stop();
         var thread = {interrupted: false};
         playingThreads.push(thread);
 
+        var tempo = smf.standard_midi_file.tempoEventList.filter(t => t.time == 0)[0].tempo || 120;
+        var division = smf.standard_midi_file.division * 4;
+
         var chordList = [];
         var curTime = -100;
         var curChord = [-100, -100];
 
-        // TODO: apparently, most midi have variable tempo (WHY?). implement it somehow.
-        // it should not be tough since we whatever don't calc miliseconds once for all
-
         smf.standard_midi_file.noteList.forEach(note => {
-            note.length = note.duration / smf.standard_midi_file.division / 4; // DIVIDE to tempo!!!
+            note.length = note.duration / division; // DIVIDE to tempo!!!
             if (note.time == curTime) {
                 curChord.notaList.push(note);
             } else {
@@ -191,27 +185,21 @@ Util.Playback = function (piano, audioCtx) {
             }
         });
 
-        console.log(chordList);
-        playChordList(chordList);
+        chordList.forEach(chord => {
+            var noteList = chord.notaList;
+            var time = noteList[0].time;
+            var play = function () {
+                if (!thread.interrupted) {
+                    piano.repaint(noteList);
+                    noteList.forEach(n => playNote(n, tempo));
+                } else if (playingThreads.indexOf(thread) > -1) {
+                    var index = playingThreads.indexOf(thread);
+                    playingThreads.splice(index, 1);
+                }
+            };
 
-        // apparently 3147 settimeouts is too hard for my browser
-        //chordList.forEach(noteList => {
-        //    var time = noteList[0].time;
-        //    var play = function () {
-        //        if (!thread.interrupted) {
-        //
-        //            /** @debug */
-        //            console.log(time, noteList);
-        //
-        //            piano.repaint(noteList);
-        //            noteList.forEach(n => playNote($.extend({length: n.duration / smf.division}, n)));
-        //        } else if (playingThreads.indexOf(thread) > -1) {
-        //            var index = playingThreads.indexOf(thread);
-        //            playingThreads.splice(index, 1);
-        //        }
-        //    };
-        //    setTimeout(play, time);
-        //});
+            setTimeout(play, toMillis(time / division, tempo));
+        });
     };
 
     var mudcubeInitialised = false;

@@ -48,8 +48,9 @@ Util.PianoLayoutPanel = function ($canvas) {
 			[255,128,0], // orange
 			[91,0,255], // bluish magenta
 
-            [0,255,0], // TODO: !!!
-            [0,255,0], // TODO: !!!
+            [0,255,255], // TODO: !!!
+            [127,255,0], // TODO: !!!
+            [255,0,255], // TODO: !!!
             [0,255,0], // TODO: !!!
             [0,255,0], // TODO: !!!
             [0,255,0], // TODO: !!!

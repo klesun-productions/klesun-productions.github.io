@@ -28,6 +28,15 @@ var MainPage = function($pianoCanvas) {
     var pianoLayoutPanel = Util.PianoLayoutPanel($pianoCanvas);
     var playback = Util.Playback(pianoLayoutPanel, audioCtx);
 
+    var playDemo = function () {
+        var mineList = Globals.shmidusicList;
+        var index = Math.floor(Math.random() * mineList.length);
+        console.log('Playing: ' + mineList[index].fileName);
+        playback.play(mineList[index].sheetMusic);
+    };
+
+    var playRandom = () => alert("Please, wait till midi names load from ajax!");
+
     var init = function () {
 
         var initIchigosMidiList = function () {
@@ -50,6 +59,15 @@ var MainPage = function($pianoCanvas) {
 
 				var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
 				$('.random-midi-list-cont').append(table); // defined in main_page.html
+
+                playRandom = function () {
+
+                    var index = Math.floor(Math.random() * rowList.length);
+                    console.log('Playing: ' + rowList[index].fileName);
+
+                    var link = 'get_standard_midi_file.py?file_name=' + rowList[index].rawFileName;
+                    performExternal(link, playback.playStandardMidiFile);
+                };
 			};
 		
 			performExternal('get_ichigos_midi_names.py', callback)
@@ -80,16 +98,10 @@ var MainPage = function($pianoCanvas) {
         initMyMusicList();
     };
 
-    var playDemo = function () {
-        var mineList = Globals.shmidusicList;
-        var index = Math.floor(Math.random() * mineList.length);
-        console.log('Playing: ' + mineList[index].fileName);
-        playback.play(mineList[index].sheetMusic);
-    };
-
     return {
         init: init, // TODO: split to initShmidusicList() and initIchigosMidiList()
         playDemo: playDemo,
+        playRandom: () => playRandom(),
         changeSynth: playback.changeSynth,
     };
 };

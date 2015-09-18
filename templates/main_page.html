@@ -22,7 +22,7 @@
 	<h1 class="main-caption">Да будет этакая музыка!</h1>
 
 	<!-- @debug -->
-	<input type="button" onClick="MIDIjs.play('/midiCollection/ichigos/assorted/0_a9b9_Terranigma - Europe (1).mid');" value="Play Europe!">
+	<input type="button" onClick="MIDIjs.play('/midiCollection/0_a9b9_Terranigma - Europe (1).mid');" value="Play Europe!">
     <input type="button" onClick="MIDIjs.stop();" value="Stop MIDI Playback!">
 	
 	<div class="topic-links-cont">
@@ -37,9 +37,12 @@
         <div class="piano-side-div">
             <select id="synthDropdown" style="float: right; margin-right: 10px;">
                 <option value="oscillator">Oscillator</option>
-                <option value="feulner">Feulner</option>
                 <option value="mudcube">Mudcube</option>
+                <option value="midiDevice">Midi Device</option>
+                <option value="feulner">Feulner</option>
             </select>
+            <br/>
+            <input id="playRandomButton" type="button" value="Play Random" style="float:right"/>
         </div>
         <div class="piano-cont">
             <canvas id="pianoLayoutPanel" width="420px" height="30px"></canvas>
@@ -104,6 +107,7 @@
 	var onLoad = function () {
 		mainPage.init();
 		$('#startDemoButton').click(mainPage.playDemo);
+        $('#playRandomButton').click(mainPage.playRandom);
 		$('#synthDropdown').change(() => mainPage.changeSynth($('#synthDropdown').val()));
 	};
 
