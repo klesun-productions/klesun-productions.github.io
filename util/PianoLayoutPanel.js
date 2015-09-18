@@ -46,7 +46,14 @@ Util.PianoLayoutPanel = function ($canvas) {
 			[0,152,152], // cyan
 			[192,0,192], // magenta
 			[255,128,0], // orange
-			[91,0,255] // bluish magenta
+			[91,0,255], // bluish magenta
+
+            [0,255,0], // TODO: !!!
+            [0,255,0], // TODO: !!!
+            [0,255,0], // TODO: !!!
+            [0,255,0], // TODO: !!!
+            [0,255,0], // TODO: !!!
+            [0,255,0] // TODO: !!!
         ][channelNumber];
     }
 

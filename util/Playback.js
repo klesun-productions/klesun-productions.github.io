@@ -45,6 +45,7 @@ Util.Playback = function (piano, audioCtx) {
 
     var noteThreads = [];
     var stopNote = function (noteThread) {
+
         if (!noteThread.interrupted) {
 
             noteThread.oscillator.stop();
@@ -55,7 +56,10 @@ Util.Playback = function (piano, audioCtx) {
         }
     };
 
+    /** @param noteJs - shmidusic Note external representation */
     var playNoteOnOscillator = function(noteJs) {
+
+        // TODO: firefox got some problems with it, he ignores not play half of notes
 
         var oscillator = audioCtx.createOscillator();
 
@@ -74,10 +78,18 @@ Util.Playback = function (piano, audioCtx) {
         setTimeout(() => stopNote(thread), duration);
     };
 
-    /** @param noteJs - shmidusic Note external representation
-      * @param position - float sum of all previous chords fractions */
-    var playNote = function(noteJs) {
+    var playNoteOnMudcube = function(noteJs) {
+        // does not work in chromium. due to mp3 and proprietarity i suppose
 
+        var position = 0; // offset. could be of use if they provided api to stop it (possibly they do, but it's not user-friendly enough)
+
+        // MIDI.js has 240 default tempo...
+        MIDI.noteOn(0, noteJs.tune, 127, position * 240 / tempo);
+        MIDI.noteOff(0, noteJs.tune, (position + toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1)) * 240 / tempo);
+        // TODO: write bug report, they don't sound when channel is not 0
+    };
+
+    var playNoteOnMidiDevice = function(noteJs) {
         for (var output of midiOutputList) {
 
             // looks like output undefined for some reason
@@ -87,18 +99,24 @@ Util.Playback = function (piano, audioCtx) {
             output.send( [0x90 + noteJs.channel, noteJs.tune, 127] );  // 0x90 = noteOn, 0x7F max velocity
             output.send( [0x80 + noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration ); // Inlined array creation- note off, middle C,
         }
-
-        playNoteOnOscillator(noteJs);
-
-        // does not work in chromium. due to mp3 and proprietarity i suppose
-
-        //var position = 0; // offset. could be of use if they provided (possibly user-friendly enough) api to stop it
-
-        // MIDI.js has 240 default tempo...
-        //MIDI.noteOn(0, noteJs.tune, 127, position * 240 / tempo);
-        //MIDI.noteOff(0, noteJs.tune, (position + toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1)) * 240 / tempo);
-        // TODO: write bug report, they don't sound when channel is not 0
     };
+
+    var synths = {
+        oscillator: {
+            playNote: playNoteOnOscillator,
+            stopNote: stopNote
+        },
+        mudcube: {
+            playNote: playNoteOnMudcube,
+            stopNote: () => console.log('dunno')
+        },
+        midiDevice: {
+            playNote: playNoteOnMidiDevice,
+            stopNote: () => console.log('dunno')
+        }
+    };
+    var synth = 'oscillator';
+    var playNote = noteJs => synths[synth].playNote(noteJs);
 
     var playingThreads = [];
     var stop = () => {
@@ -106,41 +124,136 @@ Util.Playback = function (piano, audioCtx) {
         playingThreads.forEach(t => t.interrupted = true);
     }
 
+    var playChordList = function(chordList) {
+
+        var thread = {interrupted: false};
+        playingThreads.push(thread);
+
+        var playNext = idx => {
+            if (idx < chordList.length && !thread.interrupted) {
+
+                var c = chordList[idx];
+                c['notaList'].forEach(n => playNote(n));
+                piano.repaint(c['notaList']);
+                var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
+
+                setTimeout(() => playNext(idx + 1), toMillis(chordLength));
+            } else {
+                midiOutputList.forEach(o => o.open());
+                var index = playingThreads.indexOf(thread);
+                playingThreads.splice(index, 1);
+            }
+        };
+
+        playNext(0);
+    };
+
     /** @param - json in shmidusic program format */
     var play = function (shmidusicJson) {
 
         stop();
-        var thread = {interrupted: false};
-        playingThreads.push(thread);
 
-        for (staff of shmidusicJson['staffList']) {
+        for (var staff of shmidusicJson['staffList']) {
 
             // flat map hujap
             var chordList = ('tactList' in staff) 
 					? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
 					: staff['chordList'];
 
-            var playNext = idx => {
-                if (idx < chordList.length && !thread.interrupted) {
+            playChordList(chordList);
+        }
+    };
 
-                    var c = chordList[idx];
-                    c['notaList'].forEach(n => playNote(n, 0));
-                    piano.repaint(c['notaList']);
-                    var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
+    var playStandardMidiFile = function (smf) {
+        /** @debug */
+        console.log(smf);
 
-                    setTimeout(() => playNext(idx + 1), toMillis(chordLength));
-                } else {
-                    midiOutputList.forEach(o => o.open());
-                    var index = playingThreads.indexOf(thread);
-                    playingThreads.splice(index, 1);
-                }
-            };
+        stop();
+        var thread = {interrupted: false};
+        playingThreads.push(thread);
 
-            playNext(0);
+        var chordList = [];
+        var curTime = -100;
+        var curChord = [-100, -100];
+
+        // TODO: apparently, most midi have variable tempo (WHY?). implement it somehow.
+        // it should not be tough since we whatever don't calc miliseconds once for all
+
+        smf.standard_midi_file.noteList.forEach(note => {
+            note.length = note.duration / smf.standard_midi_file.division / 4; // DIVIDE to tempo!!!
+            if (note.time == curTime) {
+                curChord.notaList.push(note);
+            } else {
+                curTime = note.time;
+                curChord = {notaList: []};
+                chordList.push(curChord);
+                curChord.notaList.push(note);
+            }
+        });
+
+        console.log(chordList);
+        playChordList(chordList);
+
+        // apparently 3147 settimeouts is too hard for my browser
+        //chordList.forEach(noteList => {
+        //    var time = noteList[0].time;
+        //    var play = function () {
+        //        if (!thread.interrupted) {
+        //
+        //            /** @debug */
+        //            console.log(time, noteList);
+        //
+        //            piano.repaint(noteList);
+        //            noteList.forEach(n => playNote($.extend({length: n.duration / smf.division}, n)));
+        //        } else if (playingThreads.indexOf(thread) > -1) {
+        //            var index = playingThreads.indexOf(thread);
+        //            playingThreads.splice(index, 1);
+        //        }
+        //    };
+        //    setTimeout(play, time);
+        //});
+    };
+
+    var mudcubeInitialised = false;
+    var changeSynth = function(synthName) {
+        // TODO: probably should stop playback before chaning synth
+        if (synthName in synths) {
+            stop();
+            if (synthName === 'mudcube' && !mudcubeInitialised) {
+
+                // TODO: forgot to include all lib files here
+                //<!-- TODO: think of a better way to play sound with software or dix the bugs (thread leak is obvious even at their web site! mudcu.be) -->
+                //
+                //<!-- polyfill -->
+                //<script src="/libs/MIDI.js/inc/shim/Base64.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/inc/shim/Base64binary.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+                //    <!-- midi.js package -->
+                //<script src="/libs/MIDI.js/js/midi/audioDetect.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/js/midi/gm.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/js/midi/loader.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/js/midi/plugin.audiotag.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/js/midi/plugin.webaudio.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/js/midi/plugin.webmidi.js" type="text/javascript"></script>
+                //    <!-- utils -->
+                //<script src="/libs/MIDI.js/js/util/dom_request_xhr.js" type="text/javascript"></script>
+                //<script src="/libs/MIDI.js/js/util/dom_request_script.js" type="text/javascript"></script>
+
+                MIDI.loadPlugin({
+                    soundfontUrl: "/libs/MIDI.js/examples/soundfont/",
+                    instrument: "acoustic_grand_piano"
+                });
+                mudcubeInitialised = true;
+            }
+            synth = synthName;
+        } else {
+            alert('No Such Synth!');
         }
     };
 
     return {
-        play: play
+        play: play,
+        playStandardMidiFile: playStandardMidiFile,
+        changeSynth: changeSynth
     };
 };

@@ -6,10 +6,13 @@
 var MainPage = function($pianoCanvas) {
 
     var performExternal = function(scriptName, callback) {
+
         xmlhttp = new XMLHttpRequest();
         var isDone = () => xmlhttp.readyState == XMLHttpRequest.DONE;
         var isOk = () => xmlhttp.status == 200;
-        var getResponse = () => {console.log('zhopa', xmlhttp); return JSON.parse(xmlhttp.responseText);}
+        var getResponse = () => {
+            return JSON.parse(xmlhttp.responseText);
+        };
         var getErrorMessage = () => 'Failed to get ajax with script ' + script + ' status: ' + xmlhttp.status;
 
         xmlhttp.onreadystatechange = () => isDone()
@@ -27,20 +30,20 @@ var MainPage = function($pianoCanvas) {
 
     var init = function () {
 
-        var playButtonFormatter = function (cell, row) {
-            return $('<input type="button" value="Play!"/>')
-                    .click(() => playback.play(row['sheetMusic']));
-        };
-
         var initIchigosMidiList = function () {
+
+            var playButtonFormatter = function (cell, row) {
+                var link = 'get_standard_midi_file.py?file_name=' + row.rawFileName;
+                return $('<input type="button" value="Play!"/>')
+                    .click(() => performExternal(link, playback.playStandardMidiFile));
+            };
 
 			var callback = function (rowList) {
 				var colModel = [
 					{'name': 'fileName', 'caption': 'File Name'},
 					{'name': 'length', 'caption': 'Length'},
 					{'name': 'score', 'caption': 'My Score'},
-					{'name': 'playButton', 'caption': 'Play', formatter: () => $('<input type="button" value="Play!"/>')
-						.click(() => alert('Midi File Playback Not Implemented Yet!'))}
+					{'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
 				];
 
 				var caption = 'Some random midi files from my collection provided by <a href="http://ichigos.com">ichigos.com</a>';
@@ -54,10 +57,16 @@ var MainPage = function($pianoCanvas) {
 
         var initMyMusicList = function () {
 
+            var playButtonFormatter = function (cell, row) {
+                return $('<input type="button" value="Play!"/>')
+                        .click(() => playback.play(row['sheetMusic']));
+            };
+
             rowList = Globals.shmidusicList;
+            rowList.sort((a,b) => a.fileName.localeCompare(b.fileName)); // sorting lexicographically
 
             var colModel = [
-                {'name': 'fileName', 'caption': 'File Name', formatter: function(s) { return s.split('_').join(' '); }},
+                {'name': 'fileName', 'caption': 'File Name', formatter: s => s.split('_').join(' ')},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
             ];
 
@@ -80,6 +89,7 @@ var MainPage = function($pianoCanvas) {
 
     return {
         init: init, // TODO: split to initShmidusicList() and initIchigosMidiList()
-        playDemo: playDemo
+        playDemo: playDemo,
+        changeSynth: playback.changeSynth,
     };
 };

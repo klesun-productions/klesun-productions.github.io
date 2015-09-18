@@ -3,10 +3,11 @@
 # from midi file storage (maybe even data one day)
 
 import os
-import typing
 from typing import Iterable
 import re
-import json;
+import json
+import os.path
+from subprocess import call
 
 
 class MidiFileProvider(object):
@@ -21,7 +22,7 @@ class MidiFileProvider(object):
         for file in os.listdir('/home/klesun/Dropbox/midiCollection/'):
             matches = pattern.findall(file)
             if len(matches):
-                result.append({"fileName": matches[0][1], "score": matches[0][0]})
+                result.append({"fileName": matches[0][1], "score": matches[0][0], 'rawFileName': file})
             # result.append({"fileName": file}) if not pattern.match(file) else {"fileName": file, "score": "guzno"}
 
         return result;
@@ -42,3 +43,12 @@ class MidiFileProvider(object):
 
         return result
 
+    @staticmethod
+    def get_standard_midi_file(file_name) -> dict:
+
+        result = {}
+
+        with open('/home/klesun/Dropbox/midiCollection_smf/' + file_name + '.js') as content:
+            content_json = json.load(content)
+
+        return content_json
