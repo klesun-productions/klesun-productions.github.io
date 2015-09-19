@@ -79,19 +79,20 @@
 		border: 2px solid green;
 		font-size: 12px;
 		text-align: left;
-        width: 100%;
 		padding: 4px;
 	}
 	.random-midi-list-cont {
 		float: right;
 		background-color: orange;
-		width: 300px;
+		width: 250px;
 		height: 500px;
 		overflow-y: scroll;
 	}
 	.random-midi-list-cont table tr:not(.table-generator-title-tr) td {
 		background-color: #444;
 		color: yellow;
+		max-width: 130px;
+		overflow: hidden;
 	}
 	.something-left-cont {
 	    width: 200px;
@@ -100,7 +101,35 @@
 	}
 	.something-left-cont table tr td {
         max-width: 120px;
-		background-color: #444;
+		background-color: rgba(64,64,64,0.75);
 		color: cyan;
         overflow: hidden;
 	}
+
+	#playbackControl {
+		background-color: rgba(151, 212, 255, 1);
+	}
+
+	#playbackControl > * {
+		white-space: nowrap;
+		padding: 5px;
+		background-color: #ccf;
+		border: 1px solid grey;
+	}
+	#playbackControl > div > span {
+		background-color: white;
+		font-weight: bold;
+		border: 1px solid black;
+	}
+	#playbackControl > span > span {
+		background-color: white;
+		font-weight: bold;
+		border: 1px solid black;
+
+		display: inline-block;
+		width: 40px;
+	}
+	#playbackControl > div > span {
+		display: inline-block;
+	}
+

@@ -4,14 +4,16 @@ var Util = Util || {};
 // This class destiny is to read shmidusic json structure and send events to MIDI.js and PianoLayoutPanel
 
 /** @param piano - PianoLayoutPanel instance */
-Util.Playback = function (piano, audioCtx) {
+Util.Playback = function (piano, $controlCont) {
 
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     var gainNode = audioCtx.createGain();
     gainNode.connect(audioCtx.destination);
 
+    var mudcubeInitialised = false;
+    var mudcube = null;
+
     var midiOutputList = [];
-    /** @debug */
-    MIDI_OUTPUT_LIST_HUJ = midiOutputList;
 
     // TODO: for now calling navigator.requestMIDIAccess() blocks devices for other programs
     // investigate, how to free devices (output.open() ?). we should free them each time playback finished
@@ -25,6 +27,39 @@ Util.Playback = function (piano, audioCtx) {
     } else {
         console.log('Your browser does not support midi Devices. Pity, you could listen to music on your mega-device if you used chrome =P');
     }
+
+    var Control = function ($cont)
+    {
+        var fileNameHolder = $('<span></span>').html('?');
+        $cont.append($('<div></div>').append("File Name: ").append(fileNameHolder));
+
+        var chordIndexHolder = $('<span></span>').html('?');
+        var chordCountHolder = $('<span></span>').html('?');
+        $cont.append($('<span></span>').append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder));
+
+        var noteCountHolder = $('<span></span>').html('?');
+        $cont.append($('<span></span>').append("Note Count: ").append(noteCountHolder));
+
+        var tempoHolder = $('<span></span>').html('?');
+        $cont.append($('<span></span>').append("Tempo: ").append(tempoHolder));
+
+        var secondsHolder = $('<span style="width: 60px"></span>').html('?');
+        var secondsTotalHolder = $('<span style="width: 60px"></span>').html('?');
+        $cont.append($('<span></span>').append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder));
+
+        var self;
+        return self = {
+            setFileName: n => { fileNameHolder.html(n); return self; },
+            setChordIndex: n => { chordIndexHolder.html(n); return self; },
+            setChordCount: n => { chordCountHolder.html(n); return self; },
+            setNoteCount: n => { noteCountHolder.html(n); return self; },
+            setTempo: n => { tempoHolder.html(Math.floor(n)); return self; },
+            setSeconds: n => { secondsHolder.html('>' + Math.floor(n * 100) / 100); return self; },
+            setSecondsTotal: n => { secondsTotalHolder.html(Math.floor(n * 100) / 100); return self; },
+        };
+    };
+
+    var control = Control($controlCont);
 
     var tuneToFrequency = function(tune) {
 
@@ -49,6 +84,8 @@ Util.Playback = function (piano, audioCtx) {
             noteThread.interrupted = true;
             var index = noteThreads.indexOf(noteThread);
             noteThreads.splice(index, 1);
+
+            piano.unhighlight(noteThread.noteJs);
         }
     };
 
@@ -65,12 +102,13 @@ Util.Playback = function (piano, audioCtx) {
             // ["sine", "square", "saw", "triangle", "custom"]
             oscillator.type = 'square';
             oscillator.connect(gainNode);
-            oscillator.frequency.value = tuneToFrequency(noteJs.tune - -12); // + 12 cuz bases sound very quiet
+            oscillator.frequency.value = tuneToFrequency(noteJs.tune);
             gainNode.gain.value = volume;
             oscillator.start(0);
+            piano.highlight(noteJs);
 
             var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
-            var thread = {oscillator: oscillator, interrupted: false};
+            var thread = {oscillator: oscillator, interrupted: false, noteJs: noteJs};
             noteThreads.push(thread);
             setTimeout(() => stopNote(thread), duration);
         } else {
@@ -81,12 +119,15 @@ Util.Playback = function (piano, audioCtx) {
     var playNoteOnMudcube = function(noteJs, tempo) {
         // does not work in chromium. due to mp3 and proprietarity i suppose
 
-        var position = 0; // offset. could be of use if they provided api to stop it (possibly they do, but it's not user-friendly enough)
+        var position = 0;
 
         // MIDI.js has 240 default tempo...
-        MIDI.noteOn(0, noteJs.tune, 127, position * 240 / tempo);
-        MIDI.noteOff(0, noteJs.tune, (position + toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1)) * 240 / tempo);
-        // TODO: write bug report, they don't sound when channel is not 0
+        mudcube.noteOn(noteJs.channel, noteJs.tune, 127, position);
+        piano.highlight(noteJs);
+        var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
+
+        mudcube.noteOff(noteJs.channel, noteJs.tune, (position + length * 240 / tempo));
+        setTimeout(() => piano.unhighlight(noteJs), toMillis(length, tempo));
     };
 
     var playNoteOnMidiDevice = function(noteJs, tempo) {
@@ -99,26 +140,54 @@ Util.Playback = function (piano, audioCtx) {
             output.send( [0x80 - -noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration ); 
         });
     };
-    
-    /** @param instrumentEntry - dict: {channel: int, instrument: int} */
-    var changeInstrumentOnDevice = function (instrumentEntry)
-    {
-		// 0xC0 - program change
-		midiOutputList.forEach(o => o.send([0xC0 - -instrumentEntry.channel, instrumentEntry.instrument]));
-	};
+
+    var pianoOnly = true;
+
+    /** @param instrumentEntries [{channel: int, instrument: int}, ...] */
+    var consumeConfigOnMudcube = function (instrumentEntries, callback) {
+
+        if (pianoOnly) {
+            instrumentEntries = instrumentEntries.map(e => $.extend({}, e, {instrument: 0}));
+        }
+        var instruments = instrumentEntries.map(e =>  e.instrument);
+
+        mudcube.loadPlugin({
+            soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
+            instruments: instruments,
+            onsuccess: () => {
+                console.log('Successfully retrieved instruments for mudcube!', instruments);
+                instrumentEntries.forEach(
+                    instrumentEntry => mudcube.programChange(instrumentEntry.channel, instrumentEntry.instrument)
+                )
+                callback();
+            }
+        });
+    };
+
+    /** @param instrumentEntries [{channel: int, instrument: int}, ...] */
+    var consumeConfigOnMidiDevice = function (instrumentEntries, callback) {
+        instrumentEntries.forEach(instrumentEntry =>
+            midiOutputList.forEach(o => o.send([0xC0 - -instrumentEntry.channel, instrumentEntry.instrument]))
+            // 0xC0 - program change
+        );
+        callback();
+    };
 
     var synths = {
         oscillator: {
             playNote: playNoteOnOscillator,
-            stopNote: stopNote
+            stopNote: stopNote,
+            consumeConfig: (configJs, callback) => callback()
         },
         mudcube: {
             playNote: playNoteOnMudcube,
-            stopNote: () => console.log('dunno')
+            stopNote: () => console.log('dunno'),
+            consumeConfig: consumeConfigOnMudcube
         },
         midiDevice: {
             playNote: playNoteOnMidiDevice,
-            stopNote: () => console.log('dunno')
+            stopNote: () => console.log('dunno'),
+            consumeConfig: consumeConfigOnMidiDevice
         }
     };
     var synth = 'oscillator';
@@ -135,118 +204,167 @@ Util.Playback = function (piano, audioCtx) {
 
         stop();
 
+
+
         for (var staff of shmidusicJson['staffList']) {
 
-            var tempo = staff.staffConfig.tempo;
+            var instrumentEntries = staff.staffConfig.channelList.map(c => ({channel: c.channelNumber, instrument: c.instrument}));
+            synths[synth].consumeConfig(instrumentEntries, () => {
 
-            // flat map hujap
-            var chordList = ('tactList' in staff) 
-					? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
-					: staff['chordList'];
+                var tempo = staff.staffConfig.tempo;
 
-            var thread = {interrupted: false};
-            playingThreads.push(thread);
+                // flat map hujap
+                var chordList = ('tactList' in staff)
+                    ? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
+                    : staff['chordList'];
 
-            var playNext = idx => {
-                if (idx < chordList.length && !thread.interrupted) {
+                var thread = {interrupted: false};
+                playingThreads.push(thread);
 
-                    var c = chordList[idx];
-                    c['notaList'].forEach(n => playNote(n, tempo));
-                    piano.repaint(c['notaList']);
-                    var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
+                var playNext = idx => {
+                    if (idx < chordList.length && !thread.interrupted) {
 
-                    setTimeout(() => playNext(idx + 1), toMillis(chordLength, tempo));
-                } else {
-                    midiOutputList.forEach(o => o.open());
-                    var index = playingThreads.indexOf(thread);
-                    playingThreads.splice(index, 1);
-                }
-            };
+                        var c = chordList[idx];
+                        c['notaList'].forEach(n => playNote(n, tempo));
+                        var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
 
-            playNext(0);
+                        setTimeout(() => playNext(idx + 1), toMillis(chordLength, tempo));
+                    } else {
+                        midiOutputList.forEach(o => o.open());
+                        var index = playingThreads.indexOf(thread);
+                        playingThreads.splice(index, 1);
+                    }
+                };
+
+                playNext(0);
+            });
         }
     };
 
-    var playStandardMidiFile = function (smf) {
+    var playStandardMidiFile = function (smf, fileName) {
 
         stop();
         var thread = {interrupted: false};
         playingThreads.push(thread);
 
-		if (synth === 'midiDevice') {
-			smf.standard_midi_file.instrumentEventList.filter(i => i.time == 0).forEach(changeInstrumentOnDevice);
-		}
+        synths[synth].consumeConfig(smf.instrumentEventList.filter(i => i.time == 0), () => {
 
-		var tempoEntry = smf.standard_midi_file.tempoEventList.filter(t => t.time == 0)[0] || 
-				smf.standard_midi_file.tempoEventList[0] || {tempo: 120};
-        var tempo = tempoEntry.tempo;
-        var division = smf.standard_midi_file.division * 4;
+            var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
+                smf.tempoEventList[0] || {tempo: 120};
+            var tempo = tempoEntry.tempo;
+            var division = smf.division * 4;
 
-        var chordList = [];
-        var curTime = -100;
-        var curChord = [-100, -100];
+            control
+                .setFileName(fileName)
+                .setNoteCount(smf.noteList.length)
+                .setTempo(tempo)
+                .setSecondsTotal(toMillis(smf.noteList.slice(-1)[0].time / division, tempo) / 1000.0)
+            ;
 
-        smf.standard_midi_file.noteList.forEach(note => {
-            note.length = note.duration / division; // DIVIDE to tempo!!!
-            if (note.time == curTime) {
-                curChord.notaList.push(note);
-            } else {
-                curTime = note.time;
-                curChord = {notaList: []};
-                chordList.push(curChord);
-                curChord.notaList.push(note);
-            }
-        });
+            var scheduleChord = function (chord, chordIndex) {
+                var noteList = chord.notaList;
+                var time = noteList[0].time;
+                var play = function () {
+                    if (!thread.interrupted) {
 
-        chordList.forEach(chord => {
-            var noteList = chord.notaList;
-            var time = noteList[0].time;
-            var play = function () {
-                if (!thread.interrupted) {
-                    piano.repaint(noteList);
-                    noteList.forEach(n => playNote(n, tempo));
-                } else if (playingThreads.indexOf(thread) > -1) {
-                    var index = playingThreads.indexOf(thread);
-                    playingThreads.splice(index, 1);
-                }
+                        // piano image lags if do it every time
+                        if (chordIndex % 20 === 0) {
+                            control.setChordIndex('>' + chordIndex)
+                                .setSeconds(toMillis(time / division, tempo) / 1000.0);
+                        }
+
+                        noteList.forEach(n => playNote(n, tempo));
+
+                    } else if (playingThreads.indexOf(thread) > -1) {
+
+                        var index = playingThreads.indexOf(thread);
+                        playingThreads.splice(index, 1);
+                    }
+                };
+
+                setTimeout(play, toMillis(time / division, tempo));
             };
 
-            setTimeout(play, toMillis(time / division, tempo));
+            var curTime = -100;
+            var curChord = [-100, -100];
+            var chordCount = 1;
+
+            smf.noteList.forEach(note => {
+                note.length = note.duration / division;
+                if (note.time == curTime) {
+                    curChord.notaList.push(note);
+                } else {
+                    if (curTime !== -100) { scheduleChord(curChord, chordCount++); }
+                    curTime = note.time;
+                    curChord = {notaList: [note]};
+                }
+            });
+            scheduleChord(curChord, chordCount);
+            control.setChordCount(chordCount);
         });
     };
 
-    var mudcubeInitialised = false;
     var changeSynth = function(synthName) {
-        // TODO: probably should stop playback before chaning synth
         if (synthName in synths) {
             stop();
             if (synthName === 'mudcube' && !mudcubeInitialised) {
 
-                // TODO: forgot to include all lib files here
-                //<!-- TODO: think of a better way to play sound with software or dix the bugs (thread leak is obvious even at their web site! mudcu.be) -->
-                //
-                //<!-- polyfill -->
-                //<script src="/libs/MIDI.js/inc/shim/Base64.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/inc/shim/Base64binary.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/inc/shim/WebAudioAPI.js" type="text/javascript"></script>
-                //    <!-- midi.js package -->
-                //<script src="/libs/MIDI.js/js/midi/audioDetect.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/js/midi/gm.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/js/midi/loader.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/js/midi/plugin.audiotag.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/js/midi/plugin.webaudio.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/js/midi/plugin.webmidi.js" type="text/javascript"></script>
-                //    <!-- utils -->
-                //<script src="/libs/MIDI.js/js/util/dom_request_xhr.js" type="text/javascript"></script>
-                //<script src="/libs/MIDI.js/js/util/dom_request_script.js" type="text/javascript"></script>
+                // i do this ugliness because as you see, there is way too many scripts for such a simple task as just playing a note
+                // i plan to change their code a bit and limit it to, let's see... a single script? which, of course is no problem to include from html
+                var include = [
+                    "/libs/dont_use_it_MIDI.js//inc/shim/Base64.js",
+                    "/libs/dont_use_it_MIDI.js//inc/shim/Base64binary.js",
+                    "/libs/dont_use_it_MIDI.js//inc/shim/WebAudioAPI.js",
+                    //    <!-- dont_use_it_MIDI.js/ package -->
+                    "/libs/dont_use_it_MIDI.js//js/midi/audioDetect.js",
+                    "/libs/dont_use_it_MIDI.js//js/midi/gm.js",
+                    "/libs/dont_use_it_MIDI.js//js/midi/loader.js",
+                    "/libs/dont_use_it_MIDI.js//js/midi/plugin.audiotag.js",
+                    "/libs/dont_use_it_MIDI.js//js/midi/plugin.webaudio.js",
+                    "/libs/dont_use_it_MIDI.js//js/midi/plugin.webmidi.js",
+                    //    <!-- utils -->
+                    "/libs/dont_use_it_MIDI.js//js/util/dom_request_xhr.js",
+                    "/libs/dont_use_it_MIDI.js//js/util/dom_request_script.js",
+                ];
 
-                MIDI.loadPlugin({
-                    soundfontUrl: "/libs/MIDI.js/examples/soundfont/",
-                    instrument: "acoustic_grand_piano"
-                });
-                mudcubeInitialised = true;
+                var done = 0;
+
+                include.forEach(scriptPath => $.getScript(scriptPath, function()
+                {
+                    console.log(scriptPath, 'loaded!');
+
+                    if (++done === include.length) {
+                        /** @debug */
+                        MIDI.loadPlugin({
+                            soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
+                            //instrument: "acoustic_grand_piano", // TODO: for some reason does not work with other instruments =D - investigate sometime?
+                            instruments: [0],
+                            onprogress: (state, progress) => console.log(state, progress),
+                            onsuccess: function() {
+
+                                /** @debug */
+                                console.log("mudcube load Success!");
+
+                                var delay = 0; // play one note every quarter second
+                                var note = 50; // the MIDI note
+                                var velocity = 127; // how hard the note hits
+                                // play the note
+                                MIDI.setVolume(0, 127);
+                                MIDI.noteOn(0, note, velocity, delay);
+                                MIDI.noteOff(0, note, delay + 0.75);
+
+                                mudcubeInitialised = true;
+                                synth = synthName;
+
+                                mudcube = MIDI;
+                            }
+                        });
+
+                    }
+                }));
+            } else {
+                synth = synthName;
             }
-            synth = synthName;
         } else {
             alert('No Such Synth!');
         }

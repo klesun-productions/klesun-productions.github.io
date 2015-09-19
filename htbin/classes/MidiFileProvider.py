@@ -23,7 +23,8 @@ class MidiFileProvider(object):
             matches = pattern.findall(file)
             if len(matches):
                 result.append({"fileName": matches[0][1], "score": matches[0][0], 'rawFileName': file})
-            # result.append({"fileName": file}) if not pattern.match(file) else {"fileName": file, "score": "guzno"}
+            else:
+                result.append({"fileName": file, "score": '', 'rawFileName': file})
 
         return result;
 

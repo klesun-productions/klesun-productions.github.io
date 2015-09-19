@@ -20,6 +20,6 @@ def execute_script():
 
     file_name = cgi.FieldStorage()['file_name'].value
     smf = MidiFileProvider.get_standard_midi_file(file_name)
-    print(json.dumps({'standard_midi_file': smf}))
+    print(json.dumps(smf))
 
 execute_script()

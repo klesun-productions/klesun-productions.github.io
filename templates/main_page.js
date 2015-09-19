@@ -3,7 +3,7 @@
 // requires Util.PianoLayoutPanel.js !
 // requires Util.Playback.js !
 
-var MainPage = function($pianoCanvas) {
+var MainPage = function($pianoCanvas, $playbackControlCont) {
 
     var performExternal = function(scriptName, callback) {
 
@@ -23,10 +23,8 @@ var MainPage = function($pianoCanvas) {
         xmlhttp.send();
     };
 
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
     var pianoLayoutPanel = Util.PianoLayoutPanel($pianoCanvas);
-    var playback = Util.Playback(pianoLayoutPanel, audioCtx);
+    var playback = Util.Playback(pianoLayoutPanel, $playbackControlCont);
 
     var playDemo = function () {
         var mineList = Globals.shmidusicList;
@@ -44,20 +42,27 @@ var MainPage = function($pianoCanvas) {
             var playButtonFormatter = function (cell, row) {
                 var link = 'get_standard_midi_file.py?file_name=' + row.rawFileName;
                 return $('<input type="button" value="Play!"/>')
-                    .click(() => performExternal(link, playback.playStandardMidiFile));
+                    .click(() => performExternal(link, answer => playback.playStandardMidiFile(answer, row.rawFileName)));
             };
 
 			var callback = function (rowList) {
 				var colModel = [
 					{'name': 'fileName', 'caption': 'File Name'},
-					{'name': 'length', 'caption': 'Length'},
-					{'name': 'score', 'caption': 'My Score'},
+					//{'name': 'length', 'caption': 'Length'},
+					{'name': 'score', 'caption': '*'},
 					{'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
 				];
 
-				var caption = 'Some random midi files from my collection provided by <a href="http://ichigos.com">ichigos.com</a>';
+				var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
+				
+				var shuffle = function(o) {
+					for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+					return o;
+				}
+				
+				shuffle(rowList);
 
-				var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
+				var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 50);
 				$('.random-midi-list-cont').append(table); // defined in main_page.html
 
                 playRandom = function () {
@@ -66,7 +71,7 @@ var MainPage = function($pianoCanvas) {
                     console.log('Playing: ' + rowList[index].fileName);
 
                     var link = 'get_standard_midi_file.py?file_name=' + rowList[index].rawFileName;
-                    performExternal(link, playback.playStandardMidiFile);
+                    performExternal(link, answer => playback.playStandardMidiFile(answer, rowList[index].fileName));
                 };
 			};
 		
