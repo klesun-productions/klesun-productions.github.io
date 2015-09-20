@@ -149,7 +149,7 @@ Util.Playback = function (piano, $controlCont) {
         if (pianoOnly) {
             instrumentEntries = instrumentEntries.map(e => $.extend({}, e, {instrument: 0}));
         }
-        var instruments = instrumentEntries.map(e =>  e.instrument);
+        var instruments = instrumentEntries.length > 0 ? instrumentEntries.map(e =>  e.instrument) : [0];
 
         mudcube.loadPlugin({
             soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
@@ -204,11 +204,16 @@ Util.Playback = function (piano, $controlCont) {
 
         stop();
 
-
-
         for (var staff of shmidusicJson['staffList']) {
 
-            var instrumentEntries = staff.staffConfig.channelList.map(c => ({channel: c.channelNumber, instrument: c.instrument}));
+            var instrumentEntries = (staff.staffConfig.channelList || []).map(c => ({channel: c.channelNumber, instrument: c.instrument}));
+            instrumentEntries = instrumentEntries.filter(e => e.channel < 16); // да-да, я лох
+            for (var i = 0; i < 16; ++i) {
+                if (instrumentEntries.filter(e => e.channel == i).length === 0) {
+                    instrumentEntries.push({channel: i, instrument: 0});
+                }
+            }
+
             synths[synth].consumeConfig(instrumentEntries, () => {
 
                 var tempo = staff.staffConfig.tempo;
