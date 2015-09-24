@@ -1,0 +1,132 @@
+<head>
+    <script src="/libs/jquery-1.11.3.js" type="text/javascript"></script>
+</head>
+
+<body>
+    Column count: <input type="number" id="columnCount" value="4"/><br/>
+    Row count: <input type="number" id="rowCount" value="4"/><br/>
+    <input type="button" value="Start!" id="start"/><br/>
+    On Cell Click: <select id="onClickDropdown">
+        <option value="putHero">Put Hero</option>
+        <option value="switchIsPathable">Pathable/Unpathable</option>
+        <option value="putBlock">Put/Remove Block</option>
+        <option value="putDestination">Put/Remove Destination</option>
+    </select>
+    <div id="gridCont"></div>
+</body>
+
+<script>
+    console.log('Gonna resolve sokoban!');
+
+    var range = (l, r) => Array.apply(null, Array(r - l)).map((_, i) => l + i);
+
+    var grid;
+    var columnCount;
+    var rowCount;
+
+    var startPos = {x: 0, y: 0};
+    var blockPosList = [];
+    var hasHero = (x, y) => (startPos.x === x && startPos.y === y);
+    var hasBlock = (x, y) => blockPosList.filter(b => b.x === x && b.y === y).length > 0;
+    var switchBlock = (x, y) => {
+        var index = blockPosList.findIndex(b => b.x === x && b.y === y);
+        index > -1 ? blockPosList.splice(index, 1) : blockPosList.push({x: x, y: y});
+    }
+
+    var clickDict = {
+        'putHero': (x,y) => !hasBlock(x, y) && grid[x][y].isPathable
+                ? startPos = {x: x, y: y} : -100,
+        'switchIsPathable': (x,y) => !hasBlock(x, y) && !hasHero(x, y) && !grid[x][y].isDestination
+                ? grid[x][y].isPathable ^= true : -100,
+        'putBlock': (x,y) => !hasHero(x, y) && grid[x][y].isPathable
+                ? switchBlock(x, y) : -100,
+        'putDestination': (x,y) => grid[x][y].isPathable
+                ? grid[x][y].isDestination ^= true : -100
+    };
+
+    var repaint = function ()
+    {
+        var $table = $('<table></table>');
+
+        var getClick = (x,y) => () => { clickDict[$('#onClickDropdown').val()](x, y); repaint(); };
+
+        range(0, rowCount).forEach(y => {
+            var $row = $('<tr></tr>');
+            range(0, columnCount).forEach(x => {
+
+                // TODO: ensure that both isHero and hasBlock() never are TRUE together or we'll all die!
+
+                var $cell = $('<td class="square_cell"></td>')
+                        .addClass(grid[x][y].isPathable ? 'pathable' : 'inpathable')
+                        .append($('<div></div>')
+                            .addClass(grid[x][y].isDestination ? 'destination' : '')
+                            .append(hasHero(x, y) ? 'HERO' : (hasBlock(x, y) ? 'BLOCK' : ' ')))
+                        .click(getClick(x,y));
+
+                $row.append($cell);
+            });
+            $table.append($row);
+        });
+
+        $('#gridCont').empty().append($table);
+    };
+
+    var rebuild = function ()
+    {
+        columnCount = $('#columnCount').val();
+        rowCount = $('#rowCount').val();
+
+        grid = range(0, columnCount).map(x =>
+                range(0, rowCount).map(y =>
+                    ({isPathable: true, isDestination: false})));
+
+        repaint();
+    };
+    rebuild();
+
+    /** @param grid {isPathable: bool}[][] - isPath means player or block can be placed there */
+    var start = function (grid, startPos, blockPosList)
+    {
+        alert('start not implemented yet!');
+        return;
+
+        if (blockPosList.length !== destinationList.length) {
+            alert('Destination count does not match block count!');
+            return -100;
+        }
+
+        var states = [
+            {pos: startPos, blockPosList: blockPosList, moveCount: 0}
+        ];
+
+        var findShortestRoute = function (startPos, blockPosList)
+        {
+
+        };
+    };
+
+    $('#start').click(start);
+    $('#columnCount').change(rebuild);
+    $('#rowCount').change(rebuild);
+
+</script>
+
+<style>
+    td.square_cell {
+        width: 60px;
+        height: 60px;
+    }
+    td.pathable {
+        background-color: #0f0;
+    }
+    td.inpathable {
+        background-color: #fff;
+    }
+    div.destination {
+        border: solid blue 2px;
+        border-radius: 50%;
+        height: 100%;
+        padding-top: 10px;
+        text-align: center;
+    }
+</style>

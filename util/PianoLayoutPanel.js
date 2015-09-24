@@ -106,13 +106,15 @@ Util.PianoLayoutPanel = function ($canvas) {
     /** @param {tune: int, channel: int} noteJs */
     var unhighlight = function (noteJs) {
 
-        var isFlat = [1,3,6,8,10].indexOf(noteJs.tune % 12) > -1;
-        var color = isFlat ? [191,191,191] : [255,255,255];
-
-        fillTune(noteJs.tune, color);
-
         var index = pressedNotes[noteJs.tune].indexOf(noteJs.channel);
         pressedNotes[noteJs.tune].splice(index, 1);
+
+        var isFlat = [1,3,6,8,10].indexOf(noteJs.tune % 12) > -1;
+        var color = pressedNotes[noteJs.tune].length > 0
+            ? channelColors[pressedNotes[noteJs.tune][0]] // we could probably use some indent and draw all of them one dya, but nah...
+            : (isFlat ? [191,191,191] : [255,255,255]);
+
+        fillTune(noteJs.tune, color);
     };
 
     paintBase();

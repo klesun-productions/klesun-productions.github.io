@@ -40,7 +40,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         var initIchigosMidiList = function () {
 
             var playButtonFormatter = function (cell, row) {
-                var link = 'get_standard_midi_file.py?file_name=' + row.rawFileName;
+                var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: row.rawFileName}));
                 return $('<input type="button" value="Play!"/>')
                     .click(() => performExternal(link, answer => playback.playStandardMidiFile(answer, row.rawFileName)));
             };
@@ -65,13 +65,15 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
 				var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 50);
 				$('.random-midi-list-cont').append(table); // defined in main_page.html
 
-                playRandom = function () {
+                playRandom = function (finishedFileName) {
+
+                    finishedFileName = finishedFileName || '';
 
                     var index = Math.floor(Math.random() * rowList.length);
                     console.log('Playing: ' + rowList[index].fileName);
 
-                    var link = 'get_standard_midi_file.py?file_name=' + rowList[index].rawFileName;
-                    performExternal(link, answer => playback.playStandardMidiFile(answer, rowList[index].fileName));
+                    var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: rowList[index].rawFileName, finished_file_name: finishedFileName}));
+                    performExternal(link, answer => playback.playStandardMidiFile(answer, rowList[index].fileName, () => playRandom(rowList[index].rawFileName)));
                 };
 			};
 		

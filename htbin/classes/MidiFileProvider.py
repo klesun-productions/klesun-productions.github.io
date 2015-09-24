@@ -19,7 +19,9 @@ class MidiFileProvider(object):
 
         pattern = re.compile('^0_([a-zA-Z0-9]{2,})_(.*)$')
 
-        for file in os.listdir('/home/klesun/Dropbox/midiCollection/'):
+        dir = '/home/klesun/Dropbox/midiCollection/'
+
+        for file in [file for file in os.listdir(dir) + os.listdir(dir + '/watched') if file.endswith('.mid')]:
             matches = pattern.findall(file)
             if len(matches):
                 result.append({"fileName": matches[0][1], "score": matches[0][0], 'rawFileName': file})
@@ -48,6 +50,10 @@ class MidiFileProvider(object):
     def get_standard_midi_file(file_name) -> dict:
 
         result = {}
+
+        #'cd /home/klesun/progas/shmidusic/out'
+        #'java org.shmidusic.stuff.scripts.MidiToReadableMidi'
+        #''
 
         with open('/home/klesun/Dropbox/midiCollection_smf/' + file_name + '.js') as content:
             content_json = json.load(content)

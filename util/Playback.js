@@ -12,6 +12,9 @@ Util.Playback = function (piano, $controlCont) {
 
     var mudcubeInitialised = false;
     var mudcube = null;
+    // var DEFAULT_INSTRUMENT = 0;
+    // var DEFAULT_INSTRUMENT = 52; // oh, yeah!
+    var DEFAULT_INSTRUMENT = 0;
 
     var midiOutputList = [];
 
@@ -85,7 +88,7 @@ Util.Playback = function (piano, $controlCont) {
             var index = noteThreads.indexOf(noteThread);
             noteThreads.splice(index, 1);
 
-            piano.unhighlight(noteThread.noteJs);
+            //piano.unhighlight(noteThread.noteJs);
         }
     };
 
@@ -105,12 +108,13 @@ Util.Playback = function (piano, $controlCont) {
             oscillator.frequency.value = tuneToFrequency(noteJs.tune);
             gainNode.gain.value = volume;
             oscillator.start(0);
-            piano.highlight(noteJs);
+            //piano.highlight(noteJs);
 
             var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
             var thread = {oscillator: oscillator, interrupted: false, noteJs: noteJs};
             noteThreads.push(thread);
-            setTimeout(() => stopNote(thread), duration);
+            setTimeout(() => stopNote(thread), duration); // хуйня случается если несколько раз одна нота долбится (league-of-legends.mid)
+            // хуйня разрешится когда имплементируешь что когда несколько на одну ноту долбят чтоб не все закрывались, а только одна
         } else {
             // TODO: this is drum - think something about this!
         }
@@ -121,13 +125,10 @@ Util.Playback = function (piano, $controlCont) {
 
         var position = 0;
 
-        // MIDI.js has 240 default tempo...
         mudcube.noteOn(noteJs.channel, noteJs.tune, 127, position);
-        piano.highlight(noteJs);
         var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
-
         mudcube.noteOff(noteJs.channel, noteJs.tune, (position + length * 240 / tempo));
-        setTimeout(() => piano.unhighlight(noteJs), toMillis(length, tempo));
+        // MIDI.js has 240 default tempo...
     };
 
     var playNoteOnMidiDevice = function(noteJs, tempo) {
@@ -146,10 +147,13 @@ Util.Playback = function (piano, $controlCont) {
     /** @param instrumentEntries [{channel: int, instrument: int}, ...] */
     var consumeConfigOnMudcube = function (instrumentEntries, callback) {
 
+        // TODO: i don't remember id of real drums... it could be 192, or probably we should send drums with a sepcial message...
+        var SYNTH_DRUM = 115; // default drum in mudcube repo... well... probably it could be called a drum...
+
         if (pianoOnly) {
-            instrumentEntries = instrumentEntries.map(e => $.extend({}, e, {instrument: 0}));
+            instrumentEntries = instrumentEntries.map(e => $.extend({}, e, {instrument: e.channel == 9 ? SYNTH_DRUM : DEFAULT_INSTRUMENT}));
         }
-        var instruments = instrumentEntries.length > 0 ? instrumentEntries.map(e =>  e.instrument) : [0];
+        var instruments = instrumentEntries.length > 0 ? instrumentEntries.map(e =>  e.instrument) : [DEFAULT_INSTRUMENT];
 
         mudcube.loadPlugin({
             soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
@@ -191,7 +195,13 @@ Util.Playback = function (piano, $controlCont) {
         }
     };
     var synth = 'oscillator';
-    var playNote = (noteJs, tempo) => synths[synth].playNote(noteJs, tempo);
+    var playNote = (noteJs, tempo) => {
+        synths[synth].playNote(noteJs, tempo);
+
+        var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
+        piano.highlight(noteJs);
+        setTimeout(() => piano.unhighlight(noteJs), toMillis(length, tempo));
+    };
 
     var playingThreads = [];
     var stop = () => {
@@ -210,7 +220,7 @@ Util.Playback = function (piano, $controlCont) {
             instrumentEntries = instrumentEntries.filter(e => e.channel < 16); // да-да, я лох
             for (var i = 0; i < 16; ++i) {
                 if (instrumentEntries.filter(e => e.channel == i).length === 0) {
-                    instrumentEntries.push({channel: i, instrument: 0});
+                    instrumentEntries.push({channel: i, instrument: DEFAULT_INSTRUMENT});
                 }
             }
 
@@ -246,11 +256,13 @@ Util.Playback = function (piano, $controlCont) {
         }
     };
 
-    var playStandardMidiFile = function (smf, fileName) {
+    var playStandardMidiFile = function (smf, fileName, whenFinished) {
 
         stop();
         var thread = {interrupted: false};
         playingThreads.push(thread);
+
+        whenFinished = whenFinished || (() => {});
 
         synths[synth].consumeConfig(smf.instrumentEventList.filter(i => i.time == 0), () => {
 
@@ -280,6 +292,10 @@ Util.Playback = function (piano, $controlCont) {
 
                         noteList.forEach(n => playNote(n, tempo));
 
+                        if (chord.notaList.indexOf(smf.noteList.slice(-1)[0]) > -1) {
+                            setTimeout(whenFinished, 2000);
+                        }
+
                     } else if (playingThreads.indexOf(thread) > -1) {
 
                         var index = playingThreads.indexOf(thread);
@@ -292,7 +308,7 @@ Util.Playback = function (piano, $controlCont) {
 
             var curTime = -100;
             var curChord = [-100, -100];
-            var chordCount = 1;
+            var chordCount = 0;
 
             smf.noteList.forEach(note => {
                 note.length = note.duration / division;
@@ -304,7 +320,7 @@ Util.Playback = function (piano, $controlCont) {
                     curChord = {notaList: [note]};
                 }
             });
-            scheduleChord(curChord, chordCount);
+            scheduleChord(curChord, chordCount++);
             control.setChordCount(chordCount);
         });
     };
@@ -343,7 +359,8 @@ Util.Playback = function (piano, $controlCont) {
                         MIDI.loadPlugin({
                             soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
                             //instrument: "acoustic_grand_piano", // TODO: for some reason does not work with other instruments =D - investigate sometime?
-                            instruments: [0],
+                            //instruments: [0],
+                            instruments: [DEFAULT_INSTRUMENT], // oh, yeah...
                             onprogress: (state, progress) => console.log(state, progress),
                             onsuccess: function() {
 
@@ -354,6 +371,7 @@ Util.Playback = function (piano, $controlCont) {
                                 var note = 50; // the MIDI note
                                 var velocity = 127; // how hard the note hits
                                 // play the note
+                                MIDI.programChange(0, DEFAULT_INSTRUMENT)
                                 MIDI.setVolume(0, 127);
                                 MIDI.noteOn(0, note, velocity, delay);
                                 MIDI.noteOff(0, note, delay + 0.75);
