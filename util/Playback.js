@@ -53,12 +53,13 @@ Util.Playback = function (piano, $controlCont) {
         var self;
         return self = {
             setFileName: n => { fileNameHolder.html(n); return self; },
-            setChordIndex: n => { chordIndexHolder.html(n); return self; },
             setChordCount: n => { chordCountHolder.html(n); return self; },
             setNoteCount: n => { noteCountHolder.html(n); return self; },
             setTempo: n => { tempoHolder.html(Math.floor(n)); return self; },
-            setSeconds: n => { secondsHolder.html('>' + Math.floor(n * 100) / 100); return self; },
             setSecondsTotal: n => { secondsTotalHolder.html(Math.floor(n * 100) / 100); return self; },
+
+            setChordIndex: n => { chordIndexHolder.html(n); return self; },
+            setSeconds: n => { secondsHolder.html('>' + Math.floor(n * 100) / 100); return self; },
         };
     };
 
@@ -113,8 +114,8 @@ Util.Playback = function (piano, $controlCont) {
             var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
             var thread = {oscillator: oscillator, interrupted: false, noteJs: noteJs};
             noteThreads.push(thread);
-            setTimeout(() => stopNote(thread), duration); // хуйня случается если несколько раз одна нота долбится (league-of-legends.mid)
-            // хуйня разрешится когда имплементируешь что когда несколько на одну ноту долбят чтоб не все закрывались, а только одна
+            setTimeout(() => stopNote(thread), duration);
+
         } else {
             // TODO: this is drum - think something about this!
         }
@@ -177,6 +178,13 @@ Util.Playback = function (piano, $controlCont) {
         callback();
     };
 
+    /** @testing */
+    var synths = {
+        oscillator: Util.Synths.Oscillator(),
+        mudcube: Util.Synths.Mudcube(),
+        midiDevice: Util.Synths.MidiDevice(),
+    };
+
     var synths = {
         oscillator: {
             playNote: playNoteOnOscillator,
@@ -205,14 +213,40 @@ Util.Playback = function (piano, $controlCont) {
 
     var playingThreads = [];
     var stop = () => {
-        noteThreads.slice().forEach(stopNote);
+        noteThreads.slice().forEach(t => synths[synth].stopNote(t));
         playingThreads.forEach(t => t.interrupted = true);
-    }
+    };
 
-    /** @param - json in shmidusic program format */
-    var play = function (shmidusicJson) {
+    // TODO: rename to playSheetMusic()
+    var playGeneralFormat = function (sheetMusic) {
 
         stop();
+
+        synths[synth].consumeConfig(sheetMusic.config.instrumentEntries, () => {
+
+            var thread = {interrupted: false};
+            playingThreads.push(thread);
+
+            var playNext = idx => {
+                if (idx < sheetMusic.chordList.length && !thread.interrupted) {
+
+                    var c = sheetMusic.chordList[idx];
+                    c['noteList'].forEach(n => playNote(n, sheetMusic.config.tempo));
+
+                    setTimeout(() => playNext(idx + 1), sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis || 0);
+                } else {
+                    var index = playingThreads.indexOf(thread);
+                    playingThreads.splice(index, 1);
+                }
+            };
+
+            playNext(0);
+        });
+    };
+
+    // TODO: rename to playShmidusic()
+    /** @param shmidusicJson - json in shmidusic project format */
+    var play = function (shmidusicJson) {
 
         for (var staff of shmidusicJson['staffList']) {
 
@@ -224,34 +258,32 @@ Util.Playback = function (piano, $controlCont) {
                 }
             }
 
-            synths[synth].consumeConfig(instrumentEntries, () => {
+            // flat map hujap
+            var chordList = ('tactList' in staff)
+                ? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
+                : staff['chordList'];
 
-                var tempo = staff.staffConfig.tempo;
+            var timeMillis = 0;
+            chordList.forEach(c => {
+                /** @legacy */
+                c.noteList = c.notaList;
+                delete c.notaList;
+                c.noteList.forEach(n => {
+                    n.length += '/' + (n.isTriplet ? 3 : 1);
+                    delete n.isTriplet;
+                });
 
-                // flat map hujap
-                var chordList = ('tactList' in staff)
-                    ? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
-                    : staff['chordList'];
+                c.timeMillis = timeMillis;
+                var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
+                timeMillis += toMillis(chordLength, staff.staffConfig.tempo);
+            });
 
-                var thread = {interrupted: false};
-                playingThreads.push(thread);
-
-                var playNext = idx => {
-                    if (idx < chordList.length && !thread.interrupted) {
-
-                        var c = chordList[idx];
-                        c['notaList'].forEach(n => playNote(n, tempo));
-                        var chordLength = Math.min.apply(null, c['notaList'].map(n => toFloat(n.length) / (n.isTriplet ? 3 : 1)));
-
-                        setTimeout(() => playNext(idx + 1), toMillis(chordLength, tempo));
-                    } else {
-                        midiOutputList.forEach(o => o.open());
-                        var index = playingThreads.indexOf(thread);
-                        playingThreads.splice(index, 1);
-                    }
-                };
-
-                playNext(0);
+            playGeneralFormat({
+                chordList: chordList,
+                config: {
+                    tempo: staff.staffConfig.tempo,
+                    instrumentEntries: instrumentEntries
+                }
             });
         }
     };
@@ -349,7 +381,6 @@ Util.Playback = function (piano, $controlCont) {
                 ];
 
                 var done = 0;
-
                 include.forEach(scriptPath => $.getScript(scriptPath, function()
                 {
                     console.log(scriptPath, 'loaded!');
@@ -378,6 +409,7 @@ Util.Playback = function (piano, $controlCont) {
 
                                 mudcubeInitialised = true;
                                 synth = synthName;
+                                synths[synth].init();
 
                                 mudcube = MIDI;
                             }
@@ -387,11 +419,13 @@ Util.Playback = function (piano, $controlCont) {
                 }));
             } else {
                 synth = synthName;
+                synths[synth].init();
             }
         } else {
             alert('No Such Synth!');
         }
     };
+    changeSynth('oscillator');
 
     return {
         play: play,

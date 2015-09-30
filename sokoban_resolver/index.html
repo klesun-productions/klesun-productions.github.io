@@ -1,5 +1,6 @@
 <head>
     <script src="/libs/jquery-1.11.3.js" type="text/javascript"></script>
+    <script src="/libs/JavaScript-MD5/js/md5.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -28,6 +29,7 @@
     var blockPosList = [];
     var hasHero = (x, y) => (startPos.x === x && startPos.y === y);
     var hasBlock = (x, y) => blockPosList.filter(b => b.x === x && b.y === y).length > 0;
+    var getBlock = (x, y) => blockPosList.filter(b => b.x === x && b.y === y)[0];
     var switchBlock = (x, y) => {
         var index = blockPosList.findIndex(b => b.x === x && b.y === y);
         index > -1 ? blockPosList.splice(index, 1) : blockPosList.push({x: x, y: y});
@@ -87,25 +89,127 @@
     /** @param grid {isPathable: bool}[][] - isPath means player or block can be placed there */
     var start = function (grid, startPos, blockPosList)
     {
-        alert('start not implemented yet!');
-        return;
+        // TODO: pass it as argument - it must be route specific! and this realy somehow is solution to this monstrous 10k key dict
+        var states = {};
 
-        if (blockPosList.length !== destinationList.length) {
-            alert('Destination count does not match block count!');
-            return -100;
-        }
-
-        var states = [
-            {pos: startPos, blockPosList: blockPosList, moveCount: 0}
-        ];
-
-        var findShortestRoute = function (startPos, blockPosList)
-        {
-
+        var vectors = {
+            left: {x: -1, y:  0},
+            top:  {x:  0, y: -1},
+            right:{x:  1, y:  0},
+            down: {x:  0, y:  1},
         };
+
+        /** @return {exists: bool, moveCount: int, dir: str, next: same as this} */
+        var findShortestRoute = function (heroPos, blockPosList, moveCount)
+        {
+            if (states.length > 10000) {
+                // ...
+                return {exists: false, moveCount: -1, dir: null, next: null};
+            }
+
+            var hasBlock = (x, y) => blockPosList.filter(b => b.x === x && b.y === y).length > 0;
+            var getBlock = (x, y) => blockPosList.filter(b => b.x === x && b.y === y)[0];
+
+            var moves = Object.keys(vectors).filter(dir => {
+                var v = vectors[dir];
+                var h = heroPos;
+                var cellExists = (x, y) => grid[x] && grid[x][y] && grid[x][y].isPathable;
+
+                return cellExists(h.x + v.x, h.y + v.y) && (
+                            !hasBlock(h.x + v.x, h.y + v.y) || (
+                                cellExists(h.x + v.x * 2, h.y + v.y * 2) && !hasBlock(h.x + v.x * 2, h.y + v.y * 2) // block can be moved
+                        ));
+            });
+
+            if (blockPosList.filter(b => grid[b.x][b.y].isDestination === false).length === 0) {
+                // found!
+                return {exists: true, moveCount: moveCount, dir: null, next: null};
+            } else {
+
+                var state = {heroPos: startPos, blockPosList: blockPosList};
+                var stateKey = md5(JSON.stringify(state));
+
+                var commonMd5 = states[stateKey] || [];
+
+                var stateMatch = commonMd5.filter(s =>
+                        (s.heroPos.x === heroPos.x && s.heroPos.y === heroPos.y) &&
+                        (s.blockPosList.filter(b => hasBlock(b.x, b.y)).length > 0)
+                    );
+                if (stateMatch.length > 0) {
+                    if (stateMatch[0].moveCount <= moveCount) {
+                        return {exists: false, moveCount: -1, dir: null, next: null};
+                    } else {
+                        console.log('zhopa', stateMatch[0].result);
+                        stateMatch[0].moveCount = moveCount;
+                        return stateMatch[0].result;
+                    }
+                }
+
+                state.moveCount = moveCount;
+                (states[stateKey] || (states[stateKey] = [])).push(state);
+
+                var routes = {};
+                for (var dir of moves) {
+                    var v = vectors[dir];
+                    heroPos.x += v.x;
+                    heroPos.y += v.y;
+
+                    var blockMoved = hasBlock(heroPos.x, heroPos.y);
+                    var block = getBlock(heroPos.x, heroPos.y);
+                    if (blockMoved) {
+                        block.x += v.x;
+                        block.y += v.y;
+
+                        // TODO: maybe return when they are stick in a corner or in a wall with no free destination
+                    }
+
+                    routes[dir] = findShortestRoute(heroPos, blockPosList, moveCount + 1);
+
+                    if (blockMoved) {
+                        block.x -= v.x;
+                        block.y -= v.y;
+                    }
+
+                    heroPos.x -= v.x;
+                    heroPos.y -= v.y;
+                }
+
+                var dirs = Object.keys(routes).filter(dir => routes[dir].exists); // existing
+                var dir = dirs.sort((dir1, dir2) => routes[dir1].moveCount - routes[dir2].moveCount)[0]; // shortest
+
+                var result = dir
+                        ? {exists: true, moveCount: routes[dir].moveCount, dir: dir, next: routes[dir]}
+                        : {exists: false, moveCount: -1, dir: null, next: null};
+
+                state.result = result;
+
+                return result;
+            }
+        };
+
+        var result = findShortestRoute(startPos, blockPosList, 0);
+        console.log(result);
+
+        var showNext = function (move) {
+            if (move.next !== null) {
+
+                var v = vectors[move.dir];
+                startPos.x += v.x;
+                startPos.y += v.y;
+                if (hasBlock(startPos.x, startPos.y)) {
+                    var block = getBlock(startPos.x, startPos.y);
+                    block.x += v.x;
+                    block.y += v.y;
+                }
+                repaint();
+
+                setTimeout(() => showNext(move.next), 250);
+            }
+        };
+        showNext(result);
     };
 
-    $('#start').click(start);
+    $('#start').click(() => start(grid, startPos, blockPosList));
     $('#columnCount').change(rebuild);
     $('#rowCount').change(rebuild);
 

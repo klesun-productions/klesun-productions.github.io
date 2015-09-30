@@ -8,6 +8,7 @@ import re
 import json
 import os.path
 from subprocess import call
+import itertools
 
 
 class MidiFileProvider(object):
@@ -20,8 +21,11 @@ class MidiFileProvider(object):
         pattern = re.compile('^0_([a-zA-Z0-9]{2,})_(.*)$')
 
         dir = '/home/klesun/Dropbox/midiCollection/'
+        dirNames = ['.', 'watched', 'random_good_stuff']
+        fileListList = [os.listdir(dir + dirName) for dirName in dirNames]
+        fileList = [file for file in itertools.chain(*fileListList) if file.endswith('.mid')]
 
-        for file in [file for file in os.listdir(dir) + os.listdir(dir + '/watched') if file.endswith('.mid')]:
+        for file in fileList:
             matches = pattern.findall(file)
             if len(matches):
                 result.append({"fileName": matches[0][1], "score": matches[0][0], 'rawFileName': file})
