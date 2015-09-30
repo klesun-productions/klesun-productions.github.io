@@ -6,31 +6,6 @@ var Util = Util || {};
 /** @param piano - PianoLayoutPanel instance */
 Util.Playback = function (piano, $controlCont) {
 
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var gainNode = audioCtx.createGain();
-    gainNode.connect(audioCtx.destination);
-
-    var mudcubeInitialised = false;
-    var mudcube = null;
-    // var DEFAULT_INSTRUMENT = 0;
-    // var DEFAULT_INSTRUMENT = 52; // oh, yeah!
-    var DEFAULT_INSTRUMENT = 0;
-
-    var midiOutputList = [];
-
-    // TODO: for now calling navigator.requestMIDIAccess() blocks devices for other programs
-    // investigate, how to free devices (output.open() ?). we should free them each time playback finished
-    // upd.: open() does not help midiana, but it may be her problems. Musescore works alright with input
-    if (navigator.requestMIDIAccess) {
-        navigator.requestMIDIAccess()
-            .then(
-                ma => ma.outputs.forEach(o => midiOutputList.push(o)),
-                e => console.log("Failed To Access Midi, Even Though Your Browser Has The Method...", e)
-            );
-    } else {
-        console.log('Your browser does not support midi Devices. Pity, you could listen to music on your mega-device if you used chrome =P');
-    }
-
     var Control = function ($cont)
     {
         var fileNameHolder = $('<span></span>').html('?');
@@ -65,118 +40,8 @@ Util.Playback = function (piano, $controlCont) {
 
     var control = Control($controlCont);
 
-    var tuneToFrequency = function(tune) {
-
-		var shift = tune - 69; // 69 - LA, 440 hz
-		var la = 440.0;
-		return la * Math.pow(2, shift / 12.0);
-    };
-
+    var toFloat = fractionString => eval(fractionString);
     var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
-
-    var toFloat = function (fractionString) {
-        return eval(fractionString);
-    };
-
-    var noteThreads = [];
-    var stopNote = function (noteThread) {
-
-        if (!noteThread.interrupted) {
-
-            noteThread.oscillator.stop();
-
-            noteThread.interrupted = true;
-            var index = noteThreads.indexOf(noteThread);
-            noteThreads.splice(index, 1);
-
-            //piano.unhighlight(noteThread.noteJs);
-        }
-    };
-
-    /** @param noteJs - shmidusic Note external representation */
-    var playNoteOnOscillator = function(noteJs, tempo) {
-
-        // TODO: firefox got some problems with it, he ignores not play half of notes
-
-        if (noteJs.channel != 9) {
-            var oscillator = audioCtx.createOscillator();
-
-            var volume = 0.02;
-
-            // ["sine", "square", "saw", "triangle", "custom"]
-            oscillator.type = 'square';
-            oscillator.connect(gainNode);
-            oscillator.frequency.value = tuneToFrequency(noteJs.tune);
-            gainNode.gain.value = volume;
-            oscillator.start(0);
-            //piano.highlight(noteJs);
-
-            var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
-            var thread = {oscillator: oscillator, interrupted: false, noteJs: noteJs};
-            noteThreads.push(thread);
-            setTimeout(() => stopNote(thread), duration);
-
-        } else {
-            // TODO: this is drum - think something about this!
-        }
-    };
-
-    var playNoteOnMudcube = function(noteJs, tempo) {
-        // does not work in chromium. due to mp3 and proprietarity i suppose
-
-        var position = 0;
-
-        mudcube.noteOn(noteJs.channel, noteJs.tune, 127, position);
-        var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
-        mudcube.noteOff(noteJs.channel, noteJs.tune, (position + length * 240 / tempo));
-        // MIDI.js has 240 default tempo...
-    };
-
-    var playNoteOnMidiDevice = function(noteJs, tempo) {
-		midiOutputList.forEach(output => {
-
-            var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
-
-            output.send( [0x90 - -noteJs.channel, noteJs.tune, 127] );  // 0x90 = noteOn, 0x7F max velocity
-            //setTimeout(() => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]), duration); // Inlined array creation- note off, middle C,
-            output.send( [0x80 - -noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration ); 
-        });
-    };
-
-    var pianoOnly = true;
-
-    /** @param instrumentEntries [{channel: int, instrument: int}, ...] */
-    var consumeConfigOnMudcube = function (instrumentEntries, callback) {
-
-        // TODO: i don't remember id of real drums... it could be 192, or probably we should send drums with a sepcial message...
-        var SYNTH_DRUM = 115; // default drum in mudcube repo... well... probably it could be called a drum...
-
-        if (pianoOnly) {
-            instrumentEntries = instrumentEntries.map(e => $.extend({}, e, {instrument: e.channel == 9 ? SYNTH_DRUM : DEFAULT_INSTRUMENT}));
-        }
-        var instruments = instrumentEntries.length > 0 ? instrumentEntries.map(e =>  e.instrument) : [DEFAULT_INSTRUMENT];
-
-        mudcube.loadPlugin({
-            soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
-            instruments: instruments,
-            onsuccess: () => {
-                console.log('Successfully retrieved instruments for mudcube!', instruments);
-                instrumentEntries.forEach(
-                    instrumentEntry => mudcube.programChange(instrumentEntry.channel, instrumentEntry.instrument)
-                )
-                callback();
-            }
-        });
-    };
-
-    /** @param instrumentEntries [{channel: int, instrument: int}, ...] */
-    var consumeConfigOnMidiDevice = function (instrumentEntries, callback) {
-        instrumentEntries.forEach(instrumentEntry =>
-            midiOutputList.forEach(o => o.send([0xC0 - -instrumentEntry.channel, instrumentEntry.instrument]))
-            // 0xC0 - program change
-        );
-        callback();
-    };
 
     /** @testing */
     var synths = {
@@ -185,24 +50,8 @@ Util.Playback = function (piano, $controlCont) {
         midiDevice: Util.Synths.MidiDevice(),
     };
 
-    var synths = {
-        oscillator: {
-            playNote: playNoteOnOscillator,
-            stopNote: stopNote,
-            consumeConfig: (configJs, callback) => callback()
-        },
-        mudcube: {
-            playNote: playNoteOnMudcube,
-            stopNote: () => console.log('dunno'),
-            consumeConfig: consumeConfigOnMudcube
-        },
-        midiDevice: {
-            playNote: playNoteOnMidiDevice,
-            stopNote: () => console.log('dunno'),
-            consumeConfig: consumeConfigOnMidiDevice
-        }
-    };
-    var synth = 'oscillator';
+    var synth = 'notSet';
+
     var playNote = (noteJs, tempo) => {
         synths[synth].playNote(noteJs, tempo);
 
@@ -212,10 +61,19 @@ Util.Playback = function (piano, $controlCont) {
     };
 
     var playingThreads = [];
-    var stop = () => {
-        noteThreads.slice().forEach(t => synths[synth].stopNote(t));
-        playingThreads.forEach(t => t.interrupted = true);
+    var stop = () => playingThreads.forEach(t => t.interrupted = true);
+
+    var changeSynth = function(synthName) {
+        if (synthName in synths) {
+            stop();
+            synth = synthName;
+            synths[synth].init();
+
+        } else {
+            alert('No Such Synth!');
+        }
     };
+    changeSynth('oscillator');
 
     // TODO: rename to playSheetMusic()
     var playGeneralFormat = function (sheetMusic) {
@@ -356,76 +214,6 @@ Util.Playback = function (piano, $controlCont) {
             control.setChordCount(chordCount);
         });
     };
-
-    var changeSynth = function(synthName) {
-        if (synthName in synths) {
-            stop();
-            if (synthName === 'mudcube' && !mudcubeInitialised) {
-
-                // i do this ugliness because as you see, there is way too many scripts for such a simple task as just playing a note
-                // i plan to change their code a bit and limit it to, let's see... a single script? which, of course is no problem to include from html
-                var include = [
-                    "/libs/dont_use_it_MIDI.js//inc/shim/Base64.js",
-                    "/libs/dont_use_it_MIDI.js//inc/shim/Base64binary.js",
-                    "/libs/dont_use_it_MIDI.js//inc/shim/WebAudioAPI.js",
-                    //    <!-- dont_use_it_MIDI.js/ package -->
-                    "/libs/dont_use_it_MIDI.js//js/midi/audioDetect.js",
-                    "/libs/dont_use_it_MIDI.js//js/midi/gm.js",
-                    "/libs/dont_use_it_MIDI.js//js/midi/loader.js",
-                    "/libs/dont_use_it_MIDI.js//js/midi/plugin.audiotag.js",
-                    "/libs/dont_use_it_MIDI.js//js/midi/plugin.webaudio.js",
-                    "/libs/dont_use_it_MIDI.js//js/midi/plugin.webmidi.js",
-                    //    <!-- utils -->
-                    "/libs/dont_use_it_MIDI.js//js/util/dom_request_xhr.js",
-                    "/libs/dont_use_it_MIDI.js//js/util/dom_request_script.js",
-                ];
-
-                var done = 0;
-                include.forEach(scriptPath => $.getScript(scriptPath, function()
-                {
-                    console.log(scriptPath, 'loaded!');
-
-                    if (++done === include.length) {
-                        /** @debug */
-                        MIDI.loadPlugin({
-                            soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
-                            //instrument: "acoustic_grand_piano", // TODO: for some reason does not work with other instruments =D - investigate sometime?
-                            //instruments: [0],
-                            instruments: [DEFAULT_INSTRUMENT], // oh, yeah...
-                            onprogress: (state, progress) => console.log(state, progress),
-                            onsuccess: function() {
-
-                                /** @debug */
-                                console.log("mudcube load Success!");
-
-                                var delay = 0; // play one note every quarter second
-                                var note = 50; // the MIDI note
-                                var velocity = 127; // how hard the note hits
-                                // play the note
-                                MIDI.programChange(0, DEFAULT_INSTRUMENT)
-                                MIDI.setVolume(0, 127);
-                                MIDI.noteOn(0, note, velocity, delay);
-                                MIDI.noteOff(0, note, delay + 0.75);
-
-                                mudcubeInitialised = true;
-                                synth = synthName;
-                                synths[synth].init();
-
-                                mudcube = MIDI;
-                            }
-                        });
-
-                    }
-                }));
-            } else {
-                synth = synthName;
-                synths[synth].init();
-            }
-        } else {
-            alert('No Such Synth!');
-        }
-    };
-    changeSynth('oscillator');
 
     return {
         play: play,

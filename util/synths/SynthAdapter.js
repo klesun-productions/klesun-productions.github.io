@@ -14,8 +14,7 @@ Util.Synths.SynthAdapter = function () {
 
     return {
         playNote: notImplemented,
-        stopNote: notImplemented,
         consumeConfig: notImplemented,
-        init: init
+        init: notImplemented
     };
 };
