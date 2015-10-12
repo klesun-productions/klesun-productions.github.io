@@ -30,7 +30,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         var mineList = Globals.shmidusicList;
         var index = Math.floor(Math.random() * mineList.length);
         console.log('Playing: ' + mineList[index].fileName);
-        playback.play(mineList[index].sheetMusic);
+        playback.playShmidusic(mineList[index].sheetMusic, mineList[index].fileName);
     };
 
     var playRandom = () => alert("Please, wait till midi names load from ajax!");
@@ -84,7 +84,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
 
             var playButtonFormatter = function (cell, row) {
                 return $('<input type="button" value="Play!"/>')
-                        .click(() => playback.play(row['sheetMusic']));
+                        .click(() => playback.playShmidusic(row['sheetMusic'], row['fileName']));
             };
 
             rowList = Globals.shmidusicList;

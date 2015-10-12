@@ -98,7 +98,9 @@
 		mainPage.init();
 		$('#startDemoButton').click(mainPage.playDemo);
         $('#playRandomButton').click(mainPage.playRandom);
-		$('#synthDropdown').change(() => mainPage.changeSynth($('#synthDropdown').val()));
+		$('#synthDropdown')
+                .change(() => mainPage.changeSynth($('#synthDropdown').val()))
+                .trigger('change');
 	};
 
 	window.addEventListener('load', onLoad, false);

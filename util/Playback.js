@@ -63,6 +63,7 @@ Util.Playback = function (piano, $controlCont) {
     var playingThreads = [];
     var stop = () => playingThreads.forEach(t => t.interrupted = true);
 
+    // must be called from outside on page load!
     var changeSynth = function(synthName) {
         if (synthName in synths) {
             stop();
@@ -73,12 +74,17 @@ Util.Playback = function (piano, $controlCont) {
             alert('No Such Synth!');
         }
     };
-    changeSynth('oscillator');
 
     // TODO: rename to playSheetMusic()
-    var playGeneralFormat = function (sheetMusic) {
+    var playGeneralFormat = function (sheetMusic, fileName, whenFinished) {
 
         stop();
+
+        control
+            .setFileName(fileName)
+            .setTempo(sheetMusic.config.tempo)
+            .setSecondsTotal(sheetMusic.chordList.slice(-1)[0].timeMillis / 1000.0)
+        ;
 
         synths[synth].consumeConfig(sheetMusic.config.instrumentEntries, () => {
 
@@ -91,7 +97,15 @@ Util.Playback = function (piano, $controlCont) {
                     var c = sheetMusic.chordList[idx];
                     c['noteList'].forEach(n => playNote(n, sheetMusic.config.tempo));
 
-                    setTimeout(() => playNext(idx + 1), sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis || 0);
+                    var chordDuration = idx + 1 < sheetMusic.chordList.length ? sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis : 0;
+                    setTimeout(() => playNext(idx + 1), chordDuration);
+
+                    // piano image lags if do it every time
+                    if (idx % 20 === 0) {
+                        control
+                            .setChordIndex('>' + idx)
+                            .setSeconds(c.timeMillis / 1000.0);
+                    }
                 } else {
                     var index = playingThreads.indexOf(thread);
                     playingThreads.splice(index, 1);
@@ -102,9 +116,11 @@ Util.Playback = function (piano, $controlCont) {
         });
     };
 
-    // TODO: rename to playShmidusic()
     /** @param shmidusicJson - json in shmidusic project format */
-    var play = function (shmidusicJson) {
+    var playShmidusic = function (shmidusicJson, fileName, whenFinished) {
+
+        whenFinished = whenFinished || (() => {});
+        fileName = fileName || 'noNameFile';
 
         for (var staff of shmidusicJson['staffList']) {
 
@@ -112,7 +128,7 @@ Util.Playback = function (piano, $controlCont) {
             instrumentEntries = instrumentEntries.filter(e => e.channel < 16); // да-да, я лох
             for (var i = 0; i < 16; ++i) {
                 if (instrumentEntries.filter(e => e.channel == i).length === 0) {
-                    instrumentEntries.push({channel: i, instrument: DEFAULT_INSTRUMENT});
+                    instrumentEntries.push({channel: i, instrument: 0});
                 }
             }
 
@@ -121,20 +137,26 @@ Util.Playback = function (piano, $controlCont) {
                 ? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
                 : staff['chordList'];
 
-            var timeMillis = 0;
-            chordList.forEach(c => {
-                /** @legacy */
-                c.noteList = c.notaList;
-                delete c.notaList;
-                c.noteList.forEach(n => {
-                    n.length += '/' + (n.isTriplet ? 3 : 1);
-                    delete n.isTriplet;
+            if (!staff.millisecondTimeCalculated) {
+
+                var timeMillis = 0;
+
+                chordList.forEach(c => {
+                    /** @legacy */
+                    c.noteList = c.notaList;
+                    delete c.notaList;
+                    c.noteList.forEach(n => {
+                        n.length += '/' + (n.isTriplet ? 3 : 1);
+                        delete n.isTriplet;
+                    });
+
+                    c.timeMillis = timeMillis;
+                    var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
+                    timeMillis += toMillis(chordLength, staff.staffConfig.tempo);
                 });
 
-                c.timeMillis = timeMillis;
-                var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
-                timeMillis += toMillis(chordLength, staff.staffConfig.tempo);
-            });
+                staff.millisecondTimeCalculated = true;
+            }
 
             playGeneralFormat({
                 chordList: chordList,
@@ -142,7 +164,7 @@ Util.Playback = function (piano, $controlCont) {
                     tempo: staff.staffConfig.tempo,
                     instrumentEntries: instrumentEntries
                 }
-            });
+            }, fileName, whenFinished);
         }
     };
 
@@ -154,69 +176,46 @@ Util.Playback = function (piano, $controlCont) {
 
         whenFinished = whenFinished || (() => {});
 
-        synths[synth].consumeConfig(smf.instrumentEventList.filter(i => i.time == 0), () => {
+        var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
+            smf.tempoEventList[0] || {tempo: 120};
+        var tempo = tempoEntry.tempo;
+        var division = smf.division * 4;
 
-            var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
-                smf.tempoEventList[0] || {tempo: 120};
-            var tempo = tempoEntry.tempo;
-            var division = smf.division * 4;
+        var chordList = [];
+        var curTime = -100;
+        var curChord = [-100, -100];
 
-            control
-                .setFileName(fileName)
-                .setNoteCount(smf.noteList.length)
-                .setTempo(tempo)
-                .setSecondsTotal(toMillis(smf.noteList.slice(-1)[0].time / division, tempo) / 1000.0)
-            ;
+        smf.noteList.forEach(note => {
+            note.length = note.duration / division;
+            if (note.time == curTime) {
+                curChord.noteList.push(note);
+            } else {
+                if (curTime !== -100) {
 
-            var scheduleChord = function (chord, chordIndex) {
-                var noteList = chord.notaList;
-                var time = noteList[0].time;
-                var play = function () {
-                    if (!thread.interrupted) {
-
-                        // piano image lags if do it every time
-                        if (chordIndex % 20 === 0) {
-                            control.setChordIndex('>' + chordIndex)
-                                .setSeconds(toMillis(time / division, tempo) / 1000.0);
-                        }
-
-                        noteList.forEach(n => playNote(n, tempo));
-
-                        if (chord.notaList.indexOf(smf.noteList.slice(-1)[0]) > -1) {
-                            setTimeout(whenFinished, 2000);
-                        }
-
-                    } else if (playingThreads.indexOf(thread) > -1) {
-
-                        var index = playingThreads.indexOf(thread);
-                        playingThreads.splice(index, 1);
-                    }
-                };
-
-                setTimeout(play, toMillis(time / division, tempo));
-            };
-
-            var curTime = -100;
-            var curChord = [-100, -100];
-            var chordCount = 0;
-
-            smf.noteList.forEach(note => {
-                note.length = note.duration / division;
-                if (note.time == curTime) {
-                    curChord.notaList.push(note);
-                } else {
-                    if (curTime !== -100) { scheduleChord(curChord, chordCount++); }
-                    curTime = note.time;
-                    curChord = {notaList: [note]};
                 }
-            });
-            scheduleChord(curChord, chordCount++);
-            control.setChordCount(chordCount);
+                curTime = note.time;
+                curChord = {noteList: [note], timeMillis: toMillis(curTime / division, tempoEntry.tempo)};
+                chordList.push(curChord);
+            }
         });
+        chordList.push(curChord);
+
+        control.setNoteCount(smf.noteList.length);
+        control.setSecondsTotal(toMillis(curTime / division));
+
+        playGeneralFormat({
+            chordList: chordList,
+            config: {
+                tempo: tempoEntry.tempo,
+                instrumentEntries: smf.instrumentEventList.filter(i => i.time == 0)
+            }
+        }, fileName, whenFinished);
+
+        control.setNoteCount(smf.noteList.length);
     };
 
     return {
-        play: play,
+        playShmidusic: playShmidusic,
         playStandardMidiFile: playStandardMidiFile,
         changeSynth: changeSynth
     };
