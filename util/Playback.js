@@ -84,6 +84,8 @@ Util.Playback = function (piano, $controlCont) {
             .setFileName(fileName)
             .setTempo(sheetMusic.config.tempo)
             .setSecondsTotal(sheetMusic.chordList.slice(-1)[0].timeMillis / 1000.0)
+            .setNoteCount('?')
+            .setChordCount(sheetMusic.chordList.length)
         ;
 
         synths[synth].consumeConfig(sheetMusic.config.instrumentEntries, () => {
@@ -97,8 +99,12 @@ Util.Playback = function (piano, $controlCont) {
                     var c = sheetMusic.chordList[idx];
                     c['noteList'].forEach(n => playNote(n, sheetMusic.config.tempo));
 
-                    var chordDuration = idx + 1 < sheetMusic.chordList.length ? sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis : 0;
-                    setTimeout(() => playNext(idx + 1), chordDuration);
+                    if (idx + 1 < sheetMusic.chordList.length) {
+                        var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis;
+                        setTimeout(() => playNext(idx + 1), chordDuration);
+                    } else {
+                        setTimeout(whenFinished, 5000); // hope chord finishes in that time
+                    }
 
                     // piano image lags if do it every time
                     if (idx % 20 === 0) {
