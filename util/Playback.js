@@ -88,10 +88,12 @@ Util.Playback = function (piano, $controlCont) {
             .setChordCount(sheetMusic.chordList.length)
         ;
 
-        synths[synth].consumeConfig(sheetMusic.config.instrumentEntries, () => {
+        synths[synth].consumeConfig(sheetMusic.config.instrumentDict, () => {
 
             var thread = {interrupted: false};
             playingThreads.push(thread);
+
+            var startMillis = window.performance.now();
 
             var playNext = idx => {
                 if (idx < sheetMusic.chordList.length && !thread.interrupted) {
@@ -100,10 +102,16 @@ Util.Playback = function (piano, $controlCont) {
                     c['noteList'].forEach(n => playNote(n, sheetMusic.config.tempo));
 
                     if (idx + 1 < sheetMusic.chordList.length) {
-                        var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis;
-                        setTimeout(() => playNext(idx + 1), chordDuration);
+                        //var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis;
+                        var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - (window.performance.now() - startMillis);
+                        if (chordDuration > 0) {
+                            setTimeout(() => playNext(idx + 1), chordDuration);
+                        } else {
+                            playNext(idx + 1);
+                        }
+
                     } else {
-                        setTimeout(whenFinished, 5000); // hope chord finishes in that time
+                        setTimeout(whenFinished, 5000); // hope last chord finishes in 5 seconds
                     }
 
                     // piano image lags if do it every time
@@ -130,17 +138,18 @@ Util.Playback = function (piano, $controlCont) {
 
         for (var staff of shmidusicJson['staffList']) {
 
-            var instrumentEntries = (staff.staffConfig.channelList || []).map(c => ({channel: c.channelNumber, instrument: c.instrument}));
-            instrumentEntries = instrumentEntries.filter(e => e.channel < 16); // да-да, я лох
-            for (var i = 0; i < 16; ++i) {
-                if (instrumentEntries.filter(e => e.channel == i).length === 0) {
-                    instrumentEntries.push({channel: i, instrument: 0});
-                }
-            }
+            var instrumentDict = {};
+
+            (staff.staffConfig.channelList || [])
+                .filter(e => e.channelNumber < 16)
+                .forEach(e => instrumentDict[e.channelNumber] = e.instrument);
+
+            Util.range(0, 16).forEach(i => instrumentDict[i] |= 0);
 
             // flat map hujap
+            // tactList not needed for logic, but it increases readability of file A LOT
             var chordList = ('tactList' in staff)
-                ? [].concat.apply([], staff['tactList'].map(t => t['chordList'])) // tactList not needed for logic, but it increases readability of file A LOT
+                ? [].concat.apply([], staff['tactList'].map(t => t['chordList']))
                 : staff['chordList'];
 
             if (!staff.millisecondTimeCalculated) {
@@ -168,7 +177,7 @@ Util.Playback = function (piano, $controlCont) {
                 chordList: chordList,
                 config: {
                     tempo: staff.staffConfig.tempo,
-                    instrumentEntries: instrumentEntries
+                    instrumentDict: instrumentDict
                 }
             }, fileName, whenFinished);
         }
@@ -182,9 +191,9 @@ Util.Playback = function (piano, $controlCont) {
 
         whenFinished = whenFinished || (() => {});
 
+        /** @TODO: handle _all_ tempo events, not just first. Should be easy once speed change by user is implemented */
         var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
             smf.tempoEventList[0] || {tempo: 120};
-        var tempo = tempoEntry.tempo;
         var division = smf.division * 4;
 
         var chordList = [];
@@ -196,9 +205,6 @@ Util.Playback = function (piano, $controlCont) {
             if (note.time == curTime) {
                 curChord.noteList.push(note);
             } else {
-                if (curTime !== -100) {
-
-                }
                 curTime = note.time;
                 curChord = {noteList: [note], timeMillis: toMillis(curTime / division, tempoEntry.tempo)};
                 chordList.push(curChord);
@@ -213,7 +219,7 @@ Util.Playback = function (piano, $controlCont) {
             chordList: chordList,
             config: {
                 tempo: tempoEntry.tempo,
-                instrumentEntries: smf.instrumentEventList.filter(i => i.time == 0)
+                instrumentDict: smf.instrumentDict
             }
         }, fileName, whenFinished);
 

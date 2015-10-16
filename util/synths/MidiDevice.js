@@ -38,12 +38,13 @@ Util.Synths.MidiDevice = function () {
         });
     };
 
-    /** @param instrumentEntries [{channel: int, instrument: int}, ...] */
-    var consumeConfig = function (instrumentEntries, callback) {
-        instrumentEntries.forEach(instrumentEntry =>
-                midiOutputList.forEach(o => o.send([0xC0 - -instrumentEntry.channel, instrumentEntry.instrument]))
+    /** @param instrumentDict {channelNumber: instrumentNumber} */
+    var consumeConfig = function (instrumentDict, callback) {
+        Object.keys(instrumentDict).forEach(
             // 0xC0 - program change
+            ch => midiOutputList.forEach(o => o.send([0xC0 - -ch, instrumentDict[ch]]))
         );
+
         callback();
     };
 

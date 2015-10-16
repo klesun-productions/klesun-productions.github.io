@@ -80,25 +80,24 @@ Util.Synths.Mudcube = function () {
         // 1.0 means 1 second for them... it kinda makes sense
     };
 
-    /** @param instrumentEntries [{channel: int, instrument: int}, ...] */
-    var consumeConfig = function (instrumentEntries, callback) {
+    /** @param instrumentDict {channelNumber: instrumentNumber} */
+    var consumeConfig = function (instrumentDict, callback) {
 
         // TODO: i don't remember id of real drums... it could be 192, or probably we should send drums with a sepcial message...
         var SYNTH_DRUM = 115; // default drum in mudcube repo... well... probably it could be called a drum...
 
         if (pianoOnly) {
-            instrumentEntries = instrumentEntries.map(e => $.extend({}, e, {instrument: e.channel == 9 ? SYNTH_DRUM : DEFAULT_INSTRUMENT}));
+            Object.keys(instrumentDict).forEach(ch => instrumentDict[ch] = instrumentDict[ch] == 9 ? SYNTH_DRUM : DEFAULT_INSTRUMENT);
         }
-        var instruments = instrumentEntries.length > 0 ? instrumentEntries.map(e =>  e.instrument) : [DEFAULT_INSTRUMENT];
+        var instruments = Object.keys(instrumentDict).length > 0
+            ? Object.keys(instrumentDict).map(ch => instrumentDict[ch])
+            : [DEFAULT_INSTRUMENT];
 
         mudcube.loadPlugin({
             soundfontUrl: "/libs/midi-js-soundfonts/FluidR3_GM/",
             instruments: instruments,
             onsuccess: () => {
-                console.log('Successfully retrieved instruments for mudcube!', instruments);
-                instrumentEntries.forEach(
-                        instrumentEntry => mudcube.programChange(instrumentEntry.channel, instrumentEntry.instrument)
-                );
+                Object.keys(instrumentDict).forEach(ch => mudcube.programChange(ch, instrumentDict[ch]));
                 callback();
             }
         });
