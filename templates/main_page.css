@@ -106,30 +106,33 @@
         overflow: hidden;
 	}
 
-	#playbackControl {
-		background-color: rgba(151, 212, 255, 1);
-	}
-
-	#playbackControl > * {
+	#playbackControl > div.general { background-color: rgb(140, 133, 208); }
+    #playbackControl > div > * {
 		white-space: nowrap;
-		padding: 5px;
 		background-color: #ccf;
 		border: 1px solid grey;
 	}
-	#playbackControl > div > span {
-		background-color: white;
-		font-weight: bold;
-		border: 1px solid black;
-	}
-	#playbackControl > span > span {
-		background-color: white;
-		font-weight: bold;
-		border: 1px solid black;
+    #playbackControl > div.syntControl > * {
+        background-color: #fce;
+    }
+    #playbackControl > * > div.inlineBlock {
+        padding: 3px;
+        float: left;
+    }
+	#playbackControl > * > div.inlineBlock > span { width: 40px; }
+	#playbackControl > * > * > span { /* field value */
+        background-color: white;
+        font-weight: bold;
+        border: 1px solid black;
 
-		display: inline-block;
-		width: 40px;
-	}
-	#playbackControl > div > span {
-		display: inline-block;
-	}
+        display: inline-block;
+    }
 
+	#playbackControl > div.syntControl { background-color: rgba(220, 91, 164, 1); }
+
+    input[type=range].smallSlider {
+        -webkit-appearance: none !important;
+        height: 14px;
+        width: 50px;
+        background-color: grey;
+    }

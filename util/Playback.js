@@ -8,22 +8,30 @@ Util.Playback = function (piano, $controlCont) {
 
     var Control = function ($cont)
     {
-        var fileNameHolder = $('<span></span>').html('?');
-        $cont.append($('<div></div>').append("File Name: ").append(fileNameHolder));
+        var $general = $('<div class="general"></div>');
 
+        var fileNameHolder = $('<span></span>').html('?');
         var chordIndexHolder = $('<span></span>').html('?');
         var chordCountHolder = $('<span></span>').html('?');
-        $cont.append($('<span></span>').append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder));
-
         var noteCountHolder = $('<span></span>').html('?');
-        $cont.append($('<span></span>').append("Note Count: ").append(noteCountHolder));
-
         var tempoHolder = $('<span></span>').html('?');
-        $cont.append($('<span></span>').append("Tempo: ").append(tempoHolder));
-
         var secondsHolder = $('<span style="width: 60px"></span>').html('?');
         var secondsTotalHolder = $('<span style="width: 60px"></span>').html('?');
-        $cont.append($('<span></span>').append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder));
+
+        $general.append($('<div></div>').append("File Name: ").append(fileNameHolder));
+
+        var spanFillers = [
+            s => s.append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder),
+            s => s.append("Note Count: ").append(noteCountHolder),
+            s => s.append("Tempo: ").append(tempoHolder),
+            s => s.append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder),
+        ];
+        spanFillers.forEach(l => $general.append(l($('<div class="inlineBlock"></div>'))));
+
+        $cont.append($general.append('<br clear="all"/>'));
+
+        var $syntControl = $('<div class="syntControl"></div>').append('<div>huj</div>');
+        $cont.append($syntControl);
 
         var self;
         return self = {
@@ -35,6 +43,8 @@ Util.Playback = function (piano, $controlCont) {
 
             setChordIndex: n => { chordIndexHolder.html(n); return self; },
             setSeconds: n => { secondsHolder.html('>' + Math.floor(n * 100) / 100); return self; },
+
+            $syntControl: $syntControl,
         };
     };
 
@@ -68,7 +78,7 @@ Util.Playback = function (piano, $controlCont) {
         if (synthName in synths) {
             stop();
             synth = synthName;
-            synths[synth].init();
+            synths[synth].init(control.$syntControl);
 
         } else {
             alert('No Such Synth!');
@@ -105,7 +115,7 @@ Util.Playback = function (piano, $controlCont) {
                         //var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis;
                         var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - (window.performance.now() - startMillis);
                         if (chordDuration > 0) {
-                            setTimeout(() => playNext(idx + 1), chordDuration);
+                            Util.setTimeout(() => playNext(idx + 1), chordDuration);
                         } else {
                             playNext(idx + 1);
                         }
@@ -158,8 +168,6 @@ Util.Playback = function (piano, $controlCont) {
 
                 chordList.forEach(c => {
                     /** @legacy */
-                    c.noteList = c.notaList;
-                    delete c.notaList;
                     c.noteList.forEach(n => {
                         n.length += '/' + (n.isTriplet ? 3 : 1);
                         delete n.isTriplet;
@@ -213,7 +221,6 @@ Util.Playback = function (piano, $controlCont) {
         chordList.push(curChord);
 
         control.setNoteCount(smf.noteList.length);
-        control.setSecondsTotal(toMillis(curTime / division));
 
         playGeneralFormat({
             chordList: chordList,

@@ -58,11 +58,13 @@ Util.Synths.Mudcube = function () {
         }));
     };
 
-    var init = function () {
+    var init = function ($controlEl) {
         if (firstInit) {
             firstInit = false;
             loadPlugin();
         }
+
+        $controlEl.empty().append('<div>zhopa</div>');
     };
 
     // does not work in chromium. due to mp3 and proprietarity i suppose

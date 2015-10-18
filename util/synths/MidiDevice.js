@@ -10,7 +10,7 @@ Util.Synths.MidiDevice = function () {
     var toFloat = fractionString => eval(fractionString);
     var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
 
-    var init = function () {
+    var init = function ($controlEl) {
 
         if (firstInit) {
             firstInit = false;
@@ -26,6 +26,8 @@ Util.Synths.MidiDevice = function () {
                 alert('Your browser does not support midi Devices. Pity, you could listen to music on your mega-device if you used chrome =P');
             }
         }
+
+        $controlEl.empty().append($('<div></div>').append('TODO: make possible to choose output device'));
     };
 
     var playNote = function(noteJs, tempo) {
