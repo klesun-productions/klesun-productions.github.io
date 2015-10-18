@@ -44,7 +44,7 @@ Util.Synths.Oscillator = function () {
         var waveTypeField = $('<div class="inlineBlock"></div>')
             .append('Wave Type: ').append($waveDropDown).append($waveImage);
 
-        $volumeSlider = $('<input type="range" min="0.002" max="0.2" step="0.002"/>')
+        var $volumeSlider = $('<input type="range" min="0.002" max="0.2" step="0.002"/>')
             .addClass("smallSlider")
             .val(baseVolume)
             .on("input change", () => gainNode.gain.value = $volumeSlider.val());

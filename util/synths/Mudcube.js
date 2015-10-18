@@ -58,13 +58,31 @@ Util.Synths.Mudcube = function () {
         }));
     };
 
-    var init = function ($controlEl) {
+    var initControl = function($controlEl) {
+
+        var $pianoOnlyCheckbox = $('<input type="checkbox"/>')
+            .change(() => {
+                var warning = 'Unsetting this checkbox will allow _all_ instruments. It may take 500+ MiB of your RAM to play a complicated song (like "Terranigma - Europe (1).mid"). Are you OK with that?';
+                if (!$pianoOnlyCheckbox[0].checked && !confirm(warning)) {
+                    $pianoOnlyCheckbox[0].checked = true;
+                }
+                pianoOnly = $pianoOnlyCheckbox[0].checked ? true : false;
+            });
+        $pianoOnlyCheckbox[0].checked = pianoOnly;
+
+        var $pianoOnlyFlag = $('<div></div>')
+            .append('Piano Only: ').append($pianoOnlyCheckbox);
+
+        $controlEl.empty().append($pianoOnlyFlag);
+    };
+
+    var init = function($controlEl) {
         if (firstInit) {
             firstInit = false;
             loadPlugin();
         }
 
-        $controlEl.empty().append('<div>zhopa</div>');
+        initControl($controlEl);
     };
 
     // does not work in chromium. due to mp3 and proprietarity i suppose
@@ -87,9 +105,11 @@ Util.Synths.Mudcube = function () {
 
         // TODO: i don't remember id of real drums... it could be 192, or probably we should send drums with a sepcial message...
         var SYNTH_DRUM = 115; // default drum in mudcube repo... well... probably it could be called a drum...
+        
+        instrumentDict = $.extend({}, instrumentDict, {9: SYNTH_DRUM}); // Mudcube does not support real MIDI drums of 1..10th channel
 
         if (pianoOnly) {
-            Object.keys(instrumentDict).forEach(ch => instrumentDict[ch] = instrumentDict[ch] == 9 ? SYNTH_DRUM : DEFAULT_INSTRUMENT);
+            Object.keys(instrumentDict).forEach(ch => instrumentDict[ch] = ch == 9 ? SYNTH_DRUM : DEFAULT_INSTRUMENT);
         }
         var instruments = Object.keys(instrumentDict).length > 0
             ? Object.keys(instrumentDict).map(ch => instrumentDict[ch])
