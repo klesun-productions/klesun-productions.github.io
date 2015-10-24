@@ -36,7 +36,7 @@ Util.Synths.Oscillator = function () {
             .map(wt => $('<option value="' + wt + '">' + wt + '</option>'))
             .forEach(opt => $waveDropDown.append(opt));
         $waveDropDown.val(waveType)
-            .change(() => {
+            .change(function() {
                 waveType = $waveDropDown.val();
                 $waveImage.attr('src', '/imgs/wave_' + waveType + '.png');
             }).trigger("change");
@@ -47,7 +47,7 @@ Util.Synths.Oscillator = function () {
         var $volumeSlider = $('<input type="range" min="0.002" max="0.2" step="0.002"/>')
             .addClass("smallSlider")
             .val(baseVolume)
-            .on("input change", () => gainNode.gain.value = $volumeSlider.val());
+            .on("input change", (_) => (gainNode.gain.value = $volumeSlider.val()));
 
         var volumeField = $('<div class="inlineBlock"></div>')
             .append('Volume Gain: ').append($volumeSlider);

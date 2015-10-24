@@ -119,7 +119,7 @@
         padding: 3px;
         float: left;
     }
-	#playbackControl > * > div.inlineBlock > span { width: 40px; }
+	#playbackControl > * > div.inlineBlock > span { width: 50px; }
 	#playbackControl > * > * > span { /* field value */
         background-color: white;
         font-weight: bold;

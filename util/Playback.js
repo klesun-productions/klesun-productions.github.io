@@ -15,8 +15,12 @@ Util.Playback = function (piano, $controlCont) {
         var chordCountHolder = $('<span></span>').html('?');
         var noteCountHolder = $('<span></span>').html('?');
         var tempoHolder = $('<span></span>').html('?');
-        var secondsHolder = $('<span style="width: 60px"></span>').html('?');
-        var secondsTotalHolder = $('<span style="width: 60px"></span>').html('?');
+        var secondsHolder = $('<span></span>').html('?');
+        var secondsTotalHolder = $('<span></span>').html('?');
+		
+		var $timeSlider = $('<input type="range" min="0" max="0" step=1/>')
+            .addClass("smallSlider")
+            .on("input change", (_) => console.log('Time Slider changed! ' + $timeSlider.val()));
 
         $general.append($('<div></div>').append("File Name: ").append(fileNameHolder));
 
@@ -25,6 +29,7 @@ Util.Playback = function (piano, $controlCont) {
             s => s.append("Note Count: ").append(noteCountHolder),
             s => s.append("Tempo: ").append(tempoHolder),
             s => s.append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder),
+            s => s.append("Time: ").append($timeSlider),
         ];
         spanFillers.forEach(l => $general.append(l($('<div class="inlineBlock"></div>'))));
 
@@ -33,19 +38,41 @@ Util.Playback = function (piano, $controlCont) {
         var $syntControl = $('<div class="syntControl"></div>').append('<div>huj</div>');
         $cont.append($syntControl);
 
-        var self;
-        return self = {
-            setFileName: n => { fileNameHolder.html(n); return self; },
-            setChordCount: n => { chordCountHolder.html(n); return self; },
-            setNoteCount: n => { noteCountHolder.html(n); return self; },
-            setTempo: n => { tempoHolder.html(Math.floor(n)); return self; },
-            setSecondsTotal: n => { secondsTotalHolder.html(Math.floor(n * 100) / 100); return self; },
+        var setFields = function(sheetMusic, playAtIndex) {
+            tempoHolder.html(Math.floor(sheetMusic.config.tempo));
 
-            setChordIndex: n => { chordIndexHolder.html(n); return self; },
-            setSeconds: n => { secondsHolder.html('>' + Math.floor(n * 100) / 100); return self; },
+            var secondsTotal = sheetMusic.chordList.slice(-1)[0].timeMillis / 1000.0;
+            secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
 
-            $syntControl: $syntControl,
+            self.setNoteCount('?');
+            var chordCount = sheetMusic.chordList.length;
+            chordCountHolder.html(chordCount);
+
+            /** @TODO: stop sounding of opened notes - MUSTIMPLEMENT */
+            $timeSlider.attr('max', chordCount - 1).off( )
+                .on('input change', (_) => playAtIndex($timeSlider.val()));
         };
+
+        var self = {
+            setFileName: n => fileNameHolder.html(n),
+            setNoteCount: n => noteCountHolder.html(n),
+            setFields: setFields,
+            setChordIndex: function(n) {
+				chordIndexHolder.html(n);
+				$timeSlider.val(n);
+			},
+            setSeconds: n => secondsHolder.html('>' + Math.floor(n * 100) / 100),
+        };
+		Object.keys(self).forEach(function(key) {
+			var property = self[key];
+			self[key] = (v,v2) => { property(v,v2); return self; };
+		});
+		
+		$.extend(self, {
+			$syntControl: $syntControl,
+		});
+				
+		return self;
     };
 
     var control = Control($controlCont);
@@ -53,7 +80,6 @@ Util.Playback = function (piano, $controlCont) {
     var toFloat = fractionString => eval(fractionString);
     var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
 
-    /** @testing */
     var synths = {
         oscillator: Util.Synths.Oscillator(),
         mudcube: Util.Synths.Mudcube(),
@@ -62,16 +88,16 @@ Util.Playback = function (piano, $controlCont) {
 
     var synth = 'notSet';
 
-    var playNote = (noteJs, tempo) => {
+    var playNote = function(noteJs, tempo) {
         synths[synth].playNote(noteJs, tempo);
 
         var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
         piano.highlight(noteJs);
-        setTimeout(() => piano.unhighlight(noteJs), toMillis(length, tempo));
+        setTimeout((_) => piano.unhighlight(noteJs), toMillis(length, tempo));
     };
 
     var playingThreads = [];
-    var stop = () => playingThreads.forEach(t => t.interrupted = true);
+    var stop = (_) => playingThreads.forEach(t => (t.interrupted = true));
 
     // must be called from outside on page load!
     var changeSynth = function(synthName) {
@@ -86,26 +112,25 @@ Util.Playback = function (piano, $controlCont) {
     };
 
     // TODO: rename to playSheetMusic()
-    var playGeneralFormat = function (sheetMusic, fileName, whenFinished) {
+    var playGeneralFormat = function (sheetMusic, fileName, whenFinished, startIndex) {
+		
+		whenFinished = whenFinished || ((_) => {});
+        startIndex = +startIndex || 0;
 
         stop();
 
-        control
-            .setFileName(fileName)
-            .setTempo(sheetMusic.config.tempo)
-            .setSecondsTotal(sheetMusic.chordList.slice(-1)[0].timeMillis / 1000.0)
-            .setNoteCount('?')
-            .setChordCount(sheetMusic.chordList.length)
-        ;
+        var playAtIndex = ((chordIndex) => playGeneralFormat(sheetMusic, fileName, whenFinished, chordIndex));
 
-        synths[synth].consumeConfig(sheetMusic.config.instrumentDict, () => {
+        control.setFields(sheetMusic, playAtIndex).setFileName(fileName).setChordIndex(startIndex);
+
+        synths[synth].consumeConfig(sheetMusic.config.instrumentDict, function() {
 
             var thread = {interrupted: false};
             playingThreads.push(thread);
 
-            var startMillis = window.performance.now();
+            var startMillis = window.performance.now() - sheetMusic.chordList[startIndex].timeMillis;
 
-            var playNext = idx => {
+            var playNext = function(idx) {
                 if (idx < sheetMusic.chordList.length && !thread.interrupted) {
 
                     var c = sheetMusic.chordList[idx];
@@ -114,20 +139,22 @@ Util.Playback = function (piano, $controlCont) {
                     if (idx + 1 < sheetMusic.chordList.length) {
                         //var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis;
                         var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - (window.performance.now() - startMillis);
+
                         if (chordDuration > 0) {
-                            Util.setTimeout(() => playNext(idx + 1), chordDuration);
+                            Util.setTimeout((_) => playNext(idx + 1), chordDuration);
                         } else {
                             playNext(idx + 1);
                         }
 
                     } else {
+
                         setTimeout(whenFinished, 5000); // hope last chord finishes in 5 seconds
                     }
 
                     // piano image lags if do it every time
                     if (idx % 20 === 0) {
                         control
-                            .setChordIndex('>' + idx)
+                            .setChordIndex(idx)
                             .setSeconds(c.timeMillis / 1000.0);
                     }
                 } else {
@@ -136,25 +163,25 @@ Util.Playback = function (piano, $controlCont) {
                 }
             };
 
-            playNext(0);
+            playNext(startIndex);
         });
     };
 
     /** @param shmidusicJson - json in shmidusic project format */
     var playShmidusic = function (shmidusicJson, fileName, whenFinished) {
 
-        whenFinished = whenFinished || (() => {});
+        whenFinished = whenFinished || ((_) => {});
         fileName = fileName || 'noNameFile';
 
-        for (var staff of shmidusicJson['staffList']) {
+		shmidusicJson['staffList'].forEach(function(staff) {
 
             var instrumentDict = {};
 
             (staff.staffConfig.channelList || [])
                 .filter(e => e.channelNumber < 16)
-                .forEach(e => instrumentDict[e.channelNumber] = e.instrument);
+                .forEach((e) => (instrumentDict[e.channelNumber] = e.instrument));
 
-            Util.range(0, 16).forEach(i => instrumentDict[i] |= 0);
+            Util.range(0, 16).forEach(i => (instrumentDict[i] |= 0));
 
             // flat map hujap
             // tactList not needed for logic, but it increases readability of file A LOT
@@ -166,9 +193,9 @@ Util.Playback = function (piano, $controlCont) {
 
                 var timeMillis = 0;
 
-                chordList.forEach(c => {
+                chordList.forEach(function(c) {
                     /** @legacy */
-                    c.noteList.forEach(n => {
+                    c.noteList.forEach(function(n) {
                         n.length += '/' + (n.isTriplet ? 3 : 1);
                         delete n.isTriplet;
                     });
@@ -188,7 +215,7 @@ Util.Playback = function (piano, $controlCont) {
                     instrumentDict: instrumentDict
                 }
             }, fileName, whenFinished);
-        }
+        });
     };
 
     var playStandardMidiFile = function (smf, fileName, whenFinished) {
@@ -197,7 +224,7 @@ Util.Playback = function (piano, $controlCont) {
         var thread = {interrupted: false};
         playingThreads.push(thread);
 
-        whenFinished = whenFinished || (() => {});
+        whenFinished = whenFinished || ((_) => {});
 
         /** @TODO: handle _all_ tempo events, not just first. Should be easy once speed change by user is implemented */
         var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
@@ -208,7 +235,7 @@ Util.Playback = function (piano, $controlCont) {
         var curTime = -100;
         var curChord = [-100, -100];
 
-        smf.noteList.forEach(note => {
+        smf.noteList.forEach(function(note) {
             note.length = note.duration / division;
             if (note.time == curTime) {
                 curChord.noteList.push(note);
