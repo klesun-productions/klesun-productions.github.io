@@ -62,7 +62,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
 				
 				shuffle(rowList);
 
-				var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 50);
+				var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 50, 25);
 				$('.random-midi-list-cont').append(table); // defined in main_page.html
 
                 playRandom = function (finishedFileName) {

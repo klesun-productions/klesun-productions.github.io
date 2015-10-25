@@ -6,16 +6,40 @@ Util.Synths.Oscillator = function () {
 
     var firstInit = true;
     // on demand
-    var gainNode;
-    var audioCtx;
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)()
 
     // ["sine", "square", "saw", "triangle", "custom"]
-    var waveTypes = ["sine", "square", "sawtooth", "triangle"];
+    var waveTypes = ["sine", "triangle", "sawtooth", "square"];
     var waveType = "sawtooth";
 
     var baseVolume = 0.02;
 
-    var noteThreads = [];
+    /** @return function - lambda to interrupt */
+    var startSounding = function(frequency)
+    {
+        /** @TODO: if you feel paranoic, you may create a constant OSCILLATOR_INIT_TIME
+         * and delay playback start and finish by it to deel with artifacts */
+
+        var gainNode = audioCtx.createGain();
+        gainNode.connect(audioCtx.destination);
+        gainNode.gain.value = 0;
+        /** this timeout is a hacky way to get rid of artifacts when oscillator starts and stops
+         * a'm afraid it may affect performance... */
+        setTimeout(() => gainNode.gain.value = baseVolume, 4);
+        //gainNode.gain.value = baseVolume;
+
+        var oscillator = audioCtx.createOscillator();
+        oscillator.frequency.value = frequency;
+        oscillator.type = waveType;
+        oscillator.connect(gainNode);
+        oscillator.start(0);
+
+        return function()
+        {
+            gainNode.gain.value = 0;
+            setTimeout(() => oscillator.stop(), 100);
+        };
+    };
 
     var tuneToFrequency = function(tune) {
 
@@ -47,7 +71,8 @@ Util.Synths.Oscillator = function () {
         var $volumeSlider = $('<input type="range" min="0.002" max="0.2" step="0.002"/>')
             .addClass("smallSlider")
             .val(baseVolume)
-            .on("input change", (_) => (gainNode.gain.value = $volumeSlider.val()));
+            .on("input change", (_) => (baseVolume = $volumeSlider.val()));
+            //.on("input change", (_) => (gainNode.gain.value = $volumeSlider.val()));
 
         var volumeField = $('<div class="inlineBlock"></div>')
             .append('Volume Gain: ').append($volumeSlider);
@@ -62,49 +87,24 @@ Util.Synths.Oscillator = function () {
 
     var init = function($controlEl) {
         if (firstInit) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-            gainNode = audioCtx.createGain();
-            gainNode.connect(audioCtx.destination);
-            gainNode.gain.value = baseVolume;
-
             firstInit = false;
         }
 
         initControl($controlEl);
     };
 
-    var stopNote = function(noteThread) {
-
-        if (!noteThread.interrupted) {
-
-            noteThread.oscillator.stop();
-
-            noteThread.interrupted = true;
-            var index = noteThreads.indexOf(noteThread);
-            noteThreads.splice(index, 1);
-        }
-    };
-
-    /** @param noteJs - shmidusic Note external representation */
+    /** @param noteJs - shmidusic Note external representation
+     * @return function - lambda to interrupt note */
     var playNote = function(noteJs, tempo) {
 
         if (noteJs.channel != 9) {
-            var oscillator = audioCtx.createOscillator();
-
-            oscillator.connect(gainNode);
-            oscillator.frequency.value = tuneToFrequency(noteJs.tune);
-            oscillator.type = waveType;
-
-            oscillator.start(0);
-
+            var interrupt = startSounding(tuneToFrequency(noteJs.tune));
             var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
 
-            var thread = {oscillator: oscillator, interrupted: false, noteJs: noteJs};
-            noteThreads.push(thread);
-            Util.setTimeout(() => stopNote(thread), duration);
-
+            Util.setTimeout(interrupt, duration);
         } else {
             // TODO: this is drum - think something about this!
+            return () => {};
         }
     };
 

@@ -18,20 +18,8 @@ Util.TableGenerator = function()
 		chunkSize = chunkSize || 1000000; // browser would die anyways with such row ammount
 		breakDuration = breakDuration || 100;
 
-		rowList.slice(0 * chunkSize, chunkSize)
-			.forEach(row => table.append(generateRow(colModel, row)));
-
-		var range = (l, r) => { var res = []; for (var i = l; i < r; ++i) { res.push(i); } return res; };
-
-		range(1, Math.ceil(rowList.length / chunkSize)).forEach(j => setTimeout(
-			() => rowList.slice(j * chunkSize, (j + 1) * chunkSize)
-					.forEach(row => table.append(generateRow(colModel, row))),
-			breakDuration * j
-		));
-
-		//for (var i = 0; i < rowList.length; ++i) {
-		//	table.append(generateRow(colModel, rowList[i]));
-		//}
+		/** @TODO: add some sign that we finished loading */
+		Util.forEachBreak(rowList, breakDuration, chunkSize, row => table.append(generateRow(colModel, row)));
 
 		return table;
 	};

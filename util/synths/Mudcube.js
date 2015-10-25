@@ -94,7 +94,12 @@ Util.Synths.Mudcube = function () {
         var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
 
         mudcube.noteOn(noteJs.channel, noteJs.tune, 127, position);
-        mudcube.noteOff(noteJs.channel, noteJs.tune, (position + length * 240 / tempo));
+
+        var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
+        var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
+
+        setTimeout(() => mudcube.noteOff(noteJs.channel, noteJs.tune, position), duration);
+        //mudcube.noteOff(noteJs.channel, noteJs.tune, (position + length * 240 / tempo));
 
         // MIDI.js has 240 default tempo...
         // 1.0 means 1 second for them... it kinda makes sense
