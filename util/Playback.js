@@ -14,21 +14,50 @@ Util.Playback = function (piano, $controlCont) {
     var synths = {
         oscillator: Util.Synths.Oscillator(),
         mudcube: Util.Synths.Mudcube(),
-        midiDevice: Util.Synths.MidiDevice(),
+        midiDevice: Util.Synths.MidiDevice()
     };
 
     var synth = 'notSet';
 
+    // list of lambdas
+    var toBeInterrupted = [];
+
+    var scheduleInterruptable = function(millis, callback)
+    {
+        var interrupted = false;
+        var interruptLambda = () => {
+            interrupted = true;
+            callback();
+        };
+        toBeInterrupted.push(interruptLambda);
+        setTimeout(() => {
+            if (!interrupted) {
+                callback();
+                var index = toBeInterrupted.indexOf(interruptLambda);
+                toBeInterrupted.splice(index, 1);
+            }
+        }, millis);
+    };
+
     var playNote = function(noteJs, tempo) {
-        synths[synth].playNote(noteJs, tempo);
+        var interrupt = synths[synth].playNote(noteJs, tempo);
 
         var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
         piano.highlight(noteJs);
-        setTimeout((_) => piano.unhighlight(noteJs), toMillis(length, tempo));
+
+        scheduleInterruptable(toMillis(length, tempo), function()
+        {
+            piano.unhighlight(noteJs);
+            interrupt();
+        });
     };
 
     var playingThreads = [];
-    var stop = (_) => playingThreads.forEach(t => (t.interrupted = true));
+    var stop = (_) => {
+        playingThreads.forEach(t => (t.interrupted = true)); // it, actually, supposed to be only single thread...
+        toBeInterrupted.forEach(c => c());
+        toBeInterrupted.length = 0;
+    };
 
     // must be called from outside on page load!
     var changeSynth = function(synthName) {

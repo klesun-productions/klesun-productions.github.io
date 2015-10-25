@@ -85,8 +85,11 @@ Util.Synths.Mudcube = function () {
         initControl($controlEl);
     };
 
-    // does not work in chromium. due to mp3 and proprietarity i suppose
+    /** @param noteJs - shmidusic Note external representation
+     * @return function - lambda to interrupt note */
     var playNote = function(noteJs, tempo) {
+
+        // does not work in chromium. due to mp3 and proprietarity i suppose
 
         var position = 0;
 
@@ -94,11 +97,12 @@ Util.Synths.Mudcube = function () {
         var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
 
         mudcube.noteOn(noteJs.channel, noteJs.tune, 127, position);
+        return () => mudcube.noteOff(noteJs.channel, noteJs.tune, position);
 
-        var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
-        var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
-
-        setTimeout(() => mudcube.noteOff(noteJs.channel, noteJs.tune, position), duration);
+        //var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
+        //var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
+        //
+        //setTimeout(() => mudcube.noteOff(noteJs.channel, noteJs.tune, position), duration);
         //mudcube.noteOff(noteJs.channel, noteJs.tune, (position + length * 240 / tempo));
 
         // MIDI.js has 240 default tempo...

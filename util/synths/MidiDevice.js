@@ -30,14 +30,12 @@ Util.Synths.MidiDevice = function () {
         $controlEl.empty().append($('<div></div>').append('TODO: make possible to choose output device'));
     };
 
+    /** @param noteJs - shmidusic Note external representation
+     * @return function - lambda to interrupt note */
     var playNote = function(noteJs, tempo) {
-        midiOutputList.forEach(output => {
-
-            var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
-
-            output.send( [0x90 - -noteJs.channel, noteJs.tune, 127] );  // 0x90 = noteOn, 127 = max velocity
-            output.send( [0x80 - -noteJs.channel, noteJs.tune, 0x40], window.performance.now() + duration );
-        });
+        // 0x90 = noteOn, 127 = max velocity
+        midiOutputList.forEach(output => output.send([0x90 - -noteJs.channel, noteJs.tune, 127] ));
+        return () => midiOutputList.forEach(output => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]));
     };
 
     /** @param instrumentDict {channelNumber: instrumentNumber} */

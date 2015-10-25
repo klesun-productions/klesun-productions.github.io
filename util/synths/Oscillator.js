@@ -98,10 +98,10 @@ Util.Synths.Oscillator = function () {
     var playNote = function(noteJs, tempo) {
 
         if (noteJs.channel != 9) {
-            var interrupt = startSounding(tuneToFrequency(noteJs.tune));
-            var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
+            return startSounding(tuneToFrequency(noteJs.tune));
+            //var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
+            //Util.setTimeout(interrupt, duration);
 
-            Util.setTimeout(interrupt, duration);
         } else {
             // TODO: this is drum - think something about this!
             return () => {};
