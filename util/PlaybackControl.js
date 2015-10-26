@@ -37,12 +37,16 @@ Util.StaffPanel = function(sheetMusic)
             var length = eval(note.length) / (note.isTriplet ? 3 : 1);
 
             var x_px = canvas.width * startTime / totalTime;
+            /** @TODO: it was lame idea to limit only to single octave, most songs have only black channel - already
+             * hard to get some info from picture. do both violin/bass keys probably, like in java. */
             var y_px = canvas.height * (6 - ivoryIndex) / 7;
             var w_px = canvas.width * (Util.toMillis(length, sheetMusic.config.tempo) / totalTime);
 
             var color = Util.channelColors[note.channel];
 
             adapter.fillRect(x_px, y_px, w_px, NOTE_HEIGHT, color);
+
+            /** @TODO: draw tact line if got tact size message */
         }
     };
 
@@ -71,7 +75,8 @@ Util.PlaybackControl = function($cont)
     var chordIndexHolder = $('<span></span>').html('?');
     var chordCountHolder = $('<span></span>').html('?');
     var noteCountHolder = $('<span></span>').html('?');
-    var tempoHolder = $('<span></span>').html('?');
+    var tempoHolder = $('<input type="number" min="15"/>').html('');
+    var tempoOriginHolder = $('<span></span>').html('?');
     var secondsHolder = $('<span></span>').html('?');
     var secondsTotalHolder = $('<span></span>').html('?');
 
@@ -82,7 +87,7 @@ Util.PlaybackControl = function($cont)
     var spanFillers = [
             s => s.append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder),
             s => s.append("Note Count: ").append(noteCountHolder),
-            s => s.append("Tempo: ").append(tempoHolder),
+            s => s.append("Tempo: ").append(tempoHolder).append(tempoOriginHolder),
             s => s.append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder),
     ];
 
@@ -104,8 +109,26 @@ Util.PlaybackControl = function($cont)
     var $syntControl = $('<div class="syntControl"></div>').append('<div>huj</div>');
     $cont.append($syntControl);
 
-    var setFields = function(sheetMusic, playAtIndex) {
-        tempoHolder.html(Math.floor(sheetMusic.config.tempo));
+    var setFields = function(sheetMusic, playAtIndex)
+    {
+        tempoHolder.val(Math.floor(sheetMusic.config.tempo));
+        tempoHolder.off().change(() =>
+        {
+            tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
+
+            /** @TODO: when you change, green div, that fades staff, becames wrong (probably final time it takes from previous playback) */
+
+            var was = sheetMusic.config.tempo;
+            sheetMusic.config.tempo = tempoHolder.val(); // is it okay?
+            /** @TODO: time should be in quarters/semibreves so we did not need this, cuz it's very performance-consuming */
+            sheetMusic.chordList.forEach(c => c.timeMillis = c.timeMillis * was / tempoHolder.val());
+
+            /** @TODO: this is bad, because we don't always update slider... */
+            if ($timeSlider.val() + 1 < sheetMusic.chordList.length) {
+                playAtIndex($timeSlider.val() - -1);
+            }
+        });
+        tempoOriginHolder.html(Math.floor(sheetMusic.config.tempoOrigin));
 
         var secondsTotal = sheetMusic.chordList.slice(-1)[0].timeMillis / 1000.0;
         secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);

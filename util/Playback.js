@@ -181,6 +181,7 @@ Util.Playback = function (piano, $controlCont) {
                 chordList: chordList,
                 config: {
                     tempo: staff.staffConfig.tempo,
+                    tempoOrigin: staff.staffConfig.tempo,
                     instrumentDict: instrumentDict
                 }
             }, fileName, whenFinished);
@@ -222,6 +223,7 @@ Util.Playback = function (piano, $controlCont) {
             chordList: chordList,
             config: {
                 tempo: tempoEntry.tempo,
+                tempoOrigin: tempoEntry.tempo,
                 instrumentDict: smf.instrumentDict
             }
         }, fileName, whenFinished);

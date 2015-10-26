@@ -121,11 +121,14 @@
     }
 	#playbackControl > * > div.inlineBlock > span { width: 50px; }
 	#playbackControl > * > * > span { /* field value */
-        background-color: white;
+        background-color: #e4e4e4;
         font-weight: bold;
         border: 1px solid black;
 
         display: inline-block;
+    }
+	#playbackControl > * > * > input[type=number] {
+        width: 50px;
     }
 
 	#playbackControl > div.syntControl { background-color: rgba(220, 91, 164, 1); }
