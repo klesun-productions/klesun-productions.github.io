@@ -17,44 +17,10 @@ Util.PianoLayoutPanel = function ($canvas) {
     var context = $canvas[0].getContext("2d");
     var pressedNotes = {};
 
-    var drawLine = function (x0, y0, x1, y1) {
-        context.beginPath();
-        context.moveTo(x0, y0);
-        context.lineTo(x1, y1);
-        context.stroke();
-    };
-
-    var fillRect = function (x,y,w,h,color) {
-
-        context.beginPath();
-        context.rect(x, y, w, h);
-        context.fillStyle = "rgba(" + color.join(',') + ", 1)";
-        context.fill();
-
-        context.strokeStyle = 'black';
-        return context;
-    };
-
-    /** @return list - [r,g,b] */
-    var channelColors = [
-        [0,0,0], // black
-        [192,0,0], // red
-        [0,148,0], // green
-        [60,60,255], // blue
-        [152,152,0], // yellow
-        [0,152,152], // cyan
-        [192,0,192], // magenta
-        [255,128,0], // orange
-        [91,0,255], // bluish magenta
-
-        [0,255,255], // TODO: !!!
-        [127,255,0], // TODO: !!!
-        [255,0,255], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0] // TODO: !!!
-    ];
+    var canvasAdapter = Util.CanvasAdapter($canvas[0]);
+    var drawLine = canvasAdapter.drawLine;
+    var fillRect = canvasAdapter.fillRect;
+    var channelColors = Util.channelColors;
 
     var paintBase = function () {
         context.clearRect(0, 0, $canvas[0].width, $canvas[0].height);

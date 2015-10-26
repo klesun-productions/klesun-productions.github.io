@@ -4,7 +4,66 @@ var Util = Util || {};
 // This class generates jquery dom with current song info
 // and some controlls, particularly - timeline slider
 
-Util.PlaybackControl = function ($cont)
+Util.StaffPanel = function(sheetMusic)
+{
+    var NOTE_HEIGHT = 3; // in pixels
+
+    var canvas = $('<canvas width="700px" height="21px"></canvas>')
+        .css('margin-top', '2px')[0];
+    var adapter = Util.CanvasAdapter(canvas);
+
+    var drawSystemLines = function()
+    {
+        adapter.fillRect(0, 0, canvas.width, canvas.height, [255,255,255]);
+
+        // drawing ti, sol and mi
+        for (var i = 0; i <= 2; ++i) {
+            var y_px = NOTE_HEIGHT * (0.5 + i * 2);
+            var lightGrey = [192,192,192];
+            adapter.drawLine(0, y_px, canvas.width, y_px, lightGrey);
+        }
+    };
+
+    /** @TODO: handle properly sharps and flats! */
+    var drawNote = function(note, startTime)
+    {
+        var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
+        var ivoryIndex = !isEbony
+            ? [0,2,4,5,7,9,11].indexOf(note.tune % 12)
+            : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as ebonies for now - ignoring file key signature
+
+        if (sheetMusic.chordList.length > 0) {
+            var totalTime = sheetMusic.chordList.slice(-1)[0].timeMillis;
+            var length = eval(note.length) / (note.isTriplet ? 3 : 1);
+
+            var x_px = canvas.width * startTime / totalTime;
+            var y_px = canvas.height * (6 - ivoryIndex) / 7;
+            var w_px = canvas.width * (Util.toMillis(length, sheetMusic.config.tempo) / totalTime);
+
+            var color = Util.channelColors[note.channel];
+
+            adapter.fillRect(x_px, y_px, w_px, NOTE_HEIGHT, color);
+        }
+    };
+
+    var repaint = function()
+    {
+        drawSystemLines();
+        sheetMusic.chordList.forEach(function(chord)
+        {
+            chord.noteList.forEach(note => drawNote(note, chord.timeMillis));
+        });
+    };
+    repaint();
+
+    return {
+        putInto: $cont => $cont.empty()
+            .append($('<img src="/imgs/violin_key_10x21.png"/>'))
+            .append(canvas)
+    };
+};
+
+Util.PlaybackControl = function($cont)
 {
     var $general = $('<div class="general"></div>');
 
@@ -17,21 +76,30 @@ Util.PlaybackControl = function ($cont)
     var secondsTotalHolder = $('<span></span>').html('?');
 
     var $timeSlider = $('<input type="range" min="0" max="0" step=1/>')
-        .addClass("smallSlider")
+        .addClass("timeSlider")
         .on("input change", (_) => console.log('Time Slider changed! ' + $timeSlider.val()));
-
-    $general.append($('<div></div>').append("File Name: ").append(fileNameHolder));
 
     var spanFillers = [
             s => s.append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder),
             s => s.append("Note Count: ").append(noteCountHolder),
             s => s.append("Tempo: ").append(tempoHolder),
             s => s.append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder),
-            s => s.append("Time: ").append($timeSlider),
     ];
-    spanFillers.forEach(l => $general.append(l($('<div class="inlineBlock"></div>'))));
 
+    $general.append($('<div></div>').append("File Name: ").append(fileNameHolder));
+
+    spanFillers.forEach(l => $general.append(l($('<div class="inlineBlock"></div>'))));
     $cont.append($general.append('<br clear="all"/>'));
+
+    $general.append($('<div></div>').append($timeSlider));
+    var $staffContCont = $('<div></div>');
+    $general.append($staffContCont);
+    var $staffCont = $('<div></div>');
+    $staffContCont.append($staffCont);
+
+    var $staffMaskDiv = $('<div></div>').css('width', 0).css('height', 21).css('background-color', 'rgba(0,127,0,0.5)')
+        .css('position', 'relative').css('left', '10px').css('top', '-21px');
+    $staffContCont.append($staffMaskDiv);
 
     var $syntControl = $('<div class="syntControl"></div>').append('<div>huj</div>');
     $cont.append($syntControl);
@@ -46,7 +114,6 @@ Util.PlaybackControl = function ($cont)
         var chordCount = sheetMusic.chordList.length;
         chordCountHolder.html(chordCount);
 
-        /** @TODO: stop sounding of opened notes - MUSTIMPLEMENT */
         $timeSlider.attr('max', chordCount - 1).off( )
             .on('input change', (_) => playAtIndex($timeSlider.val()));
     };
@@ -55,11 +122,16 @@ Util.PlaybackControl = function ($cont)
         setFileName: n => fileNameHolder.html(n),
         setNoteCount: n => noteCountHolder.html(n),
         setFields: setFields,
+        repaintStaff: sheetMusic => Util.StaffPanel(sheetMusic).putInto($staffCont),
         setChordIndex: function(n) {
             chordIndexHolder.html(n);
             $timeSlider.val(n);
         },
-        setSeconds: n => secondsHolder.html('>' + Math.floor(n * 100) / 100),
+        setSeconds: n => {
+            secondsHolder.html(Math.floor(n * 100) / 100);
+            var secondsTotal = secondsTotalHolder.html();
+            $staffMaskDiv.css('width', (700 * n / secondsTotal) + 'px');
+        }
     };
     Object.keys(self).forEach(function(key) {
         var property = self[key];

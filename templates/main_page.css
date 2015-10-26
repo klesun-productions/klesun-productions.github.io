@@ -130,9 +130,10 @@
 
 	#playbackControl > div.syntControl { background-color: rgba(220, 91, 164, 1); }
 
-    input[type=range].smallSlider {
-        -webkit-appearance: none !important;
-        height: 14px;
-        width: 50px;
-        background-color: grey;
-    }
+	input[type=range] {
+		-webkit-appearance: none !important;
+		height: 14px;
+		background-color: grey;
+	}
+    input[type=range].smallSlider { width: 50px; }
+	input[type=range].timeSlider { width: 98%; }

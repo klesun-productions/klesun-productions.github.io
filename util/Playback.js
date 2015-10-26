@@ -9,7 +9,7 @@ Util.Playback = function (piano, $controlCont) {
     var control = Util.PlaybackControl($controlCont);
 
     var toFloat = fractionString => eval(fractionString);
-    var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
+    var toMillis = Util.toMillis;
 
     var synths = {
         oscillator: Util.Synths.Oscillator(),
@@ -22,12 +22,12 @@ Util.Playback = function (piano, $controlCont) {
     // list of lambdas
     var toBeInterrupted = [];
 
-    var scheduleInterruptable = function(millis, callback)
+    var scheduleInterruptable = function(millis, callback, dontExecute)
     {
         var interrupted = false;
         var interruptLambda = () => {
             interrupted = true;
-            callback();
+            dontExecute || callback();
         };
         toBeInterrupted.push(interruptLambda);
         setTimeout(() => {
@@ -54,7 +54,6 @@ Util.Playback = function (piano, $controlCont) {
 
     var playingThreads = [];
     var stop = (_) => {
-        playingThreads.forEach(t => (t.interrupted = true)); // it, actually, supposed to be only single thread...
         toBeInterrupted.forEach(c => c());
         toBeInterrupted.length = 0;
     };
@@ -83,6 +82,10 @@ Util.Playback = function (piano, $controlCont) {
 
         control.setFields(sheetMusic, playAtIndex).setFileName(fileName).setChordIndex(startIndex);
 
+        if (startIndex == 0) {
+            control.repaintStaff(sheetMusic);
+        }
+
         synths[synth].consumeConfig(sheetMusic.config.instrumentDict, function() {
 
             var thread = {interrupted: false};
@@ -96,12 +99,22 @@ Util.Playback = function (piano, $controlCont) {
                     var c = sheetMusic.chordList[idx];
                     c['noteList'].forEach(n => playNote(n, sheetMusic.config.tempo));
 
+                    var updateSlider = () => control
+                        .setChordIndex(idx)
+                        .setSeconds(c.timeMillis / 1000.0);
+
                     if (idx + 1 < sheetMusic.chordList.length) {
                         //var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis;
                         var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - (window.performance.now() - startMillis);
 
                         if (chordDuration > 0) {
-                            Util.setTimeout((_) => playNext(idx + 1), chordDuration);
+
+                            // piano image blinks if do it every time
+                            if (idx % 20 === 0 || chordDuration > 250) {
+                                updateSlider();
+                            }
+
+                            scheduleInterruptable(chordDuration, (_) => playNext(idx + 1), true);
                         } else {
                             playNext(idx + 1);
                         }
@@ -109,13 +122,6 @@ Util.Playback = function (piano, $controlCont) {
                     } else {
 
                         setTimeout(whenFinished, 5000); // hope last chord finishes in 5 seconds
-                    }
-
-                    // piano image lags if do it every time
-                    if (idx % 20 === 0) {
-                        control
-                            .setChordIndex(idx)
-                            .setSeconds(c.timeMillis / 1000.0);
                     }
                 } else {
                     var index = playingThreads.indexOf(thread);
@@ -126,6 +132,9 @@ Util.Playback = function (piano, $controlCont) {
             playNext(startIndex);
         });
     };
+
+    /** @TODO: move playShmidusic() and playStandardMidiFile() implementations into
+     * a separate class which would deal with format differences*/
 
     /** @param shmidusicJson - json in shmidusic project format */
     var playShmidusic = function (shmidusicJson, fileName, whenFinished) {
