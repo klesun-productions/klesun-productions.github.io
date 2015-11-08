@@ -112,10 +112,10 @@
 		background-color: #ccf;
 		border: 1px solid grey;
 	}
-    #playbackControl > div.syntControl > * {
-        background-color: #fce;
-    }
-    #playbackControl > * > div.inlineBlock {
+    #playbackControl div.syntControl > * { background-color: #fce; }
+	#playbackControl div.syntControl { background-color: rgba(220, 91, 164, 1); }
+	
+    div.inlineBlock {
         padding: 3px;
         float: left;
     }
@@ -131,8 +131,6 @@
         width: 50px;
     }
 
-	#playbackControl > div.syntControl { background-color: rgba(220, 91, 164, 1); }
-
 	input[type=range] {
 		-webkit-appearance: none !important;
 		height: 14px;
@@ -140,3 +138,5 @@
 	}
     input[type=range].smallSlider { width: 50px; }
 	input[type=range].timeSlider { width: 98%; }
+
+	div.globalControl { background-color: #6aa; }

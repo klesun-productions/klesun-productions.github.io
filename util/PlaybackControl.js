@@ -69,6 +69,23 @@ Util.StaffPanel = function(sheetMusic)
 
 Util.PlaybackControl = function($cont)
 {
+    var $tempoFactorInput = $('<select></select>')
+        .append($('<option value="1">x1</option>'))
+        .append($('<option value="1.5">x1.5</option>'))
+        .append($('<option value="2">x2</option>'))
+        .append($('<option value="3">x3</option>'))
+        .append($('<option value="4">x4</option>'))
+        .val(1);
+    var $syntControl = $('<div class="syntControl"></div>').append('<div>huj</div>');
+
+    var $globalControl = $('<div class="globalControl"></div>')
+        .append($('<div class="inlineBlock"></div>').append('Speed: ').append($tempoFactorInput))
+        .append($('<div class="inlineBlock"></div>').append($syntControl))
+        .append('<br clear="all"/>');
+
+    $cont.append($globalControl);
+
+
     var $general = $('<div class="general"></div>');
 
     var fileNameHolder = $('<span></span>').html('?');
@@ -85,10 +102,10 @@ Util.PlaybackControl = function($cont)
         .on("input change", (_) => console.log('Time Slider changed! ' + $timeSlider.val()));
 
     var spanFillers = [
-            s => s.append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder),
-            s => s.append("Note Count: ").append(noteCountHolder),
-            s => s.append("Tempo: ").append(tempoHolder).append(tempoOriginHolder),
-            s => s.append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder),
+        s => s.append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder),
+        s => s.append("Note Count: ").append(noteCountHolder),
+        s => s.append("Tempo: ").append(tempoHolder).append(tempoOriginHolder),
+        s => s.append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder),
     ];
 
     $general.append($('<div></div>').append("File Name: ").append(fileNameHolder));
@@ -106,9 +123,6 @@ Util.PlaybackControl = function($cont)
         .css('position', 'relative').css('left', '10px').css('top', '-21px');
     $staffContCont.append($staffMaskDiv);
 
-    var $syntControl = $('<div class="syntControl"></div>').append('<div>huj</div>');
-    $cont.append($syntControl);
-
     var setFields = function(sheetMusic, playAtIndex)
     {
         tempoHolder.val(Math.floor(sheetMusic.config.tempo));
@@ -124,9 +138,15 @@ Util.PlaybackControl = function($cont)
             sheetMusic.chordList.forEach(c => c.timeMillis = c.timeMillis * was / tempoHolder.val());
 
             /** @TODO: this is bad, because we don't always update slider... */
-            if ($timeSlider.val() + 1 < sheetMusic.chordList.length) {
+            if ($timeSlider.val() - -1 < sheetMusic.chordList.length) {
                 playAtIndex($timeSlider.val() - -1);
             }
+        });
+        $tempoFactorInput.off().change((_) => {
+            var newTempo = sheetMusic.config.tempoOrigin * $tempoFactorInput.val();
+            sheetMusic.chordList.forEach(c => c.timeMillis = c.timeMillis * sheetMusic.config.tempo / newTempo);
+            sheetMusic.config.tempo = newTempo;
+            playAtIndex($timeSlider.val() - -1);
         });
         tempoOriginHolder.html(Math.floor(sheetMusic.config.tempoOrigin));
 
@@ -163,6 +183,7 @@ Util.PlaybackControl = function($cont)
 
     $.extend(self, {
         $syntControl: $syntControl,
+        getTempoFactor: (_) => $tempoFactorInput.val(),
     });
 
     return self;

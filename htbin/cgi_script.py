@@ -8,6 +8,9 @@ cgitb.enable()
 
 import json
 import os
+import sys
+import codecs
+from transliterate import translit
 
 from classes.MidiFileProvider import MidiFileProvider
 
@@ -41,8 +44,13 @@ def execute_script():
 
     include_util_js()
 
-    with open('./templates/main_page.html') as content_file:
+    with codecs.open('./templates/main_page.html', 'r', 'utf-8') as content_file:
         main_page_html = content_file.read()
+        content_file.close()
+
+    # if hosting under Windows
+    if os.name == 'nt':
+        main_page_html = translit(main_page_html, 'ru', reversed=True)
 
     print(main_page_html)
 

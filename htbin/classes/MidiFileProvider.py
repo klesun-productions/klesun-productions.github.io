@@ -9,18 +9,22 @@ import json
 import os.path
 from subprocess import call
 import itertools
+import codecs
 
 
 class MidiFileProvider(object):
 
-    @staticmethod
-    def get_info_list() -> Iterable[dict]:
+    # content_folder = '/home/klesun/Dropbox/';
+    content_folder = './content/';
+
+    @classmethod
+    def get_info_list(cls) -> Iterable[dict]:
 
         result = []
 
         pattern = re.compile('^0_([a-zA-Z0-9]{2,})_(.*)$')
 
-        dir = '/home/klesun/Dropbox/midiCollection/'
+        dir = cls.content_folder + '/midiCollection/'
         dirNames = ['.', 'watched', 'random_good_stuff']
         fileListList = [os.listdir(dir + dirName) for dirName in dirNames]
         fileList = [file for file in itertools.chain(*fileListList) if file.endswith('.mid')]
@@ -34,24 +38,25 @@ class MidiFileProvider(object):
 
         return result;
 
-    @staticmethod
-    def get_shmidusic_list() -> Iterable[dict]:
+    @classmethod
+    def get_shmidusic_list(cls) -> Iterable[dict]:
 
         result = []
 
-        dir = '/home/klesun/Dropbox/yuzefa_git/a_opuses_json'
+        dir = cls.content_folder + '/yuzefa_git/a_opuses_json'
         for file in os.listdir(dir):
             if file.endswith(".mid.js"):
 
-                with open(dir + "/" + file) as content:
-                    content_json = json.load(content)
+                with codecs.open(dir + "/" + file, 'r', 'utf-8') as content:
+                    content_json = json.load(content, encoding='utf-8')
+                    content.close()
 
                 result.append({"fileName": file, "sheetMusic": content_json})
 
         return result
 
-    @staticmethod
-    def get_standard_midi_file(file_name) -> dict:
+    @classmethod
+    def get_standard_midi_file(cls, file_name) -> dict:
 
         result = {}
 
@@ -59,7 +64,8 @@ class MidiFileProvider(object):
         #'java org.shmidusic.stuff.scripts.MidiToReadableMidi'
         #''
 
-        with open('/home/klesun/Dropbox/midiCollection_smf/' + file_name + '.js') as content:
+        with codecs.open(cls.content_folder + '/midiCollection_smf/' + file_name + '.js', 'r', 'utf-8') as content:
             content_json = json.load(content)
+            content.close()
 
         return content_json

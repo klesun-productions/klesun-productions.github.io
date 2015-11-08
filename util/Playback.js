@@ -80,6 +80,14 @@ Util.Playback = function (piano, $controlCont) {
 
         var playAtIndex = ((chordIndex) => playGeneralFormat(sheetMusic, fileName, whenFinished, chordIndex));
 
+        // if to allow custom tempo
+        if (sheetMusic.config.tempo === sheetMusic.config.tempoOrigin) {
+            sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * control.getTempoFactor();
+
+            // argh, i hate myself
+            /** @TODO: time should be in quarters/semibreves so we did not need this, cuz it's very performance-consuming */
+            sheetMusic.chordList.forEach(c => c.timeMillis = c.timeMillis / control.getTempoFactor());
+        }
         control.setFields(sheetMusic, playAtIndex).setFileName(fileName).setChordIndex(startIndex);
 
         if (startIndex == 0) {
@@ -215,7 +223,6 @@ Util.Playback = function (piano, $controlCont) {
                 chordList.push(curChord);
             }
         });
-        chordList.push(curChord);
 
         control.setNoteCount(smf.noteList.length);
 
