@@ -4,6 +4,7 @@ var Util = Util || {};
 // This class destiny is to read shmidusic json structure and send events to MIDI.js and PianoLayoutPanel
 
 /** @param piano - PianoLayoutPanel instance */
+/** @param piano - an object with methods highlight(), unhighlight() */
 Util.Playback = function (piano, $controlCont) {
 
     var control = Util.PlaybackControl($controlCont);
@@ -22,17 +23,19 @@ Util.Playback = function (piano, $controlCont) {
     // list of lambdas
     var toBeInterrupted = [];
 
-    var scheduleInterruptable = function(millis, callback, dontExecute)
+    /** @param dontExecute - if not true, the scheduled callback will be called even
+     * if interrupted pre#devremenno */
+    var scheduleInterruptable = function(millis, taskList, dontExecute)
     {
         var interrupted = false;
         var interruptLambda = () => {
             interrupted = true;
-            dontExecute || callback();
+            taskList.forEach(t => t.skipWhenInterrupted ? null : t.callback());
         };
         toBeInterrupted.push(interruptLambda);
         setTimeout(() => {
             if (!interrupted) {
-                callback();
+                taskList.forEach(t => t.callback());
                 var index = toBeInterrupted.indexOf(interruptLambda);
                 toBeInterrupted.splice(index, 1);
             }
@@ -45,11 +48,11 @@ Util.Playback = function (piano, $controlCont) {
         var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
         piano.highlight(noteJs);
 
-        scheduleInterruptable(toMillis(length, tempo), function()
+        scheduleInterruptable(toMillis(length, tempo), [{skipWhenInterrupted: false, callback: function()
         {
             piano.unhighlight(noteJs);
             interrupt();
-        });
+        }}]);
     };
 
     var playingThreads = [];
@@ -101,7 +104,25 @@ Util.Playback = function (piano, $controlCont) {
 
             var startMillis = window.performance.now() - sheetMusic.chordList[startIndex].timeMillis;
 
-            var playNext = function(idx) {
+            var playNext = function(idx)
+            {
+                var continuation = (_) => {};
+                var timeSkip = 0;
+
+                // when switching tab
+                var tabSwitched = function()
+                {
+                    stop();
+                    var whenBack = function() {
+                        document.removeEventListener('visibilitychange', whenBack);
+                        playGeneralFormat(sheetMusic, fileName, whenFinished, idx);
+                    };
+                    document.addEventListener('visibilitychange', whenBack);
+                };
+
+                document.addEventListener('visibilitychange', tabSwitched);
+                var resetListener = _ => document.removeEventListener('visibilitychange', tabSwitched);
+
                 if (idx < sheetMusic.chordList.length && !thread.interrupted) {
 
                     var c = sheetMusic.chordList[idx];
@@ -112,39 +133,33 @@ Util.Playback = function (piano, $controlCont) {
                         .setSeconds(c.timeMillis / 1000.0);
 
                     if (idx + 1 < sheetMusic.chordList.length) {
-                        //var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - c.timeMillis;
-                        var chordDuration = sheetMusic.chordList[idx + 1].timeMillis - (window.performance.now() - startMillis);
 
-                        if (chordDuration > 0) {
+                        timeSkip = sheetMusic.chordList[idx + 1].timeMillis - (window.performance.now() - startMillis);
 
-                            // piano image blinks if do it every time
-                            if (idx % 20 === 0 || chordDuration > 250) {
-                                updateSlider();
-                            }
-
-                            scheduleInterruptable(chordDuration, (_) => playNext(idx + 1), true);
-                        } else {
-                            playNext(idx + 1);
+                        continuation = (_) => playNext(idx + 1);
+                        if (timeSkip > 0 && idx % 20 === 0 || timeSkip > 250) {
+                            continuation = Util.andThen(continuation, _ => updateSlider());
                         }
 
                     } else {
-
-                        setTimeout(whenFinished, 5000); // hope last chord finishes in 5 seconds
+                        // aint it should be part of the else below?
+                        timeSkip = 5000; // hope last chord finishes in 5 seconds
+                        continuation = whenFinished;
                     }
                 } else {
                     var index = playingThreads.indexOf(thread);
                     playingThreads.splice(index, 1);
                 }
 
-                // need it
-                window.onblur = function()
-                {
-                    stop();
-                    window.onfocus = function()
-                    {
-                        playGeneralFormat(sheetMusic, fileName, whenFinished, idx);
-                    };
-                };
+                if (timeSkip > 0) {
+                    scheduleInterruptable(timeSkip, [
+                        {skipWhenInterrupted: true, callback: continuation},
+                        {skipWhenInterrupted: false, callback: resetListener}
+                    ]);
+                } else {
+                    continuation();
+                    resetListener();
+                }
             };
 
             playNext(startIndex);
@@ -206,6 +221,7 @@ Util.Playback = function (piano, $controlCont) {
         });
     };
 
+    /** @TODO: move format normalization into separate class */
     var playStandardMidiFile = function (smf, fileName, whenFinished) {
 
         stop();
@@ -255,6 +271,6 @@ Util.Playback = function (piano, $controlCont) {
     return {
         playShmidusic: playShmidusic,
         playStandardMidiFile: playStandardMidiFile,
-        changeSynth: changeSynth
+        changeSynth: changeSynth,
     };
 };

@@ -2,30 +2,31 @@
 <head>
 	<meta charset="utf-8"/>
 	<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+	<script src="/util/Compose.js" type="text/javascript"></script>
+
+    <!-- auto-generated imports -->
+    <script src="/util//PianoLayoutPanel.js" type="text/javascript"></script>
+    <script src="/util//Playback.js" type="text/javascript"></script>
+    <script src="/util//PlaybackControl.js" type="text/javascript"></script>
+    <script src="/util//TableGenerator.js" type="text/javascript"></script>
+    <script src="/util//Tools.js" type="text/javascript"></script>
+    <script src="/util/synths/MidiDevice.js" type="text/javascript"></script>
+    <script src="/util/synths/Mudcube.js" type="text/javascript"></script>
+    <script src="/util/synths/Oscillator.js" type="text/javascript"></script>
+    <script src="/util/synths/SynthAdapter.js" type="text/javascript"></script>
+
 </head>
 
-<div>
-	<textarea id="out" rows="30" cols="100">Terminal ready!</textarea>
-</div>
+<div id="composeDiv"></div>
 
 <script>
 	
-	// following http://www.keithmcmillen.com/blog/making-music-in-the-browser-web-midi-api/ tutorial
+	var out = (s, o) => console.log(s, o);
 	
-	// works!!!!!!!!!!!!!!!!!!!
+	var gotMidi = function (midiInfo)
+    {
+        var compose = Util.Compose($('#composeDiv')[0]);
 
-	var out = (s, o) => {
-		$('#out').val($('#out').val() + '\n' + s);
-		if (o) {
-			out('object dump in console.log()\n');
-		}
-		$('#out')[0].scrollTop = $('#out')[0].scrollHeight;
-		
-		console.log(s, o);
-	};
-	
-	var gotMidi = function (midiInfo) {
-		
 		out("Midi Access Success!", midiInfo);
 		
 		var handleEvent = function (message) {
@@ -37,21 +38,16 @@
 			var tune = message.data[1];
 			var velocity = message.data[2];
 			out('midi event tune: ' + tune + '; velocity: ' + velocity + '; type: ' + eventType, message);
+
+            if (eventType === 'noteOn' && velocity > 0) {
+                compose.handleNoteOn(tune);
+            }
 		};
 		
 		var inputs = midiInfo.inputs.values();
 		for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
 			input.value.onmidimessage = handleEvent;
 		}
-		
-		var outputList = [];
-		
-		var outputs = midiInfo.outputs.values();
-		for (var output = outputs.next(); output && !output.done; output = outputs.next()) {
-			outputList.push(output);
-		}
-		
-		playShmidusic(outputList);
 	};
 
 	// request MIDI access

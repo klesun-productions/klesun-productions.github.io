@@ -1,0 +1,34 @@
+<script>
+
+    // wanna determine, whether calling addEventListener 20+ times per second
+    // will affect the music playback performance
+
+    console.log('started the script');
+
+    var heavyOperationList = [];
+    for (var j = 0; j < 10000; ++j) {
+
+        var heavyOperation = function () {
+            for (var i = 0; i < 1000; ++i) {
+                console.log(i);
+            }
+        };
+
+        heavyOperationList.push(heavyOperation);
+    }
+
+    console.log('created the functions');
+
+    for (heavyOperation of heavyOperationList) {
+        document.addEventListener('visibilitychange', heavyOperation);
+    }
+
+    console.log('added event listeners');
+
+    for (heavyOperation of heavyOperationList) {
+        document.removeEventListener('visibilitychange', heavyOperation);
+    }
+
+    console.log('removed event listeners');
+
+</script>

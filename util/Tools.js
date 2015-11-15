@@ -26,6 +26,14 @@ Util.forEachBreak = function(list, breakMillis, chunkSize, callback)
     doNext(0);
 };
 
+Util.andThen = function(firstCallback, secondCallback)
+{
+    return function() {
+        firstCallback();
+        secondCallback();
+    };
+};
+
 // a helper to provide me with one-line methods: drawLine() and fillRect()
 Util.CanvasAdapter = function(canvas)
 {
