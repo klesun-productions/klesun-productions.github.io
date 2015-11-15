@@ -87,7 +87,7 @@ Util.Synths.Mudcube = function () {
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(noteJs, tempo) {
+    var playNote = function(noteJs) {
 
         // does not work in chromium. due to mp3 and proprietarity i suppose
 

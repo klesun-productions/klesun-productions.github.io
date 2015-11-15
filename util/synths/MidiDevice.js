@@ -32,7 +32,7 @@ Util.Synths.MidiDevice = function () {
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(noteJs, tempo) {
+    var playNote = function(noteJs) {
         // 0x90 = noteOn, 127 = max velocity
         midiOutputList.forEach(output => output.send([0x90 - -noteJs.channel, noteJs.tune, 127] ));
         return () => midiOutputList.forEach(output => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]));

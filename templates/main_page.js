@@ -1,7 +1,7 @@
 
 // requires Util.TableGenerator.js !
 // requires Util.PianoLayoutPanel.js !
-// requires Util.Playback.js !
+// requires Util.Player.js !
 
 var MainPage = function($pianoCanvas, $playbackControlCont) {
 
@@ -23,14 +23,40 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         xmlhttp.send();
     };
 
-    var pianoLayoutPanel = Util.PianoLayoutPanel($pianoCanvas);
-    var playback = Util.Playback(pianoLayoutPanel, $playbackControlCont);
+    var RealSynthAdapter = function(dropdownEl, controlEl)
+    {
+        var synths = {
+            oscillator: Util.Synths.Oscillator(),
+            mudcube: Util.Synths.Mudcube(),
+            midiDevice: Util.Synths.MidiDevice()
+        };
+
+        var changeSynth = function() {
+            synths[$(dropdownEl).val()].init($(controlEl));
+        };
+
+        $(dropdownEl).empty();
+        var addOption = s => $(dropdownEl).append($('<option></option>').val(s).html(s));
+        Object.keys(synths).forEach(addOption);
+        $(dropdownEl).val('oscillator').change(_ => changeSynth()).trigger('change');
+
+        return {
+            handleNoteOn: n => synths[$(dropdownEl).val()].playNote(n),
+            consumeConfig: (config, callback) => synths[$(dropdownEl).val()].consumeConfig(config, callback)
+        };
+    };
+    var synth = RealSynthAdapter($('#synthDropdown')[0], $('#synthControl')[0]);
+
+    var player = Util.Player($playbackControlCont);
+    player.addNoteHandler(Util.PianoLayoutPanel($pianoCanvas));
+    player.addNoteHandler(synth);
+    player.addConfigConsumer(synth);
 
     var playDemo = function () {
         var mineList = Globals.shmidusicList;
         var index = Math.floor(Math.random() * mineList.length);
         console.log('Playing: ' + mineList[index].fileName);
-        playback.playShmidusic(mineList[index].sheetMusic, mineList[index].fileName);
+        player.playShmidusic(mineList[index].sheetMusic, mineList[index].fileName);
     };
 
     var playRandom = () => alert("Please, wait till midi names load from ajax!");
@@ -42,7 +68,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
             var playButtonFormatter = function (cell, row) {
                 var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: row.rawFileName}));
                 return $('<input type="button" value="Play!"/>')
-                    .click(() => performExternal(link, answer => playback.playStandardMidiFile(answer, row.rawFileName)));
+                    .click(() => performExternal(link, answer => player.playStandardMidiFile(answer, row.rawFileName)));
             };
 
 			var callback = function (rowList) {
@@ -73,7 +99,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
                     console.log('Playing: ' + rowList[index].fileName);
 
                     var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: rowList[index].rawFileName, finished_file_name: finishedFileName}));
-                    performExternal(link, answer => playback.playStandardMidiFile(answer, rowList[index].fileName, () => playRandom(rowList[index].rawFileName)));
+                    performExternal(link, answer => player.playStandardMidiFile(answer, rowList[index].fileName, () => playRandom(rowList[index].rawFileName)));
                 };
 			};
 		
@@ -84,7 +110,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
 
             var playButtonFormatter = function (cell, row) {
                 return $('<input type="button" value="Play!"/>')
-                        .click(() => playback.playShmidusic(row['sheetMusic'], row['fileName']));
+                        .click(() => player.playShmidusic(row['sheetMusic'], row['fileName']));
             };
 
             /** @TODO: fetch it with a separate request */
@@ -110,6 +136,5 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         init: init, // TODO: split to initShmidusicList() and initIchigosMidiList()
         playDemo: playDemo,
         playRandom: () => playRandom(),
-        changeSynth: playback.changeSynth,
     };
 };

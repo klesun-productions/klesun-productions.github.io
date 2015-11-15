@@ -25,9 +25,11 @@
     <div id="pianoControlDiv" align="center">
         <div class="piano-side-div">
 			<select id="synthDropdown" style="float: right; margin-right: 10px; background-color: rgba(255, 63, 0, 0.2)">
+                <!--
                 <option value="oscillator">Oscillator</option>
                 <option value="mudcube">Mudcube</option>
                 <option value="midiDevice">Midi Device</option>
+                -->
             </select>
         </div>
         <div class="piano-cont">
@@ -49,6 +51,7 @@
 
 	<td valign="top">
 	<div class="main-middle-cont">
+        <div id="synthControl"></div>
         <div id="playbackControl"></div>
         <br/>
         <div style="background-color: white;">
@@ -96,9 +99,6 @@
 		mainPage.init();
 		$('#startDemoButton').click(mainPage.playDemo);
         $('#playRandomButton').click(mainPage.playRandom);
-		$('#synthDropdown')
-                .change(() => mainPage.changeSynth($('#synthDropdown').val()))
-                .trigger('change');
 	};
 
 	window.addEventListener('load', onLoad, false);

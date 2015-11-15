@@ -76,11 +76,9 @@ Util.PlaybackControl = function($cont)
         .append($('<option value="3">x3</option>'))
         .append($('<option value="4">x4</option>'))
         .val(1);
-    var $syntControl = $('<div class="syntControl"></div>').append('<div>huj</div>');
 
     var $globalControl = $('<div class="globalControl"></div>')
         .append($('<div class="inlineBlock"></div>').append('Speed: ').append($tempoFactorInput))
-        .append($('<div class="inlineBlock"></div>').append($syntControl))
         .append('<br clear="all"/>');
 
     $cont.append($globalControl);
@@ -120,7 +118,7 @@ Util.PlaybackControl = function($cont)
     $staffContCont.append($staffCont);
 
     var $staffMaskDiv = $('<div></div>').css('width', 0).css('height', 21).css('background-color', 'rgba(0,127,0,0.5)')
-        .css('position', 'relative').css('left', '10px').css('top', '-21px');
+        .css('position', 'relative').css('left', '10px').css('top', '-21px').css('margin-bottom', '0px');
     $staffContCont.append($staffMaskDiv);
 
     var setFields = function(sheetMusic, playAtIndex)
@@ -129,8 +127,6 @@ Util.PlaybackControl = function($cont)
         tempoHolder.off().change(() =>
         {
             tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
-
-            /** @TODO: when you change, green div, that fades staff, becames wrong (probably final time it takes from previous playback) */
 
             var was = sheetMusic.config.tempo;
             sheetMusic.config.tempo = tempoHolder.val(); // is it okay?
@@ -182,7 +178,6 @@ Util.PlaybackControl = function($cont)
     });
 
     $.extend(self, {
-        $syntControl: $syntControl,
         getTempoFactor: (_) => $tempoFactorInput.val(),
     });
 

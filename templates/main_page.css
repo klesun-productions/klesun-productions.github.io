@@ -112,8 +112,8 @@
 		background-color: #ccf;
 		border: 1px solid grey;
 	}
-    #playbackControl div.syntControl > * { background-color: #fce; }
-	#playbackControl div.syntControl { background-color: rgba(220, 91, 164, 1); }
+    div#synthControl > * { background-color: #fce; }
+	div#synthControl { background-color: rgba(220, 91, 164, 1); }
 	
     div.inlineBlock {
         padding: 3px;

@@ -62,13 +62,6 @@ Util.PianoLayoutPanel = function ($canvas) {
         }
     };
 
-    /** @param [{tune: int, channel: int}, ...] noteList */
-    var highlight = function (noteJs) {
-        var color = channelColors[noteJs.channel];
-        fillTune(noteJs.tune, color);
-        (pressedNotes[noteJs.tune] || (pressedNotes[noteJs.tune] = [])).push(noteJs.channel);
-    };
-
     /** @param {tune: int, channel: int} noteJs */
     var unhighlight = function (noteJs) {
 
@@ -83,10 +76,18 @@ Util.PianoLayoutPanel = function ($canvas) {
         fillTune(noteJs.tune, color);
     };
 
+    /** @param [{tune: int, channel: int}, ...] noteList */
+    var highlight = function (noteJs) {
+        var color = channelColors[noteJs.channel];
+        fillTune(noteJs.tune, color);
+        (pressedNotes[noteJs.tune] || (pressedNotes[noteJs.tune] = [])).push(noteJs.channel);
+
+        return _ => unhighlight(noteJs);
+    };
+
     paintBase();
 
     return {
-        highlight: highlight,
-        unhighlight: unhighlight,
+        handleNoteOn: highlight,
     };
 }
