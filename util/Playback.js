@@ -135,6 +135,16 @@ Util.Playback = function (piano, $controlCont) {
                     var index = playingThreads.indexOf(thread);
                     playingThreads.splice(index, 1);
                 }
+
+                // need it
+                window.onblur = function()
+                {
+                    stop();
+                    window.onfocus = function()
+                    {
+                        playGeneralFormat(sheetMusic, fileName, whenFinished, idx);
+                    };
+                };
             };
 
             playNext(startIndex);
@@ -237,6 +247,10 @@ Util.Playback = function (piano, $controlCont) {
 
         control.setNoteCount(smf.noteList.length);
     };
+
+    // this class shouldn't be instanciated more than once, right?
+    // besides, the playing notes are global thing.
+    window.onbeforeunload = _ => stop();
 
     return {
         playShmidusic: playShmidusic,
