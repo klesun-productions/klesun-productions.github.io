@@ -10,7 +10,7 @@ import json
 import os
 import sys
 import codecs
-from transliterate import translit
+# from transliterate import translit
 
 from classes.MidiFileProvider import MidiFileProvider
 

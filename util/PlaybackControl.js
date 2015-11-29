@@ -25,7 +25,7 @@ Util.StaffPanel = function(sheetMusic)
     };
 
     /** @TODO: handle properly sharps and flats! */
-    var drawNote = function(note, startTime)
+    var drawNote = function(note, startFraction)
     {
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
         var ivoryIndex = !isEbony
@@ -33,14 +33,14 @@ Util.StaffPanel = function(sheetMusic)
             : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as ebonies for now - ignoring file key signature
 
         if (sheetMusic.chordList.length > 0) {
-            var totalTime = sheetMusic.chordList.slice(-1)[0].timeMillis;
+            var totalLength = sheetMusic.chordList.slice(-1)[0].timeFraction;
             var length = eval(note.length) / (note.isTriplet ? 3 : 1);
 
-            var x_px = canvas.width * startTime / totalTime;
+            var x_px = canvas.width * startFraction / totalLength;
             /** @TODO: it was lame idea to limit only to single octave, most songs have only black channel - already
              * hard to get some info from picture. do both violin/bass keys probably, like in java. */
             var y_px = canvas.height * (6 - ivoryIndex) / 7;
-            var w_px = canvas.width * (Util.toMillis(length, sheetMusic.config.tempo) / totalTime);
+            var w_px = canvas.width * length / totalLength;
 
             var color = Util.channelColors[note.channel];
 
@@ -50,12 +50,13 @@ Util.StaffPanel = function(sheetMusic)
         }
     };
 
+
     var repaint = function()
     {
         drawSystemLines();
         sheetMusic.chordList.forEach(function(chord)
         {
-            chord.noteList.forEach(note => drawNote(note, chord.timeMillis));
+            chord.noteList.forEach(note => drawNote(note, chord.timeFraction));
         });
     };
     repaint();
@@ -127,11 +128,7 @@ Util.PlaybackControl = function($cont)
         tempoHolder.off().change(() =>
         {
             tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
-
-            var was = sheetMusic.config.tempo;
             sheetMusic.config.tempo = tempoHolder.val(); // is it okay?
-            /** @TODO: time should be in quarters/semibreves so we did not need this, cuz it's very performance-consuming */
-            sheetMusic.chordList.forEach(c => c.timeMillis = c.timeMillis * was / tempoHolder.val());
 
             /** @TODO: this is bad, because we don't always update slider... */
             if ($timeSlider.val() - -1 < sheetMusic.chordList.length) {
@@ -139,14 +136,12 @@ Util.PlaybackControl = function($cont)
             }
         });
         $tempoFactorInput.off().change((_) => {
-            var newTempo = sheetMusic.config.tempoOrigin * $tempoFactorInput.val();
-            sheetMusic.chordList.forEach(c => c.timeMillis = c.timeMillis * sheetMusic.config.tempo / newTempo);
-            sheetMusic.config.tempo = newTempo;
+            sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * $tempoFactorInput.val();
             playAtIndex($timeSlider.val() - -1);
         });
         tempoOriginHolder.html(Math.floor(sheetMusic.config.tempoOrigin));
 
-        var secondsTotal = sheetMusic.chordList.slice(-1)[0].timeMillis / 1000.0;
+        var secondsTotal = Util.toMillis(sheetMusic.chordList.slice(-1)[0].timeFraction, sheetMusic.config.tempo);
         secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
 
         self.setNoteCount('?');

@@ -69,10 +69,6 @@ Util.Player = function ($controlCont)
         // if to allow custom tempo
         if (sheetMusic.config.tempo === sheetMusic.config.tempoOrigin) {
             sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * control.getTempoFactor();
-
-            // argh, i hate myself
-            /** @TODO: time should be in quarters/semibreves so we did not need this, cuz it's very performance-consuming */
-            sheetMusic.chordList.forEach(c => c.timeMillis = c.timeMillis / control.getTempoFactor());
         }
         control.setFields(sheetMusic, playAtIndex).setFileName(fileName).setChordIndex(startIndex);
 
@@ -82,7 +78,8 @@ Util.Player = function ($controlCont)
 
         configConsumer.consumeConfig(sheetMusic.config.instrumentDict, function()
         {
-            var startMillis = window.performance.now() - sheetMusic.chordList[startIndex].timeMillis;
+            var startMillis = window.performance.now() -
+                toMillis(sheetMusic.chordList[startIndex].timeFraction, sheetMusic.config.tempo);
 
             var playNext = function(idx)
             {
@@ -107,11 +104,12 @@ Util.Player = function ($controlCont)
 
                 var updateSlider = () => control
                     .setChordIndex(idx)
-                    .setSeconds(c.timeMillis / 1000.0);
+                    .setSeconds(toMillis(c.timeFraction, sheetMusic.config.tempo) / 1000.0);
 
                 if (idx + 1 < sheetMusic.chordList.length) {
 
-                    timeSkip = sheetMusic.chordList[idx + 1].timeMillis - (window.performance.now() - startMillis);
+                    timeSkip = toMillis(sheetMusic.chordList[idx + 1].timeFraction, sheetMusic.config.tempo) -
+                            (window.performance.now() - startMillis);
 
                     continuation = (_) => playNext(idx + 1);
                     if (timeSkip > 0 && idx % 20 === 0 || timeSkip > 250) {
@@ -119,7 +117,6 @@ Util.Player = function ($controlCont)
                     }
 
                 } else {
-                    // aint it should be part of the else below?
                     timeSkip = 5000; // hope last chord finishes in 5 seconds
                     continuation = whenFinished;
                 }
@@ -148,8 +145,8 @@ Util.Player = function ($controlCont)
         whenFinished = whenFinished || ((_) => {});
         fileName = fileName || 'noNameFile';
 
-		shmidusicJson['staffList'].forEach(function(staff) {
-
+		shmidusicJson['staffList'].forEach(function(staff)
+        {
             var instrumentDict = {};
 
             (staff.staffConfig.channelList || [])
@@ -166,7 +163,7 @@ Util.Player = function ($controlCont)
 
             if (!staff.millisecondTimeCalculated) {
 
-                var timeMillis = 0;
+                var timeFraction = 0;
 
                 chordList.forEach(function(c) {
                     /** @legacy */
@@ -175,9 +172,9 @@ Util.Player = function ($controlCont)
                         delete n.isTriplet;
                     });
 
-                    c.timeMillis = timeMillis;
+                    c.timeFraction = timeFraction;
                     var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
-                    timeMillis += toMillis(chordLength, staff.staffConfig.tempo);
+                    timeFraction += chordLength;
                 });
 
                 staff.millisecondTimeCalculated = true;
@@ -195,8 +192,8 @@ Util.Player = function ($controlCont)
     };
 
     /** @TODO: move format normalization into separate class */
-    var playStandardMidiFile = function (smf, fileName, whenFinished) {
-
+    var playStandardMidiFile = function (smf, fileName, whenFinished)
+    {
         stop();
 
         whenFinished = whenFinished || ((_) => {});
@@ -216,7 +213,7 @@ Util.Player = function ($controlCont)
                 curChord.noteList.push(note);
             } else {
                 curTime = note.time;
-                curChord = {noteList: [note], timeMillis: toMillis(curTime / division, tempoEntry.tempo)};
+                curChord = {noteList: [note], timeFraction: curTime / division};
                 chordList.push(curChord);
             }
         });
