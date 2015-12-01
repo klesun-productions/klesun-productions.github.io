@@ -19,7 +19,7 @@ Util.forEachBreak = function(list, breakMillis, chunkSize, callback)
             for (var i = index; i < Math.min(list.length, index + chunkSize); ++i) {
                 callback(list[i]);
             }
-            setTimeout(() => doNext(index + chunkSize), breakMillis);
+            setTimeout((_) => doNext(index + chunkSize), breakMillis);
         }
     };
 

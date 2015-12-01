@@ -8,14 +8,12 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
     var performExternal = function(scriptName, callback) {
 
         xmlhttp = new XMLHttpRequest();
-        var isDone = () => xmlhttp.readyState == XMLHttpRequest.DONE;
-        var isOk = () => xmlhttp.status == 200;
-        var getResponse = () => {
-            return JSON.parse(xmlhttp.responseText);
-        };
-        var getErrorMessage = () => 'Failed to get ajax with script ' + script + ' status: ' + xmlhttp.status;
+        var isDone = (_) => xmlhttp.readyState == XMLHttpRequest.DONE;
+        var isOk = (_) => xmlhttp.status == 200;
+        var getResponse = (_) => JSON.parse(xmlhttp.responseText);
+        var getErrorMessage = (_) => 'Failed to get ajax with script ' + script + ' status: ' + xmlhttp.status;
 
-        xmlhttp.onreadystatechange = () => isDone()
+        xmlhttp.onreadystatechange = (_) => isDone()
             ? (isOk() ? callback(getResponse()) : alert(getErrorMessage()))
             : -100;
 
@@ -59,7 +57,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         player.playShmidusic(mineList[index].sheetMusic, mineList[index].fileName);
     };
 
-    var playRandom = () => alert("Please, wait till midi names load from ajax!");
+    var playRandom = (_) => alert("Please, wait till midi names load from ajax!");
 
     var init = function () {
 
@@ -68,7 +66,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
             var playButtonFormatter = function (cell, row) {
                 var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: row.rawFileName}));
                 return $('<input type="button" value="Play!"/>')
-                    .click(() => performExternal(link, answer => player.playStandardMidiFile(answer, row.rawFileName)));
+                    .click((_) => performExternal(link, answer => player.playStandardMidiFile(answer, row.rawFileName)));
             };
 
 			var callback = function (rowList) {
@@ -81,13 +79,6 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
 
 				var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
 				
-				var shuffle = function(o) {
-					for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-					return o;
-				};
-				
-				shuffle(rowList);
-
 				var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
 				$('.random-midi-list-cont').append(table); // defined in main_page.html
 
@@ -99,7 +90,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
                     console.log('Playing: ' + rowList[index].fileName);
 
                     var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: rowList[index].rawFileName, finished_file_name: finishedFileName}));
-                    performExternal(link, answer => player.playStandardMidiFile(answer, rowList[index].fileName, () => playRandom(rowList[index].rawFileName)));
+                    performExternal(link, answer => player.playStandardMidiFile(answer, rowList[index].fileName, (_) => playRandom(rowList[index].rawFileName)));
                 };
 			};
 		
@@ -110,7 +101,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
 
             var playButtonFormatter = function (cell, row) {
                 return $('<input type="button" value="Play!"/>')
-                        .click(() => player.playShmidusic(row['sheetMusic'], row['fileName']));
+                        .click((_) => player.playShmidusic(row['sheetMusic'], row['fileName']));
             };
 
             /** @TODO: fetch it with a separate request */
@@ -135,6 +126,6 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
     return {
         init: init, // TODO: split to initShmidusicList() and initIchigosMidiList()
         playDemo: playDemo,
-        playRandom: () => playRandom(),
+        playRandom: (_) => playRandom(),
     };
 };

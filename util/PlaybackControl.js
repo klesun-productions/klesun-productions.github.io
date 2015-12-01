@@ -125,7 +125,7 @@ Util.PlaybackControl = function($cont)
     var setFields = function(sheetMusic, playAtIndex)
     {
         tempoHolder.val(Math.floor(sheetMusic.config.tempo));
-        tempoHolder.off().change(() =>
+        tempoHolder.off().change(function()
         {
             tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
             sheetMusic.config.tempo = tempoHolder.val(); // is it okay?
@@ -135,7 +135,7 @@ Util.PlaybackControl = function($cont)
                 playAtIndex($timeSlider.val() - -1);
             }
         });
-        $tempoFactorInput.off().change((_) => {
+        $tempoFactorInput.off().change(function() {
             sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * $tempoFactorInput.val();
             playAtIndex($timeSlider.val() - -1);
         });
@@ -161,7 +161,7 @@ Util.PlaybackControl = function($cont)
             chordIndexHolder.html(n);
             $timeSlider.val(n);
         },
-        setSeconds: n => {
+        setSeconds: function(n) {
             secondsHolder.html(Math.floor(n * 100) / 100);
             var secondsTotal = secondsTotalHolder.html();
             $staffMaskDiv.css('width', (700 * n / secondsTotal) + 'px');
@@ -169,7 +169,7 @@ Util.PlaybackControl = function($cont)
     };
     Object.keys(self).forEach(function(key) {
         var property = self[key];
-        self[key] = (v,v2) => { property(v,v2); return self; };
+        self[key] = function(v,v2) { property(v,v2); return self; };
     });
 
     $.extend(self, {

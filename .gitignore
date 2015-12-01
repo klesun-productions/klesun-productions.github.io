@@ -2,3 +2,5 @@
 /content
 /libs/*
 __pycache__
+/nbproject/private/
+/nbproject/

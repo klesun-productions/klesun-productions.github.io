@@ -35,7 +35,7 @@ Util.Synths.MidiDevice = function () {
     var playNote = function(noteJs) {
         // 0x90 = noteOn, 127 = max velocity
         midiOutputList.forEach(output => output.send([0x90 - -noteJs.channel, noteJs.tune, 127] ));
-        return () => midiOutputList.forEach(output => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]));
+        return (_) => midiOutputList.forEach(output => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]));
     };
 
     /** @param instrumentDict {channelNumber: instrumentNumber} */

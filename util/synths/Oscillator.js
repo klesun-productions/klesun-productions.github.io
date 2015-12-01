@@ -25,7 +25,7 @@ Util.Synths.Oscillator = function () {
         gainNode.gain.value = 0;
         /** this timeout is a hacky way to get rid of artifacts when oscillator starts and stops
          * a'm afraid it may affect performance... */
-        setTimeout(() => gainNode.gain.value = baseVolume, 4);
+        setTimeout((_) => (gainNode.gain.value = baseVolume, 4));
         //gainNode.gain.value = baseVolume;
 
         var oscillator = audioCtx.createOscillator();
@@ -37,7 +37,7 @@ Util.Synths.Oscillator = function () {
         return function()
         {
             gainNode.gain.value = 0;
-            setTimeout(() => oscillator.stop(), 100);
+            setTimeout((_) => oscillator.stop(), 100);
         };
     };
 
@@ -99,12 +99,9 @@ Util.Synths.Oscillator = function () {
 
         if (noteJs.channel != 9) {
             return startSounding(tuneToFrequency(noteJs.tune));
-            //var duration = toMillis(toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1), tempo);
-            //Util.setTimeout(interrupt, duration);
-
         } else {
             // TODO: this is drum - think something about this!
-            return () => {};
+            return (_) => {};
         }
     };
 

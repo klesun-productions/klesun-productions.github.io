@@ -25,12 +25,12 @@ Util.Player = function ($controlCont)
     var scheduleInterruptable = function(millis, taskList)
     {
         var interrupted = false;
-        var interruptLambda = () => {
+        var interruptLambda = function() {
             interrupted = true;
             taskList.forEach(t => t.skipWhenInterrupted ? null : t.callback());
         };
         toBeInterrupted.push(interruptLambda);
-        setTimeout(() => {
+        setTimeout(function() {
             if (!interrupted) {
                 taskList.forEach(t => t.callback());
                 var index = toBeInterrupted.indexOf(interruptLambda);
@@ -51,7 +51,7 @@ Util.Player = function ($controlCont)
         }}]);
     };
 
-    var stop = (_) => {
+    var stop = function() {
         toBeInterrupted.forEach(c => c());
         toBeInterrupted.length = 0;
     };
@@ -102,7 +102,7 @@ Util.Player = function ($controlCont)
                 var c = sheetMusic.chordList[idx];
                 c['noteList'].forEach(n => playNote(n, sheetMusic.config.tempo));
 
-                var updateSlider = () => control
+                var updateSlider = (_) => control
                     .setChordIndex(idx)
                     .setSeconds(toMillis(c.timeFraction, sheetMusic.config.tempo) / 1000.0);
 
@@ -240,6 +240,6 @@ Util.Player = function ($controlCont)
         playShmidusic: playShmidusic,
         playStandardMidiFile: playStandardMidiFile,
         addNoteHandler: h => noteHandlers.push(h),
-        addConfigConsumer: cc => configConsumer = cc
+        addConfigConsumer: cc => (configConsumer = cc)
     };
 };
