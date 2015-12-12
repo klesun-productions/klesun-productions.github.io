@@ -114,7 +114,7 @@ Util.PlaybackControl = function($cont)
     var self = {
         setFileInfo: function(info) {
             $cont.find('.fileName.holder').html(info.fileName);
-            $cont.find('.score.holder').html(info.score);
+            $cont.find('.score.holder').html(info.score || '_');
         },
         setNoteCount: n => $cont.find('.noteCount.holder').html(n),
         setFields: setFields,

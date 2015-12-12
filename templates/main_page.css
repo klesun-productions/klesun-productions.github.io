@@ -107,7 +107,7 @@
         overflow: hidden;
 	}
 
-	#playbackControl * { font-size: 10px; }
+	.main-middle-cont * { font-size: 10px; }
 	#playbackControl > div.general { background-color: rgb(140, 133, 208); }
     #playbackControl > div > * {
 		white-space: nowrap;
@@ -120,7 +120,9 @@
     div.inlineBlock {
         padding: 3px;
         float: left;
+        height: 14px;
     }
+    #synthControl div.inlineBlock { height: 18px; }
 	#playbackControl > * > div.inlineBlock > span { width: 50px; }
 	#playbackControl > * > * > span { /* field value */
         background-color: #e4e4e4;
