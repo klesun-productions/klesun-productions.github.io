@@ -35,6 +35,8 @@ class MidiFileProvider(object):
                 result.append({"fileName": matches[0][1], "score": matches[0][0], 'rawFileName': file})
             else:
                 result.append({"fileName": file, "score": '', 'rawFileName': file})
+		
+        result = sorted(result, key=lambda k: (k['score'] if len(k['score']) > 0 else 'zzz' + k['fileName']))
 
         return result;
 

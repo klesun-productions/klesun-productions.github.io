@@ -6,7 +6,7 @@ Util.Synths.Oscillator = function () {
 
     var firstInit = true;
     // on demand
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     // ["sine", "square", "saw", "triangle", "custom"]
     var waveTypes = ["sine", "triangle", "sawtooth", "square"];

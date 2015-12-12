@@ -141,7 +141,7 @@ Util.PlaybackControl = function($cont)
         });
         tempoOriginHolder.html(Math.floor(sheetMusic.config.tempoOrigin));
 
-        var secondsTotal = Util.toMillis(sheetMusic.chordList.slice(-1)[0].timeFraction, sheetMusic.config.tempo);
+        var secondsTotal = Util.toMillis(sheetMusic.chordList.slice(-1)[0].timeFraction, sheetMusic.config.tempo) / 1000;
         secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
 
         self.setNoteCount('?');

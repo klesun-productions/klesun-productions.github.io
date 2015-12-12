@@ -4,3 +4,5 @@
 __pycache__
 /nbproject/private/
 /nbproject/
+/mokona_game/libs
+.idea

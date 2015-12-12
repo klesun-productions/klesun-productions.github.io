@@ -1,0 +1,48 @@
+
+<script src="libs/easeljs-0.8.2.combined.js"></script>
+<script src="libs/tweenjs-0.6.2.combined.js"></script>
+
+<body onload="init();">
+    Happy new mokona to you
+    <canvas id="demoCanvas" width="500" height="300"></canvas>
+</body>
+
+<script>
+
+    var handlerDict = {};
+    document.onkeydown = e => (e.keyCode in handlerDict ? handlerDict[e.keyCode]() : 0);
+    var handleKey = (n,cb) => handlerDict[n] = cb;
+
+    var init = function()
+    {
+        var stage = new createjs.Stage('demoCanvas');
+
+        // drawing a her
+
+        var hero = new createjs.Shape();
+
+        var head_radius = 20;
+        var torso_length = head_radius * 4;
+
+        hero.graphics.beginFill('#ff0000').drawCircle(0,0,head_radius);
+        hero.graphics.beginFill('#ff00ff').rect(-head_radius, head_radius, head_radius * 2, torso_length);
+        hero.graphics.beginFill('#0000ff').rect(-head_radius, head_radius + torso_length, head_radius * 2/3, torso_length);
+        hero.graphics.beginFill('#0000ff').rect(head_radius * 1/3, head_radius + torso_length, head_radius * 2/3, torso_length);
+
+        hero.x = 100;
+        hero.y = 100;
+
+        stage.addChild(hero);
+
+        // animating the hero
+
+        var dance = _ => createjs.Tween.get(hero)
+            .to({ x: 400 }, 1000, createjs.Ease.getPowInOut(4))
+            .to({ x: 100 }, 1000, createjs.Ease.getPowInOut(4));
+
+        handleKey(37, dance); // left-arrow
+
+        createjs.Ticker.setFPS(60);
+        createjs.Ticker.addEventListener("tick", stage);
+    };
+</script>

@@ -91,6 +91,7 @@
 	.random-midi-list-cont table tr:not(.table-generator-title-tr) td {
 		background-color: #444;
 		color: yellow;
+		font-size: 10px;
 		max-width: 130px;
 		overflow: hidden;
 	}

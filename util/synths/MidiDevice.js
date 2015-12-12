@@ -7,9 +7,6 @@ Util.Synths.MidiDevice = function () {
     var firstInit = true;
     var midiOutputList = [];
 
-    var toFloat = fractionString => eval(fractionString);
-    var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
-
     var init = function ($controlEl) {
 
         if (firstInit) {
@@ -30,21 +27,46 @@ Util.Synths.MidiDevice = function () {
         $controlEl.empty().append($('<div></div>').append('TODO: make possible to choose output device'));
     };
 
+    // 0x90 = noteOn, 127 = max velocity
+    var noteOn = (tune,channel) => midiOutputList.forEach(o => o.send([0x90 - -channel, tune, 127] ));
+    var noteOff = (tune,channel) => midiOutputList.forEach(o => o.send([0x80 - -channel, tune, 0x40]));
+
+    var setInstrument = (n,channel) => midiOutputList.forEach(o => o.send([0xC0 - -channel, n]))
+
+    // a dict {noteIndex: openedCount}
+    var openedDict = {};
+    Util.range(0,16).forEach(n => openedDict[n] = {});
+
+    /** @TODO: change arguments from "noteJs" to explicit "tune" and "channel" */
+
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(noteJs) {
-        // 0x90 = noteOn, 127 = max velocity
-        midiOutputList.forEach(output => output.send([0x90 - -noteJs.channel, noteJs.tune, 127] ));
-        return (_) => midiOutputList.forEach(output => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]));
+    var playNote = function(noteJs)
+    {
+        // stopping just for a moment to mark end of previous sounding if any
+        if ((openedDict[noteJs.channel][noteJs.tune] || 0) > 0) {
+            noteOff(noteJs.tune, noteJs.channel);
+            midiOutputList.forEach(output => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]));
+        }
+
+        noteOn(noteJs.tune, noteJs.channel);
+
+        openedDict[noteJs.channel][noteJs.tune] |= 0;
+        openedDict[noteJs.channel][noteJs.tune] += 1;
+
+        var stopNote = function() {
+            if (--openedDict[noteJs.channel][noteJs.tune] === 0) {
+                noteOff(noteJs.tune, noteJs.channel);
+            }
+        };
+
+        return stopNote;
     };
 
     /** @param instrumentDict {channelNumber: instrumentNumber} */
-    var consumeConfig = function (instrumentDict, callback) {
-        Object.keys(instrumentDict).forEach(
-            // 0xC0 - program change
-            ch => midiOutputList.forEach(o => o.send([0xC0 - -ch, instrumentDict[ch]]))
-        );
-
+    var consumeConfig = function (instrumentDict, callback)
+    {
+        Object.keys(instrumentDict).forEach(ch => setInstrument(instrumentDict[ch],ch));
         callback();
     };
 
