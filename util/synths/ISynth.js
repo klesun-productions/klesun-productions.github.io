@@ -3,7 +3,7 @@ var Util = Util || {};
 Util.Synths = Util.Synths || {};
 
 // TODO: move synth-specific code (mudcube/midiDevice/oscillator) from Playback here
-Util.Synths.SynthAdapter = function () {
+Util.Synths.ISynth = function () {
 
     var notImplemented = function () {
         var msg = 'Called to not implemented method. Please, generate a blue screen of death or something to sign Death and Destruction.';
