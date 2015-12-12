@@ -41,22 +41,22 @@ Util.Synths.MidiDevice = function () {
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(noteJs)
+    var playNote = function(tune, channel)
     {
         // stopping just for a moment to mark end of previous sounding if any
-        if ((openedDict[noteJs.channel][noteJs.tune] || 0) > 0) {
-            noteOff(noteJs.tune, noteJs.channel);
-            midiOutputList.forEach(output => output.send([0x80 - -noteJs.channel, noteJs.tune, 0x40]));
+        if ((openedDict[channel][tune] || 0) > 0) {
+            noteOff(tune, channel);
+            midiOutputList.forEach(output => output.send([0x80 - -channel, tune, 0x40]));
         }
 
-        noteOn(noteJs.tune, noteJs.channel);
+        noteOn(tune, channel);
 
-        openedDict[noteJs.channel][noteJs.tune] |= 0;
-        openedDict[noteJs.channel][noteJs.tune] += 1;
+        openedDict[channel][tune] |= 0;
+        openedDict[channel][tune] += 1;
 
         var stopNote = function() {
-            if (--openedDict[noteJs.channel][noteJs.tune] === 0) {
-                noteOff(noteJs.tune, noteJs.channel);
+            if (--openedDict[channel][tune] === 0) {
+                noteOff(tune, channel);
             }
         };
 
@@ -70,7 +70,7 @@ Util.Synths.MidiDevice = function () {
         callback();
     };
 
-    return $.extend(Util.Synths.SynthAdapter(), {
+    return $.extend(Util.Synths.ISynth(), {
         init: init,
         playNote: playNote,
         consumeConfig: consumeConfig,

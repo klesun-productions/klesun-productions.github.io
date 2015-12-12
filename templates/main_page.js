@@ -39,7 +39,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         $(dropdownEl).val('oscillator').change(_ => changeSynth()).trigger('change');
 
         return {
-            handleNoteOn: n => synths[$(dropdownEl).val()].playNote(n),
+            handleNoteOn: n => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),
             consumeConfig: (config, callback) => synths[$(dropdownEl).val()].consumeConfig(config, callback)
         };
     };

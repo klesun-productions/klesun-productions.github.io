@@ -95,17 +95,17 @@ Util.Synths.Oscillator = function () {
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(noteJs) {
+    var playNote = function(tune, channel) {
 
-        if (noteJs.channel != 9) {
-            return startSounding(tuneToFrequency(noteJs.tune));
+        if (channel != 9) {
+            return startSounding(tuneToFrequency(tune));
         } else {
             // TODO: this is drum - think something about this!
             return (_) => {};
         }
     };
 
-    return $.extend(Util.Synths.SynthAdapter(), {
+    return $.extend(Util.Synths.ISynth(), {
         init: init,
         playNote: playNote,
         consumeConfig: (_, callback) => callback()

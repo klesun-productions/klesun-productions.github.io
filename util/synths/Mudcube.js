@@ -87,17 +87,14 @@ Util.Synths.Mudcube = function () {
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(noteJs) {
+    var playNote = function(tune, channel) {
 
         // does not work in chromium. due to mp3 and proprietarity i suppose
 
-        var position = 0;
-
         var toFloat = fractionString => eval(fractionString);
-        var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
 
-        mudcube.noteOn(noteJs.channel, noteJs.tune, 127, position);
-        return (_) => mudcube.noteOff(noteJs.channel, noteJs.tune, position);
+        mudcube.noteOn(channel, tune, 127);
+        return (_) => mudcube.noteOff(channel, tune);
     };
 
     /** @param instrumentDict {channelNumber: instrumentNumber} */
@@ -125,7 +122,7 @@ Util.Synths.Mudcube = function () {
         });
     };
 
-    return $.extend(Util.Synths.SynthAdapter(), {
+    return $.extend(Util.Synths.ISynth(), {
         init: init,
         playNote: playNote,
         consumeConfig: consumeConfig
