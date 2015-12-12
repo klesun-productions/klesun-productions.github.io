@@ -70,60 +70,18 @@ Util.StaffPanel = function(sheetMusic)
 
 Util.PlaybackControl = function($cont)
 {
-    var $tempoFactorInput = $('<select></select>')
-        .append($('<option value="1">x1</option>'))
-        .append($('<option value="1.5">x1.5</option>'))
-        .append($('<option value="2">x2</option>'))
-        .append($('<option value="3">x3</option>'))
-        .append($('<option value="4">x4</option>'))
-        .val(1);
-
-    var $globalControl = $('<div class="globalControl"></div>')
-        .append($('<div class="inlineBlock"></div>').append('Speed: ').append($tempoFactorInput))
-        .append('<br clear="all"/>');
-
-    $cont.append($globalControl);
-
-
-    var $general = $('<div class="general"></div>');
-
-    var fileNameHolder = $('<span></span>').html('?');
-    var chordIndexHolder = $('<span></span>').html('?');
-    var chordCountHolder = $('<span></span>').html('?');
-    var noteCountHolder = $('<span></span>').html('?');
-    var tempoHolder = $('<input type="number" min="15"/>').html('');
-    var tempoOriginHolder = $('<span></span>').html('?');
-    var secondsHolder = $('<span></span>').html('?');
-    var secondsTotalHolder = $('<span></span>').html('?');
-
-    var $timeSlider = $('<input type="range" min="0" max="0" step=1/>')
-        .addClass("timeSlider")
-        .on("input change", (_) => console.log('Time Slider changed! ' + $timeSlider.val()));
-
-    var spanFillers = [
-        s => s.append("Chord: ").append(chordIndexHolder).append('/').append(chordCountHolder),
-        s => s.append("Note Count: ").append(noteCountHolder),
-        s => s.append("Tempo: ").append(tempoHolder).append(tempoOriginHolder),
-        s => s.append("Seconds: ").append(secondsHolder).append('/').append(secondsTotalHolder),
-    ];
-
-    $general.append($('<div></div>').append("File Name: ").append(fileNameHolder));
-
-    spanFillers.forEach(l => $general.append(l($('<div class="inlineBlock"></div>'))));
-    $cont.append($general.append('<br clear="all"/>'));
-
-    $general.append($('<div></div>').append($timeSlider));
-    var $staffContCont = $('<div></div>');
-    $general.append($staffContCont);
-    var $staffCont = $('<div></div>');
-    $staffContCont.append($staffCont);
-
-    var $staffMaskDiv = $('<div></div>').css('width', 0).css('height', 21).css('background-color', 'rgba(0,127,0,0.5)')
-        .css('position', 'relative').css('left', '10px').css('top', '-21px').css('margin-bottom', '0px');
-    $staffContCont.append($staffMaskDiv);
+    var $general = $cont.find('.general');
+    var $tempoFactorInput = $cont.find('.tempoFactorInput');
+    var $secondsTotalHolder = $cont.find('.secondsTotal.holder');
+    var $timeSlider = $cont.find('.timeSlider');
+    var $staffCont = $cont.find('.staffCont');
+    /** @TODO: CSS in CSS ! */
+    var $staffMaskDiv = $cont.find('.staffMaskDiv').css('width', 0).css('height', 21).css('background-color', 'rgba(0,127,0,0.5)')
+        .css('position', 'relative').css('left', '10px').css('top', '-21px').css('margin-bottom', '-20px');
 
     var setFields = function(sheetMusic, playAtIndex)
     {
+        var tempoHolder = $cont.find('.tempoInput');
         tempoHolder.val(Math.floor(sheetMusic.config.tempo));
         tempoHolder.off().change(function()
         {
@@ -135,35 +93,39 @@ Util.PlaybackControl = function($cont)
                 playAtIndex($timeSlider.val() - -1);
             }
         });
+
         $tempoFactorInput.off().change(function() {
             sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * $tempoFactorInput.val();
             playAtIndex($timeSlider.val() - -1);
         });
-        tempoOriginHolder.html(Math.floor(sheetMusic.config.tempoOrigin));
+        $cont.find('.tempoOrigin.holder').html(Math.floor(sheetMusic.config.tempoOrigin));
 
         var secondsTotal = Util.toMillis(sheetMusic.chordList.slice(-1)[0].timeFraction, sheetMusic.config.tempo) / 1000;
-        secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
+        $secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
 
         self.setNoteCount('?');
         var chordCount = sheetMusic.chordList.length;
-        chordCountHolder.html(chordCount);
+        $cont.find('.chordCount.holder').html(chordCount);
 
         $timeSlider.attr('max', chordCount - 1).off( )
             .on('input change', (_) => playAtIndex($timeSlider.val()));
     };
 
     var self = {
-        setFileName: n => fileNameHolder.html(n),
-        setNoteCount: n => noteCountHolder.html(n),
+        setFileInfo: function(info) {
+            $cont.find('.fileName.holder').html(info.fileName);
+            $cont.find('.score.holder').html(info.score);
+        },
+        setNoteCount: n => $cont.find('.noteCount.holder').html(n),
         setFields: setFields,
         repaintStaff: sheetMusic => Util.StaffPanel(sheetMusic).putInto($staffCont),
         setChordIndex: function(n) {
-            chordIndexHolder.html(n);
+            $cont.find('.chordIndex.holder').html(n);
             $timeSlider.val(n);
         },
         setSeconds: function(n) {
-            secondsHolder.html(Math.floor(n * 100) / 100);
-            var secondsTotal = secondsTotalHolder.html();
+            $cont.find('.seconds.holder').html(Math.floor(n * 100) / 100);
+            var secondsTotal = $secondsTotalHolder.html();
             $staffMaskDiv.css('width', (700 * n / secondsTotal) + 'px');
         }
     };

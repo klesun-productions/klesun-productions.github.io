@@ -107,6 +107,7 @@
         overflow: hidden;
 	}
 
+	#playbackControl * { font-size: 10px; }
 	#playbackControl > div.general { background-color: rgb(140, 133, 208); }
     #playbackControl > div > * {
 		white-space: nowrap;
@@ -130,6 +131,8 @@
     }
 	#playbackControl > * > * > input[type=number] {
         width: 50px;
+		font-size: 10px;
+		height: 16px;
     }
 
 	input[type=range] {

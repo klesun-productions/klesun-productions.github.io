@@ -49,10 +49,59 @@
 	<div class="something-left-cont"></div>
 	</td>
 
-	<td valign="top">
-	<div class="main-middle-cont">
+    <td valign="top">
+    <div class="main-middle-cont">
         <div id="synthControl"></div>
-        <div id="playbackControl"></div>
+        <div id="playbackControl">
+            <div class="globalControl">
+                <div class="inlineBlock">
+                    Speed:
+                    <select class="tempoFactorInput">
+                        <option value="1" selected>x1</option>
+                        <option value="1.5">x1.5</option>
+                        <option value="2">x2</option>
+                        <option value="3">x3</option>
+                        <option value="4">x4</option>
+                    </select>
+                </div>
+                <br clear="all"/>
+            </div>
+
+            <div class="general">
+
+                <div>File Name: <span class="fileName holder">?</span></div>
+
+                <div class="inlineBlock">
+                    Score: <span class="score holder">?</span>
+                </div>
+
+                <div class="inlineBlock">
+                    Chord: <span class="chordIndex holder">?</span>
+                    /<span class="chordCount holder">?</span>
+                </div>
+                <div class="inlineBlock">
+                    Note Count: <span class="noteCount holder">?</span>
+                </div>
+                <div class="inlineBlock">
+                    Tempo: <input type="number" min="15" class="tempoInput"/>
+                    <span class="tempoOrigin holder">?</span>
+                </div>
+                <div class="inlineBlock">
+                    Seconds: <span class="seconds holder">?</span>
+                    / <span class="secondsTotal holder">?</span>
+                </div>
+                <br clear="all"/>
+
+                <div>
+                    <input class="timeSlider" type="range" min="0" max="0" step=1/>
+                </div>
+                <div>
+                    <div class="staffCont"></div>
+                    <div class="staffMaskDiv"></div>
+                </div>
+
+            </div>
+        </div>
         <br/>
         <div style="background-color: white;">
             Sheet Music<br/>

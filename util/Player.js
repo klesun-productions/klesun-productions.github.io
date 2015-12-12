@@ -1,7 +1,8 @@
 
 var Util = Util || {};
 
-// This class destiny is to read shmidusic json structure and send events to MIDI.js and PianoLayoutPanel
+// This class destiny is to read shmidusic json structure
+// and send events to MIDI.js and PianoLayoutPanel
 
 /** @param piano - PianoLayoutPanel instance */
 Util.Player = function ($controlCont)
@@ -57,20 +58,21 @@ Util.Player = function ($controlCont)
     };
 
     // TODO: rename to playSheetMusic()
-    var playGeneralFormat = function (sheetMusic, fileName, whenFinished, startIndex) {
-		
+    var playGeneralFormat = function (sheetMusic, fileInfo, whenFinished, startIndex)
+    {
 		whenFinished = whenFinished || ((_) => {});
         startIndex = +startIndex || 0;
 
         stop();
 
-        var playAtIndex = ((chordIndex) => playGeneralFormat(sheetMusic, fileName, whenFinished, chordIndex));
+        var playAtIndex = ((chordIndex) => playGeneralFormat(sheetMusic, fileInfo, whenFinished, chordIndex));
 
-        // if to allow custom tempo
         if (sheetMusic.config.tempo === sheetMusic.config.tempoOrigin) {
             sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * control.getTempoFactor();
         }
-        control.setFields(sheetMusic, playAtIndex).setFileName(fileName).setChordIndex(startIndex);
+        control.setFields(sheetMusic, playAtIndex)
+            .setFileInfo(fileInfo) /** @TODO: change to setFileInfo and handle score */
+            .setChordIndex(startIndex);
 
         if (startIndex == 0) {
             control.repaintStaff(sheetMusic);
@@ -187,12 +189,12 @@ Util.Player = function ($controlCont)
                     tempoOrigin: staff.staffConfig.tempo,
                     instrumentDict: instrumentDict
                 }
-            }, fileName, whenFinished);
+            }, {fileName: fileName, score: 'Ne'}, whenFinished);
         });
     };
 
     /** @TODO: move format normalization into separate class */
-    var playStandardMidiFile = function (smf, fileName, whenFinished)
+    var playStandardMidiFile = function (smf, fileInfo, whenFinished)
     {
         stop();
 
@@ -227,7 +229,7 @@ Util.Player = function ($controlCont)
                 tempoOrigin: tempoEntry.tempo,
                 instrumentDict: smf.instrumentDict
             }
-        }, fileName, whenFinished);
+        }, fileInfo, whenFinished);
 
         control.setNoteCount(smf.noteList.length);
     };

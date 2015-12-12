@@ -21,7 +21,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         xmlhttp.send();
     };
 
-    var RealSynthAdapter = function(dropdownEl, controlEl)
+    var SynthAdapter = function(dropdownEl, controlEl)
     {
         var synths = {
             oscillator: Util.Synths.Oscillator(),
@@ -43,7 +43,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
             consumeConfig: (config, callback) => synths[$(dropdownEl).val()].consumeConfig(config, callback)
         };
     };
-    var synth = RealSynthAdapter($('#synthDropdown')[0], $('#synthControl')[0]);
+    var synth = SynthAdapter($('#synthDropdown')[0], $('#synthControl')[0]);
 
     var player = Util.Player($playbackControlCont);
     player.addNoteHandler(Util.PianoLayoutPanel($pianoCanvas));
@@ -66,7 +66,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
             var playButtonFormatter = function (cell, row) {
                 var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: row.rawFileName}));
                 return $('<input type="button" value="Play!"/>')
-                    .click((_) => performExternal(link, answer => player.playStandardMidiFile(answer, row.rawFileName)));
+                    .click((_) => performExternal(link, answer => player.playStandardMidiFile(answer, row)));
             };
 
 			var callback = function (rowList) {
@@ -90,7 +90,10 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
                     console.log('Playing: ' + rowList[index].fileName);
 
                     var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: rowList[index].rawFileName, finished_file_name: finishedFileName}));
-                    performExternal(link, answer => player.playStandardMidiFile(answer, rowList[index].fileName, (_) => playRandom(rowList[index].rawFileName)));
+                    performExternal(link,
+                        (answer) => player.playStandardMidiFile(answer, rowList[index],
+                        (_) => playRandom(rowList[index]))
+                    );
                 };
 			};
 		
