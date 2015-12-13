@@ -8,6 +8,7 @@ import re
 import json
 import os.path
 from subprocess import call
+import subprocess
 import itertools
 import codecs
 
@@ -16,6 +17,8 @@ class MidiFileProvider(object):
 
     # content_folder = '/home/klesun/Dropbox/';
     content_folder = './content/';
+    decode_script_path = '/home/klesun/progas/shmidusic/bin/';
+    decode_script_class_path = 'org.shmidusic.stuff.scripts.MidiToReadableMidi';
 
     @classmethod
     def get_info_list(cls) -> Iterable[dict]:
@@ -62,11 +65,19 @@ class MidiFileProvider(object):
 
         result = {}
 
+        midJsPath = cls.content_folder + '/midiCollection_smf/' + file_name + '.js';
+        
+        if not os.path.isfile(midJsPath): # handling cases when a midi file was added or renamed
+            current_path = os.getcwd()
+            os.chdir(cls.decode_script_path)
+            call(["java", cls.decode_script_class_path, file_name])
+            os.chdir(current_path)
+        
         #'cd /home/klesun/progas/shmidusic/out'
         #'java org.shmidusic.stuff.scripts.MidiToReadableMidi'
         #''
 
-        with codecs.open(cls.content_folder + '/midiCollection_smf/' + file_name + '.js', 'r', 'utf-8') as content:
+        with codecs.open(midJsPath, 'r', 'utf-8') as content:
             content_json = json.load(content)
             content.close()
 
