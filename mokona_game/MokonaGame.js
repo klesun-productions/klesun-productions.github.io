@@ -12,7 +12,7 @@ Ns.MokonaGame = function(canvasEl)
 
     var handlerDict = {};
     document.onkeydown = (e => e.keyCode in handlerDict && handlerDict[e.keyCode]());
-    var handleKey = (n,cb) => handlerDict[n] = cb;
+    var handleKey = (n,cb) => (handlerDict[n] = cb);
     var floor = _ => canvasEl.height;
 
     var makePersonShape = function(params, isHero)
@@ -51,13 +51,11 @@ Ns.MokonaGame = function(canvasEl)
 
         var MAX_VX = 10;
         var DVX = 2;
-        var DVY = 15;
+        var DVY = 30;
+        var G = 4;
 
         var boostX = 0;
         var boostY = 0;
-
-        /** @debug */
-        Person.zhopa = 'huj';
 
         var vx = 0;
         var vy = -20;
@@ -76,14 +74,14 @@ Ns.MokonaGame = function(canvasEl)
             var lived = false;
             //var was = [shape.x, shape.y];
 
-            (vx += DVX * boostX) && (boostX = 0);
-            (vy += DVY * boostY) && (boostY = 0);
+            vx += DVX * boostX; boostX = 0;
+            vy += DVY * boostY; boostY = 0;
 
             if (vx || vy || shape.y < floor()) {
                 shape.x += vx;
                 shape.y += vy;
                 shape.y < floor()
-                    ? vy += 1
+                    ? vy += G
                     : vx = Ns.lim(Ns.toZero(vx, DVX / 2), MAX_VX);
 
 

@@ -35,7 +35,7 @@ Util.Synths.MidiDevice = function () {
 
     // a dict {noteIndex: openedCount}
     var openedDict = {};
-    Util.range(0,16).forEach(n => openedDict[n] = {});
+    Util.range(0,16).forEach(n => (openedDict[n] = {}));
 
     /** @TODO: change arguments from "noteJs" to explicit "tune" and "channel" */
 
