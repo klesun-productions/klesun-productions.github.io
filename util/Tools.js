@@ -34,6 +34,8 @@ Util.andThen = function(firstCallback, secondCallback)
     };
 };
 
+Util.if = (val, pred, def) => pred(val) ? val : def;
+
 // a helper to provide me with one-line methods: drawLine() and fillRect()
 Util.CanvasAdapter = function(canvas)
 {

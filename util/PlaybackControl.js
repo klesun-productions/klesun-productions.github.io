@@ -70,64 +70,67 @@ Util.StaffPanel = function(sheetMusic)
 
 Util.PlaybackControl = function($cont)
 {
-    var $general = $cont.find('.general');
     var $tempoFactorInput = $cont.find('.tempoFactorInput');
     var $secondsTotalHolder = $cont.find('.secondsTotal.holder');
     var $timeSlider = $cont.find('.timeSlider');
     var $staffCont = $cont.find('.staffCont');
+	var tempoHolder = $cont.find('.tempoInput');
     /** @TODO: CSS in CSS ! */
     var $staffMaskDiv = $cont.find('.staffMaskDiv').css('width', 0).css('height', 21).css('background-color', 'rgba(0,127,0,0.5)')
         .css('position', 'relative').css('left', '10px').css('top', '-21px').css('margin-bottom', '-20px');
 
-    var setFields = function(sheetMusic, playAtIndex)
-    {
-        var tempoHolder = $cont.find('.tempoInput');
-        tempoHolder.val(Math.floor(sheetMusic.config.tempo));
+	var setFields = function(sheetMusic)
+	{
+		var secondsTotal = Util.toMillis(sheetMusic.chordList.slice(-1)[0].timeFraction, sheetMusic.config.tempo) / 1000;
+		var chordCount = sheetMusic.chordList.length;
+		
+		tempoHolder.val(Math.floor(sheetMusic.config.tempo));
+		$cont.find('.tempoOrigin.holder').html(Math.floor(sheetMusic.config.tempoOrigin));
+		$cont.find('.noteCount.holder').html(Util.if(sheetMusic.misc.noteCount, c => c !== -100, '?'));
+		$cont.find('.chordCount.holder').html(chordCount);
+		
+        $secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
+		$timeSlider.attr('max', chordCount - 1);
+		Util.StaffPanel(sheetMusic).putInto($staffCont);
+	};
+	
+	var setPlayback = function(playback)
+	{
+		$timeSlider.off().on('input change', _ => playback.slideTo(+$timeSlider.val()));
+		$tempoFactorInput.off().change(_ => playback.setTempoFactor($tempoFactorInput.val()));
+
         tempoHolder.off().change(function()
         {
             tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
-            sheetMusic.config.tempo = tempoHolder.val(); // is it okay?
-
-            /** @TODO: this is bad, because we don't always update slider... */
-            if ($timeSlider.val() - -1 < sheetMusic.chordList.length) {
-                playAtIndex($timeSlider.val() - -1);
-            }
+            playback.setTempo(+tempoHolder.val());
         });
 
-        $tempoFactorInput.off().change(function() {
-            sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * $tempoFactorInput.val();
-            playAtIndex($timeSlider.val() - -1);
+		var updateState = function()
+		{
+			$cont.find('.chordIndex.holder').html(playback.getChordIndex());
+			$timeSlider.val(playback.getChordIndex());
+
+            var seconds = Math.floor(playback.getTime() * 100) / 100;
+            $cont.find('.seconds.holder').html(seconds);
+            var secondsTotal = $secondsTotalHolder.html();
+            $staffMaskDiv.css('width', (700 * seconds / secondsTotal) + 'px');
+		};
+        updateState();
+
+		var triggerId = setInterval(updateState, 1000);
+        playback.setPauseHandler(_ => {
+            window.clearInterval(triggerId);
+            playback.setResumeHandler(_ => triggerId = setInterval(updateState, 1000));
         });
-        $cont.find('.tempoOrigin.holder').html(Math.floor(sheetMusic.config.tempoOrigin));
-
-        var secondsTotal = Util.toMillis(sheetMusic.chordList.slice(-1)[0].timeFraction, sheetMusic.config.tempo) / 1000;
-        $secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
-
-        self.setNoteCount('?');
-        var chordCount = sheetMusic.chordList.length;
-        $cont.find('.chordCount.holder').html(chordCount);
-
-        $timeSlider.attr('max', chordCount - 1).off( )
-            .on('input change', (_) => playAtIndex($timeSlider.val()));
-    };
+	};
 
     var self = {
+		setPlayback: setPlayback,
         setFileInfo: function(info) {
             $cont.find('.fileName.holder').html(info.fileName);
             $cont.find('.score.holder').html(info.score || '_');
         },
-        setNoteCount: n => $cont.find('.noteCount.holder').html(n),
-        setFields: setFields,
-        repaintStaff: sheetMusic => Util.StaffPanel(sheetMusic).putInto($staffCont),
-        setChordIndex: function(n) {
-            $cont.find('.chordIndex.holder').html(n);
-            $timeSlider.val(n);
-        },
-        setSeconds: function(n) {
-            $cont.find('.seconds.holder').html(Math.floor(n * 100) / 100);
-            var secondsTotal = $secondsTotalHolder.html();
-            $staffMaskDiv.css('width', (700 * n / secondsTotal) + 'px');
-        }
+		setFields: setFields,
     };
     Object.keys(self).forEach(function(key) {
         var property = self[key];

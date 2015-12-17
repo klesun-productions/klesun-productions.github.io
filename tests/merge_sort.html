@@ -1,0 +1,63 @@
+<pre id="lolo">lololo</pre>
+
+<script>
+	
+	var list = [];
+	for (var i = 0; i < 7000000; ++i)	{
+		list.push(Math.random() * 100 | 0);
+	};
+//	var list = [20, 81, 69];
+	
+	console.log(list);
+	
+	var heap = [];
+	for (var i = 0; i < list.length; ++i)	{
+		heap.push(0);
+	}
+	
+	var counter = 0;
+	var compare = function(a,b) {
+		++counter;
+		return a - b;
+	};
+	
+	var merge_sorted = function(list, l, r)
+	{
+		var lr = (l + r) / 2 | 0;
+		var ll = l;
+		var mid = lr;
+		
+		for (var i = 0; i < r - l; ++i) {
+			heap[i] = (compare(list[ll], list[lr]) < 0 && ll < mid || lr === r)
+					? list[ll++] 
+					: list[lr++];
+		}
+		
+		for (var i = l; i < r; ++i) {
+			list[i] = heap[i - l];
+		}
+	};
+	
+	var merge_sort = function(list,l,r)
+	{
+		l = l !== undefined ? l : 0;
+		r = r !== undefined ? r : list.length;
+		
+		if (r - l > 2) {
+			var subr = (l + r) / 2 | 0;
+			merge_sort(list, l, subr);
+			merge_sort(list, subr, r);
+		}
+		r - l > 1 && merge_sorted(list, l, r);
+	};
+	
+	console.log('was', list);
+	
+	var other_sort = list.slice().sort(compare);
+	console.log(counter, ' should', other_sort);
+	
+	var counter = 0;
+	merge_sort(list);
+	console.log(counter, ' became', list);
+	
+</script>

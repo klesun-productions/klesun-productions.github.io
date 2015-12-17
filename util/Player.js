@@ -45,97 +45,49 @@ Util.Player = function ($controlCont)
         var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
         var offList = noteHandlers.map(h => h.handleNoteOn(noteJs));
 
-        scheduleInterruptable(toMillis(length, tempo), [{skipWhenInterrupted: false, callback: function()
-        {
-            // handling note off
-            offList.forEach(c => c());
-        }}]);
+        scheduleInterruptable(toMillis(length, tempo), [{skipWhenInterrupted: false, callback: _ => offList.forEach(c => c())}]);
     };
 
-    var stop = function() {
+    var tabSwitched = null;
+    var currentPlayback = null;
+    var stopSounding = function() {
         toBeInterrupted.forEach(c => c());
         toBeInterrupted.length = 0;
     };
 
     // TODO: rename to playSheetMusic()
-    var playGeneralFormat = function (sheetMusic, fileInfo, whenFinished, startIndex)
+    var playGeneralFormat = function (sheetMusic, fileInfo, whenFinished)
     {
-		whenFinished = whenFinished || ((_) => {});
-        startIndex = +startIndex || 0;
+        /** @TODO: looks like it will break if start new when old not finished */
 
-        stop();
+		whenFinished = whenFinished || (_ => {});
 
-        var playAtIndex = ((chordIndex) => playGeneralFormat(sheetMusic, fileInfo, whenFinished, chordIndex));
+        currentPlayback && currentPlayback.pause();
 
-        if (sheetMusic.config.tempo === sheetMusic.config.tempoOrigin) {
-            sheetMusic.config.tempo = sheetMusic.config.tempoOrigin * control.getTempoFactor();
-        }
-        control.setFields(sheetMusic, playAtIndex)
-            .setFileInfo(fileInfo) /** @TODO: change to setFileInfo and handle score */
-            .setChordIndex(startIndex);
+		var onChord = (c,t,i) => c['noteList'].forEach(n => playNote(n,t));
+		
+        control.setFields(sheetMusic)
+            .setFileInfo(fileInfo);
 
-        if (startIndex == 0) {
-            control.repaintStaff(sheetMusic);
-        }
+		/** @TODO: passing the callback is legacy - remove */
+        configConsumer.consumeConfig(sheetMusic.config.instrumentDict, _ => {});
+		
+		var playback = currentPlayback = Util.Playback(sheetMusic, onChord, whenFinished, control.getTempoFactor(), stopSounding);
 
-        configConsumer.consumeConfig(sheetMusic.config.instrumentDict, function()
-        {
-            var startMillis = window.performance.now() -
-                toMillis(sheetMusic.chordList[startIndex].timeFraction, sheetMusic.config.tempo);
+		control.setPlayback(playback);
+		/** @TODO: make sure it stops monitoring */
 
-            var playNext = function(idx)
-            {
-                var continuation = (_) => {};
-                var timeSkip = 0;
-
-                var tabSwitched = function()
-                {
-                    stop();
-                    var whenBack = function() {
-                        document.removeEventListener('visibilitychange', whenBack);
-                        playAtIndex(idx);
-                    };
-                    document.addEventListener('visibilitychange', whenBack);
-                };
-
-                document.addEventListener('visibilitychange', tabSwitched);
-                var resetListener = _ => document.removeEventListener('visibilitychange', tabSwitched);
-
-                var c = sheetMusic.chordList[idx];
-                c['noteList'].forEach(n => playNote(n, sheetMusic.config.tempo));
-
-                var updateSlider = (_) => control
-                    .setChordIndex(idx)
-                    .setSeconds(toMillis(c.timeFraction, sheetMusic.config.tempo) / 1000.0);
-
-                if (idx + 1 < sheetMusic.chordList.length) {
-
-                    timeSkip = toMillis(sheetMusic.chordList[idx + 1].timeFraction, sheetMusic.config.tempo) -
-                            (window.performance.now() - startMillis);
-
-                    continuation = (_) => playNext(idx + 1);
-                    if (timeSkip > 0 && idx % 20 === 0 || timeSkip > 250) {
-                        continuation = Util.andThen(continuation, _ => updateSlider());
-                    }
-
-                } else {
-                    timeSkip = 5000; // hope last chord finishes in 5 seconds
-                    continuation = whenFinished;
-                }
-
-                if (timeSkip > 0) {
-                    scheduleInterruptable(timeSkip, [
-                        {skipWhenInterrupted: true, callback: continuation},
-                        {skipWhenInterrupted: false, callback: resetListener}
-                    ]);
-                } else {
-                    continuation();
-                    resetListener();
-                }
-            };
-
-            playNext(startIndex);
-        });
+        document.removeEventListener('visibilitychange', tabSwitched);
+		tabSwitched = function()
+		{
+			playback.pause();
+			var whenBack = function() {
+				document.removeEventListener('visibilitychange', whenBack);
+				playback.resume();
+			};
+			document.addEventListener('visibilitychange', whenBack);
+		};
+		document.addEventListener('visibilitychange', tabSwitched);
     };
 
     /** @TODO: move playShmidusic() and playStandardMidiFile() implementations into
@@ -188,7 +140,10 @@ Util.Player = function ($controlCont)
                     tempo: staff.staffConfig.tempo,
                     tempoOrigin: staff.staffConfig.tempo,
                     instrumentDict: instrumentDict
-                }
+                },
+				misc: {
+					noteCount: -100
+				}
             }, {fileName: fileName, score: 'Ne'}, whenFinished);
         });
     };
@@ -220,18 +175,17 @@ Util.Player = function ($controlCont)
             }
         });
 
-        control.setNoteCount(smf.noteList.length);
-
         playGeneralFormat({
             chordList: chordList,
             config: {
                 tempo: tempoEntry.tempo,
                 tempoOrigin: tempoEntry.tempo,
                 instrumentDict: smf.instrumentDict
-            }
+            },
+			misc: {
+				noteCount: smf.noteList.length
+			}
         }, fileInfo, whenFinished);
-
-        control.setNoteCount(smf.noteList.length);
     };
 
     // this class shouldn't be instanciated more than once, right?
