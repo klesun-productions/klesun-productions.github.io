@@ -1,1 +1,0 @@
-Ns stands for Name Space
