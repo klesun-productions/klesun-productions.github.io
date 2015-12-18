@@ -89,7 +89,7 @@ Util.PlaybackControl = function($cont)
 		$cont.find('.noteCount.holder').html(Util.if(sheetMusic.misc.noteCount, c => c !== -100, '?'));
 		$cont.find('.chordCount.holder').html(chordCount);
 		
-        $secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100);
+        $secondsTotalHolder.html(Math.floor(secondsTotal * 100) / 100 / $tempoFactorInput.val());
 		$timeSlider.attr('max', chordCount - 1);
 		Util.StaffPanel(sheetMusic).putInto($staffCont);
 	};
