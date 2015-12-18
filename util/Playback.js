@@ -9,15 +9,17 @@ var Util = Util || {};
 
 Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSounding)
 {
-	var startMillis = window.performance.now();
     var tempo = sheetMusic.config.tempo * tempoFactor;
+	var startDeltaTime = Util.map(sheetMusic.chordList[0], c => Util.toMillis(c.timeFraction, tempo)) || 0;
+	var startMillis = window.performance.now() - startDeltaTime;
+	
     var chordIndex = -1;
 
     var scheduled = [];
     var scheduleScrewable = function(timeSkip, callback)
     {
         var screwed = false;
-        var interruptLambda = _ =>  screwed = true;
+        var interruptLambda = _ => (screwed = true);
         scheduled.push(interruptLambda);
         setTimeout(function() {
             screwed || callback();
@@ -96,10 +98,10 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
         setTempoFactor: setTempoFactor,
         setTempo: setTempo,
         getChordIndex: _ => chordIndex,
-        getTime: _ => getTime,
+        getTime: getTime,
         pause: pause,
         resume: resume,
-        setPauseHandler: h => pauseHandler = h,
-        setResumeHandler: h => resumeHandler = h,
+        setPauseHandler: h => (pauseHandler = h),
+        setResumeHandler: h => (resumeHandler = h),
     };
 };

@@ -56,26 +56,20 @@ Util.Player = function ($controlCont)
     };
 
     // TODO: rename to playSheetMusic()
-    var playGeneralFormat = function (sheetMusic, fileInfo, whenFinished)
+    var playSheetMusic = function (sheetMusic, fileInfo, whenFinished)
     {
-        /** @TODO: looks like it will break if start new when old not finished */
-
 		whenFinished = whenFinished || (_ => {});
-
         currentPlayback && currentPlayback.pause();
 
 		var onChord = (c,t,i) => c['noteList'].forEach(n => playNote(n,t));
-		
         control.setFields(sheetMusic)
             .setFileInfo(fileInfo);
-
 		/** @TODO: passing the callback is legacy - remove */
         configConsumer.consumeConfig(sheetMusic.config.instrumentDict, _ => {});
 		
 		var playback = currentPlayback = Util.Playback(sheetMusic, onChord, whenFinished, control.getTempoFactor(), stopSounding);
 
 		control.setPlayback(playback);
-		/** @TODO: make sure it stops monitoring */
 
         document.removeEventListener('visibilitychange', tabSwitched);
 		tabSwitched = function()
@@ -89,9 +83,6 @@ Util.Player = function ($controlCont)
 		};
 		document.addEventListener('visibilitychange', tabSwitched);
     };
-
-    /** @TODO: move playShmidusic() and playStandardMidiFile() implementations into
-     * a separate class which would deal with format differences*/
 
     /** @param shmidusicJson - json in shmidusic project format */
     var playShmidusic = function (shmidusicJson, fileName, whenFinished) {
@@ -134,7 +125,7 @@ Util.Player = function ($controlCont)
                 staff.millisecondTimeCalculated = true;
             }
 
-            playGeneralFormat({
+            playSheetMusic({
                 chordList: chordList,
                 config: {
                     tempo: staff.staffConfig.tempo,
@@ -175,7 +166,7 @@ Util.Player = function ($controlCont)
             }
         });
 
-        playGeneralFormat({
+        playSheetMusic({
             chordList: chordList,
             config: {
                 tempo: tempoEntry.tempo,

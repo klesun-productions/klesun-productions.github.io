@@ -96,21 +96,12 @@ Util.PlaybackControl = function($cont)
 	
 	var setPlayback = function(playback)
 	{
-		$timeSlider.off().on('input change', _ => playback.slideTo(+$timeSlider.val()));
-		$tempoFactorInput.off().change(_ => playback.setTempoFactor($tempoFactorInput.val()));
-
-        tempoHolder.off().change(function()
-        {
-            tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
-            playback.setTempo(+tempoHolder.val());
-        });
-
 		var updateState = function()
 		{
 			$cont.find('.chordIndex.holder').html(playback.getChordIndex());
 			$timeSlider.val(playback.getChordIndex());
 
-            var seconds = Math.floor(playback.getTime() * 100) / 100;
+            var seconds = Math.floor(playback.getTime() / 10) / 100;
             $cont.find('.seconds.holder').html(seconds);
             var secondsTotal = $secondsTotalHolder.html();
             $staffMaskDiv.css('width', (700 * seconds / secondsTotal) + 'px');
@@ -118,9 +109,27 @@ Util.PlaybackControl = function($cont)
         updateState();
 
 		var triggerId = setInterval(updateState, 1000);
-        playback.setPauseHandler(_ => {
+        playback.setPauseHandler(function() {
             window.clearInterval(triggerId);
-            playback.setResumeHandler(_ => triggerId = setInterval(updateState, 1000));
+            playback.setResumeHandler(_ => (triggerId = setInterval(updateState, 1000)));
+        });
+		
+		$timeSlider.off().on('input change', function() {
+			playback.slideTo(+$timeSlider.val());
+			updateState();
+		});
+		var lastFactor = $tempoFactorInput.val();
+		$tempoFactorInput.off().change(function() {
+			var total = $secondsTotalHolder.html() * lastFactor / $tempoFactorInput.val();
+			$secondsTotalHolder.html(total);
+			playback.setTempoFactor(lastFactor = $tempoFactorInput.val());
+			updateState();
+		});
+        tempoHolder.off().change(function()
+        {
+            tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
+            playback.setTempo(+tempoHolder.val());
+			updateState();
         });
 	};
 
