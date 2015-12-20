@@ -143,6 +143,18 @@
 		background-color: grey;
 	}
     input[type=range].smallSlider { width: 50px; }
-	input[type=range].timeSlider { width: 98%; }
+	input[type=range].timeSlider { 
+        width: 98%; 
+        height: 8px;
+        cursor: hand;
+        background-color: #800;
+    }
+    input[type=range].timeSlider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 100%;
+        width: 16px;
+        border-radius: 10px;
+        background-color: red;
+    }
 
 	div.globalControl { background-color: #6aa; }

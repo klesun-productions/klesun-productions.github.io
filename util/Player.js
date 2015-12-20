@@ -71,16 +71,21 @@ Util.Player = function ($controlCont)
 
 		control.setPlayback(playback);
 
-        document.removeEventListener('visibilitychange', tabSwitched);
-		tabSwitched = function()
+		tabSwitched = function(e)
 		{
 			playback.pause();
 			var whenBack = function() {
+                /** @debug */
+                console.log('whenBack');
+
 				document.removeEventListener('visibilitychange', whenBack);
+                document.addEventListener('visibilitychange', tabSwitched);
 				playback.resume();
 			};
 			document.addEventListener('visibilitychange', whenBack);
+            document.removeEventListener('visibilitychange', tabSwitched);
 		};
+        document.removeEventListener('visibilitychange', tabSwitched);
 		document.addEventListener('visibilitychange', tabSwitched);
     };
 
