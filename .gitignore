@@ -1,5 +1,5 @@
 /.idea
-/content
+/Dropbox
 /libs/*
 __pycache__
 /nbproject/private/
@@ -8,3 +8,5 @@ __pycache__
 .idea
 /HTML5Application/nbproject/private/
 /mokona_game
+/midiCollection/*
+/midiCollectionDecoded/*

@@ -16,8 +16,8 @@ import codecs
 class MidiFileProvider(object):
 
     # content_folder = '/home/klesun/Dropbox/';
-    content_folder = './content/';
-    decode_script_path = '/home/klesun/progas/shmidusic/bin/';
+    content_folder = '/home/klesun/mounted_fat/progas/shmidusic.lv/';
+    decode_script_path = '/home/klesun/mounted_fat/progas/shmidusic/bin/';
     decode_script_class_path = 'org.shmidusic.stuff.scripts.MidiToReadableMidi';
 
     @classmethod
@@ -38,7 +38,7 @@ class MidiFileProvider(object):
                 result.append({"fileName": matches[0][1], "score": matches[0][0], 'rawFileName': file})
             else:
                 result.append({"fileName": file, "score": '', 'rawFileName': file})
-		
+
         result = sorted(result, key=lambda k: (k['score'] if len(k['score']) > 0 else 'zzz' + k['fileName']))
 
         return result;
@@ -48,7 +48,7 @@ class MidiFileProvider(object):
 
         result = []
 
-        dir = cls.content_folder + '/yuzefa_git/a_opuses_json'
+        dir = cls.content_folder + '/Dropbox/yuzefa_git/a_opuses_json'
         for file in os.listdir(dir):
             if file.endswith(".mid.js"):
 
@@ -65,7 +65,7 @@ class MidiFileProvider(object):
 
         result = {}
 
-        midJsPath = cls.content_folder + '/midiCollection_smf/' + file_name + '.js';
+        midJsPath = cls.content_folder + '/midiCollectionDecoded/' + file_name + '.js';
         
         if not os.path.isfile(midJsPath): # handling cases when a midi file was added or renamed
             current_path = os.getcwd()
