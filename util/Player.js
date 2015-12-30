@@ -71,6 +71,7 @@ Util.Player = function ($controlCont)
 
 		control.setPlayback(playback);
 
+        document.removeEventListener('visibilitychange', tabSwitched);
 		tabSwitched = function(e)
 		{
 			playback.pause();
@@ -85,7 +86,6 @@ Util.Player = function ($controlCont)
 			document.addEventListener('visibilitychange', whenBack);
             document.removeEventListener('visibilitychange', tabSwitched);
 		};
-        document.removeEventListener('visibilitychange', tabSwitched);
 		document.addEventListener('visibilitychange', tabSwitched);
     };
 
@@ -115,13 +115,8 @@ Util.Player = function ($controlCont)
 
                 var timeFraction = 0;
 
-                chordList.forEach(function(c) {
-                    /** @legacy */
-                    c.noteList.forEach(function(n) {
-                        n.length += '/' + (n.isTriplet ? 3 : 1);
-                        delete n.isTriplet;
-                    });
-
+                chordList.forEach(function(c) 
+                {
                     c.timeFraction = timeFraction;
                     var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
                     timeFraction += chordLength;
