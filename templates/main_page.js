@@ -81,14 +81,14 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
             var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
             $('.random-midi-list-cont').append(table); // defined in main_page.html
 
-            playRandom = function(finishedFileName)
+            playRandom = function(finishedFileInfo)
             {
-                finishedFileName = finishedFileName || '';
+                finishedFileInfo = finishedFileInfo || '';
 
                 var index = Math.floor(Math.random() * rowList.length);
                 console.log('Playing: ' + rowList[index].fileName);
 
-                var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileName};
+                var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileInfo.fileName};
                 var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify(params));
                 performExternal(link,
                     (answer) => player.playStandardMidiFile(answer, rowList[index],

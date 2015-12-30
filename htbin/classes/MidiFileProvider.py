@@ -61,7 +61,7 @@ class MidiFileProvider(object):
         return result
 
     @classmethod
-    def get_standard_midi_file(cls, file_name) -> dict:
+    def get_standard_midi_file(cls, file_name: str) -> dict:
 
         result = {}
 

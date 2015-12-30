@@ -10,3 +10,4 @@ __pycache__
 /mokona_game
 /midiCollection/*
 /midiCollectionDecoded/*
+/user_data.db
