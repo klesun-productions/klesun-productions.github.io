@@ -2,7 +2,10 @@
 var Util = Util || {};
 Util.Synths = Util.Synths || {};
 
-Util.Synths.MidiDevice = function () {
+Util.Synths.MidiDevice = function ()
+{
+    var NOTE_ON = 0x90;
+    var NOTE_OFF = 0x80;
 
     var firstInit = true;
     var midiOutputList = [];
@@ -27,9 +30,9 @@ Util.Synths.MidiDevice = function () {
         $controlEl.empty().append($('<div></div>').append('TODO: make possible to choose output device'));
     };
 
-    // 0x90 = noteOn, 127 = max velocity
-    var noteOn = (tune,channel) => midiOutputList.forEach(o => o.send([0x90 - -channel, tune, 127] ));
-    var noteOff = (tune,channel) => midiOutputList.forEach(o => o.send([0x80 - -channel, tune, 0x40]));
+    // 127 = max velocity
+    var noteOn = (tune,channel) => midiOutputList.forEach(o => o.send([NOTE_ON - -channel, tune, 127] ));
+    var noteOff = (tune,channel) => midiOutputList.forEach(o => o.send([NOTE_OFF - -channel, tune, 0x40]));
 
     var setInstrument = (n,channel) => midiOutputList.forEach(o => o.send([0xC0 - -channel, n]))
 

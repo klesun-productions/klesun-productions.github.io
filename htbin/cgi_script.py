@@ -10,7 +10,10 @@ import json
 import os
 import sys
 import codecs
-# from transliterate import translit
+
+# if hosting under Windows
+if os.name == 'nt':
+    from transliterate import translit
 
 from classes.MidiFileProvider import MidiFileProvider
 
@@ -28,12 +31,14 @@ def pass_server_data_to_js():
     ''');
     pass
 
+
 def include_util_js():
 
     for path, subdirs, files in os.walk('util/'):
         for name in files:
             print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
             #print('<script>console.log("zhopa", "' + path + '", "' + name + '");</script>')
+
 
 def execute_script():
     print("Content-Type: text/html")
