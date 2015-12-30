@@ -69,13 +69,6 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
         resumeHandler();
     };
 
-    var setTempoFactor = function(factor)
-    {
-        tempo = sheetMusic.config.tempo * factor;
-        pause();
-        resume();
-    };
-
     var setTempo = function(newTempo)
     {
         tempo = newTempo;
@@ -83,7 +76,12 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
         resume();
     };
 
-    var slideTo = function(n) {
+    var slideTo = function(n)
+    {
+        // we don't wanna mark this song
+        // as "listened" on server
+        whenFinished = _ => {};
+
         chordIndex = n;
         pause();
         resume();
@@ -95,7 +93,7 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
 
     return {
         slideTo: slideTo,
-        setTempoFactor: setTempoFactor,
+        getTempo: _ => +tempo,
         setTempo: setTempo,
         getChordIndex: _ => chordIndex,
         getTime: getTime,

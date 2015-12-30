@@ -118,16 +118,29 @@ Util.PlaybackControl = function($cont)
 			playback.slideTo(+$timeSlider.val());
 			updateState();
 		});
+
+        // TODO: the two functions below do pretty same thing - merge em!
+        // P.S. yes, i hate myself too
+        var lastTempo = tempoHolder.val();
 		var lastFactor = $tempoFactorInput.val();
 		$tempoFactorInput.off().change(function() {
 			var total = $secondsTotalHolder.html() * lastFactor / $tempoFactorInput.val();
+            var tempo = playback.getTempo() / lastFactor * $tempoFactorInput.val();
+            lastFactor = $tempoFactorInput.val();
+            lastTempo = tempo;
+
 			$secondsTotalHolder.html(total);
-			playback.setTempoFactor(lastFactor = $tempoFactorInput.val());
+            tempoHolder.val(tempo);
+
+			playback.setTempo(tempo);
 			updateState();
 		});
         tempoHolder.off().change(function()
         {
             tempoHolder.val(Math.max(tempoHolder.val(), tempoHolder[0].min));
+            $secondsTotalHolder.html($secondsTotalHolder.html() * lastTempo / tempoHolder.val());
+            lastTempo = tempoHolder.val();
+
             playback.setTempo(+tempoHolder.val());
 			updateState();
         });
