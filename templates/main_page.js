@@ -59,77 +59,72 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
 
     var playRandom = _ => alert("Please, wait till midi names load from ajax!");
 
-    var init = function ()
+    var initIchigosMidiList = function ()
     {
-        var initIchigosMidiList = function ()
+        var playButtonFormatter = function(cell, row)
         {
-            var playButtonFormatter = function(cell, row)
-            {
-                var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: row.rawFileName}));
-                return $('<input type="button" value="Play!"/>')
-                    .click((_) => performExternal(link, answer => player.playStandardMidiFile(answer, row)));
-            };
-
-			var callback = function(rowList) {
-				var colModel = [
-					{'name': 'fileName', 'caption': 'File Name'},
-					//{'name': 'length', 'caption': 'Length'},
-					{'name': 'score', 'caption': '*'},
-					{'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
-				];
-
-				var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
-				
-				var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
-				$('.random-midi-list-cont').append(table); // defined in main_page.html
-
-                playRandom = function(finishedFileName)
-                {
-                    finishedFileName = finishedFileName || '';
-
-                    var index = Math.floor(Math.random() * rowList.length);
-                    console.log('Playing: ' + rowList[index].fileName);
-
-                    var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileName};
-                    var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify(params));
-                    performExternal(link,
-                        (answer) => player.playStandardMidiFile(answer, rowList[index],
-                        (_) => playRandom(rowList[index]))
-                    );
-                };
-			};
-		
-			performExternal('get_ichigos_midi_names.py', callback)
+            var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: row.rawFileName}));
+            return $('<input type="button" value="Play!"/>')
+                .click((_) => performExternal(link, answer => player.playStandardMidiFile(answer, row)));
         };
 
-        var initMyMusicList = function () {
-
-            var playButtonFormatter = function (cell, row) {
-                return $('<input type="button" value="Play!"/>')
-                        .click((_) => player.playShmidusic(row['sheetMusic'], row['fileName']));
-            };
-
-            /** @TODO: fetch it with a separate request */
-            var rowList = Globals.shmidusicList;
-            rowList.sort((a,b) => a.fileName.localeCompare(b.fileName)); // sorting lexicographically
-
+        var callback = function(rowList) {
             var colModel = [
-                {'name': 'fileName', 'caption': 'File Name', formatter: s => s.split('_').join(' ')},
+                {'name': 'fileName', 'caption': 'File Name'},
+                //{'name': 'length', 'caption': 'Length'},
+                {'name': 'score', 'caption': '*'},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
             ];
 
-            var caption = 'My music';
+            var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
 
-            var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
-            $('.something-left-cont').append(table); // defined in main_page.html
+            var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
+            $('.random-midi-list-cont').append(table); // defined in main_page.html
+
+            playRandom = function(finishedFileName)
+            {
+                finishedFileName = finishedFileName || '';
+
+                var index = Math.floor(Math.random() * rowList.length);
+                console.log('Playing: ' + rowList[index].fileName);
+
+                var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileName};
+                var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify(params));
+                performExternal(link,
+                    (answer) => player.playStandardMidiFile(answer, rowList[index],
+                    (_) => playRandom(rowList[index]))
+                );
+            };
         };
 
-        initIchigosMidiList();
-        initMyMusicList();
+        performExternal('get_ichigos_midi_names.py', callback)
+    };
+
+    var initMyMusicList = function () {
+
+        var playButtonFormatter = function (cell, row) {
+            return $('<input type="button" value="Play!"/>')
+                    .click((_) => player.playShmidusic(row['sheetMusic'], row['fileName']));
+        };
+
+        /** @TODO: fetch it with a separate request */
+        var rowList = Globals.shmidusicList;
+        rowList.sort((a,b) => a.fileName.localeCompare(b.fileName)); // sorting lexicographically
+
+        var colModel = [
+            {'name': 'fileName', 'caption': 'File Name', formatter: s => s.split('_').join(' ')},
+            {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
+        ];
+
+        var caption = 'My music';
+
+        var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
+        $('.something-left-cont').append(table); // defined in main_page.html
     };
 
     return {
-        init: init, // TODO: split to initShmidusicList() and initIchigosMidiList()
+        initIchigosMidiList: initIchigosMidiList,
+        initMyMusicList: initMyMusicList,
         playDemo: playDemo,
         playRandom: (_) => playRandom(),
     };

@@ -137,7 +137,8 @@
 	var mainPage = MainPage($('#pianoLayoutPanel'), $('#playbackControl')); // defined in main_page.js
 
 	var onLoad = function () {
-		mainPage.init();
+		mainPage.initMyMusicList();
+        mainPage.initIchigosMidiList();
 		$('#startDemoButton').click(mainPage.playDemo);
         $('#playRandomButton').click(mainPage.playRandom);
 	};
