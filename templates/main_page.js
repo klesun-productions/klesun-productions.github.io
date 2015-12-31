@@ -5,8 +5,8 @@
 
 var MainPage = function($pianoCanvas, $playbackControlCont) {
 
-    var performExternal = function(scriptName, callback) {
-
+    var performExternal = function(scriptName, callback)
+    {
         xmlhttp = new XMLHttpRequest();
         var isDone = (_) => xmlhttp.readyState == XMLHttpRequest.DONE;
         var isOk = (_) => xmlhttp.status == 200;
@@ -89,6 +89,11 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
                 console.log('Playing: ' + rowList[index].fileName);
 
                 var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileInfo.fileName};
+
+                if (GOOGLE_LOG_IN_ID_TOKEN) {
+                    params['googleLogInIdToken'] = GOOGLE_LOG_IN_ID_TOKEN;
+                }
+
                 var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify(params));
                 performExternal(link,
                     (answer) => player.playStandardMidiFile(answer, rowList[index],

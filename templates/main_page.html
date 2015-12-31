@@ -4,7 +4,14 @@
     <link rel="shortcut icon" href="/imgs/denya.png">
 
     <script src="/libs/jquery-2.1.4.js" type="text/javascript"></script>
-    <script src="/templates/main_page.js" type="text/javascript"></script> <!-- requires everything in /util folder (included in cgi_script.py) ! -->
+
+    <!-- requires everything in /util folder (included in cgi_script.py) ! -->
+    <script src="/templates/main_page.js" type="text/javascript"></script>
+
+    <!-- for google authentication (so unique users could score songs) -->
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="521166378127-6hmr4e9rspkj2amipftmkt4qukb1ljr4.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 
 <body>
@@ -93,6 +100,13 @@
                 </div>
 
             </div>
+
+            <div class="userInfoCont">
+                <div class="g-signin2" data-onsuccess="onGoogleSignIn" data-theme="dark"></div>
+                <img class="userImage" src=""/>
+                <span class="logInStatusHolder">Not Logged-In: cant rate songs</span>
+                <br clear="all" />
+            </div>
         </div>
         <br/>
         <div style="background-color: white;">
@@ -134,16 +148,30 @@
         ECMA6 = true;
     }, 100);
 
-	var mainPage = MainPage($('#pianoLayoutPanel'), $('#playbackControl')); // defined in main_page.js
+    GOOGLE_LOG_IN_ID_TOKEN = null;
 
-	var onLoad = function () {
-		mainPage.initMyMusicList();
+    var mainPage = MainPage($('#pianoLayoutPanel'), $('#playbackControl')); // defined in main_page.js
+
+    var onLoad = function () {
+        mainPage.initMyMusicList();
         mainPage.initIchigosMidiList();
-		$('#startDemoButton').click(mainPage.playDemo);
+        $('#startDemoButton').click(mainPage.playDemo);
         $('#playRandomButton').click(mainPage.playRandom);
-	};
+    };
 
-	window.addEventListener('load', onLoad, false);
+    window.addEventListener('load', onLoad, false);
+
+    var onGoogleSignIn = function(googleUser) {
+        $('.userInfoCont').find('.g-signin2').css('display', 'none');
+
+        var profile = googleUser.getBasicProfile();
+
+        $('.userInfoCont').find('.logInStatusHolder').html('Logged-In as ' + profile.getEmail().split('@')[0]);
+        $('.userInfoCont').find('.userImage').attr('src', profile.getImageUrl());
+
+        // sorry for just dirty making it global, i wanna sleep asap, tomorrow... today is 31 of december!
+        GOOGLE_LOG_IN_ID_TOKEN = googleUser.getAuthResponse().id_token;
+    };
 	
 </script>
 

@@ -21,7 +21,8 @@
 			var apiKey = 'cAmoY7-Sf3_eSX0NncIam09j';
 
 			var scopes = [
-				'https://www.googleapis.com/auth/userinfo.profile'
+				'https://www.googleapis.com/auth/userinfo.profile',
+				'https://www.googleapis.com/auth/userinfo.email'
 			];
 
 			// gapi defined in https://apis.google.com/js/client.js
@@ -36,11 +37,11 @@
 				
 				var authorizeButton = document.getElementById('authorize-button');
 				if (authResult && !authResult.error) {
-				  authorizeButton.style.visibility = 'hidden';
-				  makeApiCall(authResult);
+					authorizeButton.style.visibility = 'hidden';
+					makeApiCall(authResult);
 				} else {
-				  authorizeButton.style.visibility = '';
-				  authorizeButton.onclick = handleAuthClick;
+					authorizeButton.style.visibility = '';
+					authorizeButton.onclick = handleAuthClick;
 				}
 			}
 
@@ -54,7 +55,8 @@
 				var getInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + authResult['access_token'];
 				
 				var xmlHttp = new XMLHttpRequest();
-				xmlHttp.onreadystatechange = () => { 
+				xmlHttp.onreadystatechange = function()
+				{
 					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 						var userInfo = JSON.parse(xmlHttp.responseText);
 						console.log('zhopa ' + userInfo.id);

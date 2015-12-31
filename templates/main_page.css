@@ -158,3 +158,8 @@
     }
 
 	div.globalControl { background-color: #6aa; }
+
+	img.userImage {
+		float: left;
+		height: 36px;
+	}

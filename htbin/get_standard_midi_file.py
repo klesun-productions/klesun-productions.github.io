@@ -14,6 +14,7 @@ import base64
 from classes.MidiFileProvider import MidiFileProvider
 from pony.orm import Database, Required, Set, db_session
 from datetime import datetime
+from oauth2client import client, crypt
 
 print("Content-Type: text/html")
 print('')
@@ -29,9 +30,20 @@ class Listened(db.Entity):
 db.generate_mapping(create_tables=True)
 
 
+# @return dict|None
+def fetch_info_from_login_token(token):
+    google_api_shmidusic_project_id = '521166378127-6hmr4e9rspkj2amipftmkt4qukb1ljr4.apps.googleusercontent.com';
+    try:
+        userInfo = client.verify_id_token(token, google_api_shmidusic_project_id)
+        return userInfo
+    except crypt.AppIdentityError as exc:
+        # log maybe?
+        return None
+
 @db_session
-def log_finished(file_name):
-    hit = Listened(fileName=file_name)
+def log_finished(file_name, user_info=None):
+    gmail_login = user_info['email'].split('@')[0] if user_info else 'anonymous';
+    hit = Listened(fileName=file_name, gmailLogin=gmail_login)
     db.commit()
 
 
@@ -45,7 +57,10 @@ def execute_script():
     print(json.dumps(smf))
 
     if 'finished_file_name' in params and params['finished_file_name']:
-        # TODO: pass the user id as well... nobody prevents them to send requests manually though
-        log_finished(params['finished_file_name'])
+
+        user_info = (fetch_info_from_login_token(params['googleLogInIdToken'])
+                 if 'googleLogInIdToken' in params else None)
+
+        log_finished(params['finished_file_name'], user_info)
 
 execute_script()

@@ -45,7 +45,7 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
 		} else {
             // hope last chord finishes in 5 seconds
             // TODO: you do stupid thing here and not even playing last chord
-            scheduleScrewable(5000, whenFinished);
+            scheduleScrewable(2000, whenFinished);
 		}
 	};
 	playNext();
