@@ -3,23 +3,18 @@
 // requires Util.PianoLayoutPanel.js !
 // requires Util.Player.js !
 
-var MainPage = function($pianoCanvas, $playbackControlCont) {
+var MainPage = function($pianoCanvas, $playbackControlCont)
+{
+    var googleLogInIdToken = null;
 
-    var performExternal = function(scriptName, callback)
-    {
-        xmlhttp = new XMLHttpRequest();
-        var isDone = (_) => xmlhttp.readyState == XMLHttpRequest.DONE;
-        var isOk = (_) => xmlhttp.status == 200;
-        var getResponse = (_) => JSON.parse(xmlhttp.responseText);
-        var getErrorMessage = (_) => 'Failed to get ajax with script ' + script + ' status: ' + xmlhttp.status;
-
-        xmlhttp.onreadystatechange = (_) => isDone()
-            ? (isOk() ? callback(getResponse()) : alert(getErrorMessage()))
-            : -100;
-
-        xmlhttp.open("GET", "/htbin/" + scriptName, true);
-        xmlhttp.send();
-    };
+    var addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, googleLogInIdToken);
+    var performExternal = (scriptName, params, callback) => $.ajax({
+        url: '/htbin/' + scriptName,
+        type: "post",
+        data: JSON.stringify(addToken(params)),
+        dataType: "json",
+        success: callback
+    });
 
     var SynthAdapter = function(dropdownEl, controlEl)
     {
@@ -63,9 +58,10 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
     {
         var playButtonFormatter = function(cell, row)
         {
-            var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify({file_name: row.rawFileName}));
+            var params = {file_name: row.rawFileName};
+            var link = 'get_standard_midi_file.py';
             return $('<input type="button" value="Play!"/>')
-                .click((_) => performExternal(link, answer => player.playStandardMidiFile(answer, row)));
+                .click((_) => performExternal(link, params, answer => player.playStandardMidiFile(answer, row)));
         };
 
         var callback = function(rowList) {
@@ -89,20 +85,15 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
                 console.log('Playing: ' + rowList[index].fileName);
 
                 var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileInfo.fileName};
-
-                if (GOOGLE_LOG_IN_ID_TOKEN) {
-                    params['googleLogInIdToken'] = GOOGLE_LOG_IN_ID_TOKEN;
-                }
-
-                var link = 'get_standard_midi_file.py?params_json_utf8_base64=' + btoa(JSON.stringify(params));
-                performExternal(link,
+                var link = 'get_standard_midi_file.py';
+                performExternal(link, params,
                     (answer) => player.playStandardMidiFile(answer, rowList[index],
                     (_) => playRandom(rowList[index]))
                 );
             };
         };
 
-        performExternal('get_ichigos_midi_names.py', callback)
+        performExternal('get_ichigos_midi_names.py', {}, callback)
     };
 
     var initMyMusicList = function () {
@@ -127,10 +118,23 @@ var MainPage = function($pianoCanvas, $playbackControlCont) {
         $('.something-left-cont').append(table); // defined in main_page.html
     };
 
+    var handleGoogleSignIn = function(googleUser, $infoCont)
+    {
+        $infoCont.find('.g-signin2').css('display', 'none');
+
+        var profile = googleUser.getBasicProfile();
+
+        $infoCont.find('.logInStatusHolder').html('Logged-In as ' + profile.getEmail().split('@')[0]);
+        $infoCont.find('.userImage').attr('src', profile.getImageUrl());
+
+        googleLogInIdToken = googleUser.getAuthResponse().id_token;
+    };
+
     return {
         initIchigosMidiList: initIchigosMidiList,
         initMyMusicList: initMyMusicList,
         playDemo: playDemo,
         playRandom: (_) => playRandom(),
+        handleGoogleSignIn: handleGoogleSignIn,
     };
 };

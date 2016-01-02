@@ -102,9 +102,9 @@
             </div>
 
             <div class="userInfoCont">
-                <div class="g-signin2" data-onsuccess="onGoogleSignIn" data-theme="dark"></div>
                 <img class="userImage" src=""/>
                 <span class="logInStatusHolder">Not Logged-In: cant rate songs</span>
+                <div class="g-signin2" data-onsuccess="onGoogleSignIn" data-theme="dark"></div>
                 <br clear="all" />
             </div>
         </div>
@@ -148,8 +148,6 @@
         ECMA6 = true;
     }, 100);
 
-    GOOGLE_LOG_IN_ID_TOKEN = null;
-
     var mainPage = MainPage($('#pianoLayoutPanel'), $('#playbackControl')); // defined in main_page.js
 
     var onLoad = function () {
@@ -161,17 +159,7 @@
 
     window.addEventListener('load', onLoad, false);
 
-    var onGoogleSignIn = function(googleUser) {
-        $('.userInfoCont').find('.g-signin2').css('display', 'none');
-
-        var profile = googleUser.getBasicProfile();
-
-        $('.userInfoCont').find('.logInStatusHolder').html('Logged-In as ' + profile.getEmail().split('@')[0]);
-        $('.userInfoCont').find('.userImage').attr('src', profile.getImageUrl());
-
-        // sorry for just dirty making it global, i wanna sleep asap, tomorrow... today is 31 of december!
-        GOOGLE_LOG_IN_ID_TOKEN = googleUser.getAuthResponse().id_token;
-    };
+    var onGoogleSignIn = u => mainPage.handleGoogleSignIn(u, $('.userInfoCont'));
 	
 </script>
 

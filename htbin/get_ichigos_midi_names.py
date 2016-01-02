@@ -11,8 +11,9 @@ import os
 
 from classes.MidiFileProvider import MidiFileProvider
 
-print("Content-Type: text/html")
+print("Content-Type: text/json")  # can be either html (in case of exceptions) or json
 print('')
+
 
 def execute_script():
     midi_files = MidiFileProvider.get_info_list()
