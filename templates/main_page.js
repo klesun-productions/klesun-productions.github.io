@@ -7,14 +7,15 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
 {
     var googleLogInIdToken = null;
 
-    var addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, googleLogInIdToken);
-    var performExternal = (scriptName, params, callback) => $.ajax({
+    var addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
+    var performExternal = (scriptName, params, callback) => {$.ajax({
         url: '/htbin/' + scriptName,
         type: "post",
         data: JSON.stringify(addToken(params)),
         dataType: "json",
+        contentType: 'application/json;UTF-8',
         success: callback
-    });
+    }); console.log('zhopa', JSON.stringify(addToken(params)).length)};
 
     var SynthAdapter = function(dropdownEl, controlEl)
     {
