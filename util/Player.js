@@ -87,6 +87,8 @@ Util.Player = function ($controlCont)
             document.removeEventListener('visibilitychange', tabSwitched);
 		};
 		document.addEventListener('visibilitychange', tabSwitched);
+
+        window.onbeforeunload = playback.pause;
     };
 
     /** @param shmidusicJson - json in shmidusic project format */
