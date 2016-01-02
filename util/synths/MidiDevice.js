@@ -7,11 +7,23 @@ Util.Synths.MidiDevice = function ()
     var NOTE_ON = 0x90;
     var NOTE_OFF = 0x80;
 
+    var volume = 64;
+
     var firstInit = true;
     var midiOutputList = [];
 
-    var init = function ($controlEl) {
+    var initControl = function($controlEl)
+    {
+        $controlEl.empty()
+            .append($('<div class="inlineBlock"></div>')
+                .append('Volume Gain: ')
+                .append($('<input type="range" min="0" max="127" step="1"/>')
+                    .addClass("smallSlider").val(volume)
+                    .on("input change", (e) => (volume = e.target.value))));
+    };
 
+    var init = function ($controlEl)
+    {
         if (firstInit) {
             firstInit = false;
             // TODO: for now calling navigator.requestMIDIAccess() blocks devices for other programs
@@ -27,14 +39,14 @@ Util.Synths.MidiDevice = function ()
             }
         }
 
-        $controlEl.empty().append($('<div></div>').append('TODO: make possible to choose output device'));
+        initControl($controlEl);
     };
 
     // 127 = max velocity
-    var noteOn = (tune,channel) => midiOutputList.forEach(o => o.send([NOTE_ON - -channel, tune, 127] ));
+    var noteOn = (tune,channel) => midiOutputList.forEach(o => o.send([NOTE_ON - -channel, tune, volume] ));
     var noteOff = (tune,channel) => midiOutputList.forEach(o => o.send([NOTE_OFF - -channel, tune, 0x40]));
 
-    var setInstrument = (n,channel) => midiOutputList.forEach(o => o.send([0xC0 - -channel, n]))
+    var setInstrument = (n,channel) => midiOutputList.forEach(o => o.send([0xC0 - -channel, n]));
 
     // a dict {noteIndex: openedCount}
     var openedDict = {};
