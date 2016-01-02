@@ -8,14 +8,14 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
     var googleLogInIdToken = null;
 
     var addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
-    var performExternal = (scriptName, params, callback) => {$.ajax({
-        url: '/htbin/' + scriptName,
+    var performExternal = (methodName, params, callback) => $.ajax({
+        url: '/htbin/json_service.py' + '?f=' + methodName, // GET params just for cosmetics
         type: "post",
-        data: JSON.stringify(addToken(params)),
+        data: JSON.stringify(addToken({methodName: methodName, params: params})),
         dataType: "json",
         contentType: 'application/json;UTF-8',
         success: callback
-    }); console.log('zhopa', JSON.stringify(addToken(params)).length)};
+    });
 
     var SynthAdapter = function(dropdownEl, controlEl)
     {
@@ -60,9 +60,9 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
         var playButtonFormatter = function(cell, row)
         {
             var params = {file_name: row.rawFileName};
-            var link = 'get_standard_midi_file.py';
+            var method_name = 'get_standard_midi_file';
             return $('<input type="button" value="Play!"/>')
-                .click((_) => performExternal(link, params, answer => player.playStandardMidiFile(answer, row)));
+                .click((_) => performExternal(method_name, params, answer => player.playStandardMidiFile(answer, row)));
         };
 
         var callback = function(rowList) {
@@ -86,15 +86,15 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
                 console.log('Playing: ' + rowList[index].fileName);
 
                 var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileInfo.fileName};
-                var link = 'get_standard_midi_file.py';
-                performExternal(link, params,
+                var method_name = 'get_standard_midi_file';
+                performExternal(method_name, params,
                     (answer) => player.playStandardMidiFile(answer, rowList[index],
                     (_) => playRandom(rowList[index]))
                 );
             };
         };
 
-        performExternal('get_ichigos_midi_names.py', {}, callback)
+        performExternal('get_ichigos_midi_names', {}, callback)
     };
 
     var initMyMusicList = function () {

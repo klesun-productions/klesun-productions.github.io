@@ -13,7 +13,7 @@ Util.Types = {
 
 Util.Structures = {
     // we get list of ISongInfo objects from
-    // external call to /htbin/get_standard_midi_file.py
+    // external call to /htbin/json_service.py::get_standard_midi_file()
     ISongInfo: {
         rawFileName: Util.Types.IString
     },
