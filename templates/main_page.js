@@ -21,7 +21,6 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
     {
         var synths = {
             oscillator: Util.Synths.Oscillator(),
-            mudcube: Util.Synths.Mudcube(),
             midiDevice: Util.Synths.MidiDevice()
         };
 
@@ -129,6 +128,8 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
         $infoCont.find('.userImage').attr('src', profile.getImageUrl());
 
         googleLogInIdToken = googleUser.getAuthResponse().id_token;
+        
+        /** @TODO: token expires in about two hours - need to rerequest it */
     };
 
     return {

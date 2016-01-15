@@ -30,7 +30,7 @@ Util.StaffPanel = function(sheetMusic)
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
         var ivoryIndex = !isEbony
             ? [0,2,4,5,7,9,11].indexOf(note.tune % 12)
-            : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as ebonies for now - ignoring file key signature
+            : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as flats for now - ignoring file key signature
 
         if (sheetMusic.chordList.length > 0) {
             var totalLength = sheetMusic.chordList.slice(-1)[0].timeFraction;

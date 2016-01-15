@@ -61,7 +61,6 @@ Util.Synths.MidiDevice = function ()
         // stopping just for a moment to mark end of previous sounding if any
         if ((openedDict[channel][tune] || 0) > 0) {
             noteOff(tune, channel);
-            midiOutputList.forEach(output => output.send([0x80 - -channel, tune, 0x40]));
         }
 
         noteOn(tune, channel);

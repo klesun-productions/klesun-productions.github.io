@@ -151,6 +151,7 @@ Util.Player = function ($controlCont)
         /** @TODO: handle _all_ tempo events, not just first. Should be easy once speed change by user is implemented */
         var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
             smf.tempoEventList[0] || {tempo: 120};
+        var tempo = Math.max(Math.min(tempoEntry.tempo, 360), 15);
         var division = smf.division * 4;
 
         var chordList = [];
@@ -171,8 +172,8 @@ Util.Player = function ($controlCont)
         playSheetMusic({
             chordList: chordList,
             config: {
-                tempo: tempoEntry.tempo,
-                tempoOrigin: tempoEntry.tempo,
+                tempo: tempo,
+                tempoOrigin: tempo,
                 instrumentDict: smf.instrumentDict
             },
 			misc: {
