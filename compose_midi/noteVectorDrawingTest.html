@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="ShapeProvider.js" type="text/javascript"></script>
+    <script src="../libs/jquery-2.1.4.js" type="text/javascript"></script>
+</head>
+<body>
+
+<!-- i'm gonna draw notes with vectors! -->
+
+<canvas id="testNoteCanvas" width="800" height="500"></canvas>
+
+<script>
+
+    var ctx = $('#testNoteCanvas')[0].getContext('2d');
+
+    Ns.ShapeProvider(ctx, 16, 50, 10).drawNote(1, '1 / 4');
+    Ns.ShapeProvider(ctx, 16, 100, 10).drawNote(1, '1 / 2');
+    Ns.ShapeProvider(ctx, 16, 150, 10).drawNote(1, '1');
+    Ns.ShapeProvider(ctx, 16, 200, 10).drawNote(1, '3 / 16');
+
+    Ns.ShapeProvider(ctx, 4, 50, 80).drawNote(1, '1 / 2');
+    Ns.ShapeProvider(ctx, 4, 100, 80).drawNote(1, '1 / 2');
+    Ns.ShapeProvider(ctx, 4, 150, 80).drawNote(1, '1');
+    Ns.ShapeProvider(ctx, 4, 200, 80).drawNote(1, '3 / 16');
+
+</script>
+
+</body>
+</html>

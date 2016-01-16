@@ -12,3 +12,5 @@ __pycache__
 /midiCollectionDecoded/*
 /user_data.db
 /flying_pigs.jpg
+*-compiled.js
+*-compiled.js.map

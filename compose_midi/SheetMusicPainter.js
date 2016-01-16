@@ -4,7 +4,7 @@ var Ns = Ns || {};
 Ns.SheetMusicPainter = function(parentId)
 {
     var DY = 4; // half-space between two system horizontal lines
-    var DX = 20; // half of chord span width
+    var DX = DY * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     
     var TOPPEST_TUNE = 98; // the re that would be paint at 0th pixel from top
@@ -16,7 +16,7 @@ Ns.SheetMusicPainter = function(parentId)
     var canvas = $('<canvas class="overlayCanvas" width="1024px" height="768px"></canvas>')[0];
     
     $parentEl.append($chordListCont).append(canvas);
-    
+
     var drawNote = function(note, ctx)
     {
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
@@ -25,11 +25,9 @@ Ns.SheetMusicPainter = function(parentId)
             : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as flats for now - ignoring file key signature
         var octave = Math.floor(note.tune / 12);
         
-        var shift = 1 + 56 - ivoryIndex - octave * 7; // 1 cuz 0 px is re;
-        
-        ctx.beginPath();
-        ctx.arc(DX, shift * DY, DY, 0, Math.PI*2, true);
-        ctx.stroke();
+        var shift = 56 - ivoryIndex - octave * 7; // 56 - some number that divides by 7
+
+        Ns.ShapeProvider(ctx, DY, DX, shift).drawNote(note.channel, note.length);
     };
 
     /** @TODO: draw also violin/bass keys */
@@ -38,25 +36,26 @@ Ns.SheetMusicPainter = function(parentId)
         var width = DX * 2;
         
         ctx.strokeStyle = "#C0C0C0";
+        ctx.lineWidth = 1;
         ctx.beginPath();
         
         // greyed note hight lines for way too high notes
         for (var i = 1; i <= 3; ++i) { // 1 - Ti; 2 - Sol; 3 - Mi
-            ctx.moveTo(0, i * DY * 2);
-            ctx.lineTo(width, i * DY * 2);
+            ctx.moveTo(0, i * DY * 2 - DY + 0.5);
+            ctx.lineTo(width, i * DY * 2 - DY + 0.5);
         }
         
         var lineSkip = 6;
         
         ctx.stroke();
-        ctx.strokeStyle = '#000000';
+        ctx.strokeStyle = '#0000FF';
         ctx.beginPath();
         
         // normal note height linees
         for (var i = 0; i < 11; ++i) { // 0 - top violin Fa; 11 - low bass Sol
             if (i !== 5) { // the gap between violin and bass keys
-                ctx.moveTo(0, (lineSkip + i) * DY * 2);
-                ctx.lineTo(width, (lineSkip + i) * DY * 2);
+                ctx.moveTo(0, (lineSkip + i) * DY * 2 - DY + 0.5);
+                ctx.lineTo(width, (lineSkip + i) * DY * 2 - DY + 0.5);
             }
         }
         
@@ -102,7 +101,8 @@ Ns.SheetMusicPainter = function(parentId)
                 display: 'inline-block',
                 height: (Y_STEPS_PER_SYSTEM * DY) + 'px',
                 width: (DX * 2) + 'px',
-                'background-color': 'rgba(245,245,245,1)',
+                // 'background-color': 'rgba(245,245,245,1)',
+                'background-color': 'rgba(255,255,255,1)',
             },
         };
         
