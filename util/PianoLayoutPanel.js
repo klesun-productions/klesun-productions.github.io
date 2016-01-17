@@ -90,4 +90,4 @@ Util.PianoLayoutPanel = function ($canvas) {
     return {
         handleNoteOn: highlight,
     };
-}
+};

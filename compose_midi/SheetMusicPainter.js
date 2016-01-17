@@ -34,6 +34,8 @@ Ns.SheetMusicPainter = function(parentId)
     /** @TODO: draw also violin/bass keys */
     var drawSystemHorizontalLines = function(ctx)
     {
+        /** @TODO: probably can do something like background: repeat instead */
+
         var width = DX * 2;
         
         ctx.strokeStyle = "#C0C0C0";
@@ -63,6 +65,34 @@ Ns.SheetMusicPainter = function(parentId)
         ctx.stroke();
     };
 
+    /** @param float tactSize */
+    var TactMeasurer = function(tactSize)
+    {
+        /** @var float */
+        var sumFraction = 0;
+        var tactNumber = 0;
+
+        var inject = function(chordLength)
+        {
+            sumFraction += chordLength;
+
+            var finishedTact = false;
+            while (sumFraction >= tactSize) {
+                sumFraction -= tactSize;
+                finishedTact = true;
+                ++tactNumber;
+            }
+
+            return finishedTact;
+        };
+
+        return {
+            inject: inject,
+            hasRest: _ => sumFraction > 0,
+            tactNumber: _ => tactNumber
+        };
+    };
+
     var makeChordSpan = function(chord)
     {
         var $chordCanvas = $('<canvas></canvas>')
@@ -75,23 +105,44 @@ Ns.SheetMusicPainter = function(parentId)
         chord.noteList.forEach(n => drawNote(n, g));
 
         return $('<span style="position: relative;"></span>')
-            .append($chordCanvas);
+            .append($chordCanvas)
+            .append($('<span class="tactNumberCont"></span>'));
     };
+
+    var toFloat = fractionString => eval(fractionString);
     
     /** @param song - dict structure outputed by 
      * shmidusic program - github.com/klesun/shmidusic */
     var draw = function(song)
     {
         var staff = song.staffList[0];
-        staff.chordList
-            .map(makeChordSpan)
-            .forEach(el => $chordListCont.append(el));
+
+        var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
+        for (chord of staff.chordList) {
+            var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length)));
+            var finishedTact = tacter.inject(chordLength);
+            var $span = makeChordSpan(chord);
+            if (finishedTact) {
+                $span.find('.tactNumberCont').html(tacter.tactNumber());
+                $span.addClass('tactFinisher');
+                if (tacter.hasRest()) {
+                    $span.addClass('doesNotFitIntoTact');
+                }
+            }
+
+            $chordListCont.append($span);
+        }
     };
     
     // sets the css corresponding to the constants
     var applyStyles = function()
     {
         var styles = {
+            '*': {
+                '-moz-box-sizing': 'border-box',
+                '-webkit-box-sizing': 'border-box',
+                'box-sizing': 'border-box',
+            },
             'div.chordListCont': {
                 'z-index': -1,
                 position: 'absolute',
@@ -100,11 +151,20 @@ Ns.SheetMusicPainter = function(parentId)
             },
             'div.chordListCont > span': {
                 display: 'inline-block',
-                height: (Y_STEPS_PER_SYSTEM * R) + 'px',
+                height: ((Y_STEPS_PER_SYSTEM - 4) * R) + 'px',
                 width: (DX * 2) + 'px',
-                // 'background-color': 'rgba(245,245,245,1)',
-                'background-color': 'rgba(255,255,255,1)',
+                'margin-bottom': 4 * R + 'px',
             },
+            'div.chordListCont > span.tactFinisher': {
+                'box-shadow': '1px 0 0 rgba(0,0,0,0.5)'
+            },
+            'div.chordListCont > span.tactFinisher.doesNotFitIntoTact': {
+                'box-shadow': '1px 0 0 red'
+            },
+            '.tactNumberCont': {
+                position: 'absolute',
+                left: DX * 2 - R * 4 + 'px'
+            }
         };
         
         var css = document.createElement("style");
