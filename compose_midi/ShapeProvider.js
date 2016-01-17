@@ -8,6 +8,8 @@ var Ns = Ns || {};
  * @param r - note oval vertical radius */
 Ns.ShapeProvider = function(ctx, r, x, ySteps)
 {
+    var y = ySteps * r;
+
     var channelColors = [
         [0,0,0], // black
         [192,0,0], // red
@@ -28,6 +30,17 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
         [0,255,0] // TODO: !!!
     ];
 
+    // https://github.com/google/canvas-5-polyfill/issues/1
+    var drawEllipseManually = function(ctx, x, y, radiusX, radiusY, rotation, startAngle, endAngle, antiClockwise)
+    {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        ctx.scale(radiusX, radiusY);
+        ctx.arc(0, 0, 1, startAngle, endAngle, antiClockwise);
+        ctx.restore();
+    };
+
     /** @param rotation - in radians */
     var drawEllipse = function(x,y,rx,ry,rotation,subtract)
     {
@@ -37,9 +50,7 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
         if (typeof(ctx.ellipse) === 'function') {
             ctx.ellipse(x,y,rx,ry,rotation, 0, Math.PI*2, subtract);
         } else {
-            /** @TODO: implement sanely or wait, till firefox adds that
-             * http://stackoverflow.com/questions/2172798/how-to-draw-an-oval-in-html5-canvas */
-            ctx.arc(x, y, rx, 0, Math.PI*2, subtract);
+            drawEllipseManually(ctx, x,y,rx,ry,rotation, 0, Math.PI*2, subtract);
         }
     };
 
@@ -71,8 +82,6 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     /** @params str length - format like "1 / 2" or "3 / 4" or "7 / 8" */
     var drawNote = function(channel, length)
     {
-        var y = ySteps * r;
-
         ctx.fillStyle = 'rgba(' + channelColors[channel].join(',') + ',1)';
         ctx.strokeStyle = 'rgba(' + channelColors[channel].join(',') + ',1)';
 
@@ -89,16 +98,16 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
             // hole
             drawEllipse(x, y, r * 3 / 4, r / 2, 60 * Math.PI / 180, true);
         } else {
-            drawEllipse(x, y, r, r * 1.5, 60 * Math.PI / 180, true);
+            drawEllipse(x, y, r, r * 1.5, 60 * Math.PI / 180);
             /** @TODO: use some math instead of this 0.375 */
             var rightEdgeX = r * 0.375;
             var stickTopY = - r * 8;
             // stick
-            ctx.rect(x + r, ySteps * r, rightEdgeX, stickTopY);
+            ctx.rect(x + r, ySteps * r + stickTopY, rightEdgeX, -stickTopY);
 
             if (length.float() >= 1/2) {
                 // half note hole
-                drawEllipse(x, y, r * 0.4, r * 1.2, 50 * Math.PI / 180);
+                drawEllipse(x, y, r * 0.4, r * 1.2, 50 * Math.PI / 180, true);
             } else if (length.float() >= 1/4) {
                 // do nothing ^_^
             } else {
@@ -121,7 +130,32 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
         ctx.closePath();
     };
 
+    var drawFlatSign = function()
+    {
+        // zooming
+        var rZoomed = r * 0.6;
+
+        ctx.beginPath();
+        drawEllipse(x, y, rZoomed * 1.5, rZoomed * 2, 40 * Math.PI / 180);
+        drawEllipse(x, y, rZoomed * 1, rZoomed * 1.2, 30 * Math.PI / 180, true);
+
+        ctx.fill();
+
+        ctx.lineWidth = rZoomed / 2;
+        ctx.beginPath();
+        ctx.moveTo(x - rZoomed / 2, y + 2 * rZoomed);
+        ctx.lineTo(x - rZoomed / 2, y - 5 * rZoomed);
+        ctx.stroke();
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.rect(x - rZoomed / 2 - rZoomed / 4, y - rZoomed*2, -rZoomed, rZoomed*4);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+    };
+
     return {
         drawNote: drawNote,
+        drawFlatSign: drawFlatSign,
     }
 };

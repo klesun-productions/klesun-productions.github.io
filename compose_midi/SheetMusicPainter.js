@@ -28,6 +28,7 @@ Ns.SheetMusicPainter = function(parentId)
         var shift = 56 - ivoryIndex - octave * 7; // 56 - some number that divides by 7
 
         Ns.ShapeProvider(ctx, R, DX, shift).drawNote(note.channel, note.length);
+        isEbony && Ns.ShapeProvider(ctx, R, DX - R * 4, shift).drawFlatSign();
     };
 
     /** @TODO: draw also violin/bass keys */
