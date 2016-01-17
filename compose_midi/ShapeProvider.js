@@ -5,8 +5,8 @@ var Ns = Ns || {};
 // Violin/Bass keys, Flat/Sharp/Straight sign and so on
 
 /** @param ctx - html5 canvas context
- * @param dy - half of height of oval part of note in pixels */
-Ns.ShapeProvider = function(ctx, dy, x, ySteps)
+ * @param r - note oval vertical radius */
+Ns.ShapeProvider = function(ctx, r, x, ySteps)
 {
     var channelColors = [
         [0,0,0], // black
@@ -31,6 +31,7 @@ Ns.ShapeProvider = function(ctx, dy, x, ySteps)
     /** @param rotation - in radians */
     var drawEllipse = function(x,y,rx,ry,rotation,subtract)
     {
+        var rotation = rotation || 0;
         var subtract = subtract || false;
 
         if (typeof(ctx.ellipse) === 'function') {
@@ -55,63 +56,69 @@ Ns.ShapeProvider = function(ctx, dy, x, ySteps)
         };
     };
 
+    var drawTail = function(x,y)
+    {
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + r * 2);
+        ctx.lineTo(x + r * 0.5, y + r * 1);
+        ctx.lineTo(x + r * 3, y + r * 4);
+        ctx.lineTo(x + r * 1.5, y + r);
+        ctx.lineTo(x, y);
+    };
+
+    var getDotCount = numerator => Math.log2(+numerator + 1) - 1;
+
     /** @params str length - format like "1 / 2" or "3 / 4" or "7 / 8" */
     var drawNote = function(channel, length)
     {
-        var y = ySteps * dy;
+        var y = ySteps * r;
 
         ctx.fillStyle = 'rgba(' + channelColors[channel].join(',') + ',1)';
         ctx.strokeStyle = 'rgba(' + channelColors[channel].join(',') + ',1)';
 
         var length = Fraction(length);
-        length.den(length.den() % 3 === 0 ? length.den() * 3 : length.den()); // triplet have sane image for now
+        if (length.den() % 3 === 0) {
+            ctx.fillText('3', x - r * 3, ySteps * r + r);
+            length.den(length.den() / 3);
+        }
 
         ctx.beginPath();
         if (length.float() >= 1) {
             // semibreve
-            drawEllipse(x, ySteps * dy, dy, dy * 1.5, 90 * Math.PI / 180);
+            drawEllipse(x, y, r, r * 1.5, 90 * Math.PI / 180);
             // hole
-            drawEllipse(x, ySteps * dy, dy * 3 / 4, dy / 2, 60 * Math.PI / 180, true);
+            drawEllipse(x, y, r * 3 / 4, r / 2, 60 * Math.PI / 180, true);
         } else {
-            drawEllipse(x, ySteps * dy, dy, dy * 1.5, 60 * Math.PI / 180, true);
+            drawEllipse(x, y, r, r * 1.5, 60 * Math.PI / 180, true);
             /** @TODO: use some math instead of this 0.375 */
-            var rightEdgeX = dy * 0.375;
-            var stickTopY = - dy * 8;
+            var rightEdgeX = r * 0.375;
+            var stickTopY = - r * 8;
             // stick
-            ctx.rect(x + dy, ySteps * dy, rightEdgeX, stickTopY);
+            ctx.rect(x + r, ySteps * r, rightEdgeX, stickTopY);
 
             if (length.float() >= 1/2) {
                 // half note hole
-                drawEllipse(x, y, dy * 0.4, dy * 1.2, 50 * Math.PI / 180);
+                drawEllipse(x, y, r * 0.4, r * 1.2, 50 * Math.PI / 180);
             } else if (length.float() >= 1/4) {
                 // do nothing ^_^
-            } else if (length.float() >= 1/8) {
-
-                /** @debug */
-                console.log('zhopa',rightEdgeX, stickTopY);
-
-                // draw one tail
-                ctx.fill();
-                ctx.closePath();
-                ctx.beginPath();
-                ctx.moveTo(x + dy + rightEdgeX, y + stickTopY);
-                ctx.lineTo(x + dy + rightEdgeX, y + stickTopY + dy * 2);
-                ctx.lineTo(x + dy + rightEdgeX + dy, y + stickTopY + dy * 1.5);
-                ctx.lineTo(x + dy + rightEdgeX + dy * 3, y + stickTopY + dy * 4);
-                ctx.lineTo(x + dy + rightEdgeX + dy * 1.5, y +stickTopY + dy);
-                ctx.lineTo(x + dy + rightEdgeX, y + stickTopY);
-                ctx.stroke();
-            } else if (length.float() >= 1/16) {
-                // draw two tails
-            } else if (length.float() >= 1/32) {
-                // draw three tails
+            } else {
+                drawTail(x + r + rightEdgeX, y + stickTopY);
+                if (length.float() < 1 / 8) {
+                    drawTail(x + r + rightEdgeX, y + stickTopY + r * 1.5);
+                }
+                if (length.float() < 1 / 16) {
+                    drawTail(x + r + rightEdgeX, y + stickTopY + r * 3);
+                }
             }
+        }
+
+        for (var i = 1; i <= getDotCount(length.num()); ++i) {
+            ctx.moveTo(x + r * i, y + r);
+            drawEllipse(x + r * 1.5 + r * i, y + r, r / 2, r / 2);
         }
 
         ctx.fill();
         ctx.closePath();
-
-        /** @TODO: dots, triplets */
     };
 
     return {

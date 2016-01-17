@@ -3,8 +3,8 @@ var Ns = Ns || {};
 
 Ns.SheetMusicPainter = function(parentId)
 {
-    var DY = 4; // half-space between two system horizontal lines
-    var DX = DY * 5; // half of chord span width
+    var R = 4; // note oval vertical radius
+    var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     
     var TOPPEST_TUNE = 98; // the re that would be paint at 0th pixel from top
@@ -27,7 +27,7 @@ Ns.SheetMusicPainter = function(parentId)
         
         var shift = 56 - ivoryIndex - octave * 7; // 56 - some number that divides by 7
 
-        Ns.ShapeProvider(ctx, DY, DX, shift).drawNote(note.channel, note.length);
+        Ns.ShapeProvider(ctx, R, DX, shift).drawNote(note.channel, note.length);
     };
 
     /** @TODO: draw also violin/bass keys */
@@ -41,8 +41,8 @@ Ns.SheetMusicPainter = function(parentId)
         
         // greyed note hight lines for way too high notes
         for (var i = 1; i <= 3; ++i) { // 1 - Ti; 2 - Sol; 3 - Mi
-            ctx.moveTo(0, i * DY * 2 - DY + 0.5);
-            ctx.lineTo(width, i * DY * 2 - DY + 0.5);
+            ctx.moveTo(0, i * R * 2 - R + 0.5);
+            ctx.lineTo(width, i * R * 2 - R + 0.5);
         }
         
         var lineSkip = 6;
@@ -54,8 +54,8 @@ Ns.SheetMusicPainter = function(parentId)
         // normal note height linees
         for (var i = 0; i < 11; ++i) { // 0 - top violin Fa; 11 - low bass Sol
             if (i !== 5) { // the gap between violin and bass keys
-                ctx.moveTo(0, (lineSkip + i) * DY * 2 - DY + 0.5);
-                ctx.lineTo(width, (lineSkip + i) * DY * 2 - DY + 0.5);
+                ctx.moveTo(0, (lineSkip + i) * R * 2 - R + 0.5);
+                ctx.lineTo(width, (lineSkip + i) * R * 2 - R + 0.5);
             }
         }
         
@@ -66,7 +66,7 @@ Ns.SheetMusicPainter = function(parentId)
     {
         var $chordCanvas = $('<canvas></canvas>')
             .attr('width', DX * 2)
-            .attr('height', Y_STEPS_PER_SYSTEM * DY);
+            .attr('height', Y_STEPS_PER_SYSTEM * R);
         
         var g = $chordCanvas[0].getContext('2d');
 
@@ -99,7 +99,7 @@ Ns.SheetMusicPainter = function(parentId)
             },
             'div.chordListCont > span': {
                 display: 'inline-block',
-                height: (Y_STEPS_PER_SYSTEM * DY) + 'px',
+                height: (Y_STEPS_PER_SYSTEM * R) + 'px',
                 width: (DX * 2) + 'px',
                 // 'background-color': 'rgba(245,245,245,1)',
                 'background-color': 'rgba(255,255,255,1)',
