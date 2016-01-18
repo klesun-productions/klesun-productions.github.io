@@ -10,12 +10,9 @@ Ns.SheetMusicPainter = function(parentId)
     var TOPPEST_TUNE = 98; // the re that would be paint at 0th pixel from top
     
     var $parentEl = $('#' + parentId);
-    $parentEl.css('position', 'relative');
-    
+
     var $chordListCont =  $('<div class="chordListCont"></div>');
-    var canvas = $('<canvas class="overlayCanvas" width="1024px" height="768px"></canvas>')[0];
-    
-    $parentEl.append($chordListCont).append(canvas);
+    $parentEl.append($chordListCont);
 
     var drawNote = function(note, ctx)
     {
@@ -31,12 +28,9 @@ Ns.SheetMusicPainter = function(parentId)
         isEbony && Ns.ShapeProvider(ctx, R, DX - R * 4, shift).drawFlatSign();
     };
 
-    /** @TODO: draw also violin/bass keys */
     var drawSystemHorizontalLines = function(ctx)
     {
-        /** @TODO: probably can do something like background: repeat instead */
-
-        var width = DX * 2;
+        var width = ctx.canvas.width;
         
         ctx.strokeStyle = "#C0C0C0";
         ctx.lineWidth = 1;
@@ -101,7 +95,6 @@ Ns.SheetMusicPainter = function(parentId)
         
         var g = $chordCanvas[0].getContext('2d');
 
-        drawSystemHorizontalLines(g);
         chord.noteList.forEach(n => drawNote(n, g));
 
         return $('<span style="position: relative;"></span>')
@@ -128,6 +121,8 @@ Ns.SheetMusicPainter = function(parentId)
                 if (tacter.hasRest()) {
                     $span.addClass('doesNotFitIntoTact');
                 }
+            } else {
+                $span.find('.tactNumberCont').html('&nbsp;');
             }
 
             $chordListCont.append($span);
@@ -137,17 +132,24 @@ Ns.SheetMusicPainter = function(parentId)
     // sets the css corresponding to the constants
     var applyStyles = function()
     {
+        var bgCanvas = document.createElement('canvas');
+        bgCanvas.width = 640;
+        bgCanvas.height = R * Y_STEPS_PER_SYSTEM;
+        drawSystemHorizontalLines(bgCanvas.getContext('2d'));
+
+        var violinKeyCanvas = document.createElement('canvas');
+        violinKeyCanvas.width = DX * 3;
+        violinKeyCanvas.height = R * Y_STEPS_PER_SYSTEM;
+        Ns.ShapeProvider(violinKeyCanvas.getContext('2d'), R, 0, 17).drawViolinKey();
+        Ns.ShapeProvider(violinKeyCanvas.getContext('2d'), R, 0, 25).drawBassKey();
+
         var styles = {
-            '*': {
-                '-moz-box-sizing': 'border-box',
-                '-webkit-box-sizing': 'border-box',
-                'box-sizing': 'border-box',
-            },
-            'div.chordListCont': {
-                'z-index': -1,
-                position: 'absolute',
-                left: '0px',
-                top: '0px',
+            '': {
+                'background-image': 'url(' + bgCanvas.toDataURL('image/png') + '), ' +
+                                    'url(' + violinKeyCanvas.toDataURL('image/png') + ')',
+                'background-repeat': 'repeat, ' +
+                                    'repeat-y',
+                'padding-left': DX * 3 + 'px',
             },
             'div.chordListCont > span': {
                 display: 'inline-block',

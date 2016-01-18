@@ -154,8 +154,22 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
         ctx.globalCompositeOperation = 'source-over';
     };
 
+    // we treat image borders center for pivot point during scaling
+    var drawSvg = function(img, scaleFactor)
+    {
+        var width = img.width * scaleFactor;
+        var height = img.height * scaleFactor;
+
+        var localX = x - width / 2;
+        var localY = y - height / 2;
+
+        ctx.drawImage(img, localX + r * 4, localY, width, height);
+    };
+
     return {
         drawNote: drawNote,
         drawFlatSign: drawFlatSign,
+        drawViolinKey: _ => drawSvg($('#imgViolinKey')[0], 0.075 * r / 4),
+        drawBassKey: _ => drawSvg($('#imgBassKey')[0], 0.085 * r / 4),
     }
 };
