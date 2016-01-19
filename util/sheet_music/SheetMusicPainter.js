@@ -108,6 +108,8 @@ Ns.SheetMusicPainter = function(parentId)
      * shmidusic program - github.com/klesun/shmidusic */
     var draw = function(song)
     {
+        $chordListCont.empty();
+
         var staff = song.staffList[0];
 
         var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
@@ -166,7 +168,7 @@ Ns.SheetMusicPainter = function(parentId)
             '.tactNumberCont': {
                 position: 'absolute',
                 left: DX * 2 - R * 4 + 'px'
-            }
+            },
         };
         
         var css = document.createElement("style");
@@ -190,5 +192,5 @@ Ns.SheetMusicPainter = function(parentId)
     return {
         draw: draw,
     };
-}
+};
 

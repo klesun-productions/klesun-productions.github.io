@@ -3,8 +3,18 @@
 // requires Util.PianoLayoutPanel.js !
 // requires Util.Player.js !
 
-var MainPage = function($pianoCanvas, $playbackControlCont)
+/** @param mainCont - div dom with children
+ * structure defined in main_page.html */
+var MainPage = function(mainCont)
 {
+    var $pianoCanvas = $(mainCont).find('.pianoLayoutCanvas'),
+        $playbackControlCont = $(mainCont).find('.playbackControlCont'),
+        sheetMusicCont = $(mainCont).find('.sheetMusicCont')[0],
+        violinKeyImage = $(mainCont).find('.violinKeyImage')[0],
+        bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
+        O_O = 0
+        ;
+
     var googleLogInIdToken = null;
 
     var addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
@@ -38,19 +48,14 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
             consumeConfig: (config, callback) => synths[$(dropdownEl).val()].consumeConfig(config, callback)
         };
     };
-    var synth = SynthAdapter($('#synthDropdown')[0], $('#synthControl')[0]);
+    var synth = SynthAdapter(
+        $(mainCont).find('#synthDropdown')[0],
+        $(mainCont).find('#synthControl')[0]);
 
     var player = Util.Player($playbackControlCont);
     player.addNoteHandler(Util.PianoLayoutPanel($pianoCanvas));
     player.addNoteHandler(synth);
     player.addConfigConsumer(synth);
-
-    var playDemo = function () {
-        var mineList = Globals.shmidusicList;
-        var index = Math.floor(Math.random() * mineList.length);
-        console.log('Playing: ' + mineList[index].fileName);
-        player.playShmidusic(mineList[index].sheetMusic, mineList[index].fileName);
-    };
 
     var playRandom = _ => alert("Please, wait till midi names load from ajax!");
 
@@ -96,11 +101,30 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
         performExternal('get_ichigos_midi_names', {}, callback)
     };
 
-    var initMyMusicList = function () {
+    var sheetMusicPainter = Ns.SheetMusicPainter('mainSongContainer');
 
+    var playShmidusicFile = function(file)
+    {
+        var song = file['sheetMusic'],
+            name = file['fileName'];
+
+        console.log('Playing shmidusic: ' + name);
+
+        player.playShmidusic(song, name);
+        sheetMusicPainter.draw(song);
+    };
+
+    var playDemo = function () {
+        var mineList = Globals.shmidusicList;
+        var index = Math.floor(Math.random() * mineList.length);
+        playShmidusicFile(mineList[index]);
+    };
+
+    var initMyMusicList = function ()
+    {
         var playButtonFormatter = function (cell, row) {
             return $('<input type="button" value="Play!"/>')
-                    .click((_) => player.playShmidusic(row['sheetMusic'], row['fileName']));
+                    .click((_) => playShmidusicFile(row));
         };
 
         /** @TODO: fetch it with a separate request */
@@ -115,7 +139,7 @@ var MainPage = function($pianoCanvas, $playbackControlCont)
         var caption = 'My music';
 
         var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
-        $('.something-left-cont').append(table); // defined in main_page.html
+        $(mainCont).find('.something-left-cont').append(table); // defined in main_page.html
     };
 
     var handleGoogleSignIn = function(googleUser, $infoCont)

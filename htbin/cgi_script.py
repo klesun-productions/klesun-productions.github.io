@@ -36,9 +36,9 @@ def include_util_js():
 
     for path, subdirs, files in os.walk('util/'):
         for name in files:
-            print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
-            #print('<script>console.log("zhopa", "' + path + '", "' + name + '");</script>')
-
+            if name.endswith('.js'):
+                if not name.endswith('-compiled.js'):
+                    print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
 
 def execute_script():
     print("Content-Type: text/html")

@@ -16,8 +16,8 @@
 
 <body>
 
-<div class="main-cont" style="border: 1px solid;"  align="center">
-	<h1 class="main-caption">Да будет этакая музыка!</h1>
+<div id="mainCont" class="main-cont" style="border: 1px solid;"  align="center">
+	<h1 class="main-caption">Да будет такая музыка!</h1>
 
 	<div class="topic-links-cont">
 		<a class="topic-option" href="/content/midiCollection">my midi collection</a>
@@ -32,7 +32,7 @@
 			<select id="synthDropdown" style="float: right; margin-right: 10px; background-color: rgba(255, 63, 0, 0.2)"></select>
         </div>
         <div class="piano-cont">
-            <canvas id="pianoLayoutPanel" width="490px" height="30px"></canvas>
+            <canvas id="pianoLayoutPanel" class="pianoLayoutCanvas" width="490px" height="30px"></canvas>
         </div>
         <div class="piano-side-div">
             <input id="startDemoButton" type="button" value="Нажми и тебе будет хорошо"/>
@@ -51,7 +51,7 @@
     <td valign="top">
     <div class="main-middle-cont">
         <div id="synthControl"></div>
-        <div id="playbackControl">
+        <div id="playbackControl" class="playbackControlCont">
             <div class="globalControl">
                 <div class="inlineBlock">
                     Speed:
@@ -109,15 +109,8 @@
             </div>
         </div>
         <br/>
-        <div style="background-color: white;">
-            Sheet Music<br/>
-            <h1 style="font-size: 50px;">Soon</h1>
-        </div>
+        <div style="background-color: white;" class="sheetMusicCont" id="mainSongContainer"></div>
         <br/>
-        <div style="background-color: white;">
-            <p>Hi.</p>
-            <p>This is site of the Great and Majestic Artur Klesun.</p>
-        </div>
 	</div>
 	</td>
 
@@ -127,7 +120,10 @@
 
 	</tr>
 	</table>
-	
+
+    <img src="/imgs/violin_key.svg" id="imgViolinKey" class="violinKeyImage" style="display: none;"/>
+    <img src="/imgs/bass_key.svg" id="imgBassKey" class="bassKeyImage" style="display: none;"/>
+
 </div>
 </body>
 
@@ -148,7 +144,7 @@
         ECMA6 = true;
     }, 100);
 
-    var mainPage = MainPage($('#pianoLayoutPanel'), $('#playbackControl')); // defined in main_page.js
+    var mainPage = MainPage($('#mainCont')[0]); // defined in main_page.js
 
     var onLoad = function () {
         mainPage.initMyMusicList();
