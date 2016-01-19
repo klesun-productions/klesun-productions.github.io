@@ -151,6 +151,8 @@ Ns.SheetMusicPainter = function(parentId)
                                     'url(' + violinKeyCanvas.toDataURL('image/png') + ')',
                 'background-repeat': 'repeat, ' +
                                     'repeat-y',
+                'background-attachment': 'local, ' +
+                                    'local',
                 'padding-left': DX * 3 + 'px',
             },
             'div.chordListCont > span': {

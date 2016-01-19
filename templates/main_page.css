@@ -163,3 +163,10 @@
 		float: left;
 		max-height: 36px;
 	}
+
+    .sheetMusicCont {
+        background-color: white;
+        border: solid 10px white;
+        overflow: auto;
+        height: 300px;
+    }
