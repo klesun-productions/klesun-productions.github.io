@@ -71,7 +71,7 @@ Ns.SheetMusicPainter = function(parentId)
             sumFraction += chordLength;
 
             var finishedTact = false;
-            while (sumFraction >= tactSize) {
+            while (sumFraction.toFixed(8) >= tactSize) {
                 sumFraction -= tactSize;
                 finishedTact = true;
                 ++tactNumber;
@@ -82,7 +82,7 @@ Ns.SheetMusicPainter = function(parentId)
 
         return {
             inject: inject,
-            hasRest: _ => sumFraction > 0,
+            hasRest: _ => sumFraction.toFixed(8) > 0,
             tactNumber: _ => tactNumber
         };
     };
@@ -130,6 +130,21 @@ Ns.SheetMusicPainter = function(parentId)
             $chordListCont.append($span);
         }
     };
+
+    var setNoteFocus = function(note, chordIndex)
+    {
+        /** @TODO: we could actually highlight exactly those notes, that are now sounding
+         * all we need is notes being a separate dom element positioned with css, not just
+         * something we paint on chord's canvas */
+
+        var chord = $chordListCont.children()[chordIndex];
+        $(chord).addClass('focused');
+        if (chord) {
+            chord.scrollIntoView();
+        }
+
+        return _ => $(chord).removeClass('focused');
+    };
     
     // sets the css corresponding to the constants
     var applyStyles = function()
@@ -160,6 +175,9 @@ Ns.SheetMusicPainter = function(parentId)
                 height: ((Y_STEPS_PER_SYSTEM - 4) * R) + 'px',
                 width: (DX * 2) + 'px',
                 'margin-bottom': 4 * R + 'px',
+            },
+            'div.chordListCont > span.focused': {
+                'background-color': 'rgba(0,0,255,0.3)',
             },
             'div.chordListCont > span.tactFinisher': {
                 'box-shadow': '1px 0 0 rgba(0,0,0,0.5)'
@@ -193,6 +211,7 @@ Ns.SheetMusicPainter = function(parentId)
     
     return {
         draw: draw,
+        handleNoteOn: setNoteFocus,
     };
 };
 

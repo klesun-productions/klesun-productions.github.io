@@ -28,24 +28,26 @@ Util.Player = function ($controlCont)
         var interrupted = false;
         var interruptLambda = function() {
             interrupted = true;
-            taskList.forEach(t => t.skipWhenInterrupted ? null : t.callback());
+            taskList.forEach(t => t());
         };
         toBeInterrupted.push(interruptLambda);
         setTimeout(function() {
             if (!interrupted) {
-                taskList.forEach(t => t.callback());
+                taskList.forEach(t => t());
                 var index = toBeInterrupted.indexOf(interruptLambda);
                 toBeInterrupted.splice(index, 1);
             }
         }, millis);
     };
-
-    var playNote = function(noteJs, tempo)
+    var playChord = function(chord, tempo, index)
     {
-        var length = toFloat(noteJs.length) / (noteJs.isTriplet ? 3 : 1);
-        var offList = noteHandlers.map(h => h.handleNoteOn(noteJs));
+        chord['noteList'].forEach(function(noteJs)
+        {
+            var length = toFloat(noteJs.length);
+            var offList = noteHandlers.map(h => h.handleNoteOn(noteJs, index));
 
-        scheduleInterruptable(toMillis(length, tempo), [{skipWhenInterrupted: false, callback: _ => offList.forEach(c => c())}]);
+            scheduleInterruptable(toMillis(length, tempo), [_ => offList.forEach(c => c())]);
+        });
     };
 
     var tabSwitched = null;
@@ -55,19 +57,17 @@ Util.Player = function ($controlCont)
         toBeInterrupted.length = 0;
     };
 
-    // TODO: rename to playSheetMusic()
     var playSheetMusic = function (sheetMusic, fileInfo, whenFinished)
     {
 		whenFinished = whenFinished || (_ => {});
         currentPlayback && currentPlayback.pause();
 
-		var onChord = (c,t,i) => c['noteList'].forEach(n => playNote(n,t));
         control.setFields(sheetMusic)
             .setFileInfo(fileInfo);
 		/** @TODO: passing the callback is legacy - remove */
         configConsumer.consumeConfig(sheetMusic.config.instrumentDict, _ => {});
 		
-		var playback = currentPlayback = Util.Playback(sheetMusic, onChord, whenFinished, control.getTempoFactor(), stopSounding);
+		var playback = currentPlayback = Util.Playback(sheetMusic, playChord, whenFinished, control.getTempoFactor(), stopSounding);
 
 		control.setPlayback(playback);
 
@@ -76,9 +76,6 @@ Util.Player = function ($controlCont)
 		{
 			playback.pause();
 			var whenBack = function() {
-                /** @debug */
-                console.log('whenBack');
-
 				document.removeEventListener('visibilitychange', whenBack);
                 document.addEventListener('visibilitychange', tabSwitched);
 				playback.resume();

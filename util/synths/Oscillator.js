@@ -15,7 +15,7 @@ Util.Synths.Oscillator = function () {
     var baseVolume = 0.02;
 
     /** @return function - lambda to interrupt */
-    var startSounding = function(frequency)
+    var startSounding = function(frequency, customWaveType)
     {
         /** @TODO: if you feel paranoic, you may create a constant OSCILLATOR_INIT_TIME
          * and delay playback start and finish by it to deel with artifacts */
@@ -30,7 +30,7 @@ Util.Synths.Oscillator = function () {
 
         var oscillator = audioCtx.createOscillator();
         oscillator.frequency.value = frequency;
-        oscillator.type = waveType;
+        oscillator.type = customWaveType || waveType;
         oscillator.connect(gainNode);
         oscillator.start(0);
 
@@ -97,10 +97,16 @@ Util.Synths.Oscillator = function () {
      * @return function - lambda to interrupt note */
     var playNote = function(tune, channel) {
 
-        if (channel != 9) {
-            return startSounding(tuneToFrequency(tune));
-        } else {
-            // TODO: this is drum - think something about this!
+        if (+channel !== 9) {
+            if (+tune !== 0) { // stupid way to define pauses
+                return startSounding(tuneToFrequency(tune));
+            } else {
+                return (_) => {};
+            }
+        } else { // this is drum
+            // following https://www.youtube.com/watch?v=NmGRrPyvHdU
+            var click = startSounding(tuneToFrequency(50), 'sine');
+            click();
             return (_) => {};
         }
     };

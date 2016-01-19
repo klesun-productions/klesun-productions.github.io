@@ -52,9 +52,12 @@ var MainPage = function(mainCont)
         $(mainCont).find('#synthDropdown')[0],
         $(mainCont).find('#synthControl')[0]);
 
+    var sheetMusicPainter = Ns.SheetMusicPainter('mainSongContainer');
+
     var player = Util.Player($playbackControlCont);
     player.addNoteHandler(Util.PianoLayoutPanel($pianoCanvas));
     player.addNoteHandler(synth);
+    player.addNoteHandler(sheetMusicPainter);
     player.addConfigConsumer(synth);
 
     var playRandom = _ => alert("Please, wait till midi names load from ajax!");
@@ -100,8 +103,6 @@ var MainPage = function(mainCont)
 
         performExternal('get_ichigos_midi_names', {}, callback)
     };
-
-    var sheetMusicPainter = Ns.SheetMusicPainter('mainSongContainer');
 
     var playShmidusicFile = function(file)
     {
