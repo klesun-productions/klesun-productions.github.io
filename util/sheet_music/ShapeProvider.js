@@ -82,7 +82,7 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     /** @params str length - format like "1 / 2" or "3 / 4" or "7 / 8" */
     var drawNote = function(channel, length)
     {
-        ctx.fillStyle = 'rgba(' + channelColors[channel].join(',') + ',1)';
+        ctx.fillStyle = 'rgba(' + channelColors[channel].join(',') + ',0.85)';
         ctx.strokeStyle = 'rgba(' + channelColors[channel].join(',') + ',1)';
 
         var length = Fraction(length);

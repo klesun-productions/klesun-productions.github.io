@@ -6,6 +6,7 @@ Ns.SheetMusicPainter = function(parentId)
     var R = 4; // note oval vertical radius
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
+    var NOTE_CANVAS_HEIGHT = R * 9;
     
     var TOPPEST_TUNE = 98; // the re that would be paint at 0th pixel from top
     
@@ -13,51 +14,6 @@ Ns.SheetMusicPainter = function(parentId)
 
     var $chordListCont =  $('<div class="chordListCont"></div>');
     $parentEl.append($chordListCont);
-
-    var drawNote = function(note, ctx)
-    {
-        var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
-        var ivoryIndex = !isEbony
-            ? [0,2,4,5,7,9,11].indexOf(note.tune % 12)
-            : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as flats for now - ignoring file key signature
-        var octave = Math.floor(note.tune / 12);
-        
-        var shift = 56 - ivoryIndex - octave * 7; // 56 - some number that divides by 7
-
-        Ns.ShapeProvider(ctx, R, DX, shift).drawNote(note.channel, note.length);
-        isEbony && Ns.ShapeProvider(ctx, R, DX - R * 4, shift).drawFlatSign();
-    };
-
-    var drawSystemHorizontalLines = function(ctx)
-    {
-        var width = ctx.canvas.width;
-        
-        ctx.strokeStyle = "#C0C0C0";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        
-        // greyed note hight lines for way too high notes
-        for (var i = 1; i <= 3; ++i) { // 1 - Ti; 2 - Sol; 3 - Mi
-            ctx.moveTo(0, i * R * 2 - R + 0.5);
-            ctx.lineTo(width, i * R * 2 - R + 0.5);
-        }
-        
-        var lineSkip = 6;
-        
-        ctx.stroke();
-        ctx.strokeStyle = '#0000FF';
-        ctx.beginPath();
-        
-        // normal note height linees
-        for (var i = 0; i < 11; ++i) { // 0 - top violin Fa; 11 - low bass Sol
-            if (i !== 5) { // the gap between violin and bass keys
-                ctx.moveTo(0, (lineSkip + i) * R * 2 - R + 0.5);
-                ctx.lineTo(width, (lineSkip + i) * R * 2 - R + 0.5);
-            }
-        }
-        
-        ctx.stroke();
-    };
 
     /** @param float tactSize */
     var TactMeasurer = function(tactSize)
@@ -87,19 +43,40 @@ Ns.SheetMusicPainter = function(parentId)
         };
     };
 
+    var makeNoteCanvas = function(note)
+    {
+        var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
+        var ivoryIndex = !isEbony
+            ? [0,2,4,5,7,9,11].indexOf(note.tune % 12)
+            : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as flats for now - ignoring file key signature
+        var octave = Math.floor(note.tune / 12);
+        
+        var shift = 56 - ivoryIndex - octave * 7; // 56 - some number that divides by 7
+
+        var $noteCanvas = $('<canvas class="noteCanvas"></canvas>')
+            .attr('width', DX * 2)
+            .attr('height', NOTE_CANVAS_HEIGHT + R)
+            .css('top', shift * R - NOTE_CANVAS_HEIGHT + 1 * R)
+            .attr('data-tune', note.tune)
+            .attr('data-channel', note.channel)
+            ;
+
+        var ctx = $noteCanvas[0].getContext('2d');
+
+        Ns.ShapeProvider(ctx, R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(note.channel, note.length);
+        isEbony && Ns.ShapeProvider(ctx, R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
+
+        return $noteCanvas;
+    };
+
     var makeChordSpan = function(chord)
     {
-        var $chordCanvas = $('<canvas></canvas>')
-            .attr('width', DX * 2)
-            .attr('height', Y_STEPS_PER_SYSTEM * R);
-        
-        var g = $chordCanvas[0].getContext('2d');
-
-        chord.noteList.forEach(n => drawNote(n, g));
-
-        return $('<span style="position: relative;"></span>')
-            .append($chordCanvas)
+        var $chordSpan = $('<span style="position: relative;"></span>')
             .append($('<span class="tactNumberCont"></span>'));
+
+        chord.noteList.map(makeNoteCanvas).forEach(el => $chordSpan.append(el));
+
+        return $chordSpan;
     };
 
     var toFloat = fractionString => eval(fractionString);
@@ -143,9 +120,43 @@ Ns.SheetMusicPainter = function(parentId)
             chord.scrollIntoView();
         }
 
-        return _ => $(chord).removeClass('focused');
+        var $note = $(chord).find('.noteCanvas[data-tune="' + note.tune + '"][data-channel="' + note.channel + '"]');
+        $note.addClass('sounding');
+
+        return _ => { $(chord).removeClass('focused'); $note.removeClass('sounding'); };
     };
-    
+
+    var drawSystemHorizontalLines = function(ctx)
+    {
+        var width = ctx.canvas.width;
+
+        ctx.strokeStyle = "#C0C0C0";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+
+        // greyed note high lines for way too high notes
+        for (var i = 1; i <= 3; ++i) { // 1 - Ti; 2 - Sol; 3 - Mi
+            ctx.moveTo(0, i * R * 2 - R + 0.5);
+            ctx.lineTo(width, i * R * 2 - R + 0.5);
+        }
+
+        var lineSkip = 6;
+
+        ctx.stroke();
+        ctx.strokeStyle = '#0000FF';
+        ctx.beginPath();
+
+        // normal note height linees
+        for (var i = 0; i < 11; ++i) { // 0 - top violin Fa; 11 - low bass Sol
+            if (i !== 5) { // the gap between violin and bass keys
+                ctx.moveTo(0, (lineSkip + i) * R * 2 - R + 0.5);
+                ctx.lineTo(width, (lineSkip + i) * R * 2 - R + 0.5);
+            }
+        }
+
+        ctx.stroke();
+    };
+
     // sets the css corresponding to the constants
     var applyStyles = function()
     {
@@ -177,7 +188,7 @@ Ns.SheetMusicPainter = function(parentId)
                 'margin-bottom': 4 * R + 'px',
             },
             'div.chordListCont > span.focused': {
-                'background-color': 'rgba(0,0,255,0.3)',
+                'background-color': 'rgba(0,0,255,0.1)',
             },
             'div.chordListCont > span.tactFinisher': {
                 'box-shadow': '1px 0 0 rgba(0,0,0,0.5)'
@@ -188,6 +199,13 @@ Ns.SheetMusicPainter = function(parentId)
             '.tactNumberCont': {
                 position: 'absolute',
                 left: DX * 2 - R * 4 + 'px'
+            },
+            '.noteCanvas': {
+                position: 'absolute'
+            },
+            '.noteCanvas.sounding': {
+                'background-color': 'rgba(0,0,255,0.4)',
+                'background': 'linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(0,0,255,0.2) 10%)'
             },
         };
         
