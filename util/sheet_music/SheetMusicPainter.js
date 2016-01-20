@@ -3,7 +3,7 @@ var Ns = Ns || {};
 
 Ns.SheetMusicPainter = function(parentId)
 {
-    var R = 4; // note oval vertical radius
+    var R = 3; // note oval vertical radius
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     var NOTE_CANVAS_HEIGHT = R * 9;
@@ -43,6 +43,13 @@ Ns.SheetMusicPainter = function(parentId)
         };
     };
 
+    // tuple: 16 channels, ~14 lengths each (6 (1/32 .. 1/1) * 2 (triplets) * 2 (dots))
+    var noteCanvasCache = [
+        {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+    ];
+    // tuple: 16 channels
+    var flatSignCache = [];
+
     var makeNoteCanvas = function(note)
     {
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
@@ -63,8 +70,27 @@ Ns.SheetMusicPainter = function(parentId)
 
         var ctx = $noteCanvas[0].getContext('2d');
 
-        Ns.ShapeProvider(ctx, R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(note.channel, note.length);
-        isEbony && Ns.ShapeProvider(ctx, R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
+        if (!noteCanvasCache[note.channel][note.length]) {
+            noteCanvasCache[note.channel][note.length] = $('<canvas></canvas>canvas>')
+                    .attr('width', $noteCanvas[0].width)
+                    .attr('height', $noteCanvas[0].height)
+                    [0];
+
+            Ns.ShapeProvider(noteCanvasCache[note.channel][note.length].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(note.channel, note.length);
+        }
+        ctx.drawImage(noteCanvasCache[note.channel][note.length], 0, 0);
+
+        if (isEbony) {
+            if (!flatSignCache[note.channel]) {
+                flatSignCache[note.channel] = $('<canvas></canvas>canvas>')
+                    .attr('width', $noteCanvas[0].width)
+                    .attr('height', $noteCanvas[0].height)
+                    [0];
+
+                Ns.ShapeProvider(flatSignCache[note.channel].getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
+            }
+            ctx.drawImage(flatSignCache[note.channel], 0, 0);
+        }
 
         return $noteCanvas;
     };
@@ -74,7 +100,10 @@ Ns.SheetMusicPainter = function(parentId)
         var $chordSpan = $('<span style="position: relative;"></span>')
             .append($('<span class="tactNumberCont"></span>'));
 
-        chord.noteList.map(makeNoteCanvas).forEach(el => $chordSpan.append(el));
+        chord.noteList
+            .filter(n => +n.tune !== 0) // my stupid way to define pauses
+            .map(makeNoteCanvas)
+            .forEach(el => $chordSpan.append(el));
 
         return $chordSpan;
     };
@@ -110,20 +139,17 @@ Ns.SheetMusicPainter = function(parentId)
 
     var setNoteFocus = function(note, chordIndex)
     {
-        /** @TODO: we could actually highlight exactly those notes, that are now sounding
-         * all we need is notes being a separate dom element positioned with css, not just
-         * something we paint on chord's canvas */
-
         var chord = $chordListCont.children()[chordIndex];
-        $(chord).addClass('focused');
         if (chord) {
-            chord.scrollIntoView();
+            chord.scrollIntoView(false);
         }
+
+        //$(chord).addClass('focused');
 
         var $note = $(chord).find('.noteCanvas[data-tune="' + note.tune + '"][data-channel="' + note.channel + '"]');
         $note.addClass('sounding');
 
-        return _ => { $(chord).removeClass('focused'); $note.removeClass('sounding'); };
+        return _ => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
     };
 
     var drawSystemHorizontalLines = function(ctx)
