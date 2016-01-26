@@ -14,7 +14,7 @@ Util.Synths.ISynth = function ()
 
     return {
         playNote: notImplemented,
-        consumeConfig: notImplemented,
-        init: notImplemented
+        consumeConfig: config => {},
+        init: $el => {}
     };
 };

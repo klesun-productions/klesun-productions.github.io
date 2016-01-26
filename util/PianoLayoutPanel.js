@@ -2,8 +2,8 @@
 var Util = Util || {};
 
 /** @param $canvas should have 490x30 size */
-Util.PianoLayoutPanel = function ($canvas) {
-
+Util.PianoLayoutPanel = function ($canvas) 
+{
     var TUNE_COUNT = 84; // 7 octaves
     var IVORY_COUNT = TUNE_COUNT * 7/12
 	var FIRST_TUNE = 24;
@@ -22,7 +22,8 @@ Util.PianoLayoutPanel = function ($canvas) {
     var fillRect = canvasAdapter.fillRect;
     var channelColors = Util.channelColors;
 
-    var paintBase = function () {
+    var paintBase = function () 
+	{
         context.clearRect(0, 0, $canvas[0].width, $canvas[0].height);
 
         var hasFlat = [1,2,4,5,6]; // re, mi, sol, la, ti
@@ -44,8 +45,8 @@ Util.PianoLayoutPanel = function ($canvas) {
         drawLine(0, IVORY_LENGTH, IVORY_COUNT * IVORY_WIDTH, IVORY_LENGTH);
     };
 
-    var fillTune = function (tune, color) {
-
+    var fillTune = function (tune, color) 
+	{
         tune -= FIRST_TUNE;
 
         var isFlat = [1,3,6,8,10].indexOf(tune % 12) > -1;
@@ -63,8 +64,8 @@ Util.PianoLayoutPanel = function ($canvas) {
     };
 
     /** @param {tune: int, channel: int} noteJs */
-    var unhighlight = function (noteJs) {
-
+    var unhighlight = function (noteJs) 
+	{
         var index = pressedNotes[noteJs.tune].indexOf(noteJs.channel);
         pressedNotes[noteJs.tune].splice(index, 1);
 
@@ -77,7 +78,8 @@ Util.PianoLayoutPanel = function ($canvas) {
     };
 
     /** @param [{tune: int, channel: int}, ...] noteList */
-    var highlight = function (noteJs) {
+    var highlight = function (noteJs) 
+	{
         var color = channelColors[noteJs.channel];
         fillTune(noteJs.tune, color);
         (pressedNotes[noteJs.tune] || (pressedNotes[noteJs.tune] = [])).push(noteJs.channel);

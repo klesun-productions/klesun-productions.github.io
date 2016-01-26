@@ -119,7 +119,8 @@ Ns.SheetMusicPainter = function(parentId)
         var staff = song.staffList[0];
 
         var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
-        for (chord of staff.chordList) {
+        staff.chordList.forEach(function(chord)
+        {
             var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length)));
             var finishedTact = tacter.inject(chordLength);
             var $span = makeChordSpan(chord);
@@ -134,7 +135,7 @@ Ns.SheetMusicPainter = function(parentId)
             }
 
             $chordListCont.append($span);
-        }
+        });
     };
 
     var setNoteFocus = function(note, chordIndex)
@@ -186,21 +187,31 @@ Ns.SheetMusicPainter = function(parentId)
     // sets the css corresponding to the constants
     var applyStyles = function()
     {
-        var bgCanvas = document.createElement('canvas');
-        bgCanvas.width = 640;
-        bgCanvas.height = R * Y_STEPS_PER_SYSTEM;
-        drawSystemHorizontalLines(bgCanvas.getContext('2d'));
+        /** @TODO: this is likely deprecated. Make some SVG and scale-repeat it instead. */
+        var partLinesBgContext = document.getCSSCanvasContext('2d', 'partLinesBgCanvas', 640, R * Y_STEPS_PER_SYSTEM);
+        drawSystemHorizontalLines(partLinesBgContext);
 
-        var violinKeyCanvas = document.createElement('canvas');
-        violinKeyCanvas.width = DX * 3;
-        violinKeyCanvas.height = R * Y_STEPS_PER_SYSTEM;
-        Ns.ShapeProvider(violinKeyCanvas.getContext('2d'), R, 0, 17).drawViolinKey();
-        Ns.ShapeProvider(violinKeyCanvas.getContext('2d'), R, 0, 25).drawBassKey();
+        var violinKeyBgContext = document.getCSSCanvasContext('2d', 'violinKeyBgCanvas', DX * 3, R * Y_STEPS_PER_SYSTEM);
+        
+        /** @TODO: move this logic to ShapeProvider maybe */
+        var drawViolinKey = _ => Ns.ShapeProvider(violinKeyBgContext, R, 0, 17).drawViolinKey($('#imgViolinKey')[0]);
+        if ($('#imgViolinKey')[0].complete) {
+            drawViolinKey();
+        } else {
+            $('#imgViolinKey')[0].onload = drawViolinKey;
+        }
+        
+        var drawBassKey = _ => Ns.ShapeProvider(violinKeyBgContext, R, 0, 25).drawBassKey($('#imgBassKey')[0]);
+        if ($('#imgBassKey')[0].complete) {
+            drawBassKey();
+        } else {
+            $('#imgBassKey')[0].onload = drawBassKey;
+        }
 
         var styles = {
             '': {
-                'background-image': 'url(' + bgCanvas.toDataURL('image/png') + '), ' +
-                                    'url(' + violinKeyCanvas.toDataURL('image/png') + ')',
+                'background-image': '-webkit-canvas(partLinesBgCanvas), ' +
+                                    '-webkit-canvas(violinKeyBgCanvas)',
                 'background-repeat': 'repeat, ' +
                                     'repeat-y',
                 'background-attachment': 'local, ' +

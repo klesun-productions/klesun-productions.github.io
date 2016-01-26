@@ -95,8 +95,8 @@ Util.Synths.Oscillator = function () {
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(tune, channel) {
-
+    var playNote = function(tune, channel) 
+	{
         if (+channel !== 9) {
             if (+tune !== 0) { // stupid way to define pauses
                 return startSounding(tuneToFrequency(tune));

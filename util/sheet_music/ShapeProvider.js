@@ -157,6 +157,13 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     // we treat image borders center for pivot point during scaling
     var drawSvg = function(img, scaleFactor)
     {
+        // messing with lame file security rules
+        // http://stackoverflow.com/questions/20424279/canvas-todataurl-securityerror
+        //~ var src = img.src;
+        //~ var img = new Image();
+        //~ img.setAttribute('crossOrigin', 'anonymous');
+        //~ img.src = src;
+        
         var width = img.width * scaleFactor;
         var height = img.height * scaleFactor;
 
@@ -169,7 +176,7 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     return {
         drawNote: drawNote,
         drawFlatSign: drawFlatSign,
-        drawViolinKey: _ => drawSvg($('#imgViolinKey')[0], 0.075 * r / 4),
-        drawBassKey: _ => drawSvg($('#imgBassKey')[0], 0.085 * r / 4),
+        drawViolinKey: img => drawSvg(img, 0.075 * r / 4),
+        drawBassKey: img => drawSvg(img, 0.085 * r / 4),
     }
 };
