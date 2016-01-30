@@ -40,6 +40,7 @@ def include_util_js():
                 if not name.endswith('-compiled.js'):
                     print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
 
+
 def execute_script():
     print("Content-Type: text/html")
     print('')

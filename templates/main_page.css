@@ -1,114 +1,115 @@
-		
-	body {
-	    background-color: #666;
-		background-image: url("/imgs/denya.png");
-		background-repeat: no-repeat;
-	}
-	.main-cont * {
-		font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
-		font-size: 12px;
-	}
-	.nostretch-td {
-		width:1%;
-		white-space:nowrap;
-	}
-	.radio-cont {
-		color: yellow;
-		width: 100px;
-		float:right;
 
-		/** @debug */
-		border: 1px solid white;
-	}
+    body {
+        background-color: #666;
+        background-image: url("/imgs/denya.png");
+        background-repeat: no-repeat;
+    }
+    .main-cont * {
+        font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+        font-size: 12px;
+    }
+    .nostretch-td {
+        width:1%;
+        white-space:nowrap;
+    }
+    .radio-cont {
+        color: yellow;
+        width: 100px;
+        float:right;
 
-	/* TODO: maybe make it all id-s? they are unique!*/
-	.main-cont {
-		background-color: rgba(127, 127, 255, 0.5);
-		background-image: url("/imgs/shmidusic-port.png");
-		background-repeat: no-repeat;
-		background-position: right top;
-	}
-	.main-caption {
-		color: cyan;
-		text-shadow: -1px 0 darkgreen, 0 1px darkgreen, 1px 0 darkgreen, 0 -1px darkgreen;
-		font-size: 30px;
-	}
-	.topic-links-cont {
-		background-color: rgba(192, 192, 255, 0.5);
-	}
-	.topic-option, a:visited {
-		border: 2px solid;
-		background-color: #fc8;
-		color: darkmagenta;
-		text-decoration: none;
-		padding: 4px;
-		font-weight: bold;
-		font-size: 16px;
-	}
-	.content-block-table {
-		width: 100%;
-	}
-	.content-block-table tr td {
-		background-color: rgba(255,0,255,0.3);
-	}
+        /** @debug */
+        border: 1px solid white;
+    }
 
-	#pianoControlDiv {
-	    width: 1000px;
+    /* TODO: maybe make it all id-s? they are unique!*/
+    .main-cont {
+        background: rgba(127, 127, 255, 0.5) url("/imgs/shmidusic-port.png") no-repeat right top;
+    }
+    .main-caption {
+        color: cyan;
+        text-shadow: -1px 0 darkgreen, 0 1px darkgreen, 1px 0 darkgreen, 0 -1px darkgreen;
+        font-size: 30px;
+    }
+    .topic-links-cont {
+        background-color: rgba(192, 192, 255, 0.5);
+    }
+    .topic-option, a:visited {
+        border: 2px solid;
+        background-color: #fc8;
+        color: darkmagenta;
+        text-decoration: none;
+        padding: 4px;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .content-block-table {
+        width: 100%;
+    }
+    .content-block-table tr td {
+        background-color: rgba(255,0,255,0.3);
+    }
+
+    #pianoControlDiv {
+        width: 1000px;
         margin-left: auto ;
         margin-right: auto ;
-	}
-	.piano-cont {
-	    background-color: white;
-	    display: inline-block;
-	    float: left;
-	}
-	.piano-side-div {
-    	width: 250px;
-    	float: left;
-    	border: 1px solid rgba(255,0,0,0.0); /* invisible border - to ensure that these divs _do_ take these 200px */
-	}
-	.piano-side-div input {
-		font-size: 10px;
-    	float: left;
-    	/*border: 3px solid rgba(255,127,0,0.3);*/
-    	background: white;
-    	max-width: 190px;
-	}
+    }
+    .piano-cont {
+        background-color: white;
+        display: inline-block;
+        float: left;
+    }
+    .piano-side-div {
+        width: 250px;
+        float: left;
+        border: 1px solid rgba(255,0,0,0.0); /* invisible border - to ensure that these divs _do_ take these 200px */
+    }
+    .piano-side-div input {
+        font-size: 10px;
+        float: left;
+        /*border: 3px solid rgba(255,127,0,0.3);*/
+        background: white;
+        max-width: 190px;
+    }
 
-	.main-middle-cont {
-		border: 2px solid green;
-		font-size: 12px;
-		text-align: left;
-		padding: 4px;
-	}
-	.random-midi-list-cont {
-		float: right;
-		background-color: orange;
-		width: 250px;
-		height: 500px;
-		overflow-y: scroll;
-	}
-	.random-midi-list-cont table tr:not(.table-generator-title-tr) td {
-		background-color: #444;
-		color: yellow;
-		font-size: 10px;
-		max-width: 130px;
-		overflow: hidden;
-	}
-	.something-left-cont {
-	    width: 200px;
-	    height: 500px;
-		overflow-y: scroll;
-	}
-	.something-left-cont table tr td {
-        max-width: 120px;
-		background-color: rgba(64,64,64,0.75);
-		color: cyan;
+    #contentContainer{
+        display: flex;
+    }
+    #contentContainer .main-middle-cont {
+        flex: 1;
+        border: 2px solid green;
+        font-size: 12px;
+        text-align: left;
+        padding: 4px;
+    }
+    #contentContainer .random-midi-list-cont {
+        background-color: orange;
+        width: 250px;
+        max-height: 550px;
+        overflow-y: scroll;
+    }
+    .random-midi-list-cont table tr:not(.table-generator-title-tr) td {
+        background-color: #444;
+        color: yellow;
+        font-size: 10px;
+        max-width: 130px;
         overflow: hidden;
-	}
+    }
+    .myMusicCont {
+        width: 200px;
+        height: 500px;
+        overflow-y: scroll;
+        float: left;
+    }
+    .myMusicCont table tr td {
+        max-width: 120px;
+        background-color: rgba(64,64,64,0.75);
+        color: cyan;
+        overflow: hidden;
+    }
 
-	.main-middle-cont * { font-size: 10px; }
-	#playbackControl > div.general { background-color: rgb(140, 133, 208); }
+    .main-middle-cont * { font-size: 10px; }
+    #playbackControl > div.general { background-color: rgb(140, 133, 208); }
     #playbackControl > div > * {
 		white-space: nowrap;
 		background-color: #ccf;

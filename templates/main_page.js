@@ -140,7 +140,7 @@ var MainPage = function(mainCont)
         var caption = 'My music';
 
         var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
-        $(mainCont).find('.something-left-cont').append(table); // defined in main_page.html
+        $(mainCont).find('.myMusicCont').append(table); // defined in main_page.html
     };
 
     var handleGoogleSignIn = function(googleUser, $infoCont)

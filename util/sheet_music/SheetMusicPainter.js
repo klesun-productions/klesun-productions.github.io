@@ -3,7 +3,7 @@ var Ns = Ns || {};
 
 Ns.SheetMusicPainter = function(parentId)
 {
-    var R = 3; // note oval vertical radius
+    var R = 3; // semibreve note oval vertical radius
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     var NOTE_CANVAS_HEIGHT = R * 9;
@@ -81,6 +81,8 @@ Ns.SheetMusicPainter = function(parentId)
         ctx.drawImage(noteCanvasCache[note.channel][note.length], 0, 0);
 
         if (isEbony) {
+            /** @TODO: here lies a bug - all cached flats have same color, black, since you don't change it while drawing
+             * it is pretty nice, though. maybe could make flat sign color a bit darker, than note color? */
             if (!flatSignCache[note.channel]) {
                 flatSignCache[note.channel] = $('<canvas></canvas>canvas>')
                     .attr('width', $noteCanvas[0].width)
@@ -170,7 +172,7 @@ Ns.SheetMusicPainter = function(parentId)
         var lineSkip = 6;
 
         ctx.stroke();
-        ctx.strokeStyle = '#0000FF';
+        ctx.strokeStyle = '#88F';
         ctx.beginPath();
 
         // normal note height linees
@@ -187,33 +189,19 @@ Ns.SheetMusicPainter = function(parentId)
     // sets the css corresponding to the constants
     var applyStyles = function()
     {
-        /** @TODO: this is likely deprecated. Make some SVG and scale-repeat it instead. */
-        var partLinesBgContext = document.getCSSCanvasContext('2d', 'partLinesBgCanvas', 640, R * Y_STEPS_PER_SYSTEM);
-        drawSystemHorizontalLines(partLinesBgContext);
-
-        var violinKeyBgContext = document.getCSSCanvasContext('2d', 'violinKeyBgCanvas', DX * 3, R * Y_STEPS_PER_SYSTEM);
-        
-        /** @TODO: move this logic to ShapeProvider maybe */
-        var drawViolinKey = _ => Ns.ShapeProvider(violinKeyBgContext, R, 0, 17).drawViolinKey($('#imgViolinKey')[0]);
-        if ($('#imgViolinKey')[0].complete) {
-            drawViolinKey();
-        } else {
-            $('#imgViolinKey')[0].onload = drawViolinKey;
-        }
-        
-        var drawBassKey = _ => Ns.ShapeProvider(violinKeyBgContext, R, 0, 25).drawBassKey($('#imgBassKey')[0]);
-        if ($('#imgBassKey')[0].complete) {
-            drawBassKey();
-        } else {
-            $('#imgBassKey')[0].onload = drawBassKey;
-        }
+        var partLinesBgCanvas = document.createElement('canvas');
+        partLinesBgCanvas.width = 640;
+        partLinesBgCanvas.height = R * Y_STEPS_PER_SYSTEM;
+        drawSystemHorizontalLines(partLinesBgCanvas.getContext('2d'));
 
         var styles = {
             '': {
-                'background-image': '-webkit-canvas(partLinesBgCanvas), ' +
-                                    '-webkit-canvas(violinKeyBgCanvas)',
-                'background-repeat': 'repeat, ' +
-                                    'repeat-y',
+                'background-image': 'url(/imgs/part_keys_40r.svg), ' +
+                                    'url(' + partLinesBgCanvas.toDataURL('image/png') + ')',
+                'background-repeat': 'repeat-y, ' +
+                                    'repeat',
+                'background-size': 'Auto ' + R * Y_STEPS_PER_SYSTEM + 'px,' +
+                                    'Auto Auto',
                 'background-attachment': 'local, ' +
                                     'local',
                 'padding-left': DX * 3 + 'px',
