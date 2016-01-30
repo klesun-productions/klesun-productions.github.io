@@ -7,9 +7,7 @@ Ns.SheetMusicPainter = function(parentId)
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     var NOTE_CANVAS_HEIGHT = R * 9;
-    
-    var TOPPEST_TUNE = 98; // the re that would be paint at 0th pixel from top
-    
+
     var $parentEl = $('#' + parentId);
 
     var $chordListCont =  $('<div class="chordListCont"></div>');
@@ -140,12 +138,27 @@ Ns.SheetMusicPainter = function(parentId)
         });
     };
 
+    var scrollToIfNeeded = function(chordEl)
+    {
+        var chordRect = chordEl.getBoundingClientRect();
+        var scrollPaneRect = $parentEl[0].getBoundingClientRect();
+
+        var isVisible = chordRect.top >= scrollPaneRect.top &&
+            chordRect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
+
+        if (!isVisible) {
+            var top = $(chordEl).offset().top -
+                $parentEl.offset().top +
+                $parentEl.scrollTop();
+
+            $parentEl.scrollTop(top);
+        }
+    };
+
     var setNoteFocus = function(note, chordIndex)
     {
         var chord = $chordListCont.children()[chordIndex];
-        if (chord) {
-            chord.scrollIntoView(false);
-        }
+        chord && scrollToIfNeeded(chord);
 
         //$(chord).addClass('focused');
 
