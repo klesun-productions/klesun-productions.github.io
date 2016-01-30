@@ -69,7 +69,7 @@ var MainPage = function(mainCont)
             var params = {file_name: row.rawFileName};
             var method_name = 'get_standard_midi_file';
             return $('<input type="button" value="Play!"/>')
-                .click((_) => performExternal(method_name, params, answer => player.playStandardMidiFile(answer, row)));
+                .click((_) => performExternal(method_name, params, answer => player.playStandardMidiFile(LAST_PLAYED = answer, row)));
         };
 
         var callback = function(rowList) {
