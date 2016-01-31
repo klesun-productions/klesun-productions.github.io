@@ -22,7 +22,9 @@ class MidiFileProvider(object):
 
     @classmethod
     def get_info_list(cls, params, user_ifno=None):
-
+		
+		# TODO: investigate, this function likely takes ~0.6 second every time, what i think is VERY SLOW
+		
         result = []
 
         pattern = re.compile('^0_([a-zA-Z0-9]{2,})_(.*)$')

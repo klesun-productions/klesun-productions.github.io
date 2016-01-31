@@ -9,9 +9,11 @@
     <script src="/templates/main_page.js" type="text/javascript"></script>
 
     <!-- for google authentication (so unique users could score songs) -->
+	<!-- commenting for now, cuz it ocassionally increases window load time by several seconds
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id" content="521166378127-6hmr4e9rspkj2amipftmkt4qukb1ljr4.apps.googleusercontent.com">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+	-->
 </head>
 
 <body>
@@ -139,9 +141,16 @@
 
     var mainPage = MainPage($('#mainCont')[0]); // defined in main_page.js
 
-    var onLoad = function () {
-        mainPage.initMyMusicList();
+    /** @debug */
+    console.log('gonna load window');
+
+    var onLoad = function ()
+    {
+        /** @debug */
+        console.log('window loaded');
+
         mainPage.initIchigosMidiList();
+        mainPage.initMyMusicList();
         $('#startDemoButton').click(mainPage.playDemo);
         $('#playRandomButton').click(mainPage.playRandom);
     };

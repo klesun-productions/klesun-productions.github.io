@@ -62,17 +62,42 @@ var MainPage = function(mainCont)
 
     var playRandom = _ => alert("Please, wait till midi names load from ajax!");
 
+    var playStandardMidiFile = function(fileName, finishedFileName)
+    {
+        finishedFileName = finishedFileName || '';
+
+        var params = {file_name: fileName, finished_file_name: finishedFileName};
+        var method_name = 'get_standard_midi_file';
+
+        console.log('Fetching...');
+
+        performExternal(method_name, params, function(song)
+        {
+            console.log('Playing: ' + fileName, song);
+
+            var whenFinished = (_) => playRandom({fileName: fileName});
+
+            player.playStandardMidiFile(song, {fileName: fileName}, whenFinished);
+            sheetMusicPainter.draw(Shmidusicator.fromMidi(song), true);
+        })
+    };
+
     var initIchigosMidiList = function ()
     {
         var playButtonFormatter = function(cell, row)
         {
-            var params = {file_name: row.rawFileName};
-            var method_name = 'get_standard_midi_file';
             return $('<input type="button" value="Play!"/>')
-                .click((_) => performExternal(method_name, params, answer => player.playStandardMidiFile(LAST_PLAYED = answer, row)));
+                .click((_) => playStandardMidiFile(row.rawFileName));
         };
 
-        var callback = function(rowList) {
+        /** @debug */
+        console.log('gonna fetrch info');
+
+        var callback = function(rowList)
+        {
+            /** @debug */
+            console.log('fetched info');
+
             var colModel = [
                 {'name': 'fileName', 'caption': 'File Name'},
                 //{'name': 'length', 'caption': 'Length'},
@@ -87,17 +112,10 @@ var MainPage = function(mainCont)
 
             playRandom = function(finishedFileInfo)
             {
-                finishedFileInfo = finishedFileInfo || '';
+                finishedFileInfo = finishedFileInfo || {fileName: ''};
 
                 var index = Math.floor(Math.random() * rowList.length);
-                console.log('Playing: ' + rowList[index].fileName);
-
-                var params = {file_name: rowList[index].rawFileName, finished_file_name: finishedFileInfo.fileName};
-                var method_name = 'get_standard_midi_file';
-                performExternal(method_name, params,
-                    (answer) => player.playStandardMidiFile(answer, rowList[index],
-                    (_) => playRandom(rowList[index]))
-                );
+                playStandardMidiFile(rowList[index].rawFileName, finishedFileInfo.fileName);
             };
         };
 

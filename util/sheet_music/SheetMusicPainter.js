@@ -16,7 +16,6 @@ Ns.SheetMusicPainter = function(parentId)
     /** @param float tactSize */
     var TactMeasurer = function(tactSize)
     {
-        /** @var float */
         var sumFraction = 0;
         var tactNumber = 0;
 
@@ -37,7 +36,8 @@ Ns.SheetMusicPainter = function(parentId)
         return {
             inject: inject,
             hasRest: _ => sumFraction.toFixed(8) > 0,
-            tactNumber: _ => tactNumber
+            tactNumber: _ => tactNumber,
+            getRest: _ => sumFraction
         };
     };
 
@@ -64,19 +64,25 @@ Ns.SheetMusicPainter = function(parentId)
             .css('top', shift * R - NOTE_CANVAS_HEIGHT + 1 * R)
             .attr('data-tune', note.tune)
             .attr('data-channel', note.channel)
+            .attr('data-length', note.length)
             ;
 
         var ctx = $noteCanvas[0].getContext('2d');
 
-        if (!noteCanvasCache[note.channel][note.length]) {
-            noteCanvasCache[note.channel][note.length] = $('<canvas></canvas>canvas>')
+        // well, hack, but...
+        var length = typeof note.length === 'number'
+                ? Shmidusicator.guessLength(note.length).apacheStr()
+                : note.length;
+
+        if (!noteCanvasCache[note.channel][length]) {
+            noteCanvasCache[note.channel][length] = $('<canvas></canvas>canvas>')
                     .attr('width', $noteCanvas[0].width)
                     .attr('height', $noteCanvas[0].height)
                     [0];
 
-            Ns.ShapeProvider(noteCanvasCache[note.channel][note.length].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(note.channel, note.length);
+            Ns.ShapeProvider(noteCanvasCache[note.channel][length].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(note.channel, length);
         }
-        ctx.drawImage(noteCanvasCache[note.channel][note.length], 0, 0);
+        ctx.drawImage(noteCanvasCache[note.channel][length], 0, 0);
 
         if (isEbony) {
             /** @TODO: here lies a bug - all cached flats have same color, black, since you don't change it while drawing
@@ -112,8 +118,11 @@ Ns.SheetMusicPainter = function(parentId)
     
     /** @param song - dict structure outputed by 
      * shmidusic program - github.com/klesun/shmidusic */
-    var draw = function(song)
+    var draw = function(song, fromMidi)
     {
+        /** @TODO: we have a problem here... when calculating chordLength we need (weed XD) precise numbers;
+         * but deeper, in deciding, what image to draw - rounded... think about it! */
+
         $chordListCont.empty();
 
         var staff = song.staffList[0];
@@ -123,12 +132,23 @@ Ns.SheetMusicPainter = function(parentId)
         {
             var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length)));
             var finishedTact = tacter.inject(chordLength);
+
+            /** @debug */
+            if (chord.noteList.length === 1 &&
+                chord.noteList[0].tune == 0 &&
+                chord.noteList[0].channel == 6)
+            {
+                // artificial pause to match shmidusic format
+                return;
+            }
+
             var $span = makeChordSpan(chord);
             if (finishedTact) {
                 $span.find('.tactNumberCont').html(tacter.tactNumber());
                 $span.addClass('tactFinisher');
                 if (tacter.hasRest()) {
-                    $span.addClass('doesNotFitIntoTact');
+                    $span.addClass('doesNotFitIntoTact')
+                        .attr('data-rest', tacter.getRest())
                 }
             } else {
                 $span.find('.tactNumberCont').html('&nbsp;');
@@ -140,6 +160,9 @@ Ns.SheetMusicPainter = function(parentId)
 
     var scrollToIfNeeded = function(chordEl)
     {
+        /** @TODO: it does not take into account window scroll prostion
+         * scroll window heavily to the buttom and play, say, elfen lied */
+
         var chordRect = chordEl.getBoundingClientRect();
         var scrollPaneRect = $parentEl[0].getBoundingClientRect();
 

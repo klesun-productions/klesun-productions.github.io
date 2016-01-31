@@ -96,3 +96,13 @@ interface IGlobals {
         sheetMusic: IShmidusicStructure
     }>;
 }
+
+class Fraction {
+    constructor (
+        public num: number,
+        public den: number
+    ) {}
+
+    float = () => this.num / this.den;
+    apacheStr = () => this.num + ' / ' + this.den;
+}
