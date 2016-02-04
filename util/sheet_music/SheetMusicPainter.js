@@ -115,20 +115,22 @@ Ns.SheetMusicPainter = function(parentId)
     };
 
     var toFloat = fractionString => eval(fractionString);
+    var interruptDrawing = _ => {};
     
     /** @param song - dict structure outputed by 
      * shmidusic program - github.com/klesun/shmidusic */
-    var draw = function(song, fromMidi)
+    var draw = function(song)
     {
-        /** @TODO: we have a problem here... when calculating chordLength we need (weed XD) precise numbers;
-         * but deeper, in deciding, what image to draw - rounded... think about it! */
-
+        interruptDrawing();
         $chordListCont.empty();
 
         var staff = song.staffList[0];
 
+        /** @TODO: in the perfect world i would ask you to make playback with a separate worker,
+         * but, doh, just please, make this forEach() with Util.forEachChunk */
+
         var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
-        staff.chordList.forEach(function(chord)
+        interruptDrawing = Util.forEachBreak(staff.chordList, 75, 2, function(chord)
         {
             var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length)));
             var finishedTact = tacter.inject(chordLength);
@@ -138,6 +140,9 @@ Ns.SheetMusicPainter = function(parentId)
                 chord.noteList[0].tune == 0 &&
                 chord.noteList[0].channel == 6)
             {
+                /** @TODO: don't actually omit them, just set them width: 0 or something, cuz
+                 * a tact may end on a pause - see "Detective Conan - Negaigoto Hitotsu Dake.mid" */
+                
                 // artificial pause to match shmidusic format
                 return;
             }
@@ -180,6 +185,10 @@ Ns.SheetMusicPainter = function(parentId)
 
     var setNoteFocus = function(note, chordIndex)
     {
+        /** @TODO: put some limit in miliseconds, how often it can be updated, cuz
+         * there are some ridiculously compact songs that are screwed because of performance: 
+         * "0_c1_Final Fantasy XII - Desperate Fight.mid" */
+        
         var chord = $chordListCont.children()[chordIndex];
         chord && scrollToIfNeeded(chord);
 

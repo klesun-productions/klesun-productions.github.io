@@ -13,9 +13,11 @@ Util.toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because
  * @param breakMillis - break duration between iterations */
 Util.forEachBreak = function(list, breakMillis, chunkSize, callback)
 {
+    var interrupted = false;
+
     var doNext = function(index)
     {
-        if (index < list.length) {
+        if (index < list.length && !interrupted) {
             for (var i = index; i < Math.min(list.length, index + chunkSize); ++i) {
                 callback(list[i]);
             }
@@ -24,6 +26,10 @@ Util.forEachBreak = function(list, breakMillis, chunkSize, callback)
     };
 
     doNext(0);
+
+    var interrupt = _ => (interrupted = true);
+
+    return interrupt;
 };
 
 Util.andThen = function(firstCallback, secondCallback)

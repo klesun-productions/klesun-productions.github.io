@@ -41,8 +41,8 @@ Util.Synths.Oscillator = function () {
         };
     };
 
-    var tuneToFrequency = function(tune) {
-
+    var tuneToFrequency = function(tune)
+    {
         var shift = tune - 69; // 69 - LA, 440 hz
         var la = 440.0;
         return la * Math.pow(2, shift / 12.0);

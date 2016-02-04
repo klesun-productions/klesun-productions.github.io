@@ -23,28 +23,6 @@ Util.TableGenerator = function()
 
 		return table;
 	};
-	
-	var formatterProvider = new function() {
-
-		/** @argument {string} mysqlDatetime in format '2015-03-26 05:29:03'
-	        @return {string} in format '06/22/15 17:07:58' */
-		var formatDatetimeToOurStandard = function(mysqlDatetime)
-		{
-			if (mysqlDatetime)
-			{
-				var dateObj = $.datepicker.parseDateTime("yy-mm-dd", "HH:mm:ss", mysqlDatetime, null, {timeFormat:"HH:mm:ss"});
-				return YAHOO.util.Date.format(dateObj, {format:'%m/%d/%y %H:%M:%S'}, "en-US");
-			}
-			else
-			{
-				return 'N/A';
-			}
-		};
-		
-		return {
-			formatDatetimeToOurStandard: formatDatetimeToOurStandard,
-		};
-	};
 
 	function generateTitleRow(title)
 	{
@@ -85,6 +63,5 @@ Util.TableGenerator = function()
 	
 	return {
 		generateTable: generateTable,
-		formatterProvider: formatterProvider,
 	};
 };
