@@ -12,7 +12,8 @@ var MainPage = function(mainCont)
         sheetMusicCont = $(mainCont).find('.sheetMusicCont')[0],
         violinKeyImage = $(mainCont).find('.violinKeyImage')[0],
         bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
-        O_O = 0
+        playAllNotesButton = $(mainCont).find('#playAllNotesOnAllInstruments')[0],
+        O_O = 'O_O'
         ;
 
     var googleLogInIdToken = null;
@@ -31,7 +32,9 @@ var MainPage = function(mainCont)
     {
         var synths = {
             oscillator: Util.Synths.Oscillator(),
-            midiDevice: Util.Synths.MidiDevice()
+            midiDevice: Util.Synths.MidiDevice(),
+            FluidSynth3: new WavCacher(),
+            // pitchShifter: Ns.Synths.PitchShifter(),
         };
 
         var changeSynth = function() {
@@ -59,6 +62,10 @@ var MainPage = function(mainCont)
     player.addNoteHandler(synth);
     player.addNoteHandler(sheetMusicPainter);
     player.addConfigConsumer(synth);
+    
+    /** @debug */
+    var showInstrumentName = n => {};
+    player.addNoteHandler({handleNoteOn: n => { showInstrumentName(n); return () => {}; } });
 
     var playRandom = _ => alert("Please, wait till midi names load from ajax!");
 
@@ -173,6 +180,71 @@ var MainPage = function(mainCont)
         googleLogInIdToken = googleUser.getAuthResponse().id_token;
         
         /** @TODO: token expires in about two hours - need to rerequest it */
+    };
+
+    var instrumentNames = ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",
+        "Honky-tonk Piano","Electric Piano","6 Electric Piano 2","Harpsichord","Clavinet","Celesta",
+        "Glockenspiel","Music Box","Vibraphone","Marimba","Xylophone","Tubular Bells","Dulcimer",
+        "Drawbar Organ","Percussive Organ","Rock Organ","Church Organ","Reed Organ","Accordion",
+        "Harmonica","Tango Accordion","Acoustic Guitar (nylon)","Acoustic Guitar (steel)",
+        "Electric Guitar (jazz)","Electric Guitar (clean)","Electric Guitar (muted)","Overdriven Guitar",
+        "Distortion Guitar","Guitar Harmonics","Acoustic Bass","Electric Bass (finger)","Electric Bass (pick)",
+        "Fretless Bass","Slap Bass 1","38 Slap Bass 2","Synth Bass 1","40 Synth Bass 2","Violin","Viola",
+        "Cello","Contrabass","Tremolo","Pizzicato","Orchestral Harp","Timpani","String Ensemble 1",
+        "50 String Ensemble 2","Synth","52 Synth Strings 2","Choir","Voice","55 Synth Choir","Orchestra Hit",
+        "Trumpet","Trombone","Tuba","Muted Trumpet","French Horn","Brass Section","63 Synth Brass 1",
+        "64 Synth Brass 2","Soprano Sax","Alto Sax","Tenor Sax","Baritone Sax","Oboe","English Horn",
+        "Bassoon","Clarinet","Piccolo","Flute","Recorder","Pan Flute","Blown bottle","Shakuhachi","Whistle",
+        "Ocarina","Lead 1","sawtooth","calliope","84 Lead 4 chiff","charang","86 Lead 6 (voice)","fifths",
+        "88 Lead 8 (bass + lead)","89 Pad 1 (new age)","90 Pad 2 (warm)","polysynth","92 Pad 4 (choir)",
+        "93 Pad 5 (bowed)","94 Pad 6 (metallic)","95 Pad 7 (halo)","96 Pad 8 (sweep)","FX",
+        "98 FX 2 (soundtrack)","99 FX 3 (crystal)","100 FX 4 (atmosphere)","101 FX 5 (brightness)","goblins",
+        "echoes","104 FX 8 (sci-fi)","Sitar","Banjo","Shamisen","Koto","Kalimba","Bagpipe","Fiddle","Shanai",
+        "113 Tinkle Bell","Agogo","Steel Drums","Woodblock","Taiko Drum","Melodic Tom","119 Synth Drum",
+        "Cymbal","Fret","122 Breath Noise","Seashore","Bird Tweet","Telephone Ring","Helicopter","Applause","Gunshot"];
+
+    playAllNotesButton.onclick = function() {
+        var instrument = - 8;
+        
+        showInstrumentName = function(note)
+        {
+            if (+note.tune === 24) {
+                var exact = instrument + note.channel;
+                $('.fileName.holder').html(exact + ' - ' + instrumentNames[exact]);
+            }
+        };
+
+        var makeChord = (semitone, channel) => 1 && { noteList: [{
+            tune: semitone,
+            channel: channel,
+            length: semitone !== 0 ? '5 / 8' : '1 / 8' // 0 - pause
+        }]};
+
+        var makeChannel = instr => 1 && {
+            channelNumber: instr % 8,
+            volume: 100,
+            instrument: instr
+        };
+        
+        var addPauses = (chordList) => Util.range(0, chordList.length * 2)
+            .map(i => (i % 2 === 0 ? chordList[i / 2] : makeChord(0,0)))
+        
+        var songs = Util.range(0, 16).map(i => 1 && { staffList: [{
+            chordList: addPauses(Util.range(0, 8 * 85)
+                .map(n => makeChord(24 + n % 85, n / 85|0))),
+            staffConfig: {
+                numerator: 8, tempo: 60, keySignature: 0,
+                channelList: Util.range(i * 8, i * 8 + 8).map(makeChannel)
+            }
+        }]});
+
+        var whenFinished = _ => { if ((instrument += 8) < 128) {            
+            var song = songs[instrument / 8];
+
+            player.playShmidusic(song, 'in the name of zhopa', whenFinished);
+        }};
+
+        whenFinished();
     };
 
     return {

@@ -15,8 +15,11 @@ __pycache__
 *-compiled.js
 *-compiled.js.map
 /ignored
+*/typescript/*/*.js
+*/typescript/*/*.js.map
 */typescript/*.js
 */typescript/*.js.map
 .*
 /node_modules
 /tests/flow_compilled
+/b/

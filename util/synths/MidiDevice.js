@@ -58,6 +58,10 @@ Util.Synths.MidiDevice = function ()
      * @return function - lambda to interrupt note */
     var playNote = function(tune, channel)
     {
+        if (+tune === 0) { // pauses in shmidusic... very stupid idea
+            return () => {};
+        }
+        
         // stopping just for a moment to mark end of previous sounding if any
         if ((openedDict[channel][tune] || 0) > 0) {
             noteOff(tune, channel);

@@ -12,6 +12,7 @@ Util.Player = function ($controlCont)
     /** @var - a list of objects that have method handleNoteOn() that returns method handleNoteOff() */
     var noteHandlers = [];
     var configConsumer = {
+        // dull config consumer
         consumeConfig: (config, callback) => callback()
     };
 
@@ -110,24 +111,20 @@ Util.Player = function ($controlCont)
                 ? [].concat.apply([], staff['tactList'].map(t => t['chordList']))
                 : staff['chordList'];
 
-            if (!staff.millisecondTimeCalculated) {
+            var timeFraction = 0;
 
-                var timeFraction = 0;
-
-                chordList.forEach(function(c) 
-                {
-                    c.timeFraction = timeFraction;
-                    var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
-                    timeFraction += chordLength;
-                });
-
-                staff.millisecondTimeCalculated = true;
-            }
+            chordList.forEach(function(c)
+            {
+                c.timeFraction = timeFraction;
+                var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
+                timeFraction += chordLength;
+            });
 
             playSheetMusic({
                 chordList: chordList,
                 config: {
                     tempo: staff.staffConfig.tempo,
+                    // tempoOrigin likely unused
                     tempoOrigin: staff.staffConfig.tempo,
                     instrumentDict: instrumentDict
                 },
@@ -170,6 +167,7 @@ Util.Player = function ($controlCont)
             chordList: chordList,
             config: {
                 tempo: tempo,
+                // tempoOrigin likely unused
                 tempoOrigin: tempo,
                 instrumentDict: smf.instrumentDict
             },

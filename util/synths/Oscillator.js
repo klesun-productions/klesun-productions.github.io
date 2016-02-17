@@ -12,7 +12,7 @@ Util.Synths.Oscillator = function () {
     var waveTypes = ["sine", "triangle", "sawtooth", "square"];
     var waveType = "sawtooth";
 
-    var baseVolume = 0.02;
+    var baseVolume = 0.1;
 
     /** @return function - lambda to interrupt */
     var startSounding = function(frequency, customWaveType)
@@ -25,7 +25,7 @@ Util.Synths.Oscillator = function () {
         gainNode.gain.value = 0;
         /** this timeout is a hacky way to get rid of artifacts when oscillator starts and stops
          * a'm afraid it may affect performance... */
-        setTimeout((_) => (gainNode.gain.value = baseVolume, 4));
+        setTimeout((_) => (gainNode.gain.value = baseVolume));
         //gainNode.gain.value = baseVolume;
 
         var oscillator = audioCtx.createOscillator();
