@@ -1,36 +1,11 @@
 
 var Util = Util || {};
 
-Util.range = (l, r) => Array.apply(null, Array(r - l)).map((_, i) => l + i);
-
 /** @TODO: use worker instead to ensure timing of inactive tabs */
 Util.setTimeout = (cb, d) => setTimeout(cb, d);
 
 /** @param length - float: quarter will be 0.25, semibreve will be 1.0*/
 Util.toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
-
-/** @param chunkSize - count of elements that will be foreached in one iteration
- * @param breakMillis - break duration between iterations */
-Util.forEachBreak = function(list, breakMillis, chunkSize, callback)
-{
-    var interrupted = false;
-
-    var doNext = function(index)
-    {
-        if (index < list.length && !interrupted) {
-            for (var i = index; i < Math.min(list.length, index + chunkSize); ++i) {
-                callback(list[i]);
-            }
-            setTimeout((_) => doNext(index + chunkSize), breakMillis);
-        }
-    };
-
-    doNext(0);
-
-    var interrupt = _ => (interrupted = true);
-
-    return interrupt;
-};
 
 Util.andThen = function(firstCallback, secondCallback)
 {

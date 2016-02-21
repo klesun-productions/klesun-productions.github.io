@@ -12,7 +12,7 @@ Util.Synths.Oscillator = function () {
     var waveTypes = ["sine", "triangle", "sawtooth", "square"];
     var waveType = "sawtooth";
 
-    var baseVolume = 0.1;
+    var baseVolume = 0.15;
 
     /** @return function - lambda to interrupt */
     var startSounding = function(frequency, customWaveType)

@@ -28,12 +28,13 @@ var MainPage = function(mainCont)
         success: callback
     });
 
+
     var SynthAdapter = function(dropdownEl, controlEl)
     {
         var synths = {
             oscillator: Util.Synths.Oscillator(),
             midiDevice: Util.Synths.MidiDevice(),
-            FluidSynth3: new WavCacher(),
+            FluidSynth3: Ns.WavCacher(),
             // pitchShifter: Ns.Synths.PitchShifter(),
         };
 
@@ -44,7 +45,7 @@ var MainPage = function(mainCont)
         $(dropdownEl).empty();
         var addOption = s => $(dropdownEl).append($('<option></option>').val(s).html(s));
         Object.keys(synths).forEach(addOption);
-        $(dropdownEl).val('oscillator').change(_ => changeSynth()).trigger('change');
+        $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
 
         return {
             handleNoteOn: n => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),
