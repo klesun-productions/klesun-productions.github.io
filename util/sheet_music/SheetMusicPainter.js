@@ -12,6 +12,9 @@ Ns.SheetMusicPainter = function(parentId)
 
     var $parentEl = $('#' + parentId);
 
+    /** @TODO: add a checkbox and make not so laggy eventually */
+    var enabled = false;
+
     var $chordListCont =  $('<div class="chordListCont"></div>');
     $parentEl.append($chordListCont);
 
@@ -118,11 +121,18 @@ Ns.SheetMusicPainter = function(parentId)
 
     var toFloat = fractionString => eval(fractionString);
     var interruptDrawing = _ => {};
+    var currentSong = null;
     
     /** @param song - dict structure outputed by 
      * shmidusic program - github.com/klesun/shmidusic */
     var draw = function(song)
     {
+        currentSong = song;
+
+        if (!enabled) {
+            return;
+        }
+
         interruptDrawing();
         $chordListCont.empty();
 
@@ -302,6 +312,17 @@ Ns.SheetMusicPainter = function(parentId)
     return {
         draw: draw,
         handleNoteOn: setNoteFocus,
+        setEnabled: function(val)
+        {
+            if (enabled = val) {
+                if (currentSong !== null) {
+                    draw(currentSong);
+                }
+            } else {
+                interruptDrawing();
+                $chordListCont.empty();
+            }
+        },
     };
 };
 

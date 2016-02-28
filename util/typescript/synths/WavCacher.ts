@@ -35,7 +35,7 @@ Ns.Synths.WavCacher = function(): ISynth
     };
     // used for ... suddenly fallback.
     // when new note is about to be played we need to load it
-    var fallbackOscillator = Util.Synths.Oscillator(); // TODO: move Oscillator to typescript
+    var fallbackOscillator = Ns.Synths.Oscillator(); // TODO: move Oscillator to typescript
     // it would likely be better to pass the existing, so user could customize (volume, etc)
     var volumeFactor = 0.3;
 
@@ -86,7 +86,7 @@ Ns.Synths.WavCacher = function(): ISynth
             sample.currentTime = 0;
             sample.play();
 
-            var fadeTime = 100;
+            var fadeTime = 200;
             var iterations = 10;
 
             var fade = function(i: number)

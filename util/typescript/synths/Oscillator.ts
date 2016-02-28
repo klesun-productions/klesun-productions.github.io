@@ -1,21 +1,33 @@
 
-var Util = Util || {};
-Util.Synths = Util.Synths || {};
+/// <reference path="../../../libs/jqueryTyped/jquery.d.ts" />
+/// <reference path="../../../libs/definitelytyped/waa.d.ts" />
+/// <reference path="ISynth.ts" />
+/// <reference path="../Tools.ts" />
 
-Util.Synths.Oscillator = function () {
+var Ns = Ns || {};
+Ns.Synths = Ns.Synths || {};
 
+// this class provides ability to play notes with js Web Audio Api oscillator
+
+type EWave = 'sine' | 'triangle' | 'sawtooth' | 'square';
+
+Ns.Synths.Oscillator = function(): ISynth
+{
     var firstInit = true;
-    // on demand
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var audioCtx = new window.AudioContext();
 
-    // ["sine", "square", "saw", "triangle", "custom"]
-    var waveTypes = ["sine", "triangle", "sawtooth", "square"];
-    var waveType = "sawtooth";
+    // ['sine', 'square', 'saw', 'triangle', 'custom']
+    var waveTypes: EWave[] = ['sine', 'triangle', 'sawtooth', 'square'];
+    var waveType = 'sawtooth';
+
+    var instrumentDict: { [id: number]: number } = {
+        0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
+    };
 
     var baseVolume = 0.15;
 
     /** @return function - lambda to interrupt */
-    var startSounding = function(frequency, customWaveType)
+    var startSounding = function(frequency: number)
     {
         /** @TODO: if you feel paranoic, you may create a constant OSCILLATOR_INIT_TIME
          * and delay playback start and finish by it to deel with artifacts */
@@ -25,33 +37,32 @@ Util.Synths.Oscillator = function () {
         gainNode.gain.value = 0;
         /** this timeout is a hacky way to get rid of artifacts when oscillator starts and stops
          * a'm afraid it may affect performance... */
-        setTimeout((_) => (gainNode.gain.value = baseVolume));
+        setTimeout(() => (gainNode.gain.value = baseVolume));
         //gainNode.gain.value = baseVolume;
 
         var oscillator = audioCtx.createOscillator();
         oscillator.frequency.value = frequency;
-        oscillator.type = customWaveType || waveType;
+        oscillator.type = waveType;
         oscillator.connect(gainNode);
         oscillator.start(0);
 
         return function()
         {
             gainNode.gain.value = 0;
-            setTimeout((_) => oscillator.stop(), 100);
+            setTimeout(() => oscillator.stop(), 100);
         };
     };
 
-    var tuneToFrequency = function(tune)
+    var tuneToFrequency = function(tune: number)
     {
         var shift = tune - 69; // 69 - LA, 440 hz
         var la = 440.0;
         return la * Math.pow(2, shift / 12.0);
     };
 
-    var toFloat = fractionString => eval(fractionString);
-    var toMillis = (length, tempo) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
-
-    var initControl = function($controlEl) {
+    var initControl = function($controlEl: JQuery)
+    {
+        firstInit = false; // TODO: likely unused
 
         var $waveDropDown = $('<select></select>');
         /** @TODO: draw it moving on canvas instead =3 */
@@ -68,11 +79,11 @@ Util.Synths.Oscillator = function () {
         var waveTypeField = $('<div class="inlineBlock"></div>')
             .append('Wave Type: ').append($waveDropDown).append($waveImage);
 
-        var $volumeSlider = $('<input type="range" min="0.002" max="0.2" step="0.002"/>')
+        var $volumeSlider: JQuery = $('<input type="range" min="0.002" max="0.2" step="0.002"/>')
             .addClass("smallSlider")
             .val(baseVolume)
-            .on("input change", (_) => (baseVolume = $volumeSlider.val()));
-            //.on("input change", (_) => (gainNode.gain.value = $volumeSlider.val()));
+            .on("input change", () => (baseVolume = $volumeSlider.val()));
+        //.on("input change", (_) => (gainNode.gain.value = $volumeSlider.val()));
 
         var volumeField = $('<div class="inlineBlock"></div>')
             .append('Volume Gain: ').append($volumeSlider);
@@ -85,35 +96,31 @@ Util.Synths.Oscillator = function () {
         ;
     };
 
-    var init = function($controlEl) {
-        if (firstInit) {
-            firstInit = false;
-        }
-
-        initControl($controlEl);
-    };
-
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(tune, channel) 
-	{
+    var playNote = function(tune: number, channel: number)
+    {
         if (+channel !== 9) {
             if (+tune !== 0) { // stupid way to define pauses
                 return startSounding(tuneToFrequency(tune));
             } else {
-                return (_) => {};
+                return () => {};
             }
-        } else { // this is drum
-            // following https://www.youtube.com/watch?v=NmGRrPyvHdU
-            var click = startSounding(tuneToFrequency(50), 'sine');
-            click();
-            return (_) => {};
+        } else {
+            return () => {};
         }
     };
 
+    var consumeConfig = function(instrByChan: { [id: number]: number })
+    {
+        /** @TODO: these presets that are generated from oscillator (not from samples), like
+         * "Synth Bass", "Stuff from 80 to 100", "Synth Strings" should be played properly here */
+        instrumentDict = instrByChan;
+    };
+
     return $.extend(Util.Synths.ISynth(), {
-        init: init,
+        init: initControl,
         playNote: playNote,
-        consumeConfig: (_, callback) => callback()
+        consumeConfig: consumeConfig
     });
 };
