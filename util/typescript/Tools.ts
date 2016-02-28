@@ -47,8 +47,30 @@ Ns.forChunk = function<Tx>(list: Tx[], breakMillis: number, chunkSize: number, c
 };
 Util.forEachBreak = Ns.forChunk;
 
-
+/** @params l - left index inclusive, r - right index exclusive */
 Ns.range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
     .map((nop: void, i: number) => l + i);
 
 Util.range = Ns.range;
+
+Ns.channelColors = [
+    [0,0,0], // black
+    [192,0,0], // red
+    [0,148,0], // green
+    [60,60,255], // blue
+    [152,152,0], // yellow
+    [0,152,152], // cyan
+    [192,0,192], // magenta
+    [255,128,0], // orange
+    [91,0,255], // bluish magenta
+
+    [0,255,255], // TODO: !!!
+    [127,255,0], // TODO: !!!
+    [255,0,255], // TODO: !!!
+    [0,255,0], // TODO: !!!
+    [0,255,0], // TODO: !!!
+    [0,255,0], // TODO: !!!
+    [0,255,0] // TODO: !!!
+];
+
+Util.channelColors = Ns.channelColors;

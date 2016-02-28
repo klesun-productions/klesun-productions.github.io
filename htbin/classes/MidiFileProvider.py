@@ -22,17 +22,18 @@ class MidiFileProvider(object):
 
     @classmethod
     def get_info_list(cls, params, user_ifno=None):
-		
+
 		# TODO: investigate, this function likely takes ~0.6 second every time, what i think is VERY SLOW
-		
+
         result = []
 
-        pattern = re.compile('^0_([a-zA-Z0-9]{2,})_(.*)$')
+        pattern = re.compile('^\.\/0_([a-zA-Z0-9]{2,})_(.*)\.mid$')
 
-        dir = cls.content_folder + '/midiCollection/'
-        dirNames = ['.', 'watched', 'random_good_stuff']
-        fileListList = [os.listdir(dir + dirName) for dirName in dirNames]
-        fileList = [file for file in itertools.chain(*fileListList) if file.endswith('.mid')]
+        root = cls.content_folder + '/midiCollection/'
+
+        fileList = [os.path.relpath(curDir, root) + '/' + fileName
+            for curDir, _, fileNames in os.walk(root) if not curDir.endswith('source_ichigos_com')
+                for fileName in fileNames if fileName.endswith('.mid')]
 
         for file in fileList:
             matches = pattern.findall(file)
@@ -77,12 +78,15 @@ class MidiFileProvider(object):
 
         result = {}
 
+        mid_path = cls.content_folder + '/midiCollection/' + file_name
         mid_js_path = cls.content_folder + '/midiCollectionDecoded/' + file_name + '.js'
+        os.makedirs(os.path.dirname(mid_js_path), exist_ok=True)
 
         if not os.path.isfile(mid_js_path):  # handling cases when a midi file was added or renamed
             current_path = os.getcwd()
             os.chdir(cls.decode_script_path)
-            call(["java", cls.decode_script_class_path, file_name])
+            cmd = ["java", cls.decode_script_class_path, mid_path, mid_js_path]
+            call(cmd)
             os.chdir(current_path)
 
         # 'cd /home/klesun/progas/shmidusic/out'

@@ -37,7 +37,7 @@ Util.TableGenerator = function()
 		var row = $('<tr class="captionRow"></tr>');
 		for (var i = 0; i < colModel.length; ++i)
 		{
-			row.append('<td>' + colModel[i].caption + '</td>');
+			row.append('<td><b>' + colModel[i].caption + '</b></td>');
 		}
 
 		return row;

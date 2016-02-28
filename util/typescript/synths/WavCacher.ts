@@ -4,12 +4,15 @@
 /// <reference path="../Tools.ts" />
 
 var Ns = Ns || {};
+Ns.Synths = Ns.Synths || {};
 
 // well, since chrome does not support "preservesPitch", and firefox just sux at rhytmically playing sounds with WebAudio,
 // all that's left to do - load each semitone as a separate file so it could be played on chrome at least
 
-Ns.WavCacher = function(): ISynth
+Ns.Synths.WavCacher = function(): ISynth
 {
+    // nothing venture nothing win
+
     var instrumentFolderLink = '/libs/soundfonts/samples/generated_tunable/';
     var instrumentDict: { [id: number]: number } = {
         0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
@@ -20,7 +23,7 @@ Ns.WavCacher = function(): ISynth
         1: 0, // using grand instead of bright piano
         3: 0, // using grand instead of honky piano
         23: 21, // using Accordian instead of Bandeon
-        47: 43, 48: 43, // using Strings instead of String Ensamble
+        47: 44, 48: 44, // using Strings instead of String Ensamble
 
     };
     // u see, stuff is like that
@@ -61,8 +64,16 @@ Ns.WavCacher = function(): ISynth
         if (!(semitone in cachedNotes[instrumentCode])) {
             var takeCode = takeClosest(instrumentCode);
             var link = instrumentFolderLink + '/' + takeCode + '/' + semitone + '.wav';
-            freeNotes[instrumentCode][semitone] = [cachedNotes[instrumentCode][semitone] = new Audio(link)];
-            cachedNotes[instrumentCode][semitone].volume = volumeFactor;
+
+            var note: HTMLAudioElement;
+            freeNotes[instrumentCode][semitone] = [
+                  note
+                = cachedNotes[instrumentCode][semitone]
+                = new Audio(link)
+            ];
+
+            note.volume = volumeFactor;
+            note.addEventListener('ended', () => { note.currentTime = 0.90659375; note.play(); }, false);
 
             return fallbackOscillator.playNote.apply(this, arguments);
         } else {
@@ -71,22 +82,26 @@ Ns.WavCacher = function(): ISynth
                 ? freeNotes[instrumentCode][semitone].pop()
                 : new Audio(cachedNotes[instrumentCode][semitone].src);
 
-            /** @debug */
             sample.volume = volumeFactor;
-
-            /** @TODO: it should not reset current time of current sample -
-             * http://stackoverflow.com/questions/17461776/clone-audio-object
-             * it should play in a separate thread */
             sample.currentTime = 0;
             sample.play();
 
-            /** @TODO: don't pause suddenly - take some 30 or so ms to fade
-             * http://stackoverflow.com/questions/7451508/html5-audio-playback-with-fade-in-and-fade-out */
-            return function()
+            var fadeTime = 100;
+            var iterations = 10;
+
+            var fade = function(i: number)
             {
-                sample.pause();
-                freeNotes[instrumentCode][semitone].push(sample);
+                if (i < 10) {
+                    sample.volume = volumeFactor * (1 - i / iterations);
+                    setTimeout(() => fade(i + 1), fadeTime / iterations);
+                } else {
+                    sample.pause();
+                    sample.volume = volumeFactor;
+                    freeNotes[instrumentCode][semitone].push(sample);
+                }
             };
+
+            return () => fade(0);
         }
     };
     var consumeConfig = function(programs: { [id: number]: number; }): void
@@ -97,9 +112,6 @@ Ns.WavCacher = function(): ISynth
     {
         $cont.empty();
         $cont.append('This Synth plays notes with WebAudio api! Each note of each instrument is a wav file');
-        // TODO: sounds like a good idea, eh?
-        $cont.append('Loading 64 semitone of 52 instrument (Choir Aah)');
-        $cont.append($('<button>Free RAM</button>').click(_ => alert('sorry, not implemented yet')));
     };
 
     return {

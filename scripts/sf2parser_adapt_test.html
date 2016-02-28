@@ -1,0 +1,9 @@
+<script>
+var client = new XMLHttpRequest();
+client.open('GET', 'soundfonts_info2.js');
+client.onreadystatechange = function() {
+  RESPONSE = client.responseText;
+}
+client.send();
+
+</script>

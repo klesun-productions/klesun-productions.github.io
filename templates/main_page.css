@@ -85,10 +85,13 @@
 
         background: white url("/imgs/big/povestjoleneolene_400_400.png") no-repeat right bottom;
     }
-    #contentContainer .random-midi-list-cont {
-        background-color: orange;
+    #contentContainer .rightSideMainBlock {
         width: 250px;
         max-height: 600px;
+    }
+    .rightSideMainBlock .random-midi-list-cont {
+        background-color: orange;
+        max-height: 300px;
         overflow-y: scroll;
     }
     .random-midi-list-cont table tr:not(.table-generator-title-tr) td {
@@ -98,6 +101,20 @@
         max-width: 130px;
         overflow: hidden;
     }
+
+    #instrumentInfoBlock {
+        background-color: blue;
+        height: 290px;
+        margin: 2px;
+    }
+    #instrumentInfoBlock td {
+        background-color: white;
+    }
+    #instrumentInfoBlock .notUsed {
+        background-color: darkgrey;
+        color: white;
+    }
+
     .myMusicCont {
         width: 200px;
         height: 500px;
