@@ -53,6 +53,20 @@ Ns.range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - 
 
 Util.range = Ns.range;
 
+class Fraction {
+    constructor (
+        public num: number,
+        public den: number
+    ) {}
+
+    float = () => this.num / this.den;
+    apacheStr = () => this.num + ' / ' + this.den;
+}
+
+Ns.synthPresets = [
+    50, 51, 84,
+];
+
 Ns.channelColors = [
     [0,0,0], // black
     [192,0,0], // red

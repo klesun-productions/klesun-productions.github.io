@@ -1,5 +1,6 @@
 
 /// <reference path="DataStructures.ts" />
+/// <reference path="Tools.ts" />
 
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 
@@ -30,7 +31,7 @@ class Shmidusicator
 
     /** @TODO: when doing playback, use this instead of StandardMidiFile - it is the solution to the
      * problem that leak pause-chords may be inserted and break indexing */
-    static collectChords(notes: Array<ISmfNote>, division): Array<ITimedShChord>
+    static collectChords(notes: Array<ISmfNote>, division: number): Array<ITimedShChord>
     {
         if (notes.length < 1) {
             return [];
@@ -38,7 +39,7 @@ class Shmidusicator
 
         // two random good songs had duration 47 / 96 and 63 / 384
         // it was probably some workaround in midies, to separate note starts from note ends
-        var fixDuration = function(rawDuration)
+        var fixDuration = function(rawDuration: number)
         {
             var midiDivision = division / 4;
 
@@ -56,7 +57,7 @@ class Shmidusicator
         var curChord: ITimedShChord = null;
 
         var getLength = (c: IShmidusicChord) => Math.min.apply(null, c.noteList.map(n => n.length));
-        var makePause = (length) => 1 && {length: length, channel: 6, tune: 0};
+        var makePause = (length: number) => 1 && {length: length, channel: 6, tune: 0};
         var makeShnote = (n: ISmfNote) => 1 && {length: fixDuration(n.duration) / division, channel: n.channel, tune: n.tune};
 
         curChord = {noteList: [makeShnote(notes[0])], timeFraction: notes[0].time / division};
@@ -98,7 +99,7 @@ class Shmidusicator
     /** @return - guessed fraction length of the note */
     static guessLength(floatLength: number): Fraction
     {
-        var fr = (n,d) => new Fraction(n,d);
+        var fr = (n:number,d:number) => new Fraction(n,d);
 
         var options: Array<Fraction> = [
             // all accepted variations of semibreve: clean | triplet| with dot | with two dots

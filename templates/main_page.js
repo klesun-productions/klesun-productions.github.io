@@ -160,12 +160,13 @@ var MainPage = function(mainCont)
             var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
             $('.random-midi-list-cont').append(table); // defined in main_page.html
 
+            var random = Ns.UnfairRandom(rowList);
+
             playRandom = function(finishedFileInfo)
             {
                 finishedFileInfo = finishedFileInfo || {fileName: ''};
 
-                var index = Math.floor(Math.random() * rowList.length);
-                playStandardMidiFile(rowList[index].rawFileName, finishedFileInfo.fileName);
+                playStandardMidiFile(random.getAny().rawFileName, finishedFileInfo.fileName);
             };
         };
 

@@ -81,9 +81,10 @@ interface ISmfStructure {
     noteList: Array<ISmfNote>;
 }
 
-// some golden middle between the two above
-interface IGenericStructure {
-    chordList
+interface ISmfFile {
+    rawFileName: string;
+    fileName: string; // score will be cropped
+    score: string;
 }
 
 // we include js with the "Globals" declaration
@@ -95,14 +96,4 @@ interface IGlobals {
         fileName: string;
         sheetMusic: IShmidusicStructure
     }>;
-}
-
-class Fraction {
-    constructor (
-        public num: number,
-        public den: number
-    ) {}
-
-    float = () => this.num / this.den;
-    apacheStr = () => this.num + ' / ' + this.den;
 }
