@@ -50,6 +50,7 @@ def shift_pitch(source, destination, semitones):
 
 
 def cut_audio(source, destination, from_seconds, to_seconds):
+    # пидорасы громкость увеличивают - смотри "Clarinet C#5(L)/-1_loop.wav"
     cmd = ['sox', source, destination, 'trim', no_science(from_seconds), '=' + no_science(to_seconds)]
     
     # @debug
@@ -115,4 +116,6 @@ def do_script():
             shift_lacking_pitches(outdir, low - semitone, high - semitone)
             
 
+# TODO: use srconv to prevent -60 pitches taking 2^5 * original size
+# (i mean fix by decreasing samle rate)
 do_script()

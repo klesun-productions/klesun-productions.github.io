@@ -35,8 +35,9 @@ Ns.Synths.WavCacher = function(): ISynth
     };
     // used for ... suddenly fallback.
     // when new note is about to be played we need to load it
-    var fallbackOscillator = Ns.Synths.Oscillator(); // TODO: move Oscillator to typescript
+    var fallbackOscillator = Ns.Synths.Oscillator();
     // it would likely be better to pass the existing, so user could customize (volume, etc)
+
     var volumeFactor = 0.3;
 
     var freeNotes: { [instr: number]: { [semitone: number]: HTMLAudioElement[] } } = {};

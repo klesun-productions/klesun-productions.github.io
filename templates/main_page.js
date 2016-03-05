@@ -77,6 +77,7 @@ var MainPage = function(mainCont)
             oscillator: Ns.Synths.Oscillator(),
             midiDevice: Util.Synths.MidiDevice(),
             FluidSynth3: Ns.Synths.WavCacher(),
+            FluidSynth3_new: Ns.Synths.Fluid(),
             // pitchShifter: Ns.Synths.PitchShifter(),
         };
 
