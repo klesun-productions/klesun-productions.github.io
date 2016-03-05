@@ -24,6 +24,8 @@ __pycache__
 /tests/flow_compilled
 /b/
 /imgs/big/
+/out/*
+/unversioned/*
 
 /scripts/out.js
 /scripts/soundfonts_info2.js
