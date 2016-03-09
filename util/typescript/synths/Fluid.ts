@@ -3,6 +3,7 @@
 /// <reference path="ISynth.ts" />
 /// <reference path="../Tools.ts" />
 /// <reference path="../DataStructures.ts" />
+/// <reference path="../../../libs/definitelytyped/waa.d.ts" />
 
 var ZHOPA_PRESETS: any = null;
 
@@ -25,6 +26,7 @@ Ns.Synths.Fluid = function(): ISynth
         0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
     };
 
+    var audioCtx = new window.AudioContext();
     var volumeFactor = 0.3;
 
     var presets: IPreset[] = null;
@@ -45,6 +47,28 @@ Ns.Synths.Fluid = function(): ISynth
 
     };
 
+    var getBuffer = function(url: string, onOk: { (resp: AudioBuffer): void })
+    {
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.responseType = 'arraybuffer';
+        request.send();
+        request.onload = () => audioCtx.decodeAudioData(request.response, onOk);
+    };
+
+    var initBufferSource = (url: string, onOk: { (): void }): AudioBufferSourceNode =>
+    {
+        var sample = audioCtx.createBufferSource();
+        sample.connect(audioCtx.destination);
+        getBuffer(url, (decoded: AudioBuffer) =>
+        {
+            sample.buffer = decoded;
+            onOk();
+        });
+
+        return sample;
+    };
+
     // this class should take logic of how to play new note
     // if old with same semitone and preset is still playing
     var Note = function(semitone: number, preset: number): INote
@@ -59,29 +83,39 @@ Ns.Synths.Fluid = function(): ISynth
                                 ? sampleInfo.overridingRootKey.amount
                                 : sampleInfo.originalPitch);
 
-        var sample = new Audio(dirUrl + '/' + delta + '.wav');
-        var sampleLoop = new Audio(dirUrl + '/' + delta + '_loop.wav');
-        // TODO: it does not loop seamlessly for some reason. see: seamless_loop.html
-        sampleLoop.loop = true;
+        var sampleBuffer: AudioBuffer = null,
+            loopBuffer: AudioBuffer = null;
+        getBuffer(dirUrl + '/' + delta + '.wav', (resp) => sampleBuffer = resp);
+        getBuffer(dirUrl + '/' + delta + '_loop.wav', (resp) => loopBuffer = resp);
 
-        var sampleLoaded = false, loopLoaded = false;
-        sample.onloadeddata = () => { sampleLoaded = true; };
-        sampleLoop.onloadeddata = () => { loopLoaded = true; };
-        sample.volume = sampleLoop.volume = volumeFactor;
+        // sample.volume = sampleLoop.volume = volumeFactor;
 
         var play = function()
         {
-            if (!sampleLoaded || !loopLoaded) {
+            if (sampleBuffer === null || loopBuffer === null) {
                 return fallbackOscillator.playNote(semitone, 0);
             } else {
-                sample.currentTime = sampleLoop.currentTime = 0;
-                sample.play();
-                sampleLoop.play();
+
+                var gainNode = audioCtx.createGain();
+                gainNode.gain.value = volumeFactor;
+                gainNode.connect(audioCtx.destination);
+
+                var sample = audioCtx.createBufferSource(),
+                    sampleLoop = audioCtx.createBufferSource();
+
+                sample.connect(gainNode);
+                sampleLoop.connect(gainNode);
+
+                sample.buffer = sampleBuffer;
+                sampleLoop.buffer = loopBuffer;
+
+                sample.start();
+                sampleLoop.start();
 
                 return function()
                 {
-                    sample.pause();
-                    sampleLoop.pause();
+                    sample.stop();
+                    sampleLoop.stop();
                 };
             }
         };
