@@ -109,10 +109,16 @@
     }
     #instrumentInfoBlock td {
         background-color: white;
+        font-size: 10px;
     }
     #instrumentInfoBlock .notUsed {
         background-color: darkgrey;
         color: white;
+    }
+    #instrumentInfoBlock input[type="checkbox"] {
+        margin:0;
+        margin-top: 1px;
+        margin-left: 1px;
     }
 
     .myMusicCont {

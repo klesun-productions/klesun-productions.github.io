@@ -7,7 +7,8 @@
  * structure defined in main_page.html */
 var MainPage = function(mainCont)
 {
-    var $pianoCanvas = $(mainCont).find('.pianoLayoutCanvas'),
+    const
+        $pianoCanvas = $(mainCont).find('.pianoLayoutCanvas'),
         $playbackControlCont = $(mainCont).find('.playbackControlCont'),
         sheetMusicCont = $(mainCont).find('.sheetMusicCont')[0],
         violinKeyImage = $(mainCont).find('.violinKeyImage')[0],
@@ -19,8 +20,8 @@ var MainPage = function(mainCont)
 
     var googleLogInIdToken = null;
 
-    var addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
-    var performExternal = (methodName, params, callback) => $.ajax({
+    const addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
+    const performExternal = (methodName, params, callback) => $.ajax({
         url: '/htbin/json_service.py' + '?f=' + methodName, // GET params just for cosmetics
         type: "post",
         data: JSON.stringify(addToken({methodName: methodName, params: params})),
@@ -28,6 +29,8 @@ var MainPage = function(mainCont)
         contentType: 'application/json;UTF-8',
         success: callback
     });
+
+    const enabledChannels = new Set(Ns.range(0,16));
 
     /** @TODO: add mute button */
     const repaintInstrumentInfo = function(instrByChannel)
@@ -39,9 +42,16 @@ var MainPage = function(mainCont)
             .css('font-weight', 'bold')
             .css('color', 'rgba(' + Ns.channelColors[channel].join(',') + ',1)');
 
+        const makeMuteFlag = (channel) => $('<input type="checkbox" checked="checked"/>')
+            .click((e) => (e.target.checked
+                ? enabledChannels.add(channel)
+                : enabledChannels.delete(channel)
+            ));
+
         var colModel = [
+            {name: 'channelCode', caption: '*', formatter: makeMuteFlag},
             {name: 'channelCode', caption: 'Chan', formatter: colorize},
-            {name: 'presetCode', caption: 'Preset'},
+            {name: 'presetCode', caption: 'Pres'},
             {name: 'description', caption: 'Description'},
         ];
 
@@ -104,11 +114,23 @@ var MainPage = function(mainCont)
         $(mainCont).find('#synthControl')[0]);
 
     var sheetMusicPainter = Ns.SheetMusicPainter('mainSongContainer');
+    var pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
 
     var player = Util.Player($playbackControlCont);
-    player.addNoteHandler(Util.PianoLayoutPanel($pianoCanvas));
-    player.addNoteHandler(synth);
-    player.addNoteHandler(sheetMusicPainter);
+    player.addNoteHandler({handleNoteOn: function(noteJs, chordIndex)
+    {
+        if (enabledChannels.has(noteJs.channel)) {
+            var noteOffs = [
+                pianoLayout.handleNoteOn(noteJs, chordIndex),
+                synth.handleNoteOn(noteJs, chordIndex),
+                sheetMusicPainter.handleNoteOn(noteJs, chordIndex),
+            ];
+
+            return () => noteOffs.forEach(off => off());
+        } else {
+            return () => {};
+        }
+    }});
     player.addConfigConsumer(synth);
 
     var playRandom = _ => alert("Please, wait till midi names load from ajax!");
