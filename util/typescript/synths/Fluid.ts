@@ -98,6 +98,12 @@ Ns.Synths.Fluid = function(): ISynth
                 s.keyRange.lo <= semitone &&
                 s.keyRange.hi >= semitone)[0];
 
+        /** @debug */
+        if (!sampleInfo) {
+            console.log('no sample!', semitone, preset);
+            return { play: () => fallbackOscillator.playNote(semitone, 0) };
+        }
+
         var sampleUrl = sampleDirUrl + '/' + sampleInfo.sampleName.replace('#', '%23') + '.wav';
         var sampleBuffer: AudioBuffer = null;
         getBuffer(sampleUrl, (resp) => sampleBuffer = resp);
