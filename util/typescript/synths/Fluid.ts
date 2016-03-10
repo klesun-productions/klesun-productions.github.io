@@ -76,14 +76,14 @@ Ns.Synths.Fluid = function(): ISynth
             ? sample.overridingRootKey.amount
             : sample.originalPitch;
 
-        var result = (semitone - sampleSemitone) * 50;
+        var result = (semitone - sampleSemitone) * 100;
 
         if ('fineTune' in sample) {
             result += sample.fineTune.amount;
         }
 
         if ('coarseTune' in sample) {
-            result += sample.coarseTune.amount * 50;
+            result += sample.coarseTune.amount * 100;
         }
 
         return result;
@@ -109,7 +109,7 @@ Ns.Synths.Fluid = function(): ISynth
         getBuffer(sampleUrl, (resp) => sampleBuffer = resp);
 
         var correctionCents = determineCorrectionCents(semitone, sampleInfo);
-        var freqFrac = Math.pow(2, correctionCents / 50 / 12);
+        var freqFrac = Math.pow(2, correctionCents / 100 / 12);
 
         // sample.volume = sampleLoop.volume = volumeFactor;
 
