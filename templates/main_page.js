@@ -98,7 +98,7 @@ var MainPage = function(mainCont)
         $(dropdownEl).empty();
         var addOption = s => $(dropdownEl).append($('<option></option>').val(s).html(s));
         Object.keys(synths).forEach(addOption);
-        $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
+        $(dropdownEl).val('FluidSynth3_new').change(_ => changeSynth()).trigger('change');
 
         return {
             handleNoteOn: n => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),

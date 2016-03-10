@@ -20,7 +20,8 @@ interface INote { play: { (): { (): void } } }
 
 Ns.Synths.Fluid = function(): ISynth
 {
-    var sampleUrl = '/out/fluidSamples';
+    var sampleDirUrl = '/unversioned/fluidSamples/';
+
     var drumPresetIndex = 158;
     var presetsByChannel: { [id: number]: number } = {
         0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
@@ -69,6 +70,25 @@ Ns.Synths.Fluid = function(): ISynth
         return sample;
     };
 
+    var determineCorrectionCents = function(semitone: number, sample: ISampleInfo): number
+    {
+        var sampleSemitone = 'overridingRootKey' in sample
+            ? sample.overridingRootKey.amount
+            : sample.originalPitch;
+
+        var result = (semitone - sampleSemitone) * 50;
+
+        if ('fineTune' in sample) {
+            result += sample.fineTune.amount;
+        }
+
+        if ('coarseTune' in sample) {
+            result += sample.coarseTune.amount * 50;
+        }
+
+        return result;
+    };
+
     // this class should take logic of how to play new note
     // if old with same semitone and preset is still playing
     var Note = function(semitone: number, preset: number): INote
@@ -78,21 +98,18 @@ Ns.Synths.Fluid = function(): ISynth
                 s.keyRange.lo <= semitone &&
                 s.keyRange.hi >= semitone)[0];
 
-        var dirUrl = sampleUrl + '/' + sampleInfo.sampleName.replace('#', '%23');
-        var delta = semitone - ('overridingRootKey' in sampleInfo
-                                ? sampleInfo.overridingRootKey.amount
-                                : sampleInfo.originalPitch);
+        var sampleUrl = sampleDirUrl + '/' + sampleInfo.sampleName.replace('#', '%23') + '.wav';
+        var sampleBuffer: AudioBuffer = null;
+        getBuffer(sampleUrl, (resp) => sampleBuffer = resp);
 
-        var sampleBuffer: AudioBuffer = null,
-            loopBuffer: AudioBuffer = null;
-        getBuffer(dirUrl + '/' + delta + '.wav', (resp) => sampleBuffer = resp);
-        getBuffer(dirUrl + '/' + delta + '_loop.wav', (resp) => loopBuffer = resp);
+        var correctionCents = determineCorrectionCents(semitone, sampleInfo);
+        var freqFrac = Math.pow(2, correctionCents / 50 / 12);
 
         // sample.volume = sampleLoop.volume = volumeFactor;
 
         var play = function()
         {
-            if (sampleBuffer === null || loopBuffer === null) {
+            if (sampleBuffer === null) {
                 return fallbackOscillator.playNote(semitone, 0);
             } else {
 
@@ -100,23 +117,17 @@ Ns.Synths.Fluid = function(): ISynth
                 gainNode.gain.value = volumeFactor;
                 gainNode.connect(audioCtx.destination);
 
-                var sample = audioCtx.createBufferSource(),
-                    sampleLoop = audioCtx.createBufferSource();
-
+                var sample = audioCtx.createBufferSource();
+                sample.playbackRate.value = freqFrac;
+                sample.loopStart = sampleInfo.startLoop / sampleInfo.sampleRate;
+                sample.loopEnd = sampleInfo.endLoop / sampleInfo.sampleRate;
+                sample.loop = true;
                 sample.connect(gainNode);
-                sampleLoop.connect(gainNode);
-
                 sample.buffer = sampleBuffer;
-                sampleLoop.buffer = loopBuffer;
 
                 sample.start();
-                sampleLoop.start();
 
-                return function()
-                {
-                    sample.stop();
-                    sampleLoop.stop();
-                };
+                return () => sample.stop();
             }
         };
 

@@ -31,6 +31,12 @@ notice that we do not keep info about what semitone the 0 is
 supposing this number is stored in instrument -> samples mapping. lame sf2
 """
 
+# !!!!!!!!!!!!!!!!!!!
+# I discovered, how to change pitch in js (AudioBufferSourceNode::playbackRate)
+# and how to set loop start/end (AudioBufferSourceNode::loopStart / loopEnd)
+# so this script is ABSOLUTELY USELESS since now
+# !!!!!!!!!!!!!!!!!!!
+
 script_dir = os.path.dirname(os.path.realpath(__file__))
 source_dir = '/home/klesun/mounted_fat/progas/shmidusic.lv/unversioned/fluidSamples'
 destination_dir = '/home/klesun/mounted_fat/progas/shmidusic.lv/out/fluidSamples';
@@ -94,6 +100,9 @@ def do_script():
             correction_cents = (sample['fineTune']['amount'] 
                                 if 'fineTune' in sample 
                                 else 0)
+
+            if 'coarseTune' in sample: 
+                correction_cents += sample['coarseTune']['amount'] * 50
             
             sample_rate = sample['sampleRate']
             start_loop = sample['startLoop']
