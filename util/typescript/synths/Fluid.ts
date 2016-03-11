@@ -31,11 +31,9 @@ Ns.Synths.Fluid = function(): ISynth
     var volumeFactor = 0.3;
 
     var presets: IPreset[] = null;
-    $.getJSON('/out/fluidPresets.json', function(result)
-    {
-        presets = ZHOPA_PRESETS = result;
-        console.log('loaded mazafaka!', presets);
-    });
+    var drumPreset: IDrumPreset = null;
+    $.getJSON('/out/fluidPresets.json', (result) => presets = result);
+    $.getJSON('/out/fluidDrumPreset.json', (result) => drumPreset = result);
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need to load it
@@ -91,9 +89,15 @@ Ns.Synths.Fluid = function(): ISynth
 
     // this class should take logic of how to play new note
     // if old with same semitone and preset is still playing
-    var Note = function(semitone: number, preset: number): INote
+    var Note = function(semitone: number, preset: number, isDrum: boolean): INote
     {
-        var sampleInfo = presets[preset].instrument.samples
+        var sampleListList = isDrum
+            ? drumPreset.stateProperties.map(p => p.instrument.samples)
+            : [presets[preset].instrument.samples];
+
+        var sampleList: ISampleInfo[] = [].concat.apply([], sampleListList);
+
+        var sampleInfo = sampleList
             .filter(s => !('keyRange' in s) ? true :
                 s.keyRange.lo <= semitone &&
                 s.keyRange.hi >= semitone)[0];
@@ -146,16 +150,13 @@ Ns.Synths.Fluid = function(): ISynth
 
     var playNote = function(semitone: number, channel: number)
     {
-        /** @TODO: drums */
-        if (+channel === 9) {
-            return () => {};
-        }
+        var isDrum = +channel === 9;
 
         var preset = presetsByChannel[channel] || 0;
         cachedNotes[preset] = cachedNotes[preset] || {};
 
         if (!(semitone in cachedNotes[preset])) {
-            return (cachedNotes[preset][semitone] = Note(semitone, preset)).play();
+            return (cachedNotes[preset][semitone] = Note(semitone, preset, isDrum)).play();
         } else {
             return cachedNotes[preset][semitone].play();
         }

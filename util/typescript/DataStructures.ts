@@ -124,3 +124,12 @@ interface IPreset {
         samples: Array<ISampleInfo>
     }
 }
+
+interface IDrumPreset {
+    stateProperties: Array<{
+        instrument: {
+            samples: Array<ISampleInfo>
+        }
+        samples: Array<ISampleInfo>
+    }>
+}
