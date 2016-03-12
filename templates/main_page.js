@@ -30,12 +30,12 @@ var MainPage = function(mainCont)
         success: callback
     });
 
-    const enabledChannels = new Set(Ns.range(0,16));
+    var enabledChannels = new Set(Ns.range(0,16));
 
-    /** @TODO: add mute button */
     const repaintInstrumentInfo = function(instrByChannel)
     {
         $(instrumentInfoBlock).empty();
+        enabledChannels = new Set(Ns.range(0,16));
 
         var colorize = (channel) => $('<div></div>')
             .append(channel)
@@ -86,9 +86,7 @@ var MainPage = function(mainCont)
         var synths = {
             oscillator: Ns.Synths.Oscillator(),
             midiDevice: Util.Synths.MidiDevice(),
-            FluidSynth3: Ns.Synths.WavCacher(),
-            FluidSynth3_new: Ns.Synths.Fluid(),
-            // pitchShifter: Ns.Synths.PitchShifter(),
+            FluidSynth3: Ns.Synths.Fluid(),
         };
 
         var changeSynth = function() {
@@ -98,7 +96,7 @@ var MainPage = function(mainCont)
         $(dropdownEl).empty();
         var addOption = s => $(dropdownEl).append($('<option></option>').val(s).html(s));
         Object.keys(synths).forEach(addOption);
-        $(dropdownEl).val('FluidSynth3_new').change(_ => changeSynth()).trigger('change');
+        $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
 
         return {
             handleNoteOn: n => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),
