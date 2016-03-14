@@ -1,9 +1,11 @@
 <script>
+
 var client = new XMLHttpRequest();
-client.open('GET', 'soundfonts_info2.js');
+//client.open('GET', '/out/sf2parsed/generaluser/sf2parser.out.json');
+client.open('GET', '/out/sf2parsed/generaluser/presets.json');
 client.onreadystatechange = function() {
-  RESPONSE = client.responseText;
-}
+    RESPONSE = client.responseText;
+};
 client.send();
 
 </script>

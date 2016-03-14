@@ -81,12 +81,16 @@ var MainPage = function(mainCont)
         $(instrumentInfoBlock).append($table);
     };
 
+    var audioCtx = new AudioContext();
+
     var SynthAdapter = function(dropdownEl, controlEl)
     {
         var synths = {
-            oscillator: Ns.Synths.Oscillator(),
+            oscillator: Ns.Synths.Oscillator(audioCtx),
             midiDevice: Util.Synths.MidiDevice(),
-            FluidSynth3: Ns.Synths.Fluid(),
+            FluidSynth3: Ns.Synths.Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/fluid/'),
+            Arachno: Ns.Synths.Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/arachno/'),
+            GeneralUser: Ns.Synths.Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/generaluser/'),
         };
 
         var changeSynth = function() {

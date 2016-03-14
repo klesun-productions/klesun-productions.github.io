@@ -2,9 +2,10 @@
 
 import json
 import os
+import copy
 
 # a good man shared a tool to extract info from soundfonts - https://github.com/colinbdclark/sf2-parser
-# the only thing, stuff is structured not very handy for the end-user like me (
+# the only thing, soundfont stuff is structured not very handy for the end-user like me (
 # properties lay in a separate array and the root stores just the index in the array
 # but what i think would be much easier to understand and use - nest the stuff in stuff
 # )
@@ -54,9 +55,25 @@ import os
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
+# transforms dict of items with "amount" property to dict of their values
+def flat_amounts(item_dict: dict) -> dict:
+    f = lambda item: item['amount'] if 'amount' in item else item
+    return {k: f(v) for k,v in item_dict.items()}
+
+# i dunno the reason but _all_ sample names of _every_ soundfont have some
+# trash after the filename, like "Nylon Guitar-C4\u0000h\fh\u0001"
+# removing that trash
+def clean_text(raw_text):
+    # all lower than space is treated as end of string
+    raw_text = raw_text + chr(0)
+    end_idx = next(i for i,c in enumerate(raw_text) if ord(c) < 32)
+    
+    return raw_text[:end_idx]
+
 
 def get_instrument_info(root: dict, instr_idx) -> dict:
-    instr = root['instrument'][instr_idx]
+    
+    instr = copy.deepcopy(root['instrument'][instr_idx])
     
     instr['samples'] = []
     zone_start_idx = instr['instrumentBagIndex']
@@ -75,14 +92,15 @@ def get_instrument_info(root: dict, instr_idx) -> dict:
         properties = dict((p['type'], p['value']) for p in properties)
 
         if zone_idx == zone_start_idx:
-            # instrument properties
-            instr.update(properties)
+            instr['generatorApplyToAll'] = flat_amounts(properties)
         else:
-            # sample properties
-            sample = properties
-            sample.update(root['sampleHeader'][sample['sampleID']['amount']])
+            sample_idx = properties['sampleID']['amount']
+            sample = copy.deepcopy(root['sampleHeader'][sample_idx])
+            sample['sampleName'] = clean_text(sample['sampleName']);
+            sample['generator'] = flat_amounts(properties)
             instr['samples'].append(sample)
     
+    instr['instrumentName'] = clean_text(instr['instrumentName'])
     return instr
 
 
@@ -91,16 +109,18 @@ def get_instrument_info(root: dict, instr_idx) -> dict:
 def to_nested(root: dict) -> dict:
 
     # damn lepin!
+    
+    result = []
 
     for pres_idx in range(0, len(root['presetHeader'])):
-        pres = root['presetHeader'][pres_idx]
+        pres = copy.deepcopy(root['presetHeader'][pres_idx])
+        pres['presetName'] = clean_text(pres['presetName'])
         pres['stateProperties'] = []
         pzone_start_idx = pres.pop('presetBagIndex')
         pzone_end_idx = (root['presetHeader'][pres_idx + 1]['presetBagIndex']
                          if pres_idx + 1 < len(root['presetHeader'])
                          else len(root['presetZone']))
 
-        instr_idx = None
         for pzone_idx in range(pzone_start_idx, pzone_end_idx):
 
             gen_start_idx = root['presetZone'][pzone_idx]['presetGeneratorIndex']
@@ -114,31 +134,29 @@ def to_nested(root: dict) -> dict:
             state_props = [root['presetZoneGenerator'][idx] for idx in range(gen_start_idx, gen_end_idx)]
             state_props = dict((p['type'], p['value']) for p in state_props)
 
-            if pzone_idx == pzone_start_idx:
-                # preset properties
-                pres.update(state_props)
+            if pzone_idx == pzone_start_idx and 'instrument' not in state_props:
+                pres['generatorApplyToAll'] = flat_amounts(state_props)
             else:
-                # preset state properties
-                instr_idx = state_props.pop('instrument')['amount']  # will always be the last. it's ok, they are same anyway
-                pres['stateProperties'].append(state_props)
+                instr_idx = state_props.pop('instrument')['amount']
+                pres['instrument'] = get_instrument_info(root, instr_idx)
+                pres['instrument']['generator'] = flat_amounts(state_props)
+        
+        result.append(pres)
 
-        # i think it's some sort of bug in the sf2parser - last preset is broken for some reason...
-        if len(pres['stateProperties']) == 0:
-            continue
+    result.sort(key=lambda a: a['bank'] * 128 + a['preset'])
 
-        instr = pres['instrument'] = get_instrument_info(root, instr_idx)
-
-    return root['presetHeader']
+    return result
     
 
 def to_nested_drums(root: dict) -> dict:
     
-    # it's copypaste
+    pres_idx = next(i for i,v in enumerate(root['presetHeader']) if v['bank'] == 128)
     
-    pres_idx = 158 # standard drum
+    # pres_idx = 158 # standard drum
     pres = root['presetHeader'][pres_idx]
     
     pres['stateProperties'] = []
+    
     pzone_start_idx = pres.pop('presetBagIndex')
     pzone_end_idx = (root['presetHeader'][pres_idx + 1]['presetBagIndex']
                      if pres_idx + 1 < len(root['presetHeader'])
@@ -168,17 +186,32 @@ def to_nested_drums(root: dict) -> dict:
 
             state_props['instrument'] = get_instrument_info(root, instr_idx)
 
+    pres['presetName'] = clean_text(pres['presetName'])
     return pres
 
-with open(script_dir + '/../unversioned/soundfonts_info2.js') as f:
-    root = json.load(f)
 
-#~ adapted = to_nested(root)
-#~ 
-#~ with open(script_dir + '../our/fluidPresets.json', 'w') as f:
-    #~ json.dump(adapted, f)
+soundfont_dirs = [
+    '/home/klesun/progas/shmidusic.lv/out/sf2parsed/generaluser',
+    '/home/klesun/progas/shmidusic.lv/out/sf2parsed/fluid',
+    '/home/klesun/progas/shmidusic.lv/out/sf2parsed/arachno'
+];
 
-drums = to_nested_drums(root)
+for soundfont_dir in soundfont_dirs:
+    with open(soundfont_dir + '/sf2parser.out.json') as f:
+        root = json.load(f)
 
-with open(script_dir + '/../out/fluidDrumPresets.json', 'w') as f:
-    json.dump(drums, f)
+    adapted = to_nested(root)
+
+    with open(soundfont_dir + '/presets.json', 'w') as f:
+        json.dump(adapted, f)
+    with open(soundfont_dir + '/presets.pretty.json', 'w') as f:
+        json.dump(adapted, f, indent=3)
+
+    # well... damn mutability!
+    with open(soundfont_dir + '/sf2parser.out.json') as f:
+        root = json.load(f)
+
+    drums = to_nested_drums(root)
+
+    with open(soundfont_dir + '/drumPreset.json', 'w') as f:
+        json.dump(drums, f)

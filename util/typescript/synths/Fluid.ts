@@ -18,71 +18,77 @@ Ns.Synths = Ns.Synths || {};
 
 interface INote { play: { (): { (): void } } }
 
-Ns.Synths.Fluid = function(): ISynth
+Ns.Synths.Fluid = function(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
 {
-    var sampleDirUrl = '/unversioned/fluidSamples/';
+    var sampleDirUrl = soundfontDirUrl + '/samples/';
 
     var drumPresetIndex = 158;
     var presetsByChannel: { [id: number]: number } = {
         0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
     };
 
-    var audioCtx = new window.AudioContext();
     var volumeFactor = 0.3;
 
     var presets: IPreset[] = null;
     var drumPreset: IDrumPreset = null;
-    $.getJSON('/out/fluidPresets.json', (result) => presets = result);
-    $.getJSON('/out/fluidDrumPreset.json', (result) => drumPreset = result);
+    $.getJSON(soundfontDirUrl + '/presets.json', (result) => presets = result);
+    $.getJSON(soundfontDirUrl + '/drumPreset.json', (result) => drumPreset = result);
 
     // used for ... suddenly fallback.
-    // when new note is about to be played we need to load it
-    var fallbackOscillator = Ns.Synths.Oscillator();
+    // when new note is about to be played we need time to load it
+    var fallbackOscillator = Ns.Synths.Oscillator(audioCtx);
 
-    // this class should take the logic of synchronizing
-    // the sample and sampleLoop and fading on pause
-    var Sample = function()
+    var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
+    var awaiting: { [url: string]: Array<{ (resp: AudioBuffer): void }> } = {};
+
+    var getBuffer = function(url: string, onOk: { (resp: AudioBuffer): void }): void
     {
-
+        if (!(url in cachedSampleBuffers)) {
+            var request = new XMLHttpRequest();
+            request.open('GET', url, true);
+            request.responseType = 'arraybuffer';
+            request.send();
+            awaiting[url] = awaiting[url] || [];
+            awaiting[url].push(onOk);
+            request.onload = () => audioCtx.decodeAudioData(request.response, function(decoded)
+            {
+                awaiting[url].forEach(a => a(decoded));
+                awaiting[url] = [];
+                cachedSampleBuffers[url] = decoded;
+            });
+        } else {
+            onOk(cachedSampleBuffers[url]);
+        }
     };
 
-    var getBuffer = function(url: string, onOk: { (resp: AudioBuffer): void })
+    var determineCorrectionCents = function(delta: number, generator: IGenerator): number
     {
-        var request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.responseType = 'arraybuffer';
-        request.send();
-        request.onload = () => audioCtx.decodeAudioData(request.response, onOk);
-    };
+        var result = delta * 100;
 
-    var initBufferSource = (url: string, onOk: { (): void }): AudioBufferSourceNode =>
-    {
-        var sample = audioCtx.createBufferSource();
-        sample.connect(audioCtx.destination);
-        getBuffer(url, (decoded: AudioBuffer) =>
-        {
-            sample.buffer = decoded;
-            onOk();
-        });
-
-        return sample;
-    };
-
-    var determineCorrectionCents = function(semitone: number, sample: ISampleInfo): number
-    {
-        var sampleSemitone = 'overridingRootKey' in sample
-            ? sample.overridingRootKey.amount
-            : sample.originalPitch;
-
-        var result = (semitone - sampleSemitone) * 100;
-
-        if ('fineTune' in sample) {
-            result += sample.fineTune.amount;
+        if ('fineTune' in generator) {
+            result += generator.fineTune;
         }
 
-        if ('coarseTune' in sample) {
-            result += sample.coarseTune.amount * 100;
+        if ('coarseTune' in generator) {
+            result += generator.coarseTune * 100;
         }
+
+        return result;
+    };
+
+    // overwrites global keys with local if any
+    var updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
+    {
+        return Ns.extend(global, local);
+    };
+
+    // adds the tuning semi-tones and cents; multiplies whatever needs to be multiplied
+    var combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
+    {
+        var result = Ns.extend(local, {});
+
+        result.fineTune = (result.fineTune || 0) + (global.fineTune || 0);
+        result.coarseTune = (result.coarseTune || 0) + (global.coarseTune || 0);
 
         return result;
     };
@@ -98,9 +104,9 @@ Ns.Synths.Fluid = function(): ISynth
         var sampleList: ISampleInfo[] = [].concat.apply([], sampleListList);
 
         var sampleInfo = sampleList
-            .filter(s => !('keyRange' in s) ? true :
-                s.keyRange.lo <= semitone &&
-                s.keyRange.hi >= semitone)[0];
+            .filter(s => !('keyRange' in s.generator) ? true :
+                s.generator.keyRange.lo <= semitone &&
+                s.generator.keyRange.hi >= semitone)[0];
 
         /** @debug */
         if (!sampleInfo) {
@@ -112,10 +118,17 @@ Ns.Synths.Fluid = function(): ISynth
         var sampleBuffer: AudioBuffer = null;
         getBuffer(sampleUrl, (resp) => sampleBuffer = resp);
 
-        var correctionCents = determineCorrectionCents(semitone, sampleInfo);
-        var freqFrac = Math.pow(2, correctionCents / 100 / 12);
+        var generator = combineGenerators(
+            presets[preset].generatorApplyToAll || {},
+            updateGenerator(presets[preset].instrument.generatorApplyToAll, sampleInfo.generator)
+        );
 
-        // sample.volume = sampleLoop.volume = volumeFactor;
+        var sampleSemitone = 'overridingRootKey' in sampleInfo.generator
+            ? sampleInfo.generator.overridingRootKey
+            : sampleInfo.originalPitch;
+
+        var correctionCents = determineCorrectionCents(semitone - sampleSemitone, generator);
+        var freqFactor = Math.pow(2, correctionCents / 100 / 12);
 
         var play = function()
         {
@@ -128,7 +141,7 @@ Ns.Synths.Fluid = function(): ISynth
                 gainNode.connect(audioCtx.destination);
 
                 var sample = audioCtx.createBufferSource();
-                sample.playbackRate.value = freqFrac;
+                sample.playbackRate.value = freqFactor;
                 sample.loopStart = sampleInfo.startLoop / sampleInfo.sampleRate;
                 sample.loopEnd = sampleInfo.endLoop / sampleInfo.sampleRate;
                 sample.loop = true;
@@ -146,20 +159,12 @@ Ns.Synths.Fluid = function(): ISynth
         };
     };
 
-    var cachedNotes: { [instr: number]: { [semitone: number]: INote } } = {};
-
     var playNote = function(semitone: number, channel: number)
     {
         var isDrum = +channel === 9;
-
         var preset = presetsByChannel[channel] || 0;
-        cachedNotes[preset] = cachedNotes[preset] || {};
 
-        if (!(semitone in cachedNotes[preset])) {
-            return (cachedNotes[preset][semitone] = Note(semitone, preset, isDrum)).play();
-        } else {
-            return cachedNotes[preset][semitone].play();
-        }
+        return Note(semitone, preset, isDrum).play();
     };
 
     var consumeConfig = function(programs: { [id: number]: number; }): void

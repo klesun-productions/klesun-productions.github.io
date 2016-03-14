@@ -1,4 +1,6 @@
 
+/// <reference path="../../libs/jqueryTyped/jquery.d.ts" />
+
 var Ns:any = Ns || {};
 // TODO: Util is too long
 var Util:any = Util || {};
@@ -109,3 +111,8 @@ Ns.instrumentNames = ["Acoustic Grand Piano","Bright Acoustic Piano","Electric G
     "Cymbal","Fret","122 Breath Noise","Seashore","Bird Tweet","Telephone Ring","Helicopter","Applause","Gunshot"];
 
 Util.channelColors = Ns.channelColors;
+
+Ns.extend = function<Tx>(oldDict: Tx, newDict: Tx)
+{
+    return $.extend({}, oldDict, newDict);
+};

@@ -11,10 +11,9 @@ Ns.Synths = Ns.Synths || {};
 
 type EWave = 'sine' | 'triangle' | 'sawtooth' | 'square';
 
-Ns.Synths.Oscillator = function(): ISynth
+Ns.Synths.Oscillator = function(audioCtx: AudioContext): ISynth
 {
     var firstInit = true;
-    var audioCtx = new window.AudioContext();
 
     // ['sine', 'square', 'saw', 'triangle', 'custom']
     var waveTypes: EWave[] = ['sine', 'triangle', 'sawtooth', 'square'];

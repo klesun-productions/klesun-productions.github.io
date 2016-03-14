@@ -1,0 +1,50 @@
+<!-- well, i prefer these 20 lines of usage example to be in a single file -->
+
+<head>
+    <meta charset="utf-8"/>
+    <script type="text/javascript" src="/libs/soundfonts/sf2-parser/src/sf2-parser.js"></script>
+</head>
+
+A pop-up with parsed soundfonts in json format should appear
+It will probably be blocked by your browser - you should unblock it manually.
+
+<script>
+
+    console.log('zhopa');
+
+    var parser = new sf2.Parser();
+
+    function loadSoundFont (url, success) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
+        xhr.onload = function () {
+            success(new Uint8Array(xhr.response));
+        };
+        xhr.send();
+    }
+
+    function success(data)
+    {
+        console.log('gonna parse');
+
+        HUJ_BYTES = data;
+
+        var parser = new sf2.Parser(data);
+
+        // may kill chrome browser if sf2 file is 150+ MiB (use firefox, Luke!)
+        parser.parse();
+
+        // we are extracting wav files separately for now
+        delete parser['sample'];
+
+        HUJ = parser;
+
+        window.open('data:text/plain;charset=utf-8,' + JSON.stringify(parser));
+
+        console.log('parsed');
+    }
+
+    loadSoundFont("/unversioned/soundfonts/GeneralUser_v1.442.sf2", success);
+
+</script>
