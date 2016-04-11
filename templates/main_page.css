@@ -196,6 +196,6 @@
         border: solid 10px transparent;
         overflow-y: scroll;
         overflow-x: hidden;
-        min-height: 80px;
+        min-height: 120px;
         max-height: 360px; /* when note oval radius is 3px, this will be exactly 3 systems (360 / (3 * 40) = 3.0) */
     }

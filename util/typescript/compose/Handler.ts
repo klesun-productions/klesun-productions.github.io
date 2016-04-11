@@ -1,19 +1,9 @@
 
-/// <reference path="../DataStructures.ts" />
-/// <reference path="../Tools.ts" />
-/// <reference path="../../../libs/definitelytyped/lib.es6.d.ts" />
-/// <reference path="../../../libs/definitelytyped/webmidi.d.ts" />
-
+/// <reference path="../references.ts" />
 
 import MIDIMessageEvent = WebMidi.MIDIMessageEvent;
 var Ns: any = Ns || {};
 Ns.Compose = Ns.Compose || {};
-
-interface PainterT {
-    draw: { (song: IShmidusicStructure): void },
-    handleNoteOn: { (note: IShNote, chordIndex: number): { (): void } },
-    setEnabled: { (val: boolean): void },
-}
 
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
@@ -24,28 +14,6 @@ Ns.Compose.Handler = function(contId: string): void
     painter.setEnabled(true);
 
     var chords: IShmidusicChord[] = [];
-
-    /** @debug */
-    painter.draw({staffList: [{
-        staffConfig: {
-            tempo: 120,
-            keySignature: 0,
-            numerator: 8,
-            channelList: []
-        },
-        chordList: [
-            {noteList: [
-                { length: 0.5, channel: 0, tune: 69 },
-                { length: 0.5, channel: 0, tune: 65 },
-                { length: 0.5, channel: 0, tune: 62 },
-            ]},
-            {noteList: [
-                { length: 0.5, channel: 0, tune: 73 },
-                { length: 0.5, channel: 0, tune: 66 },
-                { length: 0.5, channel: 0, tune: 64 },
-            ]},
-        ]
-    }]});
 
     var handleNoteOn = function(semitone: number)
     {
