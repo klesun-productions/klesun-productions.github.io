@@ -25,52 +25,22 @@
 	<script src="/util/typescript/synths/ISynth.js" type="text/javascript"></script>
 	<script src="/util/typescript/synths/Oscillator.js" type="text/javascript"></script>
 	<script src="/util/typescript/synths/Fluid.js" type="text/javascript"></script>
+	<script src="/util/typescript/compose/Handler.js" type="text/javascript"></script>
 	<script src="/util/flowOut/Linker.js" type="text/javascript"></script>
 	<script src="/util/flowOut/GoogleTranslateAdapter.js" type="text/javascript"></script>
 	<script src="/util/flowOut/Transeeker.js" type="text/javascript"></script>
 
 </head>
 
-<div id="composeDiv"></div>
+<div id="sheetMusicDiv"></div>
 
 <script>
-	
-	var out = (s, o) => console.log(s, o);
-	
-	var gotMidi = function (midiInfo)
+
+    var onLoad = function ()
     {
-        var compose = Util.Compose($('#composeDiv')[0]);
+        Ns.Compose.Handler('sheetMusicDiv');
+    };
 
-		out("Midi Access Success!", midiInfo);
-		
-		var handleEvent = function (message) {
-			var eventType = // bit mask: "100X YYYY" -> x => noteOn: yes/no | YYYY => channelNumber
-					(message.data[0] === 144) ? 'noteOn' : 
-					(message.data[0] === 128) ? 'noteOff' : 
-					'unknown' + message.data[0];
-			
-			var tune = message.data[1];
-			var velocity = message.data[2];
-			out('midi event tune: ' + tune + '; velocity: ' + velocity + '; type: ' + eventType, message);
+    window.addEventListener('load', onLoad, false);
 
-            if (eventType === 'noteOn' && velocity > 0) {
-                compose.handleNoteOn(tune);
-            }
-		};
-		
-		var inputs = midiInfo.inputs.values();
-		for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
-			input.value.onmidimessage = handleEvent;
-		}
-	};
-
-	// request MIDI access
-	if (navigator.requestMIDIAccess) {
-	    navigator.requestMIDIAccess({
-	        sysex: false // this defaults to 'false' and we won't be covering sysex in this article. 
-	    }).then(gotMidi, e => out("Failed To Access Midi, Even Though Your Browser Has The Method...", e));
-	} else {
-	    out("No MIDI support in your browser.");
-	}
-	
 </script>

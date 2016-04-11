@@ -5,7 +5,7 @@ Ns.SheetMusicPainter = function(parentId)
 {
     /** @TODO: make changeable... hm... changeable CSS variables, will "less" do?
      * see also: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_variables */
-    var R = 2; // semibreve note oval vertical radius
+    var R = 4; // semibreve note oval vertical radius
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     var NOTE_CANVAS_HEIGHT = R * 9;

@@ -87,17 +87,6 @@ interface ISmfFile {
     score: string;
 }
 
-// we include js with the "Globals" declaration
-// in /htbin/cgi_script.py::pass_server_data_to_js()
-// but now it contains only a single value "shmidusicList",
-// that should be fetched separately eventually
-interface IGlobals {
-    shmidusicList: Array<{
-        fileName: string;
-        sheetMusic: IShmidusicStructure
-    }>;
-}
-
 // a float defined by int. to get the value do 2^(x / 1200)
 type TExponential = number;
 type TInt = number;

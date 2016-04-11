@@ -1,6 +1,8 @@
 
 var Util = Util || {};
 
+// writes pseudo-graphic sheet music on a textarea
+
 Util.Compose = function(parentEl)
 {
     var noteList = [];
