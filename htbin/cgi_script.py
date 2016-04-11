@@ -18,35 +18,19 @@ if os.name == 'nt':
 from classes.MidiFileProvider import MidiFileProvider
 
 
-def pass_server_data_to_js():
-
-    shmidusic_list = MidiFileProvider.get_shmidusic_list()
-
-    print('''
-    <script>
-        var Globals = {
-			shmidusicList: ''' + json.dumps(shmidusic_list) + '''
-        };
-    </script>
-    ''');
-    pass
-
-
 def include_util_js():
-
     for path, subdirs, files in os.walk('util/'):
-        for name in files:
-            if name.endswith('.js'):
-                if not name.endswith('-compiled.js'):
-                    print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
+        if not path == 'util/flowSrc':
+            for name in files:
+                if name.endswith('.js'):
+                    if not name.endswith('-compiled.js'):
+                        print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
 
 
 def execute_script():
     print("Content-Type: text/html")
     print('')
     print('<meta charset="utf-8"/>');
-
-    pass_server_data_to_js()
 
     include_util_js()
 

@@ -11,8 +11,10 @@ cgitb.enable()
 import json
 import signal
 import os, sys
+import time
 
 from classes.MidiFileProvider import MidiFileProvider
+#from classes.TransLinker import TransLinker
 from contextlib import contextmanager
 from oauth2client import client, crypt
 
@@ -62,6 +64,7 @@ def read_post() -> dict:
 method_dict = {
     'get_standard_midi_file': MidiFileProvider.get_standard_midi_file,
     'get_ichigos_midi_names': MidiFileProvider.get_info_list,
+
 }
 
 

@@ -247,7 +247,7 @@ var MainPage = function(mainCont)
         $infoCont.find('.userImage').attr('src', profile.getImageUrl());
 
         googleLogInIdToken = googleUser.getAuthResponse().id_token;
-        
+
         /** @TODO: token expires in about two hours - need to rerequest it */
     };
 
@@ -255,7 +255,7 @@ var MainPage = function(mainCont)
 
     return {
         initIchigosMidiList: initIchigosMidiList,
-        initMyMusicList: initMyMusicList,
+        // initMyMusicList: initMyMusicList,
         playDemo: playDemo,
         playRandom: (_) => playRandom(),
         handleGoogleSignIn: handleGoogleSignIn,

@@ -24,7 +24,7 @@
 	<div class="topic-links-cont">
 		<a class="topic-option" href="/midiCollection">my midi collection</a>
         <a class="topic-option" href="/compose_midi/">compose shmidusic</a>
-		<a class="topic-option" href="/Dropbox/yuzefa_git/a_opuses_json">MY music</a>
+		<a class="topic-option" href="/text_parser/">Ведьмак</a>
         <a class="topic-option" href="/mokona_game">my game</a>
 	</div>
 	<br/>
@@ -123,7 +123,7 @@
 
     <img src="/imgs/violin_key.svg" id="imgViolinKey" class="violinKeyImage" style="display: none;"/>
     <img src="/imgs/bass_key.svg" id="imgBassKey" class="bassKeyImage" style="display: none;"/>
-    
+
     <br clear="all"/>
 
 </div>
@@ -136,7 +136,7 @@
 	setTimeout(function () {
         // will fire for any issue
 		if (!ECMA6) {
-			alert('Do you hate me? You want me to write \n"list.filter(function (a) { return a.isok; })" instead of just \n"list.filter(a => a.isok)" ?\n' + 
+			alert('Do you hate me? You want me to write \n"list.filter(function (a) { return a.isok; })" instead of just \n"list.filter(a => a.isok)" ?\n' +
 				'Please, install Chrome 45 or higher or whatever browser you use so it fitted ECMA 6 standard and then come back.');
 		}
 	}, 3000);
@@ -157,7 +157,7 @@
         console.log('window loaded');
 
         mainPage.initIchigosMidiList();
-        mainPage.initMyMusicList();
+        // mainPage.initMyMusicList();
         $('#startDemoButton').click(mainPage.playDemo);
         $('#playRandomButton').click(mainPage.playRandom);
     };
