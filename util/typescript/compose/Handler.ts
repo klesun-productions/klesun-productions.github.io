@@ -10,28 +10,28 @@ Ns.Compose = Ns.Compose || {};
 
 Ns.Compose.Handler = function(contId: string): void
 {
-    var painter: PainterT = Ns.SheetMusicPainter(contId);
+    var painter = Ns.SheetMusicPainter(contId);
     painter.setEnabled(true);
+    var lastNoteOn = 0;
+    var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
+    var player = Util.Player($(''));
+    player.addNoteHandler({ handleNoteOn: (n: IShNote) => synth.playNote(n.tune, n.channel) });
 
-    var chords: IShmidusicChord[] = [];
-
-    var handleNoteOn = function(semitone: number)
+    var handleNoteOn = function(semitone: number, receivedTime: number)
     {
-        chords.push({noteList: [{
+        var note = {
             tune: semitone,
             channel: 0,
             length: 0.25
-        }]});
+        };
 
-        painter.draw({staffList: [{
-            staffConfig: {
-                tempo: 120,
-                keySignature: 0,
-                numerator: 8,
-                channelList: []
-            },
-            chordList: chords
-        }]});
+        if (receivedTime - lastNoteOn < 100) {
+            painter.addNote(note); // TODO: ensure same note not added more than once!
+        } else {
+            painter.addChord({noteList: [note]});
+        }
+
+        lastNoteOn = receivedTime;
     };
 
     var handleMidiEvent = function (message: MIDIMessageEvent) {
@@ -45,11 +45,11 @@ Ns.Compose.Handler = function(contId: string): void
         console.log('midi event tune: ' + tune + '; velocity: ' + velocity + '; type: ' + eventType, message);
 
         if (eventType === 'noteOn' && velocity > 0) {
-            handleNoteOn(tune);
+            handleNoteOn(tune, message.receivedTime);
         }
     };
 
-    var hangMidiHandlers = function()
+    var hangMidiHandlers = function(): void
     {
         var gotMidi = function (midiInfo: WebMidi.MIDIAccess)
         {
@@ -73,5 +73,34 @@ Ns.Compose.Handler = function(contId: string): void
 
     };
 
+    var play = function(): void
+    {
+        var chordList = painter.getChordList();
+
+        var song: IShmidusicStructure = {staffList: [{
+            staffConfig: {
+                tempo: 120,
+                keySignature: 0,
+                numerator: 8,
+                channelList: []
+            },
+            chordList: chordList
+        }]};
+
+        player.playShmidusic(song);
+    };
+
+    var hangKeyboardHandlers = function(): void
+    {
+        document.onkeyup = function(keyEvent: KeyboardEvent)
+        {
+            // space
+            if (keyEvent.charCode = 32) {
+                play();
+            }
+        };
+    };
+
     hangMidiHandlers();
+    hangKeyboardHandlers();
 };

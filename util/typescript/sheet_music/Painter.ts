@@ -3,13 +3,7 @@
 
 var Ns = Ns || {};
 
-interface PainterT {
-    draw: { (song: IShmidusicStructure): void },
-    handleNoteOn: { (note: IShNote, chordIndex: number): { (): void } },
-    setEnabled: { (val: boolean): void },
-}
-
-Ns.SheetMusicPainter = function(parentId: string): PainterT
+Ns.SheetMusicPainter = function(parentId: string)
 {
     var R = 3; // semibreve note oval vertical radius
     var DX = R * 5; // half of chord span width
@@ -178,6 +172,46 @@ Ns.SheetMusicPainter = function(parentId: string): PainterT
         });
     };
 
+    /** adds a chord element _at_ the index. or to the end, if index not provided */
+    var addChord = function(chord: IShmidusicChord, index?: number): void
+    {
+        index = index || $chordListCont.children().length;
+
+        var $chord = makeChordSpan(chord);
+
+        if (index <= 0) {
+            $chordListCont.prepend($chord);
+        } else if (index >= $chordListCont.children().length) {
+            $chordListCont.append($chord);
+        } else {
+            $chordListCont.children(':eq(' + index + ')').before($chord);
+        }
+    };
+
+    /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
+    var addNote = function(note: IShNote, chordIndex?: number): void
+    {
+        chordIndex = chordIndex || $chordListCont.children().length - 1;
+
+        var $note = makeNoteCanvas(note);
+
+        $chordListCont.children(':eq(' + chordIndex + ')').append($note);
+    };
+
+    var getChordList = function(): IShmidusicChord[]
+    {
+        // problems?
+        return $chordListCont.children().toArray()
+            .map((c) => 1 && {
+                noteList: $(c).children('.noteCanvas').toArray()
+                    .map((n) => 1 && {
+                        tune: +$(n).attr('data-tune'),
+                        channel: +$(n).attr('data-channel'),
+                        length: +$(n).attr('data-length')
+                    })
+            });
+    }
+
     var scrollToIfNeeded = function(chordEl: HTMLElement)
     {
         /** @TODO: it does not take into account window scroll prostion
@@ -315,7 +349,7 @@ Ns.SheetMusicPainter = function(parentId: string): PainterT
     return {
         draw: draw,
         handleNoteOn: setNoteFocus,
-        setEnabled: function(val)
+        setEnabled: function(val: boolean)
         {
             if (enabled = val) {
                 if (currentSong !== null) {
@@ -326,6 +360,9 @@ Ns.SheetMusicPainter = function(parentId: string): PainterT
                 $chordListCont.empty();
             }
         },
+        addChord: addChord,
+        addNote: addNote,
+        getChordList: getChordList,
     };
 };
 

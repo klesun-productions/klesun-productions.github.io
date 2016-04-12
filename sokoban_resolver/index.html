@@ -139,7 +139,7 @@
                     if (stateMatch[0].moveCount <= moveCount) {
                         return {exists: false, moveCount: -1, dir: null, next: null};
                     } else {
-                        console.log('zhopa', stateMatch[0].result);
+                        console.log('result: ', stateMatch[0].result);
                         stateMatch[0].moveCount = moveCount;
                         return stateMatch[0].result;
                     }

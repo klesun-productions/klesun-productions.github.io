@@ -67,8 +67,8 @@ Util.Player = function ($controlCont)
             .setFileInfo(fileInfo);
 		/** @TODO: passing the callback is legacy - remove */
         configConsumer.consumeConfig(sheetMusic.config.instrumentDict, _ => {});
-		
-		var playback = currentPlayback = Util.Playback(sheetMusic, playChord, whenFinished, control.getTempoFactor(), stopSounding);
+
+		var playback = currentPlayback = Util.Playback(sheetMusic, playChord, whenFinished, control.getTempoFactor() || 1, stopSounding);
 
 		control.setPlayback(playback);
 
