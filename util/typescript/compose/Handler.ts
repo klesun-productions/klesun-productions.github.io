@@ -15,10 +15,17 @@ Ns.Compose.Handler = function(contId: string): void
     var lastNoteOn = 0;
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
-    player.addNoteHandler({ handleNoteOn: (n: IShNote) => synth.playNote(n.tune, n.channel) });
-    player.addNoteHandler(painter);
 
     var focusIndex = -1;
+    var playing = false;
+
+    player.addNoteHandler({
+        handleNoteOn: (n: IShNote, i: number) => [
+            synth.playNote(n.tune, n.channel),
+            painter.handleNoteOn(n, i + focusIndex + 1),
+        ].reduce((offs,off) => () => { offs(); off(); })
+    });
+    // player.addNoteHandler(painter);
 
     var handleNoteOn = function(semitone: number, receivedTime: number)
     {
@@ -28,18 +35,24 @@ Ns.Compose.Handler = function(contId: string): void
             length: 0.25
         };
 
-        if (receivedTime - lastNoteOn < 100) {
-            painter.addNote(note, focusIndex);
-        } else {
-            focusIndex = painter.addChord({noteList: [note]}, focusIndex + 1);
-        }
+        if (!playing) {
+            if (receivedTime - lastNoteOn < 100) {
+                painter.addNote(note, focusIndex);
+            } else {
+                focusIndex = painter.addChord({noteList: [note]}, focusIndex + 1);
+            }
 
-        lastNoteOn = receivedTime;
+            lastNoteOn = receivedTime;
+        } else {
+            player.stop();
+            playing = false;
+        }
     };
 
     var play = function(): void
     {
-        var chordList = painter.getChordList();
+        focusIndex = painter.setChordFocus(focusIndex - 1);
+        var chordList = painter.getChordList(focusIndex + 1);
 
         var song: IShmidusicStructure = {staffList: [{
             staffConfig: {
@@ -51,7 +64,8 @@ Ns.Compose.Handler = function(contId: string): void
             chordList: chordList
         }]};
 
-        player.playShmidusic(song);
+        playing = true;
+        player.playShmidusic(song, {}, () => playing = false);
     };
 
     var hangKeyboardHandlers = function(): void
@@ -69,9 +83,16 @@ Ns.Compose.Handler = function(contId: string): void
                 39: () => focusIndex = painter.setChordFocus(focusIndex + 1),
                 // delete
                 46: () => focusIndex = painter.deleteChord(focusIndex),
+                // home
+                36: () => focusIndex = painter.setChordFocus(-1),
+                // end
+                35: () => focusIndex = painter.setChordFocus(99999999999), // backoffice style!
             };
 
-            if (keyEvent.keyCode in handlers) {
+            if (playing) {
+                player.stop();
+                playing = false;
+            } else if (keyEvent.keyCode in handlers) {
                 handlers[keyEvent.keyCode]();
             }
         };

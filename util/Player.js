@@ -138,8 +138,6 @@ Util.Player = function ($controlCont)
     /** @TODO: move format normalization into separate class */
     var playStandardMidiFile = function (smf, fileInfo, whenFinished)
     {
-        stop();
-
         whenFinished = whenFinished || ((_) => {});
 
         /** @TODO: handle _all_ tempo events, not just first. Should be easy once speed change by user is implemented */
@@ -185,6 +183,7 @@ Util.Player = function ($controlCont)
         playShmidusic: playShmidusic,
         playStandardMidiFile: playStandardMidiFile,
         addNoteHandler: h => noteHandlers.push(h),
-        addConfigConsumer: cc => (configConsumer = cc)
+        addConfigConsumer: cc => (configConsumer = cc),
+        stop: () => currentPlayback && currentPlayback.pause(),
     };
 };

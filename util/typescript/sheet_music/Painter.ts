@@ -257,10 +257,12 @@ Ns.SheetMusicPainter = function(parentId: string)
         }
     };
 
-    var getChordList = function(): IShmidusicChord[]
+    var getChordList = function(startIndex?: number): IShmidusicChord[]
     {
-        // problems?
+        startIndex = startIndex || 0;
+
         return $chordListCont.children().toArray()
+            .slice(startIndex)
             .map((c) => 1 && {
                 noteList: $(c).children('.noteCanvas').toArray()
                     .map((n) => 1 && {
