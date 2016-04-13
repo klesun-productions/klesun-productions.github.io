@@ -172,46 +172,6 @@ Ns.SheetMusicPainter = function(parentId: string)
         });
     };
 
-    /** adds a chord element _at_ the index. or to the end, if index not provided */
-    var addChord = function(chord: IShmidusicChord, index?: number): void
-    {
-        index = index || $chordListCont.children().length;
-
-        var $chord = makeChordSpan(chord);
-
-        if (index <= 0) {
-            $chordListCont.prepend($chord);
-        } else if (index >= $chordListCont.children().length) {
-            $chordListCont.append($chord);
-        } else {
-            $chordListCont.children(':eq(' + index + ')').before($chord);
-        }
-    };
-
-    /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
-    var addNote = function(note: IShNote, chordIndex?: number): void
-    {
-        chordIndex = chordIndex || $chordListCont.children().length - 1;
-
-        var $note = makeNoteCanvas(note);
-
-        $chordListCont.children(':eq(' + chordIndex + ')').append($note);
-    };
-
-    var getChordList = function(): IShmidusicChord[]
-    {
-        // problems?
-        return $chordListCont.children().toArray()
-            .map((c) => 1 && {
-                noteList: $(c).children('.noteCanvas').toArray()
-                    .map((n) => 1 && {
-                        tune: +$(n).attr('data-tune'),
-                        channel: +$(n).attr('data-channel'),
-                        length: +$(n).attr('data-length')
-                    })
-            });
-    }
-
     var scrollToIfNeeded = function(chordEl: HTMLElement)
     {
         /** @TODO: it does not take into account window scroll prostion
@@ -237,6 +197,8 @@ Ns.SheetMusicPainter = function(parentId: string)
         /** @TODO: put some limit in miliseconds, how often it can be updated, cuz
          * there are some ridiculously compact songs that are screwed because of performance:
          * "0_c1_Final Fantasy XII - Desperate Fight.mid" */
+        // upd.: performance lacked not because of too many operations,
+        // but because the scroll pane was ridiculously long
 
         var chord = $chordListCont.children()[chordIndex];
         chord && scrollToIfNeeded(chord);
@@ -247,6 +209,78 @@ Ns.SheetMusicPainter = function(parentId: string)
         $note.addClass('sounding');
 
         return () => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
+    };
+
+    /** @return the focused index after applying bounds */
+    var setChordFocus = function(index: number): number
+    {
+        var $chords = $chordListCont.children();
+        index = Math.min($chords.length - 1, Math.max(-1, index));
+
+        var chord = $chords[index];
+        chord && scrollToIfNeeded(chord);
+
+        $chordListCont.children('.focused').removeClass('focused');
+        $(chord).addClass('focused');
+
+        return index;
+    };
+
+    /** adds a chord element _at_ the index. or to the end, if index not provided */
+    var addChord = function(chord: IShmidusicChord, index: number): number
+    {
+        var $chord = makeChordSpan(chord);
+
+        if (index <= 0) {
+            $chordListCont.prepend($chord);
+        } else if (index >= $chordListCont.children().length) {
+            $chordListCont.append($chord);
+        } else {
+            $chordListCont.children(':eq(' + index + ')').before($chord);
+        }
+
+        return setChordFocus(index);
+    };
+
+    /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
+    var addNote = function(note: IShNote, chordIndex?: number): void
+    {
+        chordIndex = chordIndex || $chordListCont.children().length - 1;
+        var $chord = $chordListCont.children(':eq(' + chordIndex + ')');
+
+        var selector = '.noteCanvas' +
+            '[data-tune="' + note.tune + '"]' +
+            '[data-channel="' + note.channel + '"]';
+
+        if ($chord.children(selector).length === 0) {
+            $chord.append(makeNoteCanvas(note));
+        }
+    };
+
+    var getChordList = function(): IShmidusicChord[]
+    {
+        // problems?
+        return $chordListCont.children().toArray()
+            .map((c) => 1 && {
+                noteList: $(c).children('.noteCanvas').toArray()
+                    .map((n) => 1 && {
+                        tune: +$(n).attr('data-tune'),
+                        channel: +$(n).attr('data-channel'),
+                        length: +$(n).attr('data-length')
+                    })
+            });
+    };
+
+    /** @return the focused index after applying bounds */
+    var deleteChord = function(index: number): number
+    {
+        var $chords = $chordListCont.children();
+
+        if (index >= 0 && index < $chords.length) {
+            $($chords[index]).remove();
+        }
+
+        return setChordFocus(index);
     };
 
     var drawSystemHorizontalLines = function(ctx: CanvasRenderingContext2D)
@@ -363,6 +397,8 @@ Ns.SheetMusicPainter = function(parentId: string)
         addChord: addChord,
         addNote: addNote,
         getChordList: getChordList,
+        setChordFocus: setChordFocus,
+        deleteChord: deleteChord,
     };
 };
 

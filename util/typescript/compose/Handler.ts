@@ -16,6 +16,9 @@ Ns.Compose.Handler = function(contId: string): void
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
     player.addNoteHandler({ handleNoteOn: (n: IShNote) => synth.playNote(n.tune, n.channel) });
+    player.addNoteHandler(painter);
+
+    var focusIndex = -1;
 
     var handleNoteOn = function(semitone: number, receivedTime: number)
     {
@@ -26,12 +29,52 @@ Ns.Compose.Handler = function(contId: string): void
         };
 
         if (receivedTime - lastNoteOn < 100) {
-            painter.addNote(note); // TODO: ensure same note not added more than once!
+            painter.addNote(note, focusIndex);
         } else {
-            painter.addChord({noteList: [note]});
+            focusIndex = painter.addChord({noteList: [note]}, focusIndex + 1);
         }
 
         lastNoteOn = receivedTime;
+    };
+
+    var play = function(): void
+    {
+        var chordList = painter.getChordList();
+
+        var song: IShmidusicStructure = {staffList: [{
+            staffConfig: {
+                tempo: 120,
+                keySignature: 0,
+                numerator: 8,
+                channelList: []
+            },
+            chordList: chordList
+        }]};
+
+        player.playShmidusic(song);
+    };
+
+    var hangKeyboardHandlers = function(): void
+    {
+        document.onkeydown = function(keyEvent: KeyboardEvent)
+        {
+            console.log('Key Event: ', keyEvent);
+
+            var handlers: { [code: number]: { (): void } } = {
+                // space
+                32: play,
+                // left arrow
+                37: () => focusIndex = painter.setChordFocus(focusIndex - 1),
+                // right arrow
+                39: () => focusIndex = painter.setChordFocus(focusIndex + 1),
+                // delete
+                46: () => focusIndex = painter.deleteChord(focusIndex),
+            };
+
+            if (keyEvent.keyCode in handlers) {
+                handlers[keyEvent.keyCode]();
+            }
+        };
     };
 
     var handleMidiEvent = function (message: MIDIMessageEvent) {
@@ -71,34 +114,6 @@ Ns.Compose.Handler = function(contId: string): void
             console.log("No MIDI support in your browser.");
         }
 
-    };
-
-    var play = function(): void
-    {
-        var chordList = painter.getChordList();
-
-        var song: IShmidusicStructure = {staffList: [{
-            staffConfig: {
-                tempo: 120,
-                keySignature: 0,
-                numerator: 8,
-                channelList: []
-            },
-            chordList: chordList
-        }]};
-
-        player.playShmidusic(song);
-    };
-
-    var hangKeyboardHandlers = function(): void
-    {
-        document.onkeyup = function(keyEvent: KeyboardEvent)
-        {
-            // space
-            if (keyEvent.charCode = 32) {
-                play();
-            }
-        };
     };
 
     hangMidiHandlers();
