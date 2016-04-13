@@ -52,6 +52,25 @@ Ns.SheetMusicPainter = function(parentId: string)
     // tuple: 16 channels
     var flatSignCache: HTMLCanvasElement[] = [];
 
+    var getNoteImage = function(length: number, channel: number): HTMLCanvasElement
+    {
+        // well, hack, but...
+        var lengthStr = typeof length === 'number'
+            ? Shmidusicator.guessLength(length).apacheStr()
+            : length;
+
+        if (!noteCanvasCache[channel][lengthStr]) {
+            noteCanvasCache[channel][lengthStr] = <HTMLCanvasElement>$('<canvas></canvas>canvas>')
+                .attr('width', DX * 2)
+                .attr('height', NOTE_CANVAS_HEIGHT + R)
+                [0];
+
+            Ns.ShapeProvider(noteCanvasCache[channel][lengthStr].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(channel, lengthStr);
+        }
+
+        return noteCanvasCache[channel][lengthStr];
+    };
+
     var makeNoteCanvas = function(note: IShNote)
     {
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
@@ -74,20 +93,7 @@ Ns.SheetMusicPainter = function(parentId: string)
 
         var ctx = noteCanvas.getContext('2d');
 
-        // well, hack, but...
-        var length = typeof note.length === 'number'
-            ? Shmidusicator.guessLength(note.length).apacheStr()
-            : note.length;
-
-        if (!noteCanvasCache[note.channel][length]) {
-            noteCanvasCache[note.channel][length] = <HTMLCanvasElement>$('<canvas></canvas>canvas>')
-                .attr('width', noteCanvas.width)
-                .attr('height', noteCanvas.height)
-                [0];
-
-            Ns.ShapeProvider(noteCanvasCache[note.channel][length].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(note.channel, length);
-        }
-        ctx.drawImage(noteCanvasCache[note.channel][length], 0, 0);
+        ctx.drawImage(getNoteImage(note.length, note.channel), 0, 0);
 
         if (isEbony) {
             /** @TODO: here lies a bug - all cached flats have same color, black, since you don't change it while drawing
@@ -192,14 +198,10 @@ Ns.SheetMusicPainter = function(parentId: string)
         }
     };
 
+    // TODO: likely all these dom-manipulating methods could be moved from Painter somewhere else
+
     var setNoteFocus = function(note: IShNote, chordIndex: number)
     {
-        /** @TODO: put some limit in miliseconds, how often it can be updated, cuz
-         * there are some ridiculously compact songs that are screwed because of performance:
-         * "0_c1_Final Fantasy XII - Desperate Fight.mid" */
-        // upd.: performance lacked not because of too many operations,
-        // but because the scroll pane was ridiculously long
-
         var chord = $chordListCont.children()[chordIndex];
         chord && scrollToIfNeeded(chord);
 
@@ -220,10 +222,29 @@ Ns.SheetMusicPainter = function(parentId: string)
         var chord = $chords[index];
         chord && scrollToIfNeeded(chord);
 
+        $chordListCont.find('.focused .pointed').removeClass('pointed');
         $chordListCont.children('.focused').removeClass('focused');
         $(chord).addClass('focused');
 
         return index;
+    };
+
+    var pointNextNote = function(): void
+    {
+        var getOrder = (note: any) =>
+            + +$(note).attr('data-tune') * 16
+            + +$(note).attr('data-channel');
+
+        var notes = $chordListCont.find('.focused .noteCanvas').toArray()
+            .sort((a,b) => getOrder(a) - getOrder(b));
+
+        var pointed = $chordListCont.find('.focused .pointed')[0];
+        var index = pointed ? notes.indexOf(pointed) + 1 : 0;
+
+        $chordListCont.find('.pointed').removeClass('pointed');
+        if (index < notes.length) {
+            $(notes[index]).addClass('pointed');
+        }
     };
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
@@ -284,6 +305,24 @@ Ns.SheetMusicPainter = function(parentId: string)
 
         return setChordFocus(index);
     };
+
+    var multiplyLength = (factor: number) => $chordListCont
+        .find('.focused .pointed')
+        .toArray()
+        .forEach((note: HTMLCanvasElement) =>
+    {
+        var length = +$(note).attr('data-length') * factor,
+            channel = +$(note).attr('data-channel');
+
+        $(note).attr('data-length', length);
+
+        // TODO: проёбывается бемоль
+        // TODO: границу надобно поставить
+
+        note.getContext('2d').clearRect(0,0,note.width,note.height);
+        note.getContext('2d').drawImage(getNoteImage(length, channel), 0, 0);
+
+    });
 
     var drawSystemHorizontalLines = function(ctx: CanvasRenderingContext2D)
     {
@@ -359,8 +398,11 @@ Ns.SheetMusicPainter = function(parentId: string)
                 position: 'absolute'
             },
             '.noteCanvas.sounding': {
-                'background-color': 'rgba(0,0,255,0.4)',
+                // 'background-color': 'rgba(0,0,255,0.4)', // likely unused
                 'background': 'linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(0,0,255,0.2) 10%)'
+            },
+            '.noteCanvas.pointed': {
+                'background': 'linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(0,255,0,0.6) 10%)'
             },
         };
 
@@ -400,7 +442,9 @@ Ns.SheetMusicPainter = function(parentId: string)
         addNote: addNote,
         getChordList: getChordList,
         setChordFocus: setChordFocus,
+        pointNextNote: pointNextNote,
         deleteChord: deleteChord,
+        multiplyLength: multiplyLength,
     };
 };
 

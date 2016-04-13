@@ -16,13 +16,15 @@ Ns.Compose.Handler = function(contId: string): void
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
 
-    var focusIndex = -1;
+    // TODO: maybe using the dom class to select
+    // instead of numeric index would make sense
+    var chordFocusIndex = -1;
     var playing = false;
 
     player.addNoteHandler({
         handleNoteOn: (n: IShNote, i: number) => [
             synth.playNote(n.tune, n.channel),
-            painter.handleNoteOn(n, i + focusIndex + 1),
+            painter.handleNoteOn(n, i + chordFocusIndex + 1),
         ].reduce((offs,off) => () => { offs(); off(); })
     });
     // player.addNoteHandler(painter);
@@ -37,9 +39,9 @@ Ns.Compose.Handler = function(contId: string): void
 
         if (!playing) {
             if (receivedTime - lastNoteOn < 100) {
-                painter.addNote(note, focusIndex);
+                painter.addNote(note, chordFocusIndex);
             } else {
-                focusIndex = painter.addChord({noteList: [note]}, focusIndex + 1);
+                chordFocusIndex = painter.addChord({noteList: [note]}, chordFocusIndex + 1);
             }
 
             lastNoteOn = receivedTime;
@@ -51,8 +53,8 @@ Ns.Compose.Handler = function(contId: string): void
 
     var play = function(): void
     {
-        focusIndex = painter.setChordFocus(focusIndex - 1);
-        var chordList = painter.getChordList(focusIndex + 1);
+        chordFocusIndex = painter.setChordFocus(chordFocusIndex - 1);
+        var chordList = painter.getChordList(chordFocusIndex + 1);
 
         var song: IShmidusicStructure = {staffList: [{
             staffConfig: {
@@ -78,15 +80,21 @@ Ns.Compose.Handler = function(contId: string): void
                 // space
                 32: play,
                 // left arrow
-                37: () => focusIndex = painter.setChordFocus(focusIndex - 1),
+                37: () => chordFocusIndex = painter.setChordFocus(chordFocusIndex - 1),
                 // right arrow
-                39: () => focusIndex = painter.setChordFocus(focusIndex + 1),
+                39: () => chordFocusIndex = painter.setChordFocus(chordFocusIndex + 1),
                 // delete
-                46: () => focusIndex = painter.deleteChord(focusIndex),
+                46: () => chordFocusIndex = painter.deleteChord(chordFocusIndex),
                 // home
-                36: () => focusIndex = painter.setChordFocus(-1),
+                36: () => chordFocusIndex = painter.setChordFocus(-1),
                 // end
-                35: () => focusIndex = painter.setChordFocus(99999999999), // backoffice style!
+                35: () => chordFocusIndex = painter.setChordFocus(99999999999), // backoffice style!
+                // shift
+                16: () => painter.pointNextNote(),
+                // opening square bracket
+                219: () => painter.multiplyLength(0.5),
+                // closing square bracket
+                221: () => painter.multiplyLength(2),
             };
 
             if (playing) {
