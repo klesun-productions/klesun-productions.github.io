@@ -63,8 +63,8 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
     var pointNextNote = function(): void
     {
         var getOrder = (note: any) =>
-        + +$(note).attr('data-tune') * 16
-        + +$(note).attr('data-channel');
+            + +$(note).attr('data-tune') * 16
+            + +$(note).attr('data-channel');
 
         var notes = $chordListCont.find('.focused .noteCanvas').toArray()
             .sort((a,b) => getOrder(a) - getOrder(b));
@@ -110,12 +110,13 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
     };
 
     /** @return the focused index after applying bounds */
-    var deleteChord = function(): number
+    var deleteFocused = function(): void
     {
-        var index = $chordListCont.find('.focused').index();
-        $chordListCont.find('.focused').remove();
-
-        return setChordFocus(index);
+        if (!$chordListCont.find('.focused .pointed').remove().length) {
+            var chordIndex = $chordListCont.find('.focused').index();
+            $chordListCont.find('.focused').remove();
+            setChordFocus(chordIndex);
+        }
     };
 
     var multiplyLength = (factor: number) => $chordListCont
@@ -141,7 +142,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         moveChordFocus: (sign: number) =>
             setChordFocus($chordListCont.find('.focused').index() + sign),
         pointNextNote: pointNextNote,
-        deleteChord: deleteChord,
+        deleteFocused: deleteFocused,
         addChord: addChord,
         addNote: addNote,
         multiplyLength: multiplyLength,
@@ -153,7 +154,7 @@ interface IControl {
     setChordFocus: {(index: number): number},
     moveChordFocus: {(sign: number): number},
     pointNextNote: {(): void},
-    deleteChord: {(): number},
+    deleteFocused: {(): void},
     addChord: {(chord: IShmidusicChord): number},
     addNote: {(note: IShNote): void},
     multiplyLength: {(factor: number): void},

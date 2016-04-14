@@ -72,6 +72,8 @@ Util.Player = function ($controlCont)
 
 		control.setPlayback(playback);
 
+        // TODO: just stop, no need to resume
+
         document.removeEventListener('visibilitychange', tabSwitched);
 		tabSwitched = function(e)
 		{

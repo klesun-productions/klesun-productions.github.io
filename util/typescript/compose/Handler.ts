@@ -89,7 +89,7 @@ Ns.Compose.Handler = function(contId: string): void
                 // right arrow
                 39: () => control.moveChordFocus(+1),
                 // delete
-                46: () => control.deleteChord(),
+                46: () => control.deleteFocused(),
                 // home
                 36: () => control.setChordFocus(-1),
                 // end

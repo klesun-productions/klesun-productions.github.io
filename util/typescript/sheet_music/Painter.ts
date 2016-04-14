@@ -63,7 +63,8 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
                 .attr('height', NOTE_CANVAS_HEIGHT + R)
                 [0];
 
-            Ns.ShapeProvider(noteCanvasCache[channel][lengthStr].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1).drawNote(channel, lengthStr);
+            Ns.ShapeProvider(noteCanvasCache[channel][lengthStr].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1)
+                .drawNote(channel, lengthStr);
         }
 
         return noteCanvasCache[channel][lengthStr];
