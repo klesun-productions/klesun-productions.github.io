@@ -1,0 +1,73 @@
+<head>
+    <meta charset="utf-8"/>
+    <script src="/util/flowOut/Linker.js"></script>
+    <script src="/util/flowOut/GoogleTranslateAdapter.js"></script>
+    <script src="/libs/jquery-2.1.4.js"></script>
+</head>
+
+<body style="background-color: grey">
+
+<div style="background-color: white">
+    <object class="indexReadme" data="README.txt"></object>
+</div>
+
+<script>
+
+var eng = rus = pol = null;
+
+// var loaded = function()
+// {
+//     console.log('all translations loaded');
+//     console.log({text: rus});
+//     console.log({text: eng});
+//     console.log({text: pol});
+//
+//     var maybeLinked = Ns.Linker([eng, rus, pol]);
+//     console.log(maybeLinked);
+// };
+//
+// $.get('/unversioned/wedmin/wedmin_last_wish_eng.txt', t => (eng = t) && rus && pol && loaded());
+// $.get('/unversioned/wedmin/wedmin_last_wish_rus.txt', t => eng && (rus = t) && pol && loaded());
+// $.get('/unversioned/wedmin/wedmin_last_wish_pol.txt', t => eng && rus && (pol = t) && loaded());
+
+// it is like simple json, but allows [,'a',,'b',]
+var parseGoogleJson = function(gjsonText)
+{
+    var noTrailingComas = gjsonText
+        // it is not typo, it's required twice ["a",,,"b"]
+        .replace(/,,/g, ',null,')
+        .replace(/,,/g, ',null,')
+        .replace(/\[,/g, '[null,');
+
+    return JSON.parse(noTrailingComas);
+};
+
+var dictLoaded = function(dictJsonText)
+{
+    console.log('dict loaded ' + dictJsonText.length);
+    var parsed = JSON.parse(dictJsonText);
+    var chunks = parsed.log.entries
+        .filter(e => e.response.content.mimeType === 'application/json')
+        .map(e => e.response.content.text)
+        .map(parseGoogleJson);
+
+    var adapted = Ns.GoogleTranslateAdapter(chunks);
+
+    console.log(adapted);
+};
+
+$.get('/unversioned/wedmin/translate.google.ru_wedmin_eng_ru_detailed_fixed_better.har.txt', a => dictLoaded(a));
+
+</script>
+
+</body>
+
+<style>
+
+.indexReadme {
+    background-color: #cfc;
+    width: 100%;
+    height: 100px;
+}
+
+</style>
