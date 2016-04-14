@@ -3,47 +3,45 @@
 
 var Ns = Ns || {};
 
-Ns.SheetMusicPainter = function(parentId: string)
+Ns.TactMeasurer = function(tactSize: number)
 {
-    var R = 3; // semibreve note oval vertical radius
+    var sumFraction = 0;
+    var tactNumber = 0;
+
+    var inject = function(chordLength: number)
+    {
+        sumFraction += chordLength;
+
+        var finishedTact = false;
+        while (+sumFraction.toFixed(8) >= tactSize) {
+            sumFraction -= tactSize;
+            finishedTact = true;
+            ++tactNumber;
+        }
+
+        return finishedTact;
+    };
+
+    return {
+        inject: inject,
+        hasRest: () => +sumFraction.toFixed(8) > 0,
+        tactNumber: () => tactNumber,
+        getRest: () => sumFraction
+    };
+};
+
+interface ICanvasProvider {
+    getNoteImage: { (l: number, c: number): HTMLCanvasElement },
+    makeNoteCanvas: { (n: IShNote): HTMLCanvasElement },
+    makeChordSpan: { (c: IShmidusicChord): JQuery },
+};
+
+/** @param R - semibreve note oval vertical radius */
+Ns.CanvasProvider = function(R: number): ICanvasProvider
+{
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     var NOTE_CANVAS_HEIGHT = R * 9;
-
-    var $parentEl = $('#' + parentId);
-
-    var enabled = false;
-
-    var $chordListCont =  $('<div class="chordListCont"></div>');
-    $parentEl.append($chordListCont);
-
-    /** @param float tactSize */
-    var TactMeasurer = function(tactSize: number)
-    {
-        var sumFraction = 0;
-        var tactNumber = 0;
-
-        var inject = function(chordLength: number)
-        {
-            sumFraction += chordLength;
-
-            var finishedTact = false;
-            while (+sumFraction.toFixed(8) >= tactSize) {
-                sumFraction -= tactSize;
-                finishedTact = true;
-                ++tactNumber;
-            }
-
-            return finishedTact;
-        };
-
-        return {
-            inject: inject,
-            hasRest: () => +sumFraction.toFixed(8) > 0,
-            tactNumber: () => tactNumber,
-            getRest: () => sumFraction
-        };
-    };
 
     // tuple: 16 channels, ~14 lengths each (6 (1/32 .. 1/1) * 2 (triplets) * 2 (dots))
     var noteCanvasCache: Array<{ [lenFra: string]: HTMLCanvasElement }> = [
@@ -71,7 +69,7 @@ Ns.SheetMusicPainter = function(parentId: string)
         return noteCanvasCache[channel][lengthStr];
     };
 
-    var makeNoteCanvas = function(note: IShNote)
+    var makeNoteCanvas = function(note: IShNote): HTMLCanvasElement
     {
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
         var ivoryIndex = !isEbony
@@ -109,10 +107,10 @@ Ns.SheetMusicPainter = function(parentId: string)
             ctx.drawImage(flatSignCache[note.channel], 0, 0);
         }
 
-        return $(noteCanvas);
+        return noteCanvas;
     };
 
-    var makeChordSpan = function(chord: IShmidusicChord)
+    var makeChordSpan = function(chord: IShmidusicChord): JQuery
     {
         var $chordSpan = $('<span style="position: relative;"></span>')
             .append($('<span class="tactNumberCont"></span>'));
@@ -124,6 +122,29 @@ Ns.SheetMusicPainter = function(parentId: string)
 
         return $chordSpan;
     };
+
+    return {
+        getNoteImage: getNoteImage,
+        makeNoteCanvas: makeNoteCanvas,
+        makeChordSpan: makeChordSpan,
+    };
+};
+
+Ns.SheetMusicPainter = function(parentId: string): IPainter
+{
+    var R = 3; // semibreve note oval vertical radius
+    var DX = R * 5; // half of chord span width
+    var Y_STEPS_PER_SYSTEM = 40;
+
+    var $parentEl = $('#' + parentId);
+
+    var enabled = false;
+
+    var $chordListCont =  $('<div class="chordListCont"></div>');
+    $parentEl.append($chordListCont);
+
+    var canvaser: ICanvasProvider = Ns.CanvasProvider(R);
+    var control: IControl = Ns.Compose.Control($chordListCont, canvaser);
 
     var toFloat = (fractionString: string) => eval(fractionString);
     var interruptDrawing = () => {};
@@ -144,7 +165,7 @@ Ns.SheetMusicPainter = function(parentId: string)
 
         var staff = song.staffList[0];
 
-        var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
+        var tacter = Ns.TactMeasurer(staff.staffConfig.numerator / 8);
         interruptDrawing = Util.forEachBreak(staff.chordList, 200, 200, (chord: IShmidusicChord) =>
         {
             var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length.toString())));
@@ -162,7 +183,7 @@ Ns.SheetMusicPainter = function(parentId: string)
                 return;
             }
 
-            var $span = makeChordSpan(chord);
+            var $span = canvaser.makeChordSpan(chord);
             if (finishedTact) {
                 $span.find('.tactNumberCont').html(tacter.tactNumber().toString());
                 $span.addClass('tactFinisher');
@@ -178,105 +199,7 @@ Ns.SheetMusicPainter = function(parentId: string)
         });
     };
 
-    var scrollToIfNeeded = function(chordEl: HTMLElement)
-    {
-        /** @TODO: it does not take into account window scroll prostion
-         * scroll window heavily to the buttom and play, say, elfen lied */
-
-        var chordRect = chordEl.getBoundingClientRect();
-        var scrollPaneRect = $parentEl[0].getBoundingClientRect();
-
-        var isVisible = chordRect.top >= scrollPaneRect.top &&
-            chordRect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
-
-        if (!isVisible) {
-            var top = $(chordEl).offset().top -
-                $parentEl.offset().top +
-                $parentEl.scrollTop();
-
-            $parentEl.scrollTop(top);
-        }
-    };
-
     // TODO: likely all these dom-manipulating methods could be moved from Painter somewhere else
-
-    /** @return the focused index after applying bounds */
-    var setChordFocus = function(index: number): number
-    {
-        var $chords = $chordListCont.children();
-        index = Math.min($chords.length - 1, Math.max(-1, index));
-
-        var chord = $chords[index];
-        chord && scrollToIfNeeded(chord);
-
-        $chordListCont.find('.focused .pointed').removeClass('pointed');
-        $chordListCont.children('.focused').removeClass('focused');
-        $(chord).addClass('focused');
-
-        return index;
-    };
-
-    var setNoteFocus = function(note: IShNote, chordIndex: number)
-    {
-        var chord = $chordListCont.children()[chordIndex];
-        chord && scrollToIfNeeded(chord);
-
-        setChordFocus(chordIndex);
-
-        var $note = $(chord).find('.noteCanvas[data-tune="' + note.tune + '"][data-channel="' + note.channel + '"]');
-        $note.addClass('sounding');
-
-        return () => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
-    };
-
-    var pointNextNote = function(): void
-    {
-        var getOrder = (note: any) =>
-            + +$(note).attr('data-tune') * 16
-            + +$(note).attr('data-channel');
-
-        var notes = $chordListCont.find('.focused .noteCanvas').toArray()
-            .sort((a,b) => getOrder(a) - getOrder(b));
-
-        var pointed = $chordListCont.find('.focused .pointed')[0];
-        var index = pointed ? notes.indexOf(pointed) + 1 : 0;
-
-        $chordListCont.find('.pointed').removeClass('pointed');
-        if (index < notes.length) {
-            $(notes[index]).addClass('pointed');
-        }
-    };
-
-    /** adds a chord element _at_ the index. or to the end, if index not provided */
-    var addChord = function(chord: IShmidusicChord): number
-    {
-        var index = $chordListCont.find('.focused').index() + 1;
-        var $chord = makeChordSpan(chord);
-
-        if (index <= 0) {
-            $chordListCont.prepend($chord);
-        } else if (index >= $chordListCont.children().length) {
-            $chordListCont.append($chord);
-        } else {
-            $chordListCont.children(':eq(' + index + ')').before($chord);
-        }
-
-        return setChordFocus(index);
-    };
-
-    /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
-    var addNote = function(note: IShNote): void
-    {
-        var $chord = $chordListCont.find('.focused');
-
-        var selector = '.noteCanvas' +
-            '[data-tune="' + note.tune + '"]' +
-            '[data-channel="' + note.channel + '"]';
-
-        if ($chord.children(selector).length === 0) {
-            $chord.append(makeNoteCanvas(note));
-        }
-    };
 
     var getChordList = function(startIndex?: number): IShmidusicChord[]
     {
@@ -293,33 +216,6 @@ Ns.SheetMusicPainter = function(parentId: string)
                     })
             });
     };
-
-    /** @return the focused index after applying bounds */
-    var deleteChord = function(): number
-    {
-        var index = $chordListCont.find('.focused').index();
-        $chordListCont.find('.focused').remove();
-
-        return setChordFocus(index);
-    };
-
-    var multiplyLength = (factor: number) => $chordListCont
-        .find('.focused .pointed')
-        .toArray()
-        .forEach((note: HTMLCanvasElement) =>
-    {
-        var length = +$(note).attr('data-length') * factor,
-            channel = +$(note).attr('data-channel');
-
-        $(note).attr('data-length', length);
-
-        // TODO: проёбывается бемоль
-        // TODO: границу надобно поставить, а то пользователь не видит когда делает длиннее 1/1 или короче 1/32
-
-        note.getContext('2d').clearRect(0,0,note.width,note.height);
-        note.getContext('2d').drawImage(getNoteImage(length, channel), 0, 0);
-
-    });
 
     var drawSystemHorizontalLines = function(ctx: CanvasRenderingContext2D)
     {
@@ -423,7 +319,7 @@ Ns.SheetMusicPainter = function(parentId: string)
 
     return {
         draw: draw,
-        handleNoteOn: setNoteFocus,
+        handleNoteOn: control.setNoteFocus,
         setEnabled: function(val: boolean)
         {
             if (enabled = val) {
@@ -435,18 +331,19 @@ Ns.SheetMusicPainter = function(parentId: string)
                 $chordListCont.empty();
             }
         },
-        addChord: addChord,
-        addNote: addNote,
         getChordList: getChordList,
-        setChordFocus: setChordFocus,
-        moveChordFocus: (sign: number) =>
-            setChordFocus($chordListCont.find('.focused').index() + sign),
-        pointNextNote: pointNextNote,
-        deleteChord: deleteChord,
-        multiplyLength: multiplyLength,
         setIsPlaying: (flag: boolean) => (flag
             ? $parentEl.addClass('playing')
             : $parentEl.removeClass('playing')),
+        getControl: () => control,
     };
 };
 
+interface IPainter {
+    draw: { (song: IShmidusicStructure): void },
+    handleNoteOn: { (note: IShNote, chordIndex: number): void },
+    setEnabled: { (v: boolean): void },
+    getChordList: { (start: number): IShmidusicChord[] },
+    setIsPlaying: { (flag: boolean): void },
+    getControl: { (): IControl },
+}

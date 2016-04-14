@@ -10,7 +10,7 @@ Ns.Compose = Ns.Compose || {};
 
 Ns.Compose.Handler = function(contId: string): void
 {
-    var painter = Ns.SheetMusicPainter(contId);
+    var painter: IPainter = Ns.SheetMusicPainter(contId);
     painter.setEnabled(true);
     var lastNoteOn = 0;
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
@@ -41,9 +41,9 @@ Ns.Compose.Handler = function(contId: string): void
 
         if (!playback) {
             if (receivedTime - lastNoteOn < 100) {
-                painter.addNote(note);
+                painter.getControl().addNote(note);
             } else {
-                painter.addChord({noteList: [note]});
+                painter.getControl().addChord({noteList: [note]});
             }
 
             lastNoteOn = receivedTime;
@@ -55,7 +55,7 @@ Ns.Compose.Handler = function(contId: string): void
 
     var play = function(): void
     {
-        var startedAt = painter.moveChordFocus(-1);
+        var startedAt = painter.getControl().moveChordFocus(-1);
         var chordList = painter.getChordList(startedAt + 1);
         playback = {startedAt: startedAt};
 
@@ -79,25 +79,27 @@ Ns.Compose.Handler = function(contId: string): void
         {
             console.log('Key Event: ', keyEvent);
 
+            var control = painter.getControl();
+
             var handlers: { [code: number]: { (): void } } = {
                 // space
                 32: play,
                 // left arrow
-                37: () => painter.moveChordFocus(-1),
+                37: () => control.moveChordFocus(-1),
                 // right arrow
-                39: () => painter.moveChordFocus(+1),
+                39: () => control.moveChordFocus(+1),
                 // delete
-                46: () => painter.deleteChord(),
+                46: () => control.deleteChord(),
                 // home
-                36: () => painter.setChordFocus(-1),
+                36: () => control.setChordFocus(-1),
                 // end
-                35: () => painter.setChordFocus(99999999999), // backoffice style!
+                35: () => control.setChordFocus(99999999999), // backoffice style!
                 // shift
-                16: () => painter.pointNextNote(),
+                16: () => control.pointNextNote(),
                 // opening square bracket
-                219: () => painter.multiplyLength(0.5),
+                219: () => control.multiplyLength(0.5),
                 // closing square bracket
-                221: () => painter.multiplyLength(2),
+                221: () => control.multiplyLength(2),
             };
 
             if (playback) {
