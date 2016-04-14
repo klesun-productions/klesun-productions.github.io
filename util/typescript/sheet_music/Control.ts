@@ -119,22 +119,34 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         }
     };
 
-    var multiplyLength = (factor: number) => $chordListCont
-        .find('.focused .pointed')
-        .toArray()
-        .forEach((note: HTMLCanvasElement) =>
-        {
-            var length = +$(note).attr('data-length') * factor,
-                channel = +$(note).attr('data-channel');
+    var multiplyNoteLength = function(note: HTMLCanvasElement, factor: number): void
+    {
+        var noteInfo = canvaser.extractNote(note);
+        $(note).attr('data-length', noteInfo.length *= factor);
 
-            $(note).attr('data-length', length);
+        var newCanvas = canvaser.makeNoteCanvas(noteInfo);
+        note.getContext('2d').clearRect(0,0,999999,999999);
+        note.getContext('2d').drawImage(newCanvas, 0, 0);
+    };
 
-            // TODO: проёбывается бемоль
-            // TODO: границу надобно поставить, а то пользователь не видит когда делает длиннее 1/1 или короче 1/32
+    var multiplyLength = function(factor: number)
+    {
+        var okLength = (n: HTMLCanvasElement) => 1
+            && (+$(n).attr('data-length') * factor <= 1.0)
+            && (+$(n).attr('data-length') * factor >= 1/32);
 
-            note.getContext('2d').clearRect(0,0,note.width,note.height);
-            note.getContext('2d').drawImage(canvaser.getNoteImage(length, channel), 0, 0);
-        });
+        var $chord = $chordListCont.find('.focused'),
+            note: HTMLCanvasElement;
+
+        if (note = <HTMLCanvasElement>$chord.find('.pointed')[0]) {
+            okLength(note) &&
+            multiplyNoteLength(note, factor);
+        } else {
+            var notes = $chord.children('.noteCanvas').toArray();
+            notes.every(okLength) &&
+            notes.forEach(n => multiplyNoteLength(n, factor));
+        }
+    }
 
     return {
         setNoteFocus: setNoteFocus,

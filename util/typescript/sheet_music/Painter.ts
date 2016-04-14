@@ -30,12 +30,6 @@ Ns.TactMeasurer = function(tactSize: number)
     };
 };
 
-interface ICanvasProvider {
-    getNoteImage: { (l: number, c: number): HTMLCanvasElement },
-    makeNoteCanvas: { (n: IShNote): HTMLCanvasElement },
-    makeChordSpan: { (c: IShmidusicChord): JQuery },
-};
-
 /** @param R - semibreve note oval vertical radius */
 Ns.CanvasProvider = function(R: number): ICanvasProvider
 {
@@ -128,7 +122,19 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
         getNoteImage: getNoteImage,
         makeNoteCanvas: makeNoteCanvas,
         makeChordSpan: makeChordSpan,
+        extractNote: (n: HTMLCanvasElement) => 1 && {
+            tune: +$(n).attr('data-tune'),
+            channel: +$(n).attr('data-channel'),
+            length: +$(n).attr('data-length')
+        },
     };
+};
+
+interface ICanvasProvider {
+    getNoteImage: { (l: number, c: number): HTMLCanvasElement },
+    makeNoteCanvas: { (n: IShNote): HTMLCanvasElement },
+    makeChordSpan: { (c: IShmidusicChord): JQuery },
+    extractNote: { (c: HTMLCanvasElement): IShNote },
 };
 
 Ns.SheetMusicPainter = function(parentId: string): IPainter
@@ -210,11 +216,7 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
             .slice(startIndex)
             .map((c) => 1 && {
                 noteList: $(c).children('.noteCanvas').toArray()
-                    .map((n) => 1 && {
-                        tune: +$(n).attr('data-tune'),
-                        channel: +$(n).attr('data-channel'),
-                        length: +$(n).attr('data-length')
-                    })
+                    .map(canvaser.extractNote)
             });
     };
 
