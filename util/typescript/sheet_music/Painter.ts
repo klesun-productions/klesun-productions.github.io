@@ -200,19 +200,6 @@ Ns.SheetMusicPainter = function(parentId: string)
 
     // TODO: likely all these dom-manipulating methods could be moved from Painter somewhere else
 
-    var setNoteFocus = function(note: IShNote, chordIndex: number)
-    {
-        var chord = $chordListCont.children()[chordIndex];
-        chord && scrollToIfNeeded(chord);
-
-        //$(chord).addClass('focused');
-
-        var $note = $(chord).find('.noteCanvas[data-tune="' + note.tune + '"][data-channel="' + note.channel + '"]');
-        $note.addClass('sounding');
-
-        return () => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
-    };
-
     /** @return the focused index after applying bounds */
     var setChordFocus = function(index: number): number
     {
@@ -227,6 +214,19 @@ Ns.SheetMusicPainter = function(parentId: string)
         $(chord).addClass('focused');
 
         return index;
+    };
+
+    var setNoteFocus = function(note: IShNote, chordIndex: number)
+    {
+        var chord = $chordListCont.children()[chordIndex];
+        chord && scrollToIfNeeded(chord);
+
+        setChordFocus(chordIndex);
+
+        var $note = $(chord).find('.noteCanvas[data-tune="' + note.tune + '"][data-channel="' + note.channel + '"]');
+        $note.addClass('sounding');
+
+        return () => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
     };
 
     var pointNextNote = function(): void
@@ -248,8 +248,9 @@ Ns.SheetMusicPainter = function(parentId: string)
     };
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
-    var addChord = function(chord: IShmidusicChord, index: number): number
+    var addChord = function(chord: IShmidusicChord): number
     {
+        var index = $chordListCont.find('.focused').index() + 1;
         var $chord = makeChordSpan(chord);
 
         if (index <= 0) {
@@ -264,10 +265,9 @@ Ns.SheetMusicPainter = function(parentId: string)
     };
 
     /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
-    var addNote = function(note: IShNote, chordIndex?: number): void
+    var addNote = function(note: IShNote): void
     {
-        chordIndex = chordIndex || $chordListCont.children().length - 1;
-        var $chord = $chordListCont.children(':eq(' + chordIndex + ')');
+        var $chord = $chordListCont.find('.focused');
 
         var selector = '.noteCanvas' +
             '[data-tune="' + note.tune + '"]' +
@@ -295,13 +295,10 @@ Ns.SheetMusicPainter = function(parentId: string)
     };
 
     /** @return the focused index after applying bounds */
-    var deleteChord = function(index: number): number
+    var deleteChord = function(): number
     {
-        var $chords = $chordListCont.children();
-
-        if (index >= 0 && index < $chords.length) {
-            $($chords[index]).remove();
-        }
+        var index = $chordListCont.find('.focused').index();
+        $chordListCont.find('.focused').remove();
 
         return setChordFocus(index);
     };
@@ -317,7 +314,7 @@ Ns.SheetMusicPainter = function(parentId: string)
         $(note).attr('data-length', length);
 
         // TODO: проёбывается бемоль
-        // TODO: границу надобно поставить
+        // TODO: границу надобно поставить, а то пользователь не видит когда делает длиннее 1/1 или короче 1/32
 
         note.getContext('2d').clearRect(0,0,note.width,note.height);
         note.getContext('2d').drawImage(getNoteImage(length, channel), 0, 0);
@@ -375,33 +372,33 @@ Ns.SheetMusicPainter = function(parentId: string)
                 'local',
                 'padding-left': DX * 3 + 'px',
             },
-            'div.chordListCont > span': {
+            ' div.chordListCont > span': {
                 display: 'inline-block',
                 height: ((Y_STEPS_PER_SYSTEM - 4) * R) + 'px',
                 width: (DX * 2) + 'px',
                 'margin-bottom': 4 * R + 'px',
             },
-            'div.chordListCont > span.focused': {
+            ':not(.playing) div.chordListCont > span.focused': {
                 'background-color': 'rgba(0,0,255,0.1)',
             },
-            'div.chordListCont > span.tactFinisher': {
+            ' div.chordListCont > span.tactFinisher': {
                 'box-shadow': '1px 0 0 rgba(0,0,0,0.5)'
             },
-            'div.chordListCont > span.tactFinisher.doesNotFitIntoTact': {
+            ' div.chordListCont > span.tactFinisher.doesNotFitIntoTact': {
                 'box-shadow': '1px 0 0 red'
             },
-            '.tactNumberCont': {
+            ' .tactNumberCont': {
                 position: 'absolute',
                 left: DX * 2 - R * 4 + 'px'
             },
-            '.noteCanvas': {
+            ' .noteCanvas': {
                 position: 'absolute'
             },
-            '.noteCanvas.sounding': {
+            ' .noteCanvas.sounding': {
                 // 'background-color': 'rgba(0,0,255,0.4)', // likely unused
                 'background': 'linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(0,0,255,0.2) 10%)'
             },
-            '.noteCanvas.pointed': {
+            ' .noteCanvas.pointed': {
                 'background': 'linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(0,255,0,0.6) 10%)'
             },
         };
@@ -414,7 +411,7 @@ Ns.SheetMusicPainter = function(parentId: string)
             var properties = Object.keys(styles[selector])
                 .map(k => '    ' + k + ': ' + styles[selector][k]);
 
-            var complete = '#' + parentId + ' ' + selector;
+            var complete = '#' + parentId + selector;
             css.innerHTML += complete + " {\n" + properties.join(";\n") + " \n}\n";
         }
 
@@ -442,9 +439,14 @@ Ns.SheetMusicPainter = function(parentId: string)
         addNote: addNote,
         getChordList: getChordList,
         setChordFocus: setChordFocus,
+        moveChordFocus: (sign: number) =>
+            setChordFocus($chordListCont.find('.focused').index() + sign),
         pointNextNote: pointNextNote,
         deleteChord: deleteChord,
         multiplyLength: multiplyLength,
+        setIsPlaying: (flag: boolean) => (flag
+            ? $parentEl.addClass('playing')
+            : $parentEl.removeClass('playing')),
     };
 };
 

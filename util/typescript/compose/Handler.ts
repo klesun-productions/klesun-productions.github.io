@@ -16,15 +16,17 @@ Ns.Compose.Handler = function(contId: string): void
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
 
-    // TODO: maybe using the dom class to select
-    // instead of numeric index would make sense
-    var chordFocusIndex = -1;
-    var playing = false;
+    var playback: {startedAt: number} = null;
+    var playbackFinished = function()
+    {
+        painter.setIsPlaying(false);
+        playback = null;
+    };
 
     player.addNoteHandler({
         handleNoteOn: (n: IShNote, i: number) => [
             synth.playNote(n.tune, n.channel),
-            painter.handleNoteOn(n, i + chordFocusIndex + 1),
+            painter.handleNoteOn(n, i + playback.startedAt + 1),
         ].reduce((offs,off) => () => { offs(); off(); })
     });
     // player.addNoteHandler(painter);
@@ -37,24 +39,25 @@ Ns.Compose.Handler = function(contId: string): void
             length: 0.25
         };
 
-        if (!playing) {
+        if (!playback) {
             if (receivedTime - lastNoteOn < 100) {
-                painter.addNote(note, chordFocusIndex);
+                painter.addNote(note);
             } else {
-                chordFocusIndex = painter.addChord({noteList: [note]}, chordFocusIndex + 1);
+                painter.addChord({noteList: [note]});
             }
 
             lastNoteOn = receivedTime;
         } else {
             player.stop();
-            playing = false;
+            playbackFinished();
         }
     };
 
     var play = function(): void
     {
-        chordFocusIndex = painter.setChordFocus(chordFocusIndex - 1);
-        var chordList = painter.getChordList(chordFocusIndex + 1);
+        var startedAt = painter.moveChordFocus(-1);
+        var chordList = painter.getChordList(startedAt + 1);
+        playback = {startedAt: startedAt};
 
         var song: IShmidusicStructure = {staffList: [{
             staffConfig: {
@@ -66,8 +69,8 @@ Ns.Compose.Handler = function(contId: string): void
             chordList: chordList
         }]};
 
-        playing = true;
-        player.playShmidusic(song, {}, () => playing = false);
+        player.playShmidusic(song, {}, playbackFinished);
+        painter.setIsPlaying(true);
     };
 
     var hangKeyboardHandlers = function(): void
@@ -80,15 +83,15 @@ Ns.Compose.Handler = function(contId: string): void
                 // space
                 32: play,
                 // left arrow
-                37: () => chordFocusIndex = painter.setChordFocus(chordFocusIndex - 1),
+                37: () => painter.moveChordFocus(-1),
                 // right arrow
-                39: () => chordFocusIndex = painter.setChordFocus(chordFocusIndex + 1),
+                39: () => painter.moveChordFocus(+1),
                 // delete
-                46: () => chordFocusIndex = painter.deleteChord(chordFocusIndex),
+                46: () => painter.deleteChord(),
                 // home
-                36: () => chordFocusIndex = painter.setChordFocus(-1),
+                36: () => painter.setChordFocus(-1),
                 // end
-                35: () => chordFocusIndex = painter.setChordFocus(99999999999), // backoffice style!
+                35: () => painter.setChordFocus(99999999999), // backoffice style!
                 // shift
                 16: () => painter.pointNextNote(),
                 // opening square bracket
@@ -97,9 +100,9 @@ Ns.Compose.Handler = function(contId: string): void
                 221: () => painter.multiplyLength(2),
             };
 
-            if (playing) {
+            if (playback) {
                 player.stop();
-                playing = false;
+                playbackFinished();
             } else if (keyEvent.keyCode in handlers) {
                 handlers[keyEvent.keyCode]();
             }
