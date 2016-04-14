@@ -42,6 +42,9 @@ Util.Player = function ($controlCont)
     };
     var playChord = function(chord, tempo, index)
     {
+        tempo = tempo || 120;
+        index = index || -1;
+
         chord['noteList'].forEach(function(noteJs)
         {
             var length = toFloat(noteJs.length);
@@ -78,12 +81,6 @@ Util.Player = function ($controlCont)
 		tabSwitched = function(e)
 		{
 			playback.pause();
-			var whenBack = function() {
-				document.removeEventListener('visibilitychange', whenBack);
-                document.addEventListener('visibilitychange', tabSwitched);
-				playback.resume();
-			};
-			document.addEventListener('visibilitychange', whenBack);
             document.removeEventListener('visibilitychange', tabSwitched);
 		};
 		document.addEventListener('visibilitychange', tabSwitched);
@@ -186,6 +183,10 @@ Util.Player = function ($controlCont)
         playStandardMidiFile: playStandardMidiFile,
         addNoteHandler: h => noteHandlers.push(h),
         addConfigConsumer: cc => (configConsumer = cc),
-        stop: () => currentPlayback && currentPlayback.pause(),
+        stop: () => {
+            currentPlayback && currentPlayback.pause();
+            stopSounding();
+        },
+        playChord: playChord,
     };
 };

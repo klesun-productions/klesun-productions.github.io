@@ -29,7 +29,17 @@ Ns.Compose.Handler = function(contId: string): void
             painter.handleNoteOn(n, i + playback.startedAt + 1),
         ].reduce((offs,off) => () => { offs(); off(); })
     });
-    // player.addNoteHandler(painter);
+
+    // well... i suppose something is wrong
+    var oneShotPlayer = Util.Player($(''));
+    oneShotPlayer.addNoteHandler({
+        handleNoteOn: (n: IShNote, i: number) => synth.playNote(n.tune, n.channel)
+    });
+
+    var playChord = (c: IShmidusicChord) => {
+        oneShotPlayer.stop();
+        oneShotPlayer.playChord(c);
+    };
 
     var handleNoteOn = function(semitone: number, receivedTime: number)
     {
@@ -85,9 +95,15 @@ Ns.Compose.Handler = function(contId: string): void
                 // space
                 32: play,
                 // left arrow
-                37: () => control.moveChordFocus(-1),
+                37: () => {
+                    control.moveChordFocus(-1);
+                    painter.getFocused().forEach(playChord);
+                },
                 // right arrow
-                39: () => control.moveChordFocus(+1),
+                39: () => {
+                    control.moveChordFocus(+1)
+                    painter.getFocused().forEach(playChord);
+                },
                 // delete
                 46: () => control.deleteFocused(),
                 // home

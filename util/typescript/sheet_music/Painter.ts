@@ -118,14 +118,20 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
         return $chordSpan;
     };
 
+    var extractNote = (n: HTMLCanvasElement) => 1 && {
+        tune: +$(n).attr('data-tune'),
+        channel: +$(n).attr('data-channel'),
+        length: +$(n).attr('data-length')
+    };
+
     return {
         getNoteImage: getNoteImage,
         makeNoteCanvas: makeNoteCanvas,
         makeChordSpan: makeChordSpan,
-        extractNote: (n: HTMLCanvasElement) => 1 && {
-            tune: +$(n).attr('data-tune'),
-            channel: +$(n).attr('data-channel'),
-            length: +$(n).attr('data-length')
+        extractNote: extractNote,
+        extractChord: (c) => 1 && {
+            noteList: $(c).children('.noteCanvas').toArray()
+                .map(extractNote)
         },
     };
 };
@@ -135,6 +141,7 @@ interface ICanvasProvider {
     makeNoteCanvas: { (n: IShNote): HTMLCanvasElement },
     makeChordSpan: { (c: IShmidusicChord): JQuery },
     extractNote: { (c: HTMLCanvasElement): IShNote },
+    extractChord: { (c: HTMLElement): IShmidusicChord },
 };
 
 Ns.SheetMusicPainter = function(parentId: string): IPainter
@@ -214,11 +221,10 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
 
         return $chordListCont.children().toArray()
             .slice(startIndex)
-            .map((c) => 1 && {
-                noteList: $(c).children('.noteCanvas').toArray()
-                    .map(canvaser.extractNote)
-            });
+            .map(canvaser.extractChord);
     };
+
+    var getFocused = () => $chordListCont.find('.focused').toArray().map(canvaser.extractChord);
 
     var drawSystemHorizontalLines = function(ctx: CanvasRenderingContext2D)
     {
@@ -335,6 +341,7 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
             }
         },
         getChordList: getChordList,
+        getFocused: getFocused,
         setIsPlaying: (flag: boolean) => (flag
             ? $parentEl.addClass('playing')
             : $parentEl.removeClass('playing')),
@@ -349,4 +356,5 @@ interface IPainter {
     getChordList: { (start: number): IShmidusicChord[] },
     setIsPlaying: { (flag: boolean): void },
     getControl: { (): IControl },
+    getFocused: { (): IShmidusicChord[] },
 }
