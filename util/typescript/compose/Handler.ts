@@ -62,23 +62,27 @@ Ns.Compose.Handler = function(contId: string): void
         }
     };
 
-    var play = function(): void
-    {
-        var startedAt = painter.getControl().moveChordFocus(-1);
-        var chordList = painter.getChordList(startedAt + 1);
-        playback = {startedAt: startedAt};
 
-        var song: IShmidusicStructure = {staffList: [{
+
+    var collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
+        staffList: [{
             staffConfig: {
                 tempo: 120,
                 keySignature: 0,
                 numerator: 8,
                 channelList: []
             },
-            chordList: chordList
-        }]};
+            chordList: chords
+        }]
+    };
 
-        player.playShmidusic(song, {}, playbackFinished);
+    var play = function(): void
+    {
+        var startedAt = painter.getControl().moveChordFocus(-1);
+        var chordList = painter.getChordList(startedAt + 1);
+        playback = {startedAt: startedAt};
+
+        player.playShmidusic(collectSong(chordList), {}, playbackFinished);
         painter.setIsPlaying(true);
     };
 
@@ -159,6 +163,13 @@ Ns.Compose.Handler = function(contId: string): void
                     if (e.ctrlKey) {
                         e.preventDefault();
                         Ns.selectFileFromDisc(openSong);
+                    }
+                },
+                // "s"
+                83: (e: KeyboardEvent) => {
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        Ns.saveToDisc(JSON.stringify(collectSong(painter.getChordList(0))));
                     }
                 },
             };

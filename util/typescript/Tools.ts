@@ -86,6 +86,15 @@ Ns.selectFileFromDisc = function(whenLoaded: { (data: any): void }): void
     $(input).click();
 };
 
+// defined in /libs/FileSaver.js
+declare var saveAs: any;
+
+Ns.saveToDisc = function(content: string): void
+{
+    var blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, 'song.mid.js', true);
+};
+
 Ns.synthPresets = [
     50, 51, 84,
 ];
