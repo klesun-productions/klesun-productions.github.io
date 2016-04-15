@@ -78,6 +78,47 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         }
     };
 
+    var recalcTacts = function()
+    {
+        var tactSize = 1.0;
+
+        $chordListCont.find('.tactNumberCont').html('&nbsp;');
+        $chordListCont.children()
+            .removeClass('tactFinisher')
+            .removeClass('doesNotFitIntoTact')
+            .removeAttr('data-rest');
+
+        var tacter = Ns.TactMeasurer(tactSize);
+        var $chords = $chordListCont.children().toArray().map(c => $(c));
+
+        $chords.forEach(($span: JQuery) =>
+        {
+            var chordLength = $span.find('.noteCanvas').toArray()
+                .map(n => $(n).attr('data-length')).sort()
+                [0] || 0;
+
+            if (tacter.inject(+chordLength)) {
+                $span.find('.tactNumberCont').html(tacter.tactNumber().toString());
+                $span.addClass('tactFinisher');
+                if (tacter.hasRest()) {
+                    $span.addClass('doesNotFitIntoTact')
+                        .attr('data-rest', tacter.getRest())
+                }
+            }
+        });
+    };
+
+    var tactRecalcRequested = false;
+    var requestRecalcTacts = () => {
+        if (!tactRecalcRequested) {
+            tactRecalcRequested = true;
+            setTimeout(() => {
+                tactRecalcRequested = false;
+                recalcTacts();
+            }, 1000);
+        }
+    }
+
     /** adds a chord element _at_ the index. or to the end, if index not provided */
     var addChord = function(chord: IShmidusicChord): number
     {
@@ -91,6 +132,8 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         } else {
             $chordListCont.children(':eq(' + index + ')').before($chord);
         }
+
+        requestRecalcTacts();
 
         $chord.click(() => {
             $chordListCont.find('.focused').removeClass('focused');
@@ -111,6 +154,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
 
         if ($chord.children(selector).length === 0) {
             $chord.append(canvaser.makeNoteCanvas(note));
+            requestRecalcTacts();
         }
     };
 
@@ -122,6 +166,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
             $chordListCont.find('.focused').remove();
             setChordFocus(chordIndex);
         }
+        requestRecalcTacts();
     };
 
     var multiplyNoteLength = function(note: HTMLCanvasElement, factor: number): void
@@ -151,6 +196,8 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
             notes.every(okLength) &&
             notes.forEach(n => multiplyNoteLength(n, factor));
         }
+
+        requestRecalcTacts();
     };
 
     var chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;

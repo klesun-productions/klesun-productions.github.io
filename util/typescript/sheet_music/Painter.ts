@@ -292,14 +292,17 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
                 'background-color': 'rgba(0,0,255,0.1)',
             },
             ' div.chordListCont > span.tactFinisher': {
-                'box-shadow': '1px 0 0 rgba(0,0,0,0.5)'
+                'box-shadow': '1px 0 0 rgba(0,0,0,0.3)'
             },
             ' div.chordListCont > span.tactFinisher.doesNotFitIntoTact': {
                 'box-shadow': '1px 0 0 red'
             },
             ' .tactNumberCont': {
                 position: 'absolute',
-                left: DX * 2 - R * 4 + 'px'
+                left: DX * 2 - R * 3 + 'px',
+                'font-size': R * 3 + 'px',
+                'font-weight': 'bold',
+                'color': 'rgb(0,128,0)',
             },
             ' .noteCanvas': {
                 position: 'absolute'

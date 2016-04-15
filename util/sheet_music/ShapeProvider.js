@@ -10,26 +10,6 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
 {
     var y = ySteps * r;
 
-    var channelColors = [
-        [0,0,0], // black
-        [192,0,0], // red
-        [0,148,0], // green
-        [60,60,255], // blue
-        [152,152,0], // yellow
-        [0,152,152], // cyan
-        [192,0,192], // magenta
-        [255,128,0], // orange
-        [91,0,255], // bluish magenta
-
-        [0,255,255], // TODO: !!!
-        [127,255,0], // TODO: !!!
-        [255,0,255], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0] // TODO: !!!
-    ];
-
     // https://github.com/google/canvas-5-polyfill/issues/1
     var drawEllipseManually = function(ctx, x, y, radiusX, radiusY, rotation, startAngle, endAngle, antiClockwise)
     {
@@ -96,8 +76,8 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     {
         +channel === 9 && drawCross(r * 2);
 
-        ctx.fillStyle = 'rgba(' + channelColors[channel].join(',') + ',0.85)';
-        ctx.strokeStyle = 'rgba(' + channelColors[channel].join(',') + ',1)';
+        ctx.fillStyle = 'rgba(' + Ns.channelColors[channel].join(',') + ',0.85)';
+        ctx.strokeStyle = 'rgba(' + Ns.channelColors[channel].join(',') + ',1)';
 
         var length = Fraction(length);
         if (length.den() % 3 === 0) {
