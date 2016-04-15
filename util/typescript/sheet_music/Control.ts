@@ -92,6 +92,11 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
             $chordListCont.children(':eq(' + index + ')').before($chord);
         }
 
+        $chord.click(() => {
+            $chordListCont.find('.focused').removeClass('focused');
+            $chord.addClass('focused');
+        });
+
         return setChordFocus(index);
     };
 
@@ -146,13 +151,21 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
             notes.every(okLength) &&
             notes.forEach(n => multiplyNoteLength(n, factor));
         }
-    }
+    };
+
+    var chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;
 
     return {
         setNoteFocus: setNoteFocus,
         setChordFocus: setChordFocus,
         moveChordFocus: (sign: number) =>
             setChordFocus($chordListCont.find('.focused').index() + sign),
+        moveChordFocusRow: (sign: number) => {
+            var index = $chordListCont.find('.focused').index() + sign * chordsPerRow();
+            if (index > -1 && index < $chordListCont.children().length) {
+                setChordFocus(index);
+            }
+        },
         pointNextNote: pointNextNote,
         deleteFocused: deleteFocused,
         addChord: addChord,
@@ -165,6 +178,7 @@ interface IControl {
     setNoteFocus: {(note: IShNote, chordIndex: number): void},
     setChordFocus: {(index: number): number},
     moveChordFocus: {(sign: number): number},
+    moveChordFocusRow: {(sign: number): void},
     pointNextNote: {(): void},
     deleteFocused: {(): void},
     addChord: {(chord: IShmidusicChord): number},

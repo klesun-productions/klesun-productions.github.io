@@ -11,12 +11,19 @@ var Ns = Ns || {};
 
 Ns.Reflect = function()
 {
-    var numberifyLengths = function(song: IShmidusicStructure): IShmidusicStructure
+    // transforms fraction string note lengths to float numbers;
+    // transforms all pauses to a drum channel
+    var adapt = function(song: IShmidusicStructure): IShmidusicStructure
     {
         song.staffList
             .forEach(s => s.chordList
                 .forEach(c => c.noteList
-                    .forEach(n => n.length = eval(n.length + ''))));
+                    .forEach(n => {
+                        n.length = eval(n.length + '');
+                        if (+n.tune === 0) { // pause in shmidusic language
+                            n.channel = 9;
+                        }
+                    })));
 
         return song;
     };
@@ -26,7 +33,7 @@ Ns.Reflect = function()
         // TODO: implement full type check
 
         return (typeof subj === 'object') && ('staffList' in subj)
-            ? numberifyLengths(subj)
+            ? adapt(subj)
             : null;
     };
 

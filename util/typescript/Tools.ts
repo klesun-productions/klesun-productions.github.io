@@ -4,6 +4,7 @@
 var Ns:any = Ns || {};
 // TODO: Util is too long
 var Util:any = Util || {};
+Ns.Static = Ns.Static || {};
 
 // some usefull shorthand methods
 
@@ -80,7 +81,7 @@ Ns.selectFileFromDisc = function(whenLoaded: { (data: any): void }): void
         }
     };
 
-    var input = <HTMLInputElement>$('<input type="file"/>')[0];
+    var input = Ns.Static.FILE_INPUT = Ns.Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
     input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
     $(input).click();
 };

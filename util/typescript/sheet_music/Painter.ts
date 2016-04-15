@@ -74,6 +74,10 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
 
         var shift = 56 - ivoryIndex - octave * 7; // 56 - some number that divides by 7
 
+        if (+note.channel === 9) { // drum
+            shift = 35 + 2; // lowest note on my synth and 2 more steps downer
+        }
+
         var noteCanvas = <HTMLCanvasElement>$('<canvas class="noteCanvas"></canvas>')
             .attr('width', DX * 2)
             .attr('height', NOTE_CANVAS_HEIGHT + R)
@@ -111,8 +115,6 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
             .append($('<span class="tactNumberCont"></span>'));
 
         chord.noteList
-            // TODO: this screws songs
-            .filter(n => +n.tune !== 0) // my stupid way to define pauses
             .map(makeNoteCanvas)
             .forEach(el => $chordSpan.append(el));
 
@@ -134,6 +136,7 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
             noteList: $(c).children('.noteCanvas').toArray()
                 .map(extractNote)
         },
+        getChordWidth: () => DX * 2,
     };
 };
 
@@ -143,6 +146,7 @@ interface ICanvasProvider {
     makeChordSpan: { (c: IShmidusicChord): JQuery },
     extractNote: { (c: HTMLCanvasElement): IShNote },
     extractChord: { (c: HTMLElement): IShmidusicChord },
+    getChordWidth: { (): number },
 };
 
 Ns.SheetMusicPainter = function(parentId: string): IPainter

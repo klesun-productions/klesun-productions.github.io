@@ -123,7 +123,17 @@ Ns.Compose.Handler = function(contId: string): void
                 },
                 // right arrow
                 39: () => {
-                    control.moveChordFocus(+1)
+                    control.moveChordFocus(+1);
+                    painter.getFocused().forEach(playChord);
+                },
+                // down arrow
+                40: () => {
+                    control.moveChordFocusRow(+1);
+                    painter.getFocused().forEach(playChord);
+                },
+                // up arrow
+                38: () => {
+                    control.moveChordFocusRow(-1);
                     painter.getFocused().forEach(playChord);
                 },
                 // delete
@@ -138,6 +148,8 @@ Ns.Compose.Handler = function(contId: string): void
                 219: () => control.multiplyLength(0.5),
                 // closing square bracket
                 221: () => control.multiplyLength(2),
+                // enter
+                13: () => painter.getFocused().forEach(playChord),
                 // "o"
                 79: (e: KeyboardEvent) => {
                     if (e.ctrlKey) {
