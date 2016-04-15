@@ -65,6 +65,26 @@ class Fraction {
     apacheStr = () => this.num + ' / ' + this.den;
 }
 
+Ns.selectFileFromDisc = function(whenLoaded: { (data: any): void }): void
+{
+    var loadSelectedFile = function (fileInfo: File, whenLoaded: { (data: any): void }): void
+    {
+        var maxSize = 2 * 1024 * 1024; // 2 mebibytes
+
+        if (fileInfo.size < maxSize) {
+            var reader = new FileReader();
+            reader.readAsDataURL(fileInfo);
+            reader.onload = (e: any) => whenLoaded(e.target.result.split(',')[1]);
+        } else {
+            alert('too big file, more than 2 MiB!');
+        }
+    };
+
+    var input = <HTMLInputElement>$('<input type="file"/>')[0];
+    input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
+    $(input).click();
+};
+
 Ns.synthPresets = [
     50, 51, 84,
 ];

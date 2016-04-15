@@ -12,7 +12,7 @@ Ns.Compose.Handler = function(contId: string): void
 {
     var painter: IPainter = Ns.SheetMusicPainter(contId);
     painter.setEnabled(true);
-    var lastNoteOn = 0;
+    var lastChordOn = 0;
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
 
@@ -50,13 +50,12 @@ Ns.Compose.Handler = function(contId: string): void
         };
 
         if (!playback) {
-            if (receivedTime - lastNoteOn < 100) {
+            if (receivedTime - lastChordOn < 100) {
                 painter.getControl().addNote(note);
             } else {
                 painter.getControl().addChord({noteList: [note]});
+                lastChordOn = receivedTime;
             }
-
-            lastNoteOn = receivedTime;
         } else {
             player.stop();
             playbackFinished();
@@ -83,15 +82,38 @@ Ns.Compose.Handler = function(contId: string): void
         painter.setIsPlaying(true);
     };
 
+    var openSong = function(base64Song: string): void
+    {
+        var jsonSong = atob(base64Song);
+        try {
+            var parsed = JSON.parse(jsonSong);
+        } catch (err) {
+            alert('Your file is not JSON! ' + err.message);
+            return;
+        }
+
+        var song: IShmidusicStructure;
+        if (song = Ns.Reflect().validateShmidusic(parsed)) {
+
+            painter.getControl().setChordFocus(0);
+            Ns.range(0, 999).forEach(painter.getControl().deleteFocused);
+            // bow before me
+
+            song.staffList
+                .forEach(s => s.chordList
+                    .forEach(painter.getControl().addChord))
+        } else {
+            alert('Your file is valid josn, but not valid Shmidusic!');
+        }
+    };
+
     var hangKeyboardHandlers = function(): void
     {
         document.onkeydown = function(keyEvent: KeyboardEvent)
         {
-            console.log('Key Event: ', keyEvent);
-
             var control = painter.getControl();
 
-            var handlers: { [code: number]: { (): void } } = {
+            var handlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
                 // space
                 32: play,
                 // left arrow
@@ -116,13 +138,24 @@ Ns.Compose.Handler = function(contId: string): void
                 219: () => control.multiplyLength(0.5),
                 // closing square bracket
                 221: () => control.multiplyLength(2),
+                // "o"
+                79: (e: KeyboardEvent) => {
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        Ns.selectFileFromDisc(openSong);
+                    }
+                },
             };
 
             if (playback) {
                 player.stop();
                 playbackFinished();
-            } else if (keyEvent.keyCode in handlers) {
-                handlers[keyEvent.keyCode]();
+            } else {
+                if (keyEvent.keyCode in handlers) {
+                    handlers[keyEvent.keyCode](keyEvent);
+                } else {
+                    console.log('Unknown Key Event: ', keyEvent);
+                }
             }
         };
     };

@@ -111,6 +111,7 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
             .append($('<span class="tactNumberCont"></span>'));
 
         chord.noteList
+            // TODO: this screws songs
             .filter(n => +n.tune !== 0) // my stupid way to define pauses
             .map(makeNoteCanvas)
             .forEach(el => $chordSpan.append(el));
