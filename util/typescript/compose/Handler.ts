@@ -148,6 +148,10 @@ Ns.Compose.Handler = function(contId: string): void
                 219: () => control.multiplyLength(0.5),
                 // closing square bracket
                 221: () => control.multiplyLength(2),
+                // dot
+                190: () => control.multiplyLength(1.5),
+                // comma
+                188: () => control.multiplyLength(2/3),
                 // enter
                 13: () => painter.getFocused().forEach(playChord),
                 // "o"

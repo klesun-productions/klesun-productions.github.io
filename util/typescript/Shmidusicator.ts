@@ -96,12 +96,11 @@ class Shmidusicator
         return chordList;
     }
 
-    /** @return - guessed fraction length of the note */
-    static guessLength(floatLength: number): Fraction
+    static getLengthOptions(): Array<Fraction>
     {
         var fr = (n:number,d:number) => new Fraction(n,d);
 
-        var options: Array<Fraction> = [
+        return [
             // all accepted variations of semibreve: clean | triplet| with dot | with two dots
             fr(1, 1), fr(1, 3), fr(3, 2), fr(7, 4),
             // half
@@ -114,11 +113,15 @@ class Shmidusicator
             fr(1,16),
             // so does 1/32
             fr(1,32)
-        ].sort((a,b) => b.float() - a.float()); // greater first
+        ].sort((a,b) => b.float() - a.float()); // greater first;
+    }
 
-        var result = fr(1, 1);
+    /** @return - guessed fraction length of the note */
+    static guessLength(floatLength: number): Fraction
+    {
+        var result = new Fraction(1, 1);
 
-        options.forEach(function(e)
+        Shmidusicator.getLengthOptions().forEach(function(e)
         {
             if (floatLength <= e.float()) {
                 result = e;
@@ -126,5 +129,11 @@ class Shmidusicator
         });
 
         return result;
+    }
+
+    static isValidLength(length: number): boolean
+    {
+        return Shmidusicator.getLengthOptions()
+            .some(o => o.float().toFixed(8) === length.toFixed(8));
     }
 }

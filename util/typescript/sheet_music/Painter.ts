@@ -289,7 +289,7 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
                 'margin-bottom': 4 * R + 'px',
             },
             ':not(.playing) div.chordListCont > span.focused': {
-                'background-color': 'rgba(0,0,255,0.1)',
+                'background-color': 'rgba(255,192,0,0.3)',
             },
             ' div.chordListCont > span.tactFinisher': {
                 'box-shadow': '1px 0 0 rgba(0,0,0,0.3)'

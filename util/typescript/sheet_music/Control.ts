@@ -181,9 +181,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
 
     var multiplyLength = function(factor: number)
     {
-        var okLength = (n: HTMLCanvasElement) => 1
-            && (+$(n).attr('data-length') * factor <= 1.0)
-            && (+$(n).attr('data-length') * factor >= 1/32);
+        var okLength = (n: HTMLCanvasElement) => Shmidusicator.isValidLength(+$(n).attr('data-length') * factor);
 
         var $chord = $chordListCont.find('.focused'),
             note: HTMLCanvasElement;
