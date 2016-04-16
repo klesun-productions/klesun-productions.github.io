@@ -83,6 +83,7 @@ Ns.selectFileFromDisc = function(whenLoaded: { (data: any): void }): void
 
     var input = Ns.Static.FILE_INPUT = Ns.Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
     input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
+    input.onclick = (inputEvent: Event) => { input.value = null; };
     $(input).click();
 };
 

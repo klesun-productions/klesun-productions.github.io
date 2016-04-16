@@ -120,6 +120,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
     }
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
+    /** @unused */
     var addChord = function(chord: IShmidusicChord): number
     {
         var index = $chordListCont.find('.focused').index() + 1;
@@ -144,26 +145,32 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
     };
 
     /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
-    var addNote = function(note: IShNote): void
+    var addNote = function(note: IShNote, inNewChord: boolean): void
     {
-        var $chord = $chordListCont.find('.focused');
+        if (!inNewChord || $chordListCont.find('.focused .pointed').length) {
+            var $chord = $chordListCont.find('.focused');
 
-        var selector = '.noteCanvas' +
-            '[data-tune="' + note.tune + '"]' +
-            '[data-channel="' + note.channel + '"]';
+            var selector = '.noteCanvas' +
+                '[data-tune="' + note.tune + '"]' +
+                '[data-channel="' + note.channel + '"]';
 
-        if ($chord.children(selector).length === 0) {
-            $chord.append(canvaser.makeNoteCanvas(note));
-            requestRecalcTacts();
+            if ($chord.children(selector).length === 0) {
+                $chord.append(canvaser.makeNoteCanvas(note));
+                requestRecalcTacts();
+            }
+        } else {
+            addChord({noteList: [note]});
         }
     };
 
     /** @return the focused index after applying bounds */
-    var deleteFocused = function(): void
+    var deleteFocused = function(backspace: boolean): void
     {
         if (!$chordListCont.find('.focused .pointed').remove().length) {
             var chordIndex = $chordListCont.find('.focused').index();
             $chordListCont.find('.focused').remove();
+
+            backspace && --chordIndex;
             setChordFocus(chordIndex);
         }
         requestRecalcTacts();
@@ -216,6 +223,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         addChord: addChord,
         addNote: addNote,
         multiplyLength: multiplyLength,
+        clear: () => $chordListCont.empty(),
     };
 };
 
@@ -225,8 +233,9 @@ interface IControl {
     moveChordFocus: {(sign: number): number},
     moveChordFocusRow: {(sign: number): void},
     pointNextNote: {(): void},
-    deleteFocused: {(): void},
+    deleteFocused: {(backspace: boolean): void},
     addChord: {(chord: IShmidusicChord): number},
-    addNote: {(note: IShNote): void},
+    addNote: {(note: IShNote, inNewChord: boolean): void},
     multiplyLength: {(factor: number): void},
+    clear: {(): void},
 }

@@ -51,9 +51,9 @@ Ns.Compose.Handler = function(contId: string): void
 
         if (!playback) {
             if (receivedTime - lastChordOn < 100) {
-                painter.getControl().addNote(note);
+                painter.getControl().addNote(note, false);
             } else {
-                painter.getControl().addChord({noteList: [note]});
+                painter.getControl().addNote(note, true);
                 lastChordOn = receivedTime;
             }
         } else {
@@ -99,9 +99,7 @@ Ns.Compose.Handler = function(contId: string): void
         var song: IShmidusicStructure;
         if (song = Ns.Reflect().validateShmidusic(parsed)) {
 
-            painter.getControl().setChordFocus(0);
-            Ns.range(0, 999).forEach(painter.getControl().deleteFocused);
-            // bow before me
+            painter.getControl().clear();
 
             song.staffList
                 .forEach(s => s.chordList
@@ -140,8 +138,6 @@ Ns.Compose.Handler = function(contId: string): void
                     control.moveChordFocusRow(-1);
                     painter.getFocused().forEach(playChord);
                 },
-                // delete
-                46: () => control.deleteFocused(),
                 // home
                 36: () => control.setChordFocus(-1),
                 // end
@@ -158,6 +154,13 @@ Ns.Compose.Handler = function(contId: string): void
                 188: () => control.multiplyLength(2/3),
                 // enter
                 13: () => painter.getFocused().forEach(playChord),
+                // delete
+                46: () => control.deleteFocused(false),
+                // backspace
+                8: (e: KeyboardEvent) => {
+                    e.preventDefault();
+                    control.deleteFocused(true);
+                },
                 // "o"
                 79: (e: KeyboardEvent) => {
                     if (e.ctrlKey) {
