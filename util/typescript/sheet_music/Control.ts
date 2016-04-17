@@ -60,7 +60,8 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         return () => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
     };
 
-    var pointNextNote = function(): void
+    /** @return array with the newly pointed note or empty array */
+    var pointNextNote = function(): IShNote[]
     {
         var getOrder = (note: any) =>
             + +$(note).attr('data-tune') * 16
@@ -75,7 +76,10 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         $chordListCont.find('.pointed').removeClass('pointed');
         if (index < notes.length) {
             $(notes[index]).addClass('pointed');
+            return [canvaser.extractNote(notes[index])];
         }
+
+        return [];
     };
 
     var recalcTacts = function()
@@ -232,7 +236,7 @@ interface IControl {
     setChordFocus: {(index: number): number},
     moveChordFocus: {(sign: number): number},
     moveChordFocusRow: {(sign: number): void},
-    pointNextNote: {(): void},
+    pointNextNote: {(): IShNote[]},
     deleteFocused: {(backspace: boolean): void},
     addChord: {(chord: IShmidusicChord): number},
     addNote: {(note: IShNote, inNewChord: boolean): void},

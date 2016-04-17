@@ -229,7 +229,9 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
             .map(canvaser.extractChord);
     };
 
-    var getFocused = () => $chordListCont.find('.focused').toArray().map(canvaser.extractChord);
+    var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
+        ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)
+        : $chordListCont.find('.focused .noteCanvas').toArray().map(canvaser.extractNote);
 
     var drawSystemHorizontalLines = function(ctx: CanvasRenderingContext2D)
     {
@@ -349,7 +351,7 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
             }
         },
         getChordList: getChordList,
-        getFocused: getFocused,
+        getFocusedNotes: getFocusedNotes,
         setIsPlaying: (flag: boolean) => (flag
             ? $parentEl.addClass('playing')
             : $parentEl.removeClass('playing')),
@@ -364,5 +366,5 @@ interface IPainter {
     getChordList: { (start: number): IShmidusicChord[] },
     setIsPlaying: { (flag: boolean): void },
     getControl: { (): IControl },
-    getFocused: { (): IShmidusicChord[] },
+    getFocusedNotes: { (): IShNote[] },
 }

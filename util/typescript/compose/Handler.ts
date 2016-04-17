@@ -36,13 +36,21 @@ Ns.Compose.Handler = function(contId: string): void
         handleNoteOn: (n: IShNote, i: number) => synth.playNote(n.tune, n.channel)
     });
 
-    var playChord = (c: IShmidusicChord) => {
+    var playNotes = (noteList: IShNote[]) => {
         oneShotPlayer.stop();
-        oneShotPlayer.playChord(c);
+        oneShotPlayer.playChord({ noteList: noteList });
     };
+
+    var tabActive = true;
+    window.onfocus = () => tabActive = true;
+    window.onblur = () => tabActive = false;
 
     var handleNoteOn = function(semitone: number, receivedTime: number)
     {
+        if (!tabActive) {
+            return;
+        }
+
         var note = {
             tune: semitone,
             channel: 0,
@@ -121,29 +129,29 @@ Ns.Compose.Handler = function(contId: string): void
                 // left arrow
                 37: () => {
                     control.moveChordFocus(-1);
-                    painter.getFocused().forEach(playChord);
+                    playNotes(painter.getFocusedNotes());
                 },
                 // right arrow
                 39: () => {
                     control.moveChordFocus(+1);
-                    painter.getFocused().forEach(playChord);
+                    playNotes(painter.getFocusedNotes());
                 },
                 // down arrow
                 40: () => {
                     control.moveChordFocusRow(+1);
-                    painter.getFocused().forEach(playChord);
+                    playNotes(painter.getFocusedNotes());
                 },
                 // up arrow
                 38: () => {
                     control.moveChordFocusRow(-1);
-                    painter.getFocused().forEach(playChord);
+                    playNotes(painter.getFocusedNotes());
                 },
                 // home
                 36: () => control.setChordFocus(-1),
                 // end
                 35: () => control.setChordFocus(99999999999), // backoffice style!
                 // shift
-                16: () => control.pointNextNote(),
+                16: () => playNotes(control.pointNextNote()),
                 // opening square bracket
                 219: () => control.multiplyLength(0.5),
                 // closing square bracket
@@ -153,7 +161,9 @@ Ns.Compose.Handler = function(contId: string): void
                 // comma
                 188: () => control.multiplyLength(2/3),
                 // enter
-                13: () => painter.getFocused().forEach(playChord),
+                13: () => playNotes(painter.getFocusedNotes()),
+                // pause
+                19: () => painter.getControl().addNote({tune: 0, channel: 9, length: 0.25}, true),
                 // delete
                 46: () => control.deleteFocused(false),
                 // backspace
