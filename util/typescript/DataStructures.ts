@@ -14,6 +14,9 @@ interface IShNote {
 
 interface IShmidusicChord {
     noteList: Array<IShNote>;
+    // represents float absolute chord start time
+    // in note lengths: (1/2, 10/4, 15/3, ...)
+    timeFraction?: number;
 }
 
 interface ITimedShChord extends IShmidusicChord {
@@ -33,19 +36,24 @@ interface IShmidusicStructure {
             * a number in range [-7, 7]. when -1: Ti is flat;
             * when -2: Ti and Mi are flat; when +2: Fa and Re are sharp and so on...
             */
-            keySignature: number;
+            keySignature?: number;
             /*
             * tact size in legacy format (i used to store numbers in bytes ages ago...)
             * if you divide it with, uh well, 8, you get the tact size
             */
-            numerator: number;
+            numerator?: number;
+            // loop start tact number
+            loopStart: number,
+            // count of times playback will be rewinded
+            // to the loopStart after last chord
+            loopTimes: number,
             channelList: Array<{
                 // midi program number in range [0..128)
                 instrument: number;
                 // midi channel number in range [0..16)
                 channelNumber: number;
                 // midi channel starting volume in percents [0..100]
-                volume: number;
+                volume?: number;
             }>;
         };
         chordList: Array<IShmidusicChord>;
@@ -79,6 +87,21 @@ interface ISmfStructure {
         [id: number]: number;
     };
     noteList: Array<ISmfNote>;
+}
+
+interface IGeneralStructure {
+    chordList: IShmidusicChord[],
+    config: {
+        tempo: number,
+        // tempoOrigin likely unused
+        tempoOrigin: number,
+        instrumentDict: {[ch: number]: number},
+        loopStart: number,
+        loopTimes: number,
+    },
+    misc: {
+        noteCount?: number
+    },
 }
 
 interface ISmfFile {

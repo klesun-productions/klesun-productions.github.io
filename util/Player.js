@@ -40,6 +40,7 @@ Util.Player = function ($controlCont)
             }
         }, millis);
     };
+
     var playChord = function(chord, tempo, index)
     {
         tempo = tempo || 120;
@@ -61,8 +62,10 @@ Util.Player = function ($controlCont)
         toBeInterrupted.length = 0;
     };
 
-    var playSheetMusic = function (sheetMusic, fileInfo, whenFinished)
+    var playSheetMusic = function (sheetMusic, fileInfo, whenFinished, startAt)
     {
+        startAt = startAt || 0;
+
 		whenFinished = whenFinished || (_ => {});
         currentPlayback && currentPlayback.pause();
 
@@ -75,7 +78,9 @@ Util.Player = function ($controlCont)
 
 		control.setPlayback(playback);
 
-        // TODO: just stop, no need to resume
+        startAt && playback.slideTo(startAt);
+
+        // TODO: investigate, does not work if you switch tab, then move slider (to resume playback) and switch tab again
 
         document.removeEventListener('visibilitychange', tabSwitched);
 		tabSwitched = function(e)
@@ -94,44 +99,8 @@ Util.Player = function ($controlCont)
         whenFinished = whenFinished || ((_) => {});
         fileName = fileName || 'noNameFile';
 
-		shmidusicJson['staffList'].forEach(function(staff)
-        {
-            var instrumentDict = {};
-
-            (staff.staffConfig.channelList || [])
-                .filter(e => e.channelNumber < 16)
-                .forEach((e) => (instrumentDict[e.channelNumber] = e.instrument));
-
-            Util.range(0, 16).forEach(i => (instrumentDict[i] |= 0));
-
-            // flat map hujap
-            // tactList not needed for logic, but it increases readability of file A LOT
-            var chordList = ('tactList' in staff)
-                ? [].concat.apply([], staff['tactList'].map(t => t['chordList']))
-                : staff['chordList'];
-
-            var timeFraction = 0;
-
-            chordList.forEach(function(c)
-            {
-                c.timeFraction = timeFraction;
-                var chordLength = Math.min.apply(null, c.noteList.map(n => toFloat(n.length)));
-                timeFraction += chordLength;
-            });
-
-            playSheetMusic({
-                chordList: chordList,
-                config: {
-                    tempo: staff.staffConfig.tempo,
-                    // tempoOrigin likely unused
-                    tempoOrigin: staff.staffConfig.tempo,
-                    instrumentDict: instrumentDict
-                },
-				misc: {
-					noteCount: -100
-				}
-            }, {fileName: fileName, score: 'Ne'}, whenFinished);
-        });
+        var adapted = Shmidusicator.generalizeShmidusic(shmidusicJson);
+        playSheetMusic(adapted, {fileName: fileName, score: 'Ne'}, whenFinished);
     };
 
     /** @TODO: move format normalization into separate class */
@@ -166,7 +135,9 @@ Util.Player = function ($controlCont)
                 tempo: tempo,
                 // tempoOrigin likely unused
                 tempoOrigin: tempo,
-                instrumentDict: smf.instrumentDict
+                instrumentDict: smf.instrumentDict,
+                loopStart: 0,
+                loopTimes: 0,
             },
 			misc: {
 				noteCount: smf.noteList.length
@@ -181,6 +152,7 @@ Util.Player = function ($controlCont)
     return {
         playShmidusic: playShmidusic,
         playStandardMidiFile: playStandardMidiFile,
+        playSheetMusic: playSheetMusic,
         addNoteHandler: h => noteHandlers.push(h),
         addConfigConsumer: cc => (configConsumer = cc),
         stop: () => {

@@ -14,6 +14,22 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
 	var startMillis = window.performance.now() - startDeltaTime;
 	
     var chordIndex = -1;
+    var loopsLeft = sheetMusic.config.loopTimes;
+
+    var findBTime = function(chordTime)
+    {
+        var sumFrac = 0;
+        for (var i = 0; i < sheetMusic.chordList.length; ++i) {
+            if (sumFrac >= chordTime) {
+                return i;
+            } else {
+                sumFrac += sheetMusic.chordList[i].noteList
+                    .map(n => n.length).sort()[0] || 0;
+            }
+        }
+
+        return -1;
+    };
 
     var scheduled = [];
     var scheduleScrewable = function(timeSkip, callback)
@@ -28,28 +44,6 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
         }, timeSkip);
     };
 
-	var playNext = function()
-	{
-        ++chordIndex;
-        onChord(sheetMusic.chordList[chordIndex], tempo, chordIndex);
-
-		if (chordIndex < sheetMusic.chordList.length - 1) {
-
-			var timeSkip = Util.toMillis(sheetMusic.chordList[chordIndex + 1].timeFraction, tempo) -
-					(window.performance.now() - startMillis);
-
-            timeSkip > 0
-                ? scheduleScrewable(timeSkip, playNext)
-                : playNext();
-
-		} else {
-            // hope last chord finishes in 5 seconds
-            // TODO: you do stupid thing here and not even playing last chord
-            scheduleScrewable(2000, whenFinished);
-		}
-	};
-	playNext();
-
     var pauseHandler = _ => {};
     var resumeHandler = _ => {};
 
@@ -60,6 +54,36 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
         scheduled.length = 0;
         pauseHandler();
     };
+
+	var playNext = function()
+	{
+        ++chordIndex;
+        onChord(sheetMusic.chordList[chordIndex], tempo, chordIndex);
+
+        var chordEndFraction = sheetMusic.chordList[chordIndex + 1]
+            ? sheetMusic.chordList[chordIndex + 1].timeFraction
+            : sheetMusic.chordList[chordIndex].timeFraction
+            + sheetMusic.chordList[chordIndex].noteList
+                .map(n => n.length).sort()[0] || 0;
+
+        var timeSkip = Util.toMillis(chordEndFraction, tempo) -
+                (window.performance.now() - startMillis);
+
+		if (chordIndex < sheetMusic.chordList.length - 1) {
+            timeSkip > 0
+                ? scheduleScrewable(timeSkip, playNext)
+                : playNext();
+		} else if (loopsLeft-- > 0) {
+            startMillis += Util.toMillis(chordEndFraction - sheetMusic.config.loopStart, tempo);
+            chordIndex = findBTime(sheetMusic.config.loopStart) - 1;
+            timeSkip > 0
+                ? scheduleScrewable(timeSkip, playNext)
+                : playNext();
+        } else {
+            scheduleScrewable(timeSkip, whenFinished);
+		}
+	};
+	playNext();
 
     var resume = function()
     {

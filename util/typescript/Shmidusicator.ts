@@ -18,6 +18,8 @@ class Shmidusicator
                     numerator: 8, // 4/4. TODO: it's usually present in midi
                     tempo: midi.tempoEventList.map(e => e.tempo)[0] || 120,
                     keySignature: 0, // TODO: it's usually present in midi
+                    loopStart: 0,
+                    loopTimes: 0,
                     channelList: Object.keys(midi.instrumentDict).map(channel => 1 && {
                         channelNumber: +channel,
                         instrument: midi.instrumentDict[+channel],
@@ -136,4 +138,44 @@ class Shmidusicator
         return Shmidusicator.getLengthOptions()
             .some(o => o.float().toFixed(8) === length.toFixed(8));
     }
-}
+
+    /** @param shmidusicJson - json in shmidusic project format */
+    static generalizeShmidusic = function (shmidusicJson: IShmidusicStructure): IGeneralStructure
+    {
+        var staff = shmidusicJson['staffList'][0];
+
+        var instrumentDict: {[ch: number]: number} = {};
+
+        (staff.staffConfig.channelList || [])
+            .filter(e => e.channelNumber < 16)
+            .forEach((e) => (instrumentDict[e.channelNumber] = e.instrument));
+
+        Ns.range(0, 16).forEach((i: number) => (instrumentDict[i] |= 0));
+
+        var chordList = staff['chordList'];
+
+        var timeFraction = 0;
+
+        chordList.forEach(function(c)
+        {
+            c.timeFraction = timeFraction;
+            var chordLength = Math.min.apply(null, c.noteList.map(n => eval(n.length + '')));
+            timeFraction += chordLength;
+        });
+
+        return {
+            chordList: chordList,
+            config: {
+                tempo: staff.staffConfig.tempo,
+                // tempoOrigin likely unused
+                tempoOrigin: staff.staffConfig.tempo,
+                instrumentDict: instrumentDict,
+                loopStart: staff.staffConfig.loopStart || 0,
+                loopTimes: staff.staffConfig.loopTimes || 0,
+            },
+            misc: {
+                noteCount: -100
+            }
+        };
+    };
+};

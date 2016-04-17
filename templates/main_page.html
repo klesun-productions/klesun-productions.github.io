@@ -60,10 +60,6 @@
                             <option value="4">x4</option>
                         </select>
                     </div>
-                    <div class="inlineBlock">
-                        Draw Sheet Music:
-                        <input type="checkbox" id="drawSheetMusicFlag"/>
-                    </div>
                     <br clear="all"/>
                 </div>
 
@@ -108,6 +104,12 @@
                     <br clear="all" />
                 </div>
             </div>
+            <div id="sheetMusicConfigDiv">
+                Draw Sheet Music:
+                <input type="checkbox" id="drawSheetMusicFlag"/>
+                Tact Size:
+                <input type="number" class="holder tactSize" value="1"/>
+            </div>
             <div class="sheetMusicCont" id="mainSongContainer"></div>
         </div>
 
@@ -132,31 +134,10 @@
 
 <script>
 
-	// checking for ECMA 6 cuz nothing will work elsewhere
-	var ECMA6 = false;
-	setTimeout(function () {
-        // will fire for any issue
-		if (!ECMA6) {
-			alert('Do you hate me? You want me to write \n"list.filter(function (a) { return a.isok; })" instead of just \n"list.filter(a => a.isok)" ?\n' +
-				'Please, install Chrome 45 or higher or whatever browser you use so it fitted ECMA 6 standard and then come back.');
-		}
-	}, 3000);
-
-    setTimeout(function () {
-        var a = b => b;
-        ECMA6 = true;
-    }, 100);
-
     var mainPage = MainPage($('#mainCont')[0]); // defined in main_page.js
-
-    /** @debug */
-    console.log('gonna load window');
 
     var onLoad = function ()
     {
-        /** @debug */
-        console.log('window loaded');
-
         mainPage.initIchigosMidiList();
         // mainPage.initMyMusicList();
         $('#startDemoButton').click(mainPage.playDemo);

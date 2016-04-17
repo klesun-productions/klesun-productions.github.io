@@ -24,7 +24,6 @@ Util.StaffPanel = function(sheetMusic)
         }
     };
 
-    /** @TODO: handle properly sharps and flats! */
     var drawNote = function(note, startFraction)
     {
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
@@ -45,8 +44,6 @@ Util.StaffPanel = function(sheetMusic)
             var color = Util.channelColors[note.channel];
 
             adapter.fillRect(x_px, y_px, w_px, NOTE_HEIGHT, color);
-
-            /** @TODO: draw tact line if got tact size message */
         }
     };
 

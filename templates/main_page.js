@@ -10,6 +10,7 @@ var MainPage = function(mainCont)
     const
         $pianoCanvas = $(mainCont).find('.pianoLayoutCanvas'),
         $playbackControlCont = $(mainCont).find('.playbackControlCont'),
+        sheetMusicConfigCont = $(mainCont).find('#sheetMusicConfigDiv')[0],
         sheetMusicCont = $(mainCont).find('.sheetMusicCont')[0],
         violinKeyImage = $(mainCont).find('.violinKeyImage')[0],
         bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
@@ -115,7 +116,7 @@ var MainPage = function(mainCont)
         $(mainCont).find('#synthDropdown')[0],
         $(mainCont).find('#synthControl')[0]);
 
-    var sheetMusicPainter = Ns.SheetMusicPainter('mainSongContainer');
+    var sheetMusicPainter = Ns.SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
     var pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
 
     var player = Util.Player($playbackControlCont);

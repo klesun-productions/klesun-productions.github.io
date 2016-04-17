@@ -7,7 +7,7 @@
 var Ns = Ns || {};
 Ns.Compose = Ns.Compose || {};
 
-Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider): IControl
+Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider, configCont: HTMLElement): IControl
 {
     var $parentEl = $chordListCont.parent();
 
@@ -84,7 +84,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
 
     var recalcTacts = function()
     {
-        var tactSize = 1.0;
+        var tactSize = $(configCont).find('.holder.tactSize').val() || 1.0;
 
         $chordListCont.find('.tactNumberCont').html('&nbsp;');
         $chordListCont.children()
@@ -211,6 +211,8 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
 
     var chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;
 
+    configCont.onchange = requestRecalcTacts;
+
     return {
         setNoteFocus: setNoteFocus,
         setChordFocus: setChordFocus,
@@ -228,6 +230,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider)
         addNote: addNote,
         multiplyLength: multiplyLength,
         clear: () => $chordListCont.empty(),
+        getFocusIndex: () => $chordListCont.find('.focused').index(),
     };
 };
 
@@ -242,4 +245,5 @@ interface IControl {
     addNote: {(note: IShNote, inNewChord: boolean): void},
     multiplyLength: {(factor: number): void},
     clear: {(): void},
+    getFocusIndex: {(): number}
 }

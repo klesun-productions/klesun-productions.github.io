@@ -149,7 +149,7 @@ interface ICanvasProvider {
     getChordWidth: { (): number },
 };
 
-Ns.SheetMusicPainter = function(parentId: string): IPainter
+Ns.SheetMusicPainter = function(parentId: string, config: HTMLElement): IPainter
 {
     var R = 3; // semibreve note oval vertical radius
     var DX = R * 5; // half of chord span width
@@ -163,7 +163,7 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
     $parentEl.append($chordListCont);
 
     var canvaser: ICanvasProvider = Ns.CanvasProvider(R);
-    var control: IControl = Ns.Compose.Control($chordListCont, canvaser);
+    var control: IControl = Ns.Compose.Control($chordListCont, canvaser, config);
 
     var toFloat = (fractionString: string) => eval(fractionString);
     var interruptDrawing = () => {};
@@ -218,16 +218,7 @@ Ns.SheetMusicPainter = function(parentId: string): IPainter
         });
     };
 
-    // TODO: likely all these dom-manipulating methods could be moved from Painter somewhere else
-
-    var getChordList = function(startIndex?: number): IShmidusicChord[]
-    {
-        startIndex = startIndex || 0;
-
-        return $chordListCont.children().toArray()
-            .slice(startIndex)
-            .map(canvaser.extractChord);
-    };
+    var getChordList = () => $chordListCont.children().toArray().map(canvaser.extractChord);
 
     var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
         ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)
@@ -363,7 +354,7 @@ interface IPainter {
     draw: { (song: IShmidusicStructure): void },
     handleNoteOn: { (note: IShNote, chordIndex: number): void },
     setEnabled: { (v: boolean): void },
-    getChordList: { (start: number): IShmidusicChord[] },
+    getChordList: { (): IShmidusicChord[] },
     setIsPlaying: { (flag: boolean): void },
     getControl: { (): IControl },
     getFocusedNotes: { (): IShNote[] },

@@ -8,25 +8,23 @@ Ns.Compose = Ns.Compose || {};
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
 
-Ns.Compose.Handler = function(contId: string): void
+Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
 {
-    var painter: IPainter = Ns.SheetMusicPainter(contId);
-    painter.setEnabled(true);
     var lastChordOn = 0;
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
 
-    var playback: {startedAt: number} = null;
+    var playback = false;
     var playbackFinished = function()
     {
         painter.setIsPlaying(false);
-        playback = null;
+        playback = false;
     };
 
     player.addNoteHandler({
         handleNoteOn: (n: IShNote, i: number) => [
             synth.playNote(n.tune, n.channel),
-            painter.handleNoteOn(n, i + playback.startedAt + 1),
+            painter.handleNoteOn(n, i),
         ].reduce((offs,off) => () => { offs(); off(); })
     });
 
@@ -70,27 +68,36 @@ Ns.Compose.Handler = function(contId: string): void
         }
     };
 
+    var collectChannelList = () => Ns.range(0,15).map((i: number) => 1 && {channelNumber: i, instrument: 0});
 
+    var collectConfig = () => 1 && {
+        tempo: $(configCont).find('.holder.tempo').val(),
+        channelList: collectChannelList(),
+        loopStart: $(configCont).find('.holder.loopStart').val(),
+        loopTimes: $(configCont).find('.holder.loopTimes').val(),
+    };
 
     var collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
         staffList: [{
-            staffConfig: {
-                tempo: 120,
-                keySignature: 0,
-                numerator: 8,
-                channelList: []
-            },
+            staffConfig: collectConfig(),
+            //staffConfig: {
+            //    tempo: 120,
+            //    keySignature: 0,
+            //    numerator: 8,
+            //    channelList: []
+            //},
             chordList: chords
         }]
     };
 
     var play = function(): void
     {
-        var startedAt = painter.getControl().moveChordFocus(-1);
-        var chordList = painter.getChordList(startedAt + 1);
-        playback = {startedAt: startedAt};
+        playback = true;
 
-        player.playShmidusic(collectSong(chordList), {}, playbackFinished);
+        var shmidusic = collectSong(painter.getChordList());
+        var adapted = Shmidusicator.generalizeShmidusic(shmidusic);
+
+        player.playSheetMusic(adapted, {}, playbackFinished, painter.getControl().getFocusIndex());
         painter.setIsPlaying(true);
     };
 
@@ -117,9 +124,12 @@ Ns.Compose.Handler = function(contId: string): void
         }
     };
 
-    var hangKeyboardHandlers = function(): void
+    var hangKeyboardHandlers = function(el: HTMLElement): void
     {
-        document.onkeydown = function(keyEvent: KeyboardEvent)
+        $(el).attr('tabindex', 1);
+        el.onclick = () => $(el).focus();
+
+        el.onkeydown = function(keyEvent: KeyboardEvent)
         {
             var control = painter.getControl();
 
@@ -182,7 +192,7 @@ Ns.Compose.Handler = function(contId: string): void
                 83: (e: KeyboardEvent) => {
                     if (e.ctrlKey) {
                         e.preventDefault();
-                        Ns.saveToDisc(JSON.stringify(collectSong(painter.getChordList(0))));
+                        Ns.saveToDisc(JSON.stringify(collectSong(painter.getChordList())));
                     }
                 },
             };
@@ -240,5 +250,8 @@ Ns.Compose.Handler = function(contId: string): void
     };
 
     hangMidiHandlers();
-    hangKeyboardHandlers();
+
+    return {
+        hangKeyboardHandlers: hangKeyboardHandlers,
+    };
 };
