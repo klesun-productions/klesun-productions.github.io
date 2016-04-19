@@ -58,8 +58,19 @@
         painter.setEnabled(true);
 
         var handler = Ns.Compose.Handler(painter, $('#playbackConfigDiv')[0]);
-        handler.hangKeyboardHandlers($('#sheetMusicDiv')[0]);
-        $('#sheetMusicDiv').focus();
+
+        var sheetMusicCont = $('#sheetMusicDiv')[0];
+        $(sheetMusicCont).attr('tabindex', 1);
+        handler.hangKeyboardHandlers(sheetMusicCont);
+        handler.hangGlobalKeyboardHandlers();
+
+        $('body').click(function(e) {
+            if (e.target.tagName.toLowerCase() !== 'input') {
+                $(sheetMusicCont).focus();
+            }
+        });
+
+        $(sheetMusicCont).focus();
     };
 
     window.addEventListener('load', onLoad, false);

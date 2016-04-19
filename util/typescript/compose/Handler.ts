@@ -14,9 +14,11 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
     var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
 
+    var control = painter.getControl();
     var playback = false;
     var playbackFinished = function()
     {
+        player.stop();
         painter.setIsPlaying(false);
         playback = false;
     };
@@ -63,7 +65,6 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
                 lastChordOn = receivedTime;
             }
         } else {
-            player.stop();
             playbackFinished();
         }
     };
@@ -80,12 +81,6 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
     var collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
         staffList: [{
             staffConfig: collectConfig(),
-            //staffConfig: {
-            //    tempo: 120,
-            //    keySignature: 0,
-            //    numerator: 8,
-            //    channelList: []
-            //},
             chordList: chords
         }]
     };
@@ -97,7 +92,8 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         var shmidusic = collectSong(painter.getChordList());
         var adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
-        player.playSheetMusic(adapted, {}, playbackFinished, painter.getControl().getFocusIndex());
+        var index = Math.max(0, painter.getControl().getFocusIndex());
+        player.playSheetMusic(adapted, {}, playbackFinished, index);
         painter.setIsPlaying(true);
     };
 
@@ -124,90 +120,88 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-    var hangKeyboardHandlers = function(el: HTMLElement): void
+    // separating to focused and global to
+    // prevent conflicts with inputs, etc...
+    var globalHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
+        // "o"
+        79: (e: KeyboardEvent) => e.ctrlKey && Ns.selectFileFromDisc(openSong),
+        // "s"
+        83: (e: KeyboardEvent) => e.ctrlKey && Ns.saveToDisc(JSON.stringify(collectSong(painter.getChordList()))),
+    };
+
+    var focusedHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
+        // space
+        32: play,
+        // left arrow
+        37: () => {
+            control.moveChordFocus(-1);
+            playNotes(painter.getFocusedNotes());
+        },
+        // right arrow
+        39: () => {
+            control.moveChordFocus(+1);
+            playNotes(painter.getFocusedNotes());
+        },
+        // down arrow
+        40: () => {
+            control.moveChordFocusRow(+1);
+            playNotes(painter.getFocusedNotes());
+        },
+        // up arrow
+        38: () => {
+            control.moveChordFocusRow(-1);
+            playNotes(painter.getFocusedNotes());
+        },
+        // home
+        36: () => control.setChordFocus(-1),
+        // end
+        35: () => control.setChordFocus(99999999999), // backoffice style!
+        // shift
+        16: () => playNotes(control.pointNextNote()),
+        // opening square bracket
+        219: () => control.multiplyLength(0.5),
+        // closing square bracket
+        221: () => control.multiplyLength(2),
+        // dot
+        190: () => control.multiplyLength(1.5),
+        // comma
+        188: () => control.multiplyLength(2/3),
+        // enter
+        13: () => playNotes(painter.getFocusedNotes()),
+        // pause
+        19: () => painter.getControl().addNote({tune: 0, channel: 9, length: 0.25}, true),
+        // delete
+        46: () => control.deleteFocused(false),
+        // backspace
+        8: (e: KeyboardEvent) => {
+            e.preventDefault();
+            control.deleteFocused(true);
+        },
+    };
+
+    var hangKeyboardHandlers = (el: HTMLElement) => el.onkeydown = function(keyEvent: KeyboardEvent)
     {
-        $(el).attr('tabindex', 1);
-        el.onclick = () => $(el).focus();
-
-        el.onkeydown = function(keyEvent: KeyboardEvent)
-        {
-            var control = painter.getControl();
-
-            var handlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
-                // space
-                32: play,
-                // left arrow
-                37: () => {
-                    control.moveChordFocus(-1);
-                    playNotes(painter.getFocusedNotes());
-                },
-                // right arrow
-                39: () => {
-                    control.moveChordFocus(+1);
-                    playNotes(painter.getFocusedNotes());
-                },
-                // down arrow
-                40: () => {
-                    control.moveChordFocusRow(+1);
-                    playNotes(painter.getFocusedNotes());
-                },
-                // up arrow
-                38: () => {
-                    control.moveChordFocusRow(-1);
-                    playNotes(painter.getFocusedNotes());
-                },
-                // home
-                36: () => control.setChordFocus(-1),
-                // end
-                35: () => control.setChordFocus(99999999999), // backoffice style!
-                // shift
-                16: () => playNotes(control.pointNextNote()),
-                // opening square bracket
-                219: () => control.multiplyLength(0.5),
-                // closing square bracket
-                221: () => control.multiplyLength(2),
-                // dot
-                190: () => control.multiplyLength(1.5),
-                // comma
-                188: () => control.multiplyLength(2/3),
-                // enter
-                13: () => playNotes(painter.getFocusedNotes()),
-                // pause
-                19: () => painter.getControl().addNote({tune: 0, channel: 9, length: 0.25}, true),
-                // delete
-                46: () => control.deleteFocused(false),
-                // backspace
-                8: (e: KeyboardEvent) => {
-                    e.preventDefault();
-                    control.deleteFocused(true);
-                },
-                // "o"
-                79: (e: KeyboardEvent) => {
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        Ns.selectFileFromDisc(openSong);
-                    }
-                },
-                // "s"
-                83: (e: KeyboardEvent) => {
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        Ns.saveToDisc(JSON.stringify(collectSong(painter.getChordList())));
-                    }
-                },
-            };
-
+        if (keyEvent.keyCode in focusedHandlers) {
             if (playback) {
-                player.stop();
                 playbackFinished();
             } else {
-                if (keyEvent.keyCode in handlers) {
-                    handlers[keyEvent.keyCode](keyEvent);
-                } else {
-                    console.log('Unknown Key Event: ', keyEvent);
-                }
+                focusedHandlers[keyEvent.keyCode](keyEvent);
             }
-        };
+        } else {
+            console.log('Unknown Key Event: ', keyEvent);
+        }
+    };
+
+    var hangGlobalKeyboardHandlers = () => $('body')[0].onkeydown = function(keyEvent: KeyboardEvent)
+    {
+        if (keyEvent.keyCode in globalHandlers) {
+            keyEvent.preventDefault();
+            if (playback) {
+                playbackFinished();
+            } else {
+                globalHandlers[keyEvent.keyCode](keyEvent);
+            }
+        }
     };
 
     var handleMidiEvent = function (message: MIDIMessageEvent) {
@@ -253,5 +247,6 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
 
     return {
         hangKeyboardHandlers: hangKeyboardHandlers,
+        hangGlobalKeyboardHandlers: hangGlobalKeyboardHandlers,
     };
 };
