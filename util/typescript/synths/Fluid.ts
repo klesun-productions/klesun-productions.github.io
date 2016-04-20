@@ -169,7 +169,7 @@ Ns.Synths.Fluid = function(audioCtx: AudioContext, soundfontDirUrl: string): ISy
 
     var consumeConfig = function(programs: { [id: number]: number; }): void
     {
-        presetsByChannel = programs;
+        Kl.fori(programs, (k,v) => presetsByChannel[k] = v);
     };
 
     var init = function($cont: JQuery): void

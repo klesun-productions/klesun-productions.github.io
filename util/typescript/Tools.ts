@@ -26,6 +26,59 @@ class Optional<T>
     has = () => this.isPresent;
 }
 
+class Kl
+{
+    static for = <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
+        Object.keys(dict).forEach(k => callback(k, dict[k]));
+
+    static fori = <Tx>(dict: {[k: number]: Tx}, callback: { (k: number, v: Tx): void }) =>
+        Object.keys(dict).forEach(k => callback(+k, dict[+k]));
+
+    // TODO: sync somehow with .channelColors CSS
+    static channelColors: [number,number,number][] = [
+        [0,0,0], // black
+        [192,0,0], // red
+        [0,148,0], // green
+        [60,60,255], // blue
+        [152,152,0], // yellow
+        [0,152,152], // cyan
+        [192,0,192], // magenta
+        [255,128,0], // orange
+        [91,0,255], // bluish magenta
+
+        [128,128,128], // drum
+        [127,255,0], // TODO: !!!
+        [255,0,255], // TODO: !!!
+        [0,255,0], // TODO: !!!
+        [0,255,0], // TODO: !!!
+        [0,255,0], // TODO: !!!
+        [0,255,0] // TODO: !!!
+    ];
+
+    static instrumentNames: string[] = ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",
+        "Honky-tonk Piano","Electric Piano","6 Electric Piano 2","Harpsichord","Clavinet","Celesta",
+        "Glockenspiel","Music Box","Vibraphone","Marimba","Xylophone","Tubular Bells","Dulcimer",
+        "Drawbar Organ","Percussive Organ","Rock Organ","Church Organ","Reed Organ","Accordion",
+        "Harmonica","Tango Accordion","Acoustic Guitar (nylon)","Acoustic Guitar (steel)",
+        "Electric Guitar (jazz)","Electric Guitar (clean)","Electric Guitar (muted)","Overdriven Guitar",
+        "Distortion Guitar","Guitar Harmonics","Acoustic Bass","Electric Bass (finger)","Electric Bass (pick)",
+        "Fretless Bass","Slap Bass 1","38 Slap Bass 2","Synth Bass 1","40 Synth Bass 2","Violin","Viola",
+        "Cello","Contrabass","Tremolo","Pizzicato","Orchestral Harp","Timpani","String Ensemble 1",
+        "50 String Ensemble 2","Synth","52 Synth Strings 2","Choir","Voice","55 Synth Choir","Orchestra Hit",
+        "Trumpet","Trombone","Tuba","Muted Trumpet","French Horn","Brass Section","63 Synth Brass 1",
+        "64 Synth Brass 2","Soprano Sax","Alto Sax","Tenor Sax","Baritone Sax","Oboe","English Horn",
+        "Bassoon","Clarinet","Piccolo","Flute","Recorder","Pan Flute","Blown bottle","Shakuhachi","Whistle",
+        "Ocarina","Lead 1","sawtooth","calliope","84 Lead 4 chiff","charang","86 Lead 6 (voice)","fifths",
+        "88 Lead 8 (bass + lead)","89 Pad 1 (new age)","90 Pad 2 (warm)","polysynth","92 Pad 4 (choir)",
+        "93 Pad 5 (bowed)","94 Pad 6 (metallic)","95 Pad 7 (halo)","96 Pad 8 (sweep)","FX",
+        "98 FX 2 (soundtrack)","99 FX 3 (crystal)","100 FX 4 (atmosphere)","101 FX 5 (brightness)","goblins",
+        "echoes","104 FX 8 (sci-fi)","Sitar","Banjo","Shamisen","Koto","Kalimba","Bagpipe","Fiddle","Shanai",
+        "113 Tinkle Bell","Agogo","Steel Drums","Woodblock","Taiko Drum","Melodic Tom","119 Synth Drum",
+        "Cymbal","Fret","122 Breath Noise","Seashore","Bird Tweet","Telephone Ring","Helicopter","Applause","Gunshot"];
+}
+
+Ns.for = Kl.for;
+
 /** @param chunkSize - count of elements that will be foreached in one iteration
  * @param breakMillis - break duration between iterations */
 Ns.forChunk = function<Tx>(list: Tx[], breakMillis: number, chunkSize: number, callback: { ($el: Tx): void })
@@ -100,46 +153,9 @@ Ns.synthPresets = [
     50, 51, 84,
 ];
 
-Ns.channelColors = [
-    [0,0,0], // black
-    [192,0,0], // red
-    [0,148,0], // green
-    [60,60,255], // blue
-    [152,152,0], // yellow
-    [0,152,152], // cyan
-    [192,0,192], // magenta
-    [255,128,0], // orange
-    [91,0,255], // bluish magenta
+Ns.channelColors = Kl.channelColors;
 
-    [128,128,128], // drum
-    [127,255,0], // TODO: !!!
-    [255,0,255], // TODO: !!!
-    [0,255,0], // TODO: !!!
-    [0,255,0], // TODO: !!!
-    [0,255,0], // TODO: !!!
-    [0,255,0] // TODO: !!!
-];
-
-Ns.instrumentNames = ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",
-    "Honky-tonk Piano","Electric Piano","6 Electric Piano 2","Harpsichord","Clavinet","Celesta",
-    "Glockenspiel","Music Box","Vibraphone","Marimba","Xylophone","Tubular Bells","Dulcimer",
-    "Drawbar Organ","Percussive Organ","Rock Organ","Church Organ","Reed Organ","Accordion",
-    "Harmonica","Tango Accordion","Acoustic Guitar (nylon)","Acoustic Guitar (steel)",
-    "Electric Guitar (jazz)","Electric Guitar (clean)","Electric Guitar (muted)","Overdriven Guitar",
-    "Distortion Guitar","Guitar Harmonics","Acoustic Bass","Electric Bass (finger)","Electric Bass (pick)",
-    "Fretless Bass","Slap Bass 1","38 Slap Bass 2","Synth Bass 1","40 Synth Bass 2","Violin","Viola",
-    "Cello","Contrabass","Tremolo","Pizzicato","Orchestral Harp","Timpani","String Ensemble 1",
-    "50 String Ensemble 2","Synth","52 Synth Strings 2","Choir","Voice","55 Synth Choir","Orchestra Hit",
-    "Trumpet","Trombone","Tuba","Muted Trumpet","French Horn","Brass Section","63 Synth Brass 1",
-    "64 Synth Brass 2","Soprano Sax","Alto Sax","Tenor Sax","Baritone Sax","Oboe","English Horn",
-    "Bassoon","Clarinet","Piccolo","Flute","Recorder","Pan Flute","Blown bottle","Shakuhachi","Whistle",
-    "Ocarina","Lead 1","sawtooth","calliope","84 Lead 4 chiff","charang","86 Lead 6 (voice)","fifths",
-    "88 Lead 8 (bass + lead)","89 Pad 1 (new age)","90 Pad 2 (warm)","polysynth","92 Pad 4 (choir)",
-    "93 Pad 5 (bowed)","94 Pad 6 (metallic)","95 Pad 7 (halo)","96 Pad 8 (sweep)","FX",
-    "98 FX 2 (soundtrack)","99 FX 3 (crystal)","100 FX 4 (atmosphere)","101 FX 5 (brightness)","goblins",
-    "echoes","104 FX 8 (sci-fi)","Sitar","Banjo","Shamisen","Koto","Kalimba","Bagpipe","Fiddle","Shanai",
-    "113 Tinkle Bell","Agogo","Steel Drums","Woodblock","Taiko Drum","Melodic Tom","119 Synth Drum",
-    "Cymbal","Fret","122 Breath Noise","Seashore","Bird Tweet","Telephone Ring","Helicopter","Applause","Gunshot"];
+Ns.instrumentNames = Kl.instrumentNames;
 
 Util.channelColors = Ns.channelColors;
 

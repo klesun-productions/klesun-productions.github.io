@@ -41,11 +41,11 @@
                   onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
     Loop Start: <input type="number" class="holder loopStart" value="0"/>
     Loop Times: <input type="number" class="holder loopTimes" value="0"/>
-    <table class="channelListTable"></table>
-</span>
-<span id="visualConfigDiv">
-    Tact Size: <input type="number" class="holder tactSize" value="1" min="0.25" max="16" step="0.25"
-                      onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
+    <span id="visualConfigDiv">
+        Tact Size: <input type="number" class="holder tactSize" value="1" min="0.25" max="16" step="0.25"
+                          onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
+    </span>
+    Channels: <span class="channelListTable channelColors"></span>
 </span>
 
 <div id="sheetMusicDiv"></div>
@@ -77,8 +77,42 @@
 
 </script>
 
+
 <style>
 
+    /** @TODO: export this to js somehow */
+
+    .channelColors [data-channel="0"] { color: rgb(0, 0, 0); } /* black */
+    .channelColors [data-channel="1"] { color: rgb(192, 0, 0); } /* red */
+    .channelColors [data-channel="2"] { color: rgb(0, 148, 0); } /* green */
+    .channelColors [data-channel="3"] { color: rgb(60, 60, 255); } /* blue */
+    .channelColors [data-channel="4"] { color: rgb(152, 152, 0); } /* yellow */
+    .channelColors [data-channel="5"] { color: rgb(0, 152, 152); } /* cyan */
+    .channelColors [data-channel="6"] { color: rgb(192, 0, 192); } /* magenta */
+    .channelColors [data-channel="7"] { color: rgb(255, 128, 0); } /* orange */
+    .channelColors [data-channel="8"] { color: rgb(91, 0, 255); } /* bluish magenta */
+    .channelColors [data-channel="9"] { color: rgb(128, 128, 128); } /* drum */
+
+    .channelColors [data-channel="10"] { color: rgb(127, 255, 0); } /* TODO: !!! */
+    .channelColors [data-channel="11"] { color: rgb(255, 0, 255); } /* TODO: !!! */
+    .channelColors [data-channel="12"] { color: rgb(0, 255, 0); } /* TODO: !!! */
+    .channelColors [data-channel="13"] { color: rgb(0, 255, 0); } /* TODO: !!! */
+    .channelColors [data-channel="14"] { color: rgb(0, 255, 0); } /* TODO: !!! */
+    .channelColors [data-channel="15"] { color: rgb(0, 255, 0); } /* TODO: !!! */
+
+    .channelListTable { font-weight: bold; }
+
+    .channelListTable > span {
+        margin-right: 10px;
+        width: 40px;
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: solid red 1px;
+    }
+    body {
+        font-size: 12px;
+        font-family: monospace;
+    }
     #sheetMusicDiv {
         margin-top: 20px;
         min-height: 120px;

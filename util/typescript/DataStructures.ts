@@ -23,6 +23,17 @@ interface ITimedShChord extends IShmidusicChord {
     timeFraction: number;
 }
 
+// represents an info, persistent during song,
+// that is limited to a single channel number
+interface IChannel {
+    // midi program number in range [0..128)
+    instrument: number;
+    // midi channel number in range [0..16)
+    channelNumber: number;
+    // midi channel starting volume in percents [0..100]
+    volume?: number;
+}
+
 // output of github.com/klesun/shmidusic
 interface IShmidusicStructure {
     staffList: Array<{
@@ -47,14 +58,7 @@ interface IShmidusicStructure {
             // count of times playback will be rewinded
             // to the loopStart after last chord
             loopTimes: number,
-            channelList: Array<{
-                // midi program number in range [0..128)
-                instrument: number;
-                // midi channel number in range [0..16)
-                channelNumber: number;
-                // midi channel starting volume in percents [0..100]
-                volume?: number;
-            }>;
+            channelList: IChannel[];
         };
         chordList: Array<IShmidusicChord>;
     }>;

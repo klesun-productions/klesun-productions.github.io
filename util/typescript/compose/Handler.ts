@@ -69,7 +69,28 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-    var collectChannelList = () => Ns.range(0,15).map((i: number) => 1 && {channelNumber: i, instrument: 0});
+    var makeChannelSpan = function(chan: IChannel): HTMLSpanElement
+    {
+        var $select = $('<select></select>');
+
+        Kl.instrumentNames.forEach((d,i) =>
+            $select.append($('<option></option>').val(i).html(i + ': ' + d)));
+        $select.val(chan.instrument);
+
+        var onchange = () => synth.consumeConfig({[chan.channelNumber]: $select.val()});
+        onchange();
+
+        return $('<span></span>').attr('data-channel', chan.channelNumber)
+            .append(chan.channelNumber + '')
+            .append($select.change(onchange))
+            [0];
+    };
+
+    var collectChannelList = () => $(configCont).find('.channelListTable span').toArray()
+        .map(c => 1 && {
+            channelNumber: +$(c).attr('data-channel'),
+            instrument: +$(c).find('select').val() || 0
+        });
 
     var collectConfig = () => 1 && {
         tempo: $(configCont).find('.holder.tempo').val(),
@@ -97,6 +118,7 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         painter.setIsPlaying(true);
     };
 
+    // TODO reset to default before opening. some legacy songs do not have loopTimes/Start
     var openSong = function(base64Song: string): void
     {
         var jsonSong = atob(base64Song);
@@ -113,8 +135,19 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
             painter.getControl().clear();
 
             song.staffList
-                .forEach(s => s.chordList
-                    .forEach(painter.getControl().addChord))
+                .forEach(s => {
+                    var config: {[k: string]: any} = s.staffConfig;
+                    Kl.for(config, (k, v) =>
+                        $(configCont).find('> .holder.' + k).val(v));
+
+                    var $channelCont = $(configCont).find('.channelListTable').empty();
+                    s.staffConfig.channelList
+                        .map(makeChannelSpan)
+                        .forEach(el => $channelCont.append(el));
+
+                    s.chordList
+                        .forEach(painter.getControl().addChord)
+                });
         } else {
             alert('Your file is valid josn, but not valid Shmidusic!');
         }

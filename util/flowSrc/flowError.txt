@@ -1,0 +1,1 @@
+testInference.js:35 35: stafify(1000); ^^^^^^^^^^^^^ function call 35: stafify(1000); ^^^^ number. This type is incompatible with 6: var stafify = function(staffConfig: StaffConfigT) ^^^^^^^^^^^^ object type Found 1 error
