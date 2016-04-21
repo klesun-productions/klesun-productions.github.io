@@ -156,6 +156,7 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
                         $(configCont).find('> .holder.' + k).val(v));
 
                     redrawChannels(s.staffConfig.channelList);
+                    synth.analyse(s.chordList);
 
                     s.chordList
                         .forEach(painter.getControl().addChord)

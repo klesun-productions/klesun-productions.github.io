@@ -155,6 +155,8 @@ interface IDrumPreset {
     }>;
 }
 
+type seconds_t = number;
+
 var sf2parserGeneratorEnumeratorTable = [
     'startAddrsOffset',
     'endAddrsOffset',
