@@ -118,6 +118,21 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         painter.setIsPlaying(true);
     };
 
+    var redrawChannels = function(partial: IChannel[]): void
+    {
+        var channels: IChannel[] = [];
+
+        partial.forEach(c => channels[c.channelNumber] = c);
+        Kl.range(0,16).forEach(i => channels[i] || (channels[i] = {
+            channelNumber: i, instrument: 0
+        }));
+
+        var $channelCont = $(configCont).find('.channelListTable').empty();
+        channels
+            .map(makeChannelSpan)
+            .forEach(el => $channelCont.append(el));
+    };
+
     // TODO reset to default before opening. some legacy songs do not have loopTimes/Start
     var openSong = function(base64Song: string): void
     {
@@ -140,10 +155,7 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
                     Kl.for(config, (k, v) =>
                         $(configCont).find('> .holder.' + k).val(v));
 
-                    var $channelCont = $(configCont).find('.channelListTable').empty();
-                    s.staffConfig.channelList
-                        .map(makeChannelSpan)
-                        .forEach(el => $channelCont.append(el));
+                    redrawChannels(s.staffConfig.channelList);
 
                     s.chordList
                         .forEach(painter.getControl().addChord)
@@ -277,6 +289,7 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
     };
 
     hangMidiHandlers();
+    redrawChannels([]);
 
     return {
         hangKeyboardHandlers: hangKeyboardHandlers,

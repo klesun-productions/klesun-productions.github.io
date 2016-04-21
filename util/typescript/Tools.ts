@@ -34,6 +34,10 @@ class Kl
     static fori = <Tx>(dict: {[k: number]: Tx}, callback: { (k: number, v: Tx): void }) =>
         Object.keys(dict).forEach(k => callback(+k, dict[+k]));
 
+    /** @params l - left index inclusive, r - right index exclusive */
+    static range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
+        .map((nop: void, i: number) => l + i);
+
     // TODO: sync somehow with .channelColors CSS
     static channelColors: [number,number,number][] = [
         [0,0,0], // black
@@ -103,9 +107,7 @@ Ns.forChunk = function<Tx>(list: Tx[], breakMillis: number, chunkSize: number, c
 };
 Util.forEachBreak = Ns.forChunk;
 
-/** @params l - left index inclusive, r - right index exclusive */
-Ns.range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
-    .map((nop: void, i: number) => l + i);
+Ns.range = Kl.range;
 
 Util.range = Ns.range;
 
