@@ -65,7 +65,7 @@
         handler.hangGlobalKeyboardHandlers();
 
         $('body').click(function(e) {
-            if (e.target.tagName.toLowerCase() !== 'input') {
+            if (!['input', 'select'].includes(e.target.tagName.toLowerCase())) {
                 $(sheetMusicCont).focus();
             }
         });

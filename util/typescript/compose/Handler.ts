@@ -224,6 +224,11 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         },
     };
 
+    // 48 - zero, 96 - numpad zero
+    Kl.range(0,10).forEach(i =>
+        focusedHandlers[i + 48] = focusedHandlers[i + 96] = () =>
+            control.setChannel(i));
+
     var hangKeyboardHandlers = (el: HTMLElement) => el.onkeydown = function(keyEvent: KeyboardEvent)
     {
         if (keyEvent.keyCode in focusedHandlers) {

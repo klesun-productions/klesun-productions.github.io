@@ -180,15 +180,17 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
         requestRecalcTacts();
     };
 
-    var multiplyNoteLength = function(note: HTMLCanvasElement, factor: number): void
+    var changeNote = function(note: HTMLCanvasElement, property: string, value: string): void
     {
-        var noteInfo = canvaser.extractNote(note);
-        $(note).attr('data-length', noteInfo.length *= factor);
+        $(note).attr('data-' + property, value);
 
-        var newCanvas = canvaser.makeNoteCanvas(noteInfo);
+        var newCanvas = canvaser.makeNoteCanvas(canvaser.extractNote(note));
         note.getContext('2d').clearRect(0,0,999999,999999);
         note.getContext('2d').drawImage(newCanvas, 0, 0);
     };
+
+    var multiplyNoteLength = (note: HTMLCanvasElement, factor: number) =>
+        changeNote(note, 'length', +$(note).attr('data-length') * factor + '');
 
     var multiplyLength = function(factor: number)
     {
@@ -209,6 +211,24 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
         requestRecalcTacts();
     };
 
+    // TODO: make some sort of typed adapter to access note data attributes
+    var setChannel = function(ch: number): void
+    {
+        ch = Math.max(0, Math.min(15, ch));
+
+        var $chord = $chordListCont.find('.focused'),
+            note: HTMLCanvasElement;
+
+        if (note = <HTMLCanvasElement>$chordListCont.find('.focused .pointed')[0]) {
+            // change channel of the note
+            if (!$chord.find('.noteCanvas[data-channel="' + ch + '"][data-tune="' + $(note).attr('data-tune') + '"]').length) {
+                changeNote(note, 'channel', ch + '');
+            }
+        } else {
+            // focus the ch-th note in chord
+        }
+    };
+
     var chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;
 
     configCont.onchange = requestRecalcTacts;
@@ -225,10 +245,11 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
             }
         },
         pointNextNote: pointNextNote,
+        setChannel: setChannel,
+        multiplyLength: multiplyLength,
         deleteFocused: deleteFocused,
         addChord: addChord,
         addNote: addNote,
-        multiplyLength: multiplyLength,
         clear: () => $chordListCont.empty(),
         getFocusIndex: () => $chordListCont.find('.focused').index(),
     };
@@ -240,10 +261,11 @@ interface IControl {
     moveChordFocus: {(sign: number): number},
     moveChordFocusRow: {(sign: number): void},
     pointNextNote: {(): IShNote[]},
+    setChannel: {(ch: number): void},
+    multiplyLength: {(factor: number): void},
     deleteFocused: {(backspace: boolean): void},
     addChord: {(chord: IShmidusicChord): number},
     addNote: {(note: IShNote, inNewChord: boolean): void},
-    multiplyLength: {(factor: number): void},
     clear: {(): void},
-    getFocusIndex: {(): number}
+    getFocusIndex: {(): number},
 }
