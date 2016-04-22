@@ -65,10 +65,9 @@ Ns.Synths.Fluid = function(audioCtx: AudioContext, soundfontDirUrl: string): IFu
     };
 
     // starts a worker that runs through chords and loads samples for notes if required
-    var analyse = function(chords: IShmidusicChord[]): void
-    {
-
-    };
+    var analyse = (chords: IShmidusicChord[]) => Kl.forChunk(chords, 100, 1, c =>
+        c.noteList.forEach(n =>
+            soundFont.fetchSample(n.tune, presetsByChannel[n.channel])));
 
     var init = function($cont: JQuery): void
     {

@@ -38,6 +38,29 @@ class Kl
     static range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
         .map((nop: void, i: number) => l + i);
 
+    /** @param chunkSize - count of elements that will be foreached in one iteration
+     * @param breakMillis - break duration between iterations */
+    static forChunk = <Tx>(list: Tx[], breakMillis: number, chunkSize: number, callback: { ($el: Tx): void }) =>
+    {
+        var interrupted = false;
+
+        var doNext = function(index: number)
+        {
+            if (index < list.length && !interrupted) {
+                for (var i = index; i < Math.min(list.length, index + chunkSize); ++i) {
+                    callback(list[i]);
+                }
+                setTimeout(() => doNext(index + chunkSize), breakMillis);
+            }
+        };
+
+        doNext(0);
+
+        var interrupt = () => (interrupted = true);
+
+        return interrupt;
+    };
+
     // TODO: sync somehow with .channelColors CSS
     static channelColors: [number,number,number][] = [
         [0,0,0], // black
@@ -83,28 +106,7 @@ class Kl
 
 Ns.for = Kl.for;
 
-/** @param chunkSize - count of elements that will be foreached in one iteration
- * @param breakMillis - break duration between iterations */
-Ns.forChunk = function<Tx>(list: Tx[], breakMillis: number, chunkSize: number, callback: { ($el: Tx): void })
-{
-    var interrupted = false;
-
-    var doNext = function(index: number)
-    {
-        if (index < list.length && !interrupted) {
-            for (var i = index; i < Math.min(list.length, index + chunkSize); ++i) {
-                callback(list[i]);
-            }
-            setTimeout(() => doNext(index + chunkSize), breakMillis);
-        }
-    };
-
-    doNext(0);
-
-    var interrupt = () => (interrupted = true);
-
-    return interrupt;
-};
+Ns.forChunk = Kl.forChunk;
 Util.forEachBreak = Ns.forChunk;
 
 Ns.range = Kl.range;

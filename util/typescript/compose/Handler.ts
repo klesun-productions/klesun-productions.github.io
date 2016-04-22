@@ -122,7 +122,11 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
     {
         var channels: IChannel[] = [];
 
-        partial.forEach(c => channels[c.channelNumber] = c);
+        partial.forEach(c => channels[c.channelNumber] = 1 && {
+            channelNumber: c.channelNumber,
+            instrument: c.instrument || 0,
+        });
+
         Kl.range(0,16).forEach(i => channels[i] || (channels[i] = {
             channelNumber: i, instrument: 0
         }));
