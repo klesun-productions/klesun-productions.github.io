@@ -2,8 +2,9 @@
 /// <reference path="../references.ts" />
 
 import {IShmidusicChord} from "../DataStructures";
-import {SoundFontAdapter, IFetchedSample} from "../SoundFontAdapter";
+import {SoundFontAdapter, IFetchedSample} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
+import {Kl} from "../Tools";
 
 // this class is rival of WavCasher.ts
 // the idea is same - we play sample audio files on "playNote()"
@@ -60,10 +61,8 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): IFuid
         }
     };
 
-    var consumeConfig = function(programs: { [id: number]: number; }): void
-    {
+    var consumeConfig = (programs: { [id: number]: number; }) =>
         Kl.fori(programs, (k,v) => presetsByChannel[k] = v);
-    };
 
     // starts a worker that runs through chords and loads samples for notes if required
     var analyse = (chords: IShmidusicChord[]) => Kl.forChunk(chords, 100, 1, c =>

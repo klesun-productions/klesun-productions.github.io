@@ -1,10 +1,11 @@
 /// <reference path="../references.ts" />
 
-import Shmidusicator from "../Shmidusicator";
+import Shmidusicator from "../player/Shmidusicator";
 import * as Ds from "../DataStructures";
 import {IControl} from "./Control";
 import {Control} from "./Control";
 import ShapeProvider from "./ShapeProvider";
+import {Kl} from "../Tools";
 
 export function TactMeasurer(tactSize: number)
 {
@@ -188,7 +189,7 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
         var staff = song.staffList[0];
 
         var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
-        interruptDrawing = Util.forEachBreak(staff.chordList, 200, 200, (chord: Ds.IShmidusicChord) =>
+        interruptDrawing = Kl.forChunk(staff.chordList, 200, 200, (chord: Ds.IShmidusicChord) =>
         {
             var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length.toString())));
             var finishedTact = tacter.inject(chordLength);
@@ -351,10 +352,10 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
 };
 
 export interface IPainter {
-    draw: { (song: Ds.IShmidusicStructure): void },
-    handleNoteOn: { (note: Ds.IShNote, chordIndex: number): void },
-    setEnabled: { (v: boolean): void },
-    getChordList: { (): Ds.IShmidusicChord[] },
-    getControl: { (): IControl },
-    getFocusedNotes: { (): Ds.IShNote[] },
+    draw: (song: Ds.IShmidusicStructure) => void,
+    handleNoteOn: (note: Ds.IShNote, chordIndex: number) => void,
+    setEnabled: (v: boolean) => void,
+    getChordList: () => Ds.IShmidusicChord[],
+    getControl: () => IControl,
+    getFocusedNotes: () => Ds.IShNote[],
 }

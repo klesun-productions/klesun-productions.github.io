@@ -6,14 +6,17 @@ import {IPainter} from "Painter";
 import {IShNote} from "../DataStructures";
 import {IChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
-import Shmidusicator from "../Shmidusicator";
+import Shmidusicator from "../player/Shmidusicator";
 import {ISMFreaded} from "../DataStructures";
 import {IShmidusicStructure} from "../DataStructures";
 import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
+import {Kl} from "../Tools";
 
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
+
+declare var Util: any;
 
 export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
@@ -175,23 +178,10 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-    // http://stackoverflow.com/a/21797381/2750743
-    var _base64ToArrayBuffer = function(base64: string): ArrayBuffer {
-        var binary_string =  window.atob(base64);
-        var len = binary_string.length;
-        var bytes = new Uint8Array( len );
-        for (var i = 0; i < len; i++)        {
-            bytes[i] = binary_string.charCodeAt(i);
-        }
-        return bytes.buffer;
-    }
 
-
-    var openMidi = function(base64Midi: string): void
+    var importMidi = function(smf: ISMFreaded): void
     {
-        var buf = _base64ToArrayBuffer(base64Midi);
-        var parsed: ISMFreaded = Ns.Libs.SMFreader(buf);
-        console.log('decoded midi: ', parsed);
+        console.log('decoded midi: ', smf);
     };
 
     // separating to focused and global to
@@ -200,7 +190,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         // "o"
         79: (e: KeyboardEvent) => e.ctrlKey && Kl.promptSelect({
             'Shmidusic Chords .mid.js': () => Kl.selectFileFromDisc(openSong),
-            'Standard Midi File .mid': () => Kl.selectFileFromDisc(openMidi),
+            'Standard Midi File .mid': () => Kl.openMidi(importMidi),
         }),
         // "s"
         83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveToDisc(JSON.stringify(collectSong(painter.getChordList()))),
@@ -289,7 +279,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     var handleMidiEvent = function (message: MIDIMessageEvent) {
         var eventType = // bit mask: "100X YYYY" -> x => noteOn: yes/no | YYYY => channelNumber
             (message.data[0] === 144) ? 'noteOn' :
-                (message.data[0] === 128) ? 'noteOff' :
+            (message.data[0] === 128) ? 'noteOff' :
                 'unknown' + message.data[0];
 
         var tune = message.data[1];
@@ -305,8 +295,6 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     {
         var gotMidi = function (midiInfo: WebMidi.MIDIAccess)
         {
-            var compose = Util.Compose($('#composeDiv')[0]);
-
             console.log("Midi Access Success!", midiInfo);
 
             var inputs = midiInfo.inputs.values();

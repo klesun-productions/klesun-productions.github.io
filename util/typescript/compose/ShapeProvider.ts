@@ -4,6 +4,7 @@
 
 /// <reference path="../references.ts" />
 
+import {Kl} from "../Tools";
 /** @param ctx - html5 canvas context
  * @param r - note oval vertical radius */
 export default function ShapeProvider(ctx: CanvasRenderingContext2D, r: number, x: number, ySteps: number)

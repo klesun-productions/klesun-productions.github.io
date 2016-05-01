@@ -1,8 +1,13 @@
 
-var Util = Util || {};
-Util.Synths = Util.Synths || {};
+/// <reference path="../references.ts" />
 
-Util.Synths.MidiDevice = function ()
+// sends noteOn messages to a synth device rather than playing notes through speakers
+// Web MIDI is supported only by Chrome at the moment
+
+import {Kl} from "../Tools";
+import MIDIOutput = WebMidi.MIDIOutput;
+
+export function MidiDevice(): ISynth
 {
     var NOTE_ON = 0x90;
     var NOTE_OFF = 0x80;
@@ -10,19 +15,19 @@ Util.Synths.MidiDevice = function ()
     var volume = 64;
 
     var firstInit = true;
-    var midiOutputList = [];
+    var midiOutputList: MIDIOutput[] = [];
 
-    var initControl = function($controlEl)
+    var initControl = function($controlEl: JQuery)
     {
         $controlEl.empty()
             .append($('<div class="inlineBlock"></div>')
                 .append('Volume Gain: ')
                 .append($('<input type="range" min="0" max="127" step="1"/>')
                     .addClass("smallSlider").val(volume)
-                    .on("input change", (e) => (volume = e.target.value))));
+                    .on("input change", (e: any) => (volume = e.target.value))));
     };
 
-    var init = function ($controlEl)
+    var init = function ($controlEl: JQuery)
     {
         if (firstInit) {
             firstInit = false;
@@ -43,25 +48,28 @@ Util.Synths.MidiDevice = function ()
     };
 
     // 127 = max velocity
-    var noteOn = (tune,channel) => midiOutputList.forEach(o => o.send([NOTE_ON - -channel, tune, volume] ));
-    var noteOff = (tune,channel) => midiOutputList.forEach(o => o.send([NOTE_OFF - -channel, tune, 0x40]));
+    var noteOn = (tune: number,channel: number) =>
+        midiOutputList.forEach(o => o.send([NOTE_ON - -channel, tune, volume] ));
 
-    var setInstrument = (n,channel) => midiOutputList.forEach(o => o.send([0xC0 - -channel, n]));
+    var noteOff = (tune: number,channel: number) =>
+        midiOutputList.forEach(o => o.send([NOTE_OFF - -channel, tune, 0x40]));
 
-    // a dict {noteIndex: openedCount}
-    var openedDict = {};
-    Util.range(0,16).forEach(n => (openedDict[n] = {}));
+    var setInstrument = (n: number, channel: number) =>
+        midiOutputList.forEach(o => o.send([0xC0 - -channel, n]));
+
+    var openedDict: {[channel: number]: {[semitone: number]: number}} = {};
+    Kl.range(0,16).forEach(n => (openedDict[n] = {}));
 
     /** @TODO: change arguments from "noteJs" to explicit "tune" and "channel" */
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(tune, channel)
+    var playNote = function(tune: number, channel: number)
     {
         if (+tune === 0) { // pauses in shmidusic... very stupid idea
             return () => {};
         }
-        
+
         // stopping just for a moment to mark end of previous sounding if any
         if ((openedDict[channel][tune] || 0) > 0) {
             noteOff(tune, channel);
@@ -82,16 +90,13 @@ Util.Synths.MidiDevice = function ()
     };
 
     /** @param instrumentDict {channelNumber: instrumentNumber} */
-    var consumeConfig = function (instrumentDict, callback)
-    {
-        Object.keys(instrumentDict).forEach(ch => setInstrument(instrumentDict[ch],ch));
-        callback();
-    };
+    var consumeConfig = (instrumentDict: {[ch: number]: number}) =>
+        Object.keys(instrumentDict).forEach(ch => setInstrument(instrumentDict[+ch], +ch));
 
-    return $.extend(Util.Synths.ISynth(), {
+    return {
         init: init,
         playNote: playNote,
         consumeConfig: consumeConfig,
-    });
+    };
 };
 

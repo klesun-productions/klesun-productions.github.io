@@ -2,7 +2,7 @@
 
 var Ns = Ns || {};
 
-// thic class adapts output of "https://translate.google.com/translate_a/single" call
+// this class adapts output of "https://translate.google.com/translate_a/single" call
 // to a simple dict with eng word/phrase as key and list of possible rus translations as value
 
 type AdaptedT = {

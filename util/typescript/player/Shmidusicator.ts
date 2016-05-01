@@ -1,10 +1,10 @@
-
-/// <reference path="DataStructures.ts" />
-/// <reference path="Tools.ts" />
+/// <reference path="../DataStructures.ts" />
 
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 
-import * as Ds from "./DataStructures";
+import * as Ds from "../DataStructures";
+import {Kl} from "../Tools";
+import {Fraction} from "../Tools";
 
 export default class Shmidusicator
 {
@@ -152,7 +152,7 @@ export default class Shmidusicator
             .filter(e => e.channelNumber < 16)
             .forEach((e) => (instrumentDict[e.channelNumber] = e.instrument));
 
-        Ns.range(0, 16).forEach((i: number) => (instrumentDict[i] |= 0));
+        Kl.range(0, 16).forEach((i: number) => (instrumentDict[i] |= 0));
 
         var chordList = staff['chordList'];
 

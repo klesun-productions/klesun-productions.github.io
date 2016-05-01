@@ -4,6 +4,7 @@ var Util = Util || {};
 // This class destiny is to read shmidusic json structure
 // and send events to MIDI.js and PianoLayoutPanel
 
+// TODO: instead of $controlCont we should pass something like "IControlProvider"
 /** @param piano - PianoLayoutPanel instance */
 Util.Player = function ($controlCont)
 {

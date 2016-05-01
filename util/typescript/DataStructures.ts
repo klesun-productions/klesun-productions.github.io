@@ -177,7 +177,7 @@ export interface ISMFreaded {
     // divide an event time by this to get time in seconds
     ticksPerBeat: number, // 384
     tracks: Array<{
-        trackName: string,
+        trackName?: string,
         byteLength: number,
         events: ISMFmetaEvent[] | ISMFmidiEvent
     }>

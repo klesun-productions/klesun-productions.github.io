@@ -6,14 +6,21 @@
 import {Fluid} from "./synths/Fluid";
 import {Oscillator} from "./synths/Oscillator";
 import {IShNote} from "./DataStructures";
-import Shmidusicator from "./Shmidusicator";
+import Shmidusicator from "./player/Shmidusicator";
 import {IGeneralStructure} from "./DataStructures";
 import {ISmfStructure} from "./DataStructures";
 import {IShmidusicStructure} from "./DataStructures";
 import {SheetMusicPainter} from "./compose/Painter";
 import UnfairRandom from "./UnfairRandom";
 import {ISmfFile} from "./DataStructures";
+import {ISMFreaded} from "./DataStructures";
+import {TableGenerator} from "./TableGenerator";
+import {ColModel} from "./TableGenerator";
+import {Kl} from "./Tools";
+import {MidiDevice} from "./synths/MidiDevice";
 type dict<Tx> = {[k: string]: Tx};
+
+declare var Util: any;
 
 /** @param mainCont - div dom with children
  * structure defined in index.html */
@@ -28,6 +35,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
         instrumentInfoBlock = $(mainCont).find('#instrumentInfoBlock')[0],
         drawSheetMusicFlag = <HTMLInputElement>$(mainCont).find('#drawSheetMusicFlag')[0],
+        playMidiFromDiskBtn = $(mainCont).find('input[type="button"].playMidiFromDiskBtn')[0],
         O_O = 'O_O'
         ;
 
@@ -91,18 +99,18 @@ export default function MainPage(mainCont: HTMLDivElement)
             }
         });
 
-        var $table = Util.TableGenerator().generateTable(colModel, rows);
+        var $table = TableGenerator().generateTable(colModel, rows);
 
         $(instrumentInfoBlock).append($table);
     };
 
-    var audioCtx = new AudioContext();
+    const audioCtx = new AudioContext();
 
-    var SynthAdapter = function(dropdownEl: HTMLSelectElement, controlEl: HTMLDivElement)
+    const SynthAdapter = function(dropdownEl: HTMLSelectElement, controlEl: HTMLDivElement)
     {
         var synths: dict<ISynth> = {
             oscillator: Oscillator(audioCtx),
-            midiDevice: Util.Synths.MidiDevice(),
+            midiDevice: MidiDevice(),
             FluidSynth3: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/fluid/'),
             Arachno: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/arachno/'),
             GeneralUser: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/generaluser/'),
@@ -127,14 +135,14 @@ export default function MainPage(mainCont: HTMLDivElement)
             }
         };
     };
-    var synth = SynthAdapter(
+    const synth = SynthAdapter(
         <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
         <HTMLDivElement>$(mainCont).find('#synthControl')[0]);
 
-    var sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
-    var pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
+    const sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
+    const pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
 
-    var player = Util.Player($playbackControlCont);
+    const player = Util.Player($playbackControlCont);
     player.addNoteHandler({handleNoteOn: function(noteJs: IShNote, chordIndex: number)
     {
         if (enabledChannels.has(noteJs.channel)) {
@@ -153,7 +161,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
     var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
 
-    var playStandardMidiFile = function(fileName: string, finishedFileName?: string)
+    const playStandardMidiFile = function(fileName: string, finishedFileName?: string)
     {
         finishedFileName = finishedFileName || '';
 
@@ -173,13 +181,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         })
     };
 
-    type ColModel = Array<{
-        name: string,
-        caption: string,
-        formatter?: {(c: string, r: ISmfFile): (string | JQuery)}
-    }>
-
-    var initIchigosMidiList = function ()
+    const initIchigosMidiList = function ()
     {
         var playButtonFormatter = function(cell: string, row: ISmfFile)
         {
@@ -195,8 +197,8 @@ export default function MainPage(mainCont: HTMLDivElement)
             /** @debug */
             console.log('fetched info');
 
-            var colModel: ColModel = [
-                {'name': 'fileName', 'caption': 'File Name', formatter: p => p.split('/').pop()},
+            var colModel: ColModel<ISmfFile> = [
+                {'name': 'fileName', 'caption': 'File Name', formatter: p => (p + '').split('/').pop()},
                 //{'name': 'length', 'caption': 'Length'},
                 {'name': 'score', 'caption': '*', formatter: null},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
@@ -204,7 +206,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
             var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
 
-            var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
+            var table = TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
             $('.random-midi-list-cont').append(table); // defined in index.html
 
             var random = UnfairRandom(rowList);
@@ -220,7 +222,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         performExternal('get_ichigos_midi_names', {}, callback)
     };
 
-    var playShmidusicFile = function(file: {sheetMusic: IShmidusicStructure, fileName: string})
+    const playShmidusicFile = function(file: {sheetMusic: IShmidusicStructure, fileName: string})
     {
         var song = file['sheetMusic'],
             name = file['fileName'];
@@ -231,13 +233,13 @@ export default function MainPage(mainCont: HTMLDivElement)
         sheetMusicPainter.draw(song);
     };
 
-    var playDemo = function () {
+    const playDemo = function () {
         var mineList: any = [];
         var index = Math.floor(Math.random() * mineList.length);
         playShmidusicFile(mineList[index]);
     };
 
-    var initMyMusicList = function ()
+    const initMyMusicList = function ()
     {
         var playButtonFormatter = function (cell: string, row: any) {
             return $('<input type="button" value="Play!"/>')
@@ -248,18 +250,18 @@ export default function MainPage(mainCont: HTMLDivElement)
         var rowList: any[] = [];
         rowList.sort((a,b) => a.fileName.localeCompare(b.fileName)); // sorting lexicographically
 
-        var colModel: ColModel = [
-            {'name': 'fileName', 'caption': 'File Name', formatter: s => s.split('_').join(' ')},
+        var colModel: ColModel<any> = [
+            {'name': 'fileName', 'caption': 'File Name', formatter: s => (s + '').split('_').join(' ')},
             {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
         ];
 
         var caption = 'My music';
 
-        var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
+        var table = TableGenerator().generateTable(colModel, rowList, caption);
         $(mainCont).find('.myMusicCont').append(table); // defined in index.html
     };
 
-    var handleGoogleSignIn = function(googleUser: any, $infoCont: JQuery)
+    const handleGoogleSignIn = function(googleUser: any, $infoCont: JQuery)
     {
         $infoCont.find('.g-signin2').css('display', 'none');
 
@@ -273,7 +275,13 @@ export default function MainPage(mainCont: HTMLDivElement)
         /** @TODO: token expires in about two hours - need to rerequest it */
     };
 
+    const playSMF = function(smf: ISMFreaded): void
+    {
+        console.log('playing midi: ', smf);
+    };
+
     drawSheetMusicFlag.onclick = () => sheetMusicPainter.setEnabled(drawSheetMusicFlag.checked);
+    playMidiFromDiskBtn.onclick = () => Kl.openMidi(playSMF);
 
     return {
         initIchigosMidiList: initIchigosMidiList,

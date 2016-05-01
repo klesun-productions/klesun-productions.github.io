@@ -1,11 +1,9 @@
 
 /// <reference path="../../libs/jqueryTyped/jquery.d.ts" />
 
-declare var Util: any;
+import {ISMFreaded} from "./DataStructures";
 
-var Ns:any = Ns || {};
-// TODO: Util is too long
-var Util:any = Util || {};
+declare var Ns: any;
 Ns.Static = Ns.Static || {};
 
 // some usefull shorthand methods
@@ -31,7 +29,7 @@ class Optional<T>
 // defined in /libs/FileSaver.js
 declare var saveAs: any;
 
-class Kl
+export class Kl
 {
     static for = <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
         Object.keys(dict).forEach(k => callback(k, dict[k]));
@@ -43,9 +41,7 @@ class Kl
     static range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
         .map((nop: void, i: number) => l + i);
 
-
-
-    static selectFileFromDisc = function(whenLoaded: { (data: any): void }): void
+    static selectFileFromDisc = function(whenLoaded: { (dataBase64: string): void }): void
     {
         var loadSelectedFile = function (fileInfo: File, whenLoaded: { (data: any): void }): void
         {
@@ -64,6 +60,28 @@ class Kl
         input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
         input.onclick = (inputEvent: Event) => { input.value = null; };
         $(input).click();
+    };
+
+    static openMidi = function(whenLoaded: { (midi: ISMFreaded): void })
+    {
+        /** @debug */
+        console.log('huj', Ns);
+
+        Kl.selectFileFromDisc(db64 =>
+            whenLoaded(
+            Ns.Libs.SMFreader(
+            Kl._base64ToArrayBuffer(db64))));
+    };
+
+    // http://stackoverflow.com/a/21797381/2750743
+    private static _base64ToArrayBuffer = function(base64: string): ArrayBuffer
+    {
+        var binary_string =  atob(base64);
+
+        return new Uint8Array(binary_string.length)
+            .fill(0)
+            .map((_, i) => binary_string.charCodeAt(i))
+            .buffer;
     };
 
     static saveToDisc = function(content: string): void
@@ -147,6 +165,7 @@ class Kl
         [0,255,0] // TODO: !!!
     ];
 
+    // here is exactly 128 preset names in correct order
     static instrumentNames: string[] = ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",
         "Honky-tonk Piano","Electric Piano","6 Electric Piano 2","Harpsichord","Clavinet","Celesta",
         "Glockenspiel","Music Box","Vibraphone","Marimba","Xylophone","Tubular Bells","Dulcimer",
@@ -169,16 +188,7 @@ class Kl
         "Cymbal","Fret","122 Breath Noise","Seashore","Bird Tweet","Telephone Ring","Helicopter","Applause","Gunshot"];
 }
 
-Ns.for = Kl.for;
-
-Ns.forChunk = Kl.forChunk;
-Util.forEachBreak = Ns.forChunk;
-
-Ns.range = Kl.range;
-
-Util.range = Ns.range;
-
-class Fraction {
+export class Fraction {
     constructor (
         public num: number,
         public den: number
@@ -187,18 +197,3 @@ class Fraction {
     float = () => this.num / this.den;
     apacheStr = () => this.num + ' / ' + this.den;
 }
-
-Ns.synthPresets = [
-    50, 51, 84,
-];
-
-Ns.channelColors = Kl.channelColors;
-
-Ns.instrumentNames = Kl.instrumentNames;
-
-Util.channelColors = Ns.channelColors;
-
-Ns.extend = function<Tx>(oldDict: Tx, newDict: Tx)
-{
-    return $.extend({}, oldDict, newDict);
-};
