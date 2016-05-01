@@ -1,19 +1,20 @@
 
 /// <reference path="references.ts" />
 
-var Ns: any = Ns || {};
+
+import * as Ds from "./DataStructures";
 
 // this object provides access to soundfont info
 // particularly it has a method that
 // takes (semitone and preset) and
 // returns (AudioBuffer, frequencyFactor, loopStart, loopEnd)
 
-Ns.SoundFontAdapter = function(audioCtx: AudioContext, soundfontDirUrl: string)
+export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string)
 {
     var sampleDirUrl = soundfontDirUrl + '/samples/';
 
-    var presets: IPreset[] = null;
-    var drumPreset: IDrumPreset = null;
+    var presets: Ds.IPreset[] = null;
+    var drumPreset: Ds.IDrumPreset = null;
     $.getJSON(soundfontDirUrl + '/presets.json', (result) => presets = result);
     $.getJSON(soundfontDirUrl + '/drumPreset.json', (result) => drumPreset = result);
 
@@ -45,7 +46,7 @@ Ns.SoundFontAdapter = function(audioCtx: AudioContext, soundfontDirUrl: string)
         }
     };
 
-    var determineCorrectionCents = function(delta: number, generator: IGenerator): number
+    var determineCorrectionCents = function(delta: number, generator: Ds.IGenerator): number
     {
         var result = delta * 100;
 
@@ -61,15 +62,15 @@ Ns.SoundFontAdapter = function(audioCtx: AudioContext, soundfontDirUrl: string)
     };
 
     // overwrites global keys with local if any
-    var updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
+    var updateGenerator = function(global: Ds.IGenerator, local: Ds.IGenerator): Ds.IGenerator
     {
-        return Ns.extend(global, local);
+        return $.extend(global, local);
     };
 
     // adds the tuning semi-tones and cents; multiplies whatever needs to be multiplied
-    var combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
+    var combineGenerators = function(global: Ds.IGenerator, local: Ds.IGenerator): Ds.IGenerator
     {
-        var result = Ns.extend(local, {});
+        var result = $.extend(local, {});
 
         result.fineTune = (result.fineTune || 0) + (global.fineTune || 0);
         result.coarseTune = (result.coarseTune || 0) + (global.coarseTune || 0);
@@ -85,7 +86,7 @@ Ns.SoundFontAdapter = function(audioCtx: AudioContext, soundfontDirUrl: string)
             ? drumPreset.stateProperties.map(p => p.instrument.samples)
             : [presets[preset].instrument.samples];
 
-        var sampleList: ISampleInfo[] = [].concat.apply([], sampleListList);
+        var sampleList: Ds.ISampleInfo[] = [].concat.apply([], sampleListList);
 
         var sampleInfo = sampleList
             .filter(s => !('keyRange' in s.generator) ? true :
@@ -127,9 +128,9 @@ Ns.SoundFontAdapter = function(audioCtx: AudioContext, soundfontDirUrl: string)
     };
 };
 
-interface IFetchedSample {
+export interface IFetchedSample {
     buffer: AudioBuffer,
-    loopStart: seconds_t,
-    loopEnd: seconds_t,
+    loopStart: Ds.seconds_t,
+    loopEnd: Ds.seconds_t,
     frequencyFactor: number,
 }

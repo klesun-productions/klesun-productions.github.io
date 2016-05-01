@@ -1,17 +1,19 @@
 
-var Ns = Ns || {};
-
 // this class contains methods to draw stuff like Note-s,
 // Violin/Bass keys, Flat/Sharp/Straight sign and so on
 
+/// <reference path="../references.ts" />
+
 /** @param ctx - html5 canvas context
  * @param r - note oval vertical radius */
-Ns.ShapeProvider = function(ctx, r, x, ySteps)
+export default function ShapeProvider(ctx: CanvasRenderingContext2D, r: number, x: number, ySteps: number)
 {
     var y = ySteps * r;
 
     // https://github.com/google/canvas-5-polyfill/issues/1
-    var drawEllipseManually = function(ctx, x, y, radiusX, radiusY, rotation, startAngle, endAngle, antiClockwise)
+    var drawEllipseManually = function(ctx: CanvasRenderingContext2D, x: number, y: number,
+                                       radiusX: number, radiusY: number, rotation: number,
+                                       startAngle: number, endAngle: number, antiClockwise: boolean)
     {
         ctx.save();
         ctx.translate(x, y);
@@ -22,32 +24,32 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     };
 
     /** @param rotation - in radians */
-    var drawEllipse = function(x,y,rx,ry,rotation,subtract)
+    var drawEllipse = function(x: number,y: number,rx: number,ry: number,rotation?: number,subtract?: boolean): void
     {
         var rotation = rotation || 0;
         var subtract = subtract || false;
 
-        if (typeof(ctx.ellipse) === 'function') {
-            ctx.ellipse(x,y,rx,ry,rotation, 0, Math.PI*2, subtract);
+        if ('ellipse' in ctx) {
+            (<any>ctx).ellipse(x,y,rx,ry,rotation, 0, Math.PI*2, subtract);
         } else {
             drawEllipseManually(ctx, x,y,rx,ry,rotation, 0, Math.PI*2, subtract);
         }
     };
 
-    var Fraction = function(apacheMathStr)
+    var Fraction = function(apacheMathStr: string)
     {
         var match = apacheMathStr.match(/(\d+) \/ (\d+)/);
-        var numerator = match !== null ? match[1] : +apacheMathStr;
-        var denominator = match !== null ? match[2] : 1;
+        var numerator = match !== null ? +match[1] : +apacheMathStr;
+        var denominator = match !== null ? +match[2] : 1;
 
         return {
-            num: val => numerator = (val || numerator),
-            den: val => denominator = (val || denominator),
-            float: _ => numerator / denominator
+            num: (val?: number) => numerator = (val || numerator),
+            den: (val?: number) => denominator = (val || denominator),
+            float: () => numerator / denominator
         };
     };
 
-    var drawTail = function(x,y)
+    var drawTail = function(x: number,y: number)
     {
         ctx.moveTo(x, y);
         ctx.lineTo(x, y + r * 2);
@@ -57,9 +59,9 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
         ctx.lineTo(x, y);
     };
 
-    var getDotCount = numerator => Math.log2(+numerator + 1) - 1;
+    var getDotCount = (numerator: number) => (<any>Math).log2(+numerator + 1) - 1;
 
-    var drawCross = function(crossRadius)
+    var drawCross = function(crossRadius: number)
     {
         var cr = crossRadius;
         ctx.strokeStyle = 'rgba(0,0,0,0.85)';
@@ -72,14 +74,14 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     };
 
     /** @params str length - format like "1 / 2" or "3 / 4" or "7 / 8" */
-    var drawNote = function(channel, length)
+    var drawNote = function(channel: number, lengthStr: string)
     {
         +channel === 9 && drawCross(r * 2);
 
-        ctx.fillStyle = 'rgba(' + Ns.channelColors[channel].join(',') + ',0.85)';
-        ctx.strokeStyle = 'rgba(' + Ns.channelColors[channel].join(',') + ',1)';
+        ctx.fillStyle = 'rgba(' + Kl.channelColors[channel].join(',') + ',0.85)';
+        ctx.strokeStyle = 'rgba(' + Kl.channelColors[channel].join(',') + ',1)';
 
-        var length = Fraction(length);
+        var length = Fraction(lengthStr);
         if (length.den() % 3 === 0) {
             ctx.fillText('3', x - r * 3, ySteps * r + r);
             length.den(length.den() / 3);
@@ -149,7 +151,7 @@ Ns.ShapeProvider = function(ctx, r, x, ySteps)
     };
 
     // we treat image borders center for pivot point during scaling
-    var drawSvg = function(img, scaleFactor)
+    var drawSvg = function(img: any, scaleFactor: number)
     {
         var width = img.width * scaleFactor;
         var height = img.height * scaleFactor;

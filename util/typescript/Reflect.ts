@@ -1,7 +1,7 @@
 
 /// <reference path="references.ts" />
 
-var Ns = Ns || {};
+import {IShmidusicStructure} from "./DataStructures";
 
 // this class parses a typescript file (roughly)
 // and provides an object that represents the type structure
@@ -9,7 +9,7 @@ var Ns = Ns || {};
 // TODO: try to find solutions on the internets
 // research more: http://stackoverflow.com/a/32255264/2750743
 
-Ns.Reflect = function()
+export default function ShReflect()
 {
     // transforms fraction string note lengths to float numbers;
     // transforms all pauses to a drum channel

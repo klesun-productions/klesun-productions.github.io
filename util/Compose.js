@@ -2,6 +2,7 @@
 var Util = Util || {};
 
 // writes pseudo-graphic sheet music on a textarea
+// unused
 
 Util.Compose = function(parentEl)
 {

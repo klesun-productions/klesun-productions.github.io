@@ -2,13 +2,13 @@
 /// <reference path="DataStructures.ts" />
 /// <reference path="../../libs/definitelytyped/lib.es6.d.ts" />
 
-var Ns: any = Ns || {};
-
 // and so i thought, that we could have pretty complicated logic of how
 // frequently should be played this song and how rarely this... that's
 // what this class is needed for - to store the logic
 
-Ns.UnfairRandom = function(songList: ISmfFile[])
+import {ISmfFile} from "./DataStructures";
+
+export default function UnfairRandom(songList: ISmfFile[])
 {
     /** @TODO: write some tester. I'm absolutely unsure whether it does what you think */
 

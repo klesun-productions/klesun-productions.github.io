@@ -1,6 +1,8 @@
 
 /// <reference path="../../libs/jqueryTyped/jquery.d.ts" />
 
+declare var Util: any;
+
 var Ns:any = Ns || {};
 // TODO: Util is too long
 var Util:any = Util || {};
@@ -26,6 +28,9 @@ class Optional<T>
     has = () => this.isPresent;
 }
 
+// defined in /libs/FileSaver.js
+declare var saveAs: any;
+
 class Kl
 {
     static for = <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
@@ -37,6 +42,35 @@ class Kl
     /** @params l - left index inclusive, r - right index exclusive */
     static range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
         .map((nop: void, i: number) => l + i);
+
+
+
+    static selectFileFromDisc = function(whenLoaded: { (data: any): void }): void
+    {
+        var loadSelectedFile = function (fileInfo: File, whenLoaded: { (data: any): void }): void
+        {
+            var maxSize = 2 * 1024 * 1024; // 2 mebibytes
+
+            if (fileInfo.size < maxSize) {
+                var reader = new FileReader();
+                reader.readAsDataURL(fileInfo);
+                reader.onload = (e: any) => whenLoaded(e.target.result.split(',')[1]);
+            } else {
+                alert('too big file, more than 2 MiB!');
+            }
+        };
+
+        var input = Ns.Static.FILE_INPUT = Ns.Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
+        input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
+        input.onclick = (inputEvent: Event) => { input.value = null; };
+        $(input).click();
+    };
+
+    static saveToDisc = function(content: string): void
+    {
+        var blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+        saveAs(blob, 'song.mid.js', true);
+    };
 
     /** @param chunkSize - count of elements that will be foreached in one iteration
      * @param breakMillis - break duration between iterations */
@@ -59,6 +93,37 @@ class Kl
         var interrupt = () => (interrupted = true);
 
         return interrupt;
+    };
+
+    static promptSelect = function(options: {[k: string]: {(): void}}, message?: string): void
+    {
+        message = message || 'It*s Time To Choose!';
+
+        var $select = $('<select></select>')
+            .attr('multiple', 'multiple');
+        Kl.for(options, (n,_) =>
+            $select.append($('<option></option>').val(n).html(n)));
+
+        var $dialog = $('<div></div>')
+            .append(message).append('<br/>')
+            .append($select.change(() => {
+                $select.val() in options
+                    ? options[$select.val()]()
+                    : alert('System Failure, Unknown Option Selected: ' + $select.val())
+                $dialog.remove();
+            }));
+
+        $dialog.css({
+            position: 'absolute',
+            left: '40%',
+            top: '40%',
+            width: '20%',
+            heigh: '20%',
+            'background-color': 'lightgrey',
+            'z-index': 1002,
+        });
+
+        $('body').prepend($dialog);
     };
 
     // TODO: sync somehow with .channelColors CSS
@@ -122,36 +187,6 @@ class Fraction {
     float = () => this.num / this.den;
     apacheStr = () => this.num + ' / ' + this.den;
 }
-
-Ns.selectFileFromDisc = function(whenLoaded: { (data: any): void }): void
-{
-    var loadSelectedFile = function (fileInfo: File, whenLoaded: { (data: any): void }): void
-    {
-        var maxSize = 2 * 1024 * 1024; // 2 mebibytes
-
-        if (fileInfo.size < maxSize) {
-            var reader = new FileReader();
-            reader.readAsDataURL(fileInfo);
-            reader.onload = (e: any) => whenLoaded(e.target.result.split(',')[1]);
-        } else {
-            alert('too big file, more than 2 MiB!');
-        }
-    };
-
-    var input = Ns.Static.FILE_INPUT = Ns.Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
-    input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
-    input.onclick = (inputEvent: Event) => { input.value = null; };
-    $(input).click();
-};
-
-// defined in /libs/FileSaver.js
-declare var saveAs: any;
-
-Ns.saveToDisc = function(content: string): void
-{
-    var blob = new Blob([content], {type: "text/plain;charset=utf-8"});
-    saveAs(blob, 'song.mid.js', true);
-};
 
 Ns.synthPresets = [
     50, 51, 84,

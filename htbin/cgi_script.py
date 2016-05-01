@@ -18,13 +18,19 @@ if os.name == 'nt':
 from classes.MidiFileProvider import MidiFileProvider
 
 
+okscript = lambda dirname, filename: (True
+    and not dirname.startswith('util/flowSrc' )
+    and not dirname.startswith('util/typescript.bak')
+    and filename.endswith('.js')
+    and False
+)
+
+
 def include_util_js():
     for path, subdirs, files in os.walk('util/'):
-        if not path == 'util/flowSrc':
-            for name in files:
-                if name.endswith('.js'):
-                    if not name.endswith('-compiled.js'):
-                        print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
+        for name in files:
+            if okscript(path, name):
+                print('<script src="/' + path + '/' + name + '" type="text/javascript"></script>')
 
 
 def execute_script():

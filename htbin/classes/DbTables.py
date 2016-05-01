@@ -4,7 +4,7 @@ from pony.orm import Database, Required, Set, db_session
 
 # this module contains all Pony ORM models in the project
 
-db = Database('sqlite', '/home/klesun/progas/shmidusic.lv/user_data.db')
+db = Database('sqlite', '/home/klesun/fat/p/shmidusic.lv/user_data.db')
 
 
 class Listened(db.Entity):

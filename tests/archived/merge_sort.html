@@ -10,10 +10,7 @@
 	
 	console.log(list);
 	
-	var heap = [];
-	for (var i = 0; i < list.length; ++i)	{
-		heap.push(0);
-	}
+	var heap = new Array(list.length);
 	
 	var counter = 0;
 	var compare = function(a,b) {

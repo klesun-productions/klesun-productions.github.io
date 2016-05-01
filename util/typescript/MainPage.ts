@@ -1,11 +1,23 @@
 
-// requires Util.TableGenerator.js !
-// requires Util.PianoLayoutPanel.js !
-// requires Util.Player.js !
+/// <reference path="references.ts" />
+
+// initialises the website main page - the js performed the moment page is loaded
+
+import {Fluid} from "./synths/Fluid";
+import {Oscillator} from "./synths/Oscillator";
+import {IShNote} from "./DataStructures";
+import Shmidusicator from "./Shmidusicator";
+import {IGeneralStructure} from "./DataStructures";
+import {ISmfStructure} from "./DataStructures";
+import {IShmidusicStructure} from "./DataStructures";
+import {SheetMusicPainter} from "./compose/Painter";
+import UnfairRandom from "./UnfairRandom";
+import {ISmfFile} from "./DataStructures";
+type dict<Tx> = {[k: string]: Tx};
 
 /** @param mainCont - div dom with children
- * structure defined in main_page.html */
-var MainPage = function(mainCont)
+ * structure defined in index.html */
+export default function MainPage(mainCont: HTMLDivElement)
 {
     const
         $pianoCanvas = $(mainCont).find('.pianoLayoutCanvas'),
@@ -15,14 +27,16 @@ var MainPage = function(mainCont)
         violinKeyImage = $(mainCont).find('.violinKeyImage')[0],
         bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
         instrumentInfoBlock = $(mainCont).find('#instrumentInfoBlock')[0],
-        drawSheetMusicFlag = $(mainCont).find('#drawSheetMusicFlag')[0],
+        drawSheetMusicFlag = <HTMLInputElement>$(mainCont).find('#drawSheetMusicFlag')[0],
         O_O = 'O_O'
         ;
 
-    var googleLogInIdToken = null;
+    var googleLogInIdToken: string = null;
 
-    const addToken = p => googleLogInIdToken === null ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
-    const performExternal = (methodName, params, callback) => $.ajax({
+    const addToken = (p: dict<any>) => googleLogInIdToken === null
+        ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
+
+    const performExternal = (methodName: string, params: dict<any>, callback: {(data: {[k: string]: any}): void}) => $.ajax({
         url: '/htbin/json_service.py' + '?f=' + methodName, // GET params just for cosmetics
         type: "post",
         data: JSON.stringify(addToken({methodName: methodName, params: params})),
@@ -31,22 +45,22 @@ var MainPage = function(mainCont)
         success: callback
     });
 
-    var enabledChannels = new Set(Ns.range(0,16));
+    var enabledChannels = new Set(Kl.range(0,16));
 
-    const repaintInstrumentInfo = function(instrByChannel)
+    const repaintInstrumentInfo = (instrByChannel: {[c: number]: number}) =>
     {
         $(instrumentInfoBlock).empty();
-        enabledChannels = new Set(Ns.range(0,16));
+        enabledChannels = new Set(Kl.range(0,16));
 
-        var colorize = (channel) => $('<div></div>')
-            .append(channel)
+        var colorize = (channel: number) => $('<div></div>')
+            .append(channel + '')
             .css('font-weight', 'bold')
-            .css('color', 'rgba(' + Ns.channelColors[channel].join(',') + ',1)');
+            .css('color', 'rgba(' + Kl.channelColors[channel].join(',') + ',1)');
 
-        const makeMuteFlag = (channel) => $('<input type="checkbox" checked="checked"/>')
-            .click((e) => (e.target.checked
-                ? enabledChannels.add(channel)
-                : enabledChannels.delete(channel)
+        const makeMuteFlag = (channel: number) => $('<input type="checkbox" checked="checked"/>')
+            .click((e: any) => (e.target.checked
+                    ? enabledChannels.add(channel)
+                    : enabledChannels.delete(channel)
             ));
 
         var colModel = [
@@ -56,14 +70,14 @@ var MainPage = function(mainCont)
             {name: 'description', caption: 'Description'},
         ];
 
-        var rows = Ns.range(0, 16).map(function(i)
+        var rows = Kl.range(0, 16).map(function(i)
         {
             if (i in instrByChannel) {
                 const instrCode = instrByChannel[i];
                 return {
                     channelCode: i,
                     presetCode: instrCode,
-                    description: Ns.instrumentNames[instrCode],
+                    description: Kl.instrumentNames[instrCode],
                     /** @TODO: color */
                 };
             } else {
@@ -84,14 +98,14 @@ var MainPage = function(mainCont)
 
     var audioCtx = new AudioContext();
 
-    var SynthAdapter = function(dropdownEl, controlEl)
+    var SynthAdapter = function(dropdownEl: HTMLSelectElement, controlEl: HTMLDivElement)
     {
-        var synths = {
-            oscillator: Ns.Synths.Oscillator(audioCtx),
+        var synths: dict<ISynth> = {
+            oscillator: Oscillator(audioCtx),
             midiDevice: Util.Synths.MidiDevice(),
-            FluidSynth3: Ns.Synths.Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/fluid/'),
-            Arachno: Ns.Synths.Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/arachno/'),
-            GeneralUser: Ns.Synths.Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/generaluser/'),
+            FluidSynth3: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/fluid/'),
+            Arachno: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/arachno/'),
+            GeneralUser: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/generaluser/'),
         };
 
         var changeSynth = function() {
@@ -99,28 +113,29 @@ var MainPage = function(mainCont)
         };
 
         $(dropdownEl).empty();
-        var addOption = s => $(dropdownEl).append($('<option></option>').val(s).html(s));
-        Object.keys(synths).forEach(addOption);
+        Object.keys(synths).forEach(s => $(dropdownEl)
+            .append($('<option></option>').val(s).html(s)));
+
         $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
 
         return {
-            handleNoteOn: n => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),
-            consumeConfig: function(config, callback)
+            handleNoteOn: (n: IShNote, i: number) => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),
+            consumeConfig: function(config: {[c: number]: number})
             {
                 repaintInstrumentInfo(config);
-                synths[$(dropdownEl).val()].consumeConfig(config, callback)
+                synths[$(dropdownEl).val()].consumeConfig(config)
             }
         };
     };
     var synth = SynthAdapter(
-        $(mainCont).find('#synthDropdown')[0],
-        $(mainCont).find('#synthControl')[0]);
+        <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
+        <HTMLDivElement>$(mainCont).find('#synthControl')[0]);
 
-    var sheetMusicPainter = Ns.SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
+    var sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
     var pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
 
     var player = Util.Player($playbackControlCont);
-    player.addNoteHandler({handleNoteOn: function(noteJs, chordIndex)
+    player.addNoteHandler({handleNoteOn: function(noteJs: IShNote, chordIndex: number)
     {
         if (enabledChannels.has(noteJs.channel)) {
             var noteOffs = [
@@ -136,9 +151,9 @@ var MainPage = function(mainCont)
     }});
     player.addConfigConsumer(synth);
 
-    var playRandom = _ => alert("Please, wait till midi names load from ajax!");
+    var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
 
-    var playStandardMidiFile = function(fileName, finishedFileName)
+    var playStandardMidiFile = function(fileName: string, finishedFileName?: string)
     {
         finishedFileName = finishedFileName || '';
 
@@ -147,20 +162,26 @@ var MainPage = function(mainCont)
 
         console.log('Fetching...');
 
-        performExternal(method_name, params, function(song)
+        performExternal(method_name, params, function(song: ISmfStructure)
         {
             console.log('Playing: ' + fileName, song);
 
-            var whenFinished = (_) => playRandom({fileName: fileName});
+            var whenFinished = () => playRandom({fileName: fileName});
 
             player.playStandardMidiFile(song, {fileName: fileName}, whenFinished);
-            sheetMusicPainter.draw(Shmidusicator.fromMidi(song), true);
+            sheetMusicPainter.draw(Shmidusicator.fromMidi(song));
         })
     };
 
+    type ColModel = Array<{
+        name: string,
+        caption: string,
+        formatter?: {(c: string, r: ISmfFile): (string | JQuery)}
+    }>
+
     var initIchigosMidiList = function ()
     {
-        var playButtonFormatter = function(cell, row)
+        var playButtonFormatter = function(cell: string, row: ISmfFile)
         {
             return $('<input type="button" value="Play!"/>')
                 .click((_) => playStandardMidiFile(row.rawFileName));
@@ -169,24 +190,24 @@ var MainPage = function(mainCont)
         /** @debug */
         console.log('gonna fetrch info');
 
-        var callback = function(rowList)
+        var callback = function(rowList: [ISmfFile])
         {
             /** @debug */
             console.log('fetched info');
 
-            var colModel = [
+            var colModel: ColModel = [
                 {'name': 'fileName', 'caption': 'File Name', formatter: p => p.split('/').pop()},
                 //{'name': 'length', 'caption': 'Length'},
-                {'name': 'score', 'caption': '*'},
+                {'name': 'score', 'caption': '*', formatter: null},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
             ];
 
             var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
 
             var table = Util.TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
-            $('.random-midi-list-cont').append(table); // defined in main_page.html
+            $('.random-midi-list-cont').append(table); // defined in index.html
 
-            var random = Ns.UnfairRandom(rowList);
+            var random = UnfairRandom(rowList);
 
             playRandom = function(finishedFileInfo)
             {
@@ -199,7 +220,7 @@ var MainPage = function(mainCont)
         performExternal('get_ichigos_midi_names', {}, callback)
     };
 
-    var playShmidusicFile = function(file)
+    var playShmidusicFile = function(file: {sheetMusic: IShmidusicStructure, fileName: string})
     {
         var song = file['sheetMusic'],
             name = file['fileName'];
@@ -211,23 +232,23 @@ var MainPage = function(mainCont)
     };
 
     var playDemo = function () {
-        var mineList = Globals.shmidusicList;
+        var mineList: any = [];
         var index = Math.floor(Math.random() * mineList.length);
         playShmidusicFile(mineList[index]);
     };
 
     var initMyMusicList = function ()
     {
-        var playButtonFormatter = function (cell, row) {
+        var playButtonFormatter = function (cell: string, row: any) {
             return $('<input type="button" value="Play!"/>')
-                    .click((_) => playShmidusicFile(row));
+                .click((_) => playShmidusicFile(row));
         };
 
         /** @TODO: fetch it with a separate request */
-        var rowList = Globals.shmidusicList;
+        var rowList: any[] = [];
         rowList.sort((a,b) => a.fileName.localeCompare(b.fileName)); // sorting lexicographically
 
-        var colModel = [
+        var colModel: ColModel = [
             {'name': 'fileName', 'caption': 'File Name', formatter: s => s.split('_').join(' ')},
             {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
         ];
@@ -235,10 +256,10 @@ var MainPage = function(mainCont)
         var caption = 'My music';
 
         var table = Util.TableGenerator().generateTable(colModel, rowList, caption);
-        $(mainCont).find('.myMusicCont').append(table); // defined in main_page.html
+        $(mainCont).find('.myMusicCont').append(table); // defined in index.html
     };
 
-    var handleGoogleSignIn = function(googleUser, $infoCont)
+    var handleGoogleSignIn = function(googleUser: any, $infoCont: JQuery)
     {
         $infoCont.find('.g-signin2').css('display', 'none');
 
@@ -258,7 +279,7 @@ var MainPage = function(mainCont)
         initIchigosMidiList: initIchigosMidiList,
         // initMyMusicList: initMyMusicList,
         playDemo: playDemo,
-        playRandom: (_) => playRandom(),
+        playRandom: () => playRandom({}),
         handleGoogleSignIn: handleGoogleSignIn,
     };
 };

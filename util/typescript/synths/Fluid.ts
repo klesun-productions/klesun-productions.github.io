@@ -1,8 +1,9 @@
 
 /// <reference path="../references.ts" />
 
-var Ns = Ns || {};
-Ns.Synths = Ns.Synths || {};
+import {IShmidusicChord} from "../DataStructures";
+import {SoundFontAdapter, IFetchedSample} from "../SoundFontAdapter";
+import {Oscillator} from "./Oscillator";
 
 // this class is rival of WavCasher.ts
 // the idea is same - we play sample audio files on "playNote()"
@@ -12,9 +13,9 @@ Ns.Synths = Ns.Synths || {};
 
 interface INote { play: { (): { (): void } } }
 
-Ns.Synths.Fluid = function(audioCtx: AudioContext, soundfontDirUrl: string): IFuid
+export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): IFuid
 {
-    var soundFont = Ns.SoundFontAdapter(audioCtx, soundfontDirUrl);
+    var soundFont = SoundFontAdapter(audioCtx, soundfontDirUrl);
 
     var presetsByChannel: { [id: number]: number } = {
         0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
@@ -24,7 +25,7 @@ Ns.Synths.Fluid = function(audioCtx: AudioContext, soundfontDirUrl: string): IFu
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need time to load it
-    var fallbackOscillator = Ns.Synths.Oscillator(audioCtx);
+    var fallbackOscillator = Oscillator(audioCtx);
 
     var playSample = function(fetchedSample: IFetchedSample): {(): void}
     {
@@ -67,7 +68,7 @@ Ns.Synths.Fluid = function(audioCtx: AudioContext, soundfontDirUrl: string): IFu
     // starts a worker that runs through chords and loads samples for notes if required
     var analyse = (chords: IShmidusicChord[]) => Kl.forChunk(chords, 100, 1, c =>
         c.noteList.forEach(n =>
-            soundFont.fetchSample(n.tune, presetsByChannel[n.channel])));
+            soundFont.fetchSample(n.tune, presetsByChannel[n.channel], +n.channel === 9)));
 
     var init = function($cont: JQuery): void
     {

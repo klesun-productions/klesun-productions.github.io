@@ -2,16 +2,23 @@
 /// <reference path="../references.ts" />
 
 import MIDIMessageEvent = WebMidi.MIDIMessageEvent;
-var Ns: any = Ns || {};
-Ns.Compose = Ns.Compose || {};
+import {IPainter} from "Painter";
+import {IShNote} from "../DataStructures";
+import {IChannel} from "../DataStructures";
+import {IShmidusicChord} from "../DataStructures";
+import Shmidusicator from "../Shmidusicator";
+import {ISMFreaded} from "../DataStructures";
+import {IShmidusicStructure} from "../DataStructures";
+import {Fluid} from "../synths/Fluid";
+import ShReflect from "../Reflect";
 
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
 
-Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
+export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
     var lastChordOn = 0;
-    var synth = Ns.Synths.Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
+    var synth = Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
     var player = Util.Player($(''));
 
     var control = painter.getControl();
@@ -19,7 +26,6 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
     var playbackFinished = function()
     {
         player.stop();
-        painter.setIsPlaying(false);
         playback = false;
     };
 
@@ -27,7 +33,7 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         handleNoteOn: (n: IShNote, i: number) => [
             synth.playNote(n.tune, n.channel),
             painter.handleNoteOn(n, i),
-        ].reduce((offs,off) => () => { offs(); off(); })
+        ].reduce((offs: any, off: any) => () => { offs(); off(); })
     });
 
     // well... i suppose something is wrong
@@ -115,7 +121,6 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
 
         var index = Math.max(0, painter.getControl().getFocusIndex());
         player.playSheetMusic(adapted, {}, playbackFinished, index);
-        painter.setIsPlaying(true);
     };
 
     var redrawChannels = function(partial: IChannel[]): void
@@ -149,7 +154,7 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         }
 
         var song: IShmidusicStructure;
-        if (song = Ns.Reflect().validateShmidusic(parsed)) {
+        if (song = ShReflect().validateShmidusic(parsed)) {
 
             painter.getControl().clear();
 
@@ -170,13 +175,35 @@ Ns.Compose.Handler = function(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
+    // http://stackoverflow.com/a/21797381/2750743
+    var _base64ToArrayBuffer = function(base64: string): ArrayBuffer {
+        var binary_string =  window.atob(base64);
+        var len = binary_string.length;
+        var bytes = new Uint8Array( len );
+        for (var i = 0; i < len; i++)        {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+
+
+    var openMidi = function(base64Midi: string): void
+    {
+        var buf = _base64ToArrayBuffer(base64Midi);
+        var parsed: ISMFreaded = Ns.Libs.SMFreader(buf);
+        console.log('decoded midi: ', parsed);
+    };
+
     // separating to focused and global to
     // prevent conflicts with inputs, etc...
     var globalHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
         // "o"
-        79: (e: KeyboardEvent) => e.ctrlKey && Ns.selectFileFromDisc(openSong),
+        79: (e: KeyboardEvent) => e.ctrlKey && Kl.promptSelect({
+            'Shmidusic Chords .mid.js': () => Kl.selectFileFromDisc(openSong),
+            'Standard Midi File .mid': () => Kl.selectFileFromDisc(openMidi),
+        }),
         // "s"
-        83: (e: KeyboardEvent) => e.ctrlKey && Ns.saveToDisc(JSON.stringify(collectSong(painter.getChordList()))),
+        83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveToDisc(JSON.stringify(collectSong(painter.getChordList()))),
     };
 
     var focusedHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {

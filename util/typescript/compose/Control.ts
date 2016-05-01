@@ -1,13 +1,15 @@
-
 /// <reference path="../references.ts" />
+/// <reference path="../Shmidusicator.ts" />
 
 // this object provides some shortcut methods
 // to edit content of Painter.ts
 
-var Ns = Ns || {};
-Ns.Compose = Ns.Compose || {};
+import * as Ds from "../DataStructures";
+import Shmidusicator from "../Shmidusicator";
+import {ICanvasProvider} from "./Painter";
+import {TactMeasurer} from "./Painter";
 
-Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider, configCont: HTMLElement): IControl
+export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, configCont: HTMLElement): IControl
 {
     var $parentEl = $chordListCont.parent();
 
@@ -47,7 +49,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
         return index;
     };
 
-    var setNoteFocus = function(note: IShNote, chordIndex: number)
+    var setNoteFocus = function(note: Ds.IShNote, chordIndex: number)
     {
         var chord = $chordListCont.children()[chordIndex];
         chord && scrollToIfNeeded(chord);
@@ -61,7 +63,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
     };
 
     /** @return array with the newly pointed note or empty array */
-    var pointNextNote = function(): IShNote[]
+    var pointNextNote = function(): Ds.IShNote[]
     {
         var getOrder = (note: any) =>
             + +$(note).attr('data-tune') * 16
@@ -92,7 +94,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
             .removeClass('doesNotFitIntoTact')
             .removeAttr('data-rest');
 
-        var tacter = Ns.TactMeasurer(tactSize);
+        var tacter = TactMeasurer(tactSize);
         var $chords = $chordListCont.children().toArray().map(c => $(c));
 
         $chords.forEach(($span: JQuery) =>
@@ -125,7 +127,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
     /** @unused */
-    var addChord = function(chord: IShmidusicChord): number
+    var addChord = function(chord: Ds.IShmidusicChord): number
     {
         var index = $chordListCont.find('.focused').index() + 1;
         var $chord = canvaser.makeChordSpan(chord);
@@ -149,7 +151,7 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
     };
 
     /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
-    var addNote = function(note: IShNote, inNewChord: boolean): void
+    var addNote = function(note: Ds.IShNote, inNewChord: boolean): void
     {
         if (!inNewChord || $chordListCont.find('.focused .pointed').length) {
             var $chord = $chordListCont.find('.focused');
@@ -255,17 +257,17 @@ Ns.Compose.Control = function($chordListCont: JQuery, canvaser: ICanvasProvider,
     };
 };
 
-interface IControl {
-    setNoteFocus: {(note: IShNote, chordIndex: number): void},
+export interface IControl {
+    setNoteFocus: {(note: Ds.IShNote, chordIndex: number): void},
     setChordFocus: {(index: number): number},
     moveChordFocus: {(sign: number): number},
     moveChordFocusRow: {(sign: number): void},
-    pointNextNote: {(): IShNote[]},
+    pointNextNote: {(): Ds.IShNote[]},
     setChannel: {(ch: number): void},
     multiplyLength: {(factor: number): void},
     deleteFocused: {(backspace: boolean): void},
-    addChord: {(chord: IShmidusicChord): number},
-    addNote: {(note: IShNote, inNewChord: boolean): void},
+    addChord: {(chord: Ds.IShmidusicChord): number},
+    addNote: {(note: Ds.IShNote, inNewChord: boolean): void},
     clear: {(): void},
     getFocusIndex: {(): number},
 }

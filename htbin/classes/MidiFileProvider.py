@@ -16,8 +16,8 @@ from pony.orm import db_session
 
 class MidiFileProvider(object):
     # content_folder = '/home/klesun/Dropbox/';
-    content_folder = '/home/klesun/mounted_fat/progas/shmidusic.lv/'
-    decode_script_path = '/home/klesun/mounted_fat/progas/shmidusic/bin/'
+    content_folder = '/home/klesun/fat/p/shmidusic.lv/'
+    decode_script_path = '/home/klesun/fat/p/shmidusic/bin/'
     decode_script_class_path = 'org.shmidusic.stuff.scripts.MidiToReadableMidi'
 
     @classmethod
@@ -89,7 +89,7 @@ class MidiFileProvider(object):
             call(cmd)
             os.chdir(current_path)
 
-        # 'cd /home/klesun/progas/shmidusic/out'
+        # 'cd /home/klesun/fat/p/shmidusic/out'
         # 'java org.shmidusic.stuff.scripts.MidiToReadableMidi'
         # ''
 

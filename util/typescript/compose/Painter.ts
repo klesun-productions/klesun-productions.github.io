@@ -1,9 +1,12 @@
-
 /// <reference path="../references.ts" />
 
-var Ns = Ns || {};
+import Shmidusicator from "../Shmidusicator";
+import * as Ds from "../DataStructures";
+import {IControl} from "./Control";
+import {Control} from "./Control";
+import ShapeProvider from "./ShapeProvider";
 
-Ns.TactMeasurer = function(tactSize: number)
+export function TactMeasurer(tactSize: number)
 {
     var sumFraction = 0;
     var tactNumber = 0;
@@ -31,7 +34,7 @@ Ns.TactMeasurer = function(tactSize: number)
 };
 
 /** @param R - semibreve note oval vertical radius */
-Ns.CanvasProvider = function(R: number): ICanvasProvider
+export function CanvasProvider(R: number): ICanvasProvider
 {
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
@@ -57,14 +60,14 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
                 .attr('height', NOTE_CANVAS_HEIGHT + R)
                 [0];
 
-            Ns.ShapeProvider(noteCanvasCache[channel][lengthStr].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1)
-                .drawNote(channel, lengthStr);
+            ShapeProvider(noteCanvasCache[channel][lengthStr].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1)
+                .drawNote(channel, lengthStr + '');
         }
 
         return noteCanvasCache[channel][lengthStr];
     };
 
-    var makeNoteCanvas = function(note: IShNote): HTMLCanvasElement
+    var makeNoteCanvas = function(note: Ds.IShNote): HTMLCanvasElement
     {
         var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
         var ivoryIndex = !isEbony
@@ -101,7 +104,7 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
                     .attr('height', noteCanvas.height)
                     [0];
 
-                Ns.ShapeProvider(flatSignCache[note.channel].getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
+                ShapeProvider(flatSignCache[note.channel].getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
             }
             ctx.drawImage(flatSignCache[note.channel], 0, 0);
         }
@@ -109,7 +112,7 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
         return noteCanvas;
     };
 
-    var makeChordSpan = function(chord: IShmidusicChord): JQuery
+    var makeChordSpan = function(chord: Ds.IShmidusicChord): JQuery
     {
         var $chordSpan = $('<span style="position: relative;"></span>')
             .append($('<span class="tactNumberCont"></span>'));
@@ -140,16 +143,16 @@ Ns.CanvasProvider = function(R: number): ICanvasProvider
     };
 };
 
-interface ICanvasProvider {
+export interface ICanvasProvider {
     getNoteImage: { (l: number, c: number): HTMLCanvasElement },
-    makeNoteCanvas: { (n: IShNote): HTMLCanvasElement },
-    makeChordSpan: { (c: IShmidusicChord): JQuery },
-    extractNote: { (c: HTMLCanvasElement): IShNote },
-    extractChord: { (c: HTMLElement): IShmidusicChord },
+    makeNoteCanvas: { (n: Ds.IShNote): HTMLCanvasElement },
+    makeChordSpan: { (c: Ds.IShmidusicChord): JQuery },
+    extractNote: { (c: HTMLCanvasElement): Ds.IShNote },
+    extractChord: { (c: HTMLElement): Ds.IShmidusicChord },
     getChordWidth: { (): number },
 };
 
-Ns.SheetMusicPainter = function(parentId: string, config: HTMLElement): IPainter
+export function SheetMusicPainter(parentId: string, config: HTMLElement): IPainter
 {
     var R = 3; // semibreve note oval vertical radius
     var DX = R * 5; // half of chord span width
@@ -162,16 +165,16 @@ Ns.SheetMusicPainter = function(parentId: string, config: HTMLElement): IPainter
     var $chordListCont =  $('<div class="chordListCont"></div>');
     $parentEl.append($chordListCont);
 
-    var canvaser: ICanvasProvider = Ns.CanvasProvider(R);
-    var control: IControl = Ns.Compose.Control($chordListCont, canvaser, config);
+    var canvaser: ICanvasProvider = CanvasProvider(R);
+    var control: IControl = Control($chordListCont, canvaser, config);
 
     var toFloat = (fractionString: string) => eval(fractionString);
     var interruptDrawing = () => {};
-    var currentSong: IShmidusicStructure = null;
+    var currentSong: Ds.IShmidusicStructure = null;
 
     /** @param song - dict structure outputed by
      * shmidusic program - github.com/klesun/shmidusic */
-    var draw = function(song: IShmidusicStructure)
+    var draw = function(song: Ds.IShmidusicStructure)
     {
         currentSong = song;
 
@@ -184,8 +187,8 @@ Ns.SheetMusicPainter = function(parentId: string, config: HTMLElement): IPainter
 
         var staff = song.staffList[0];
 
-        var tacter = Ns.TactMeasurer(staff.staffConfig.numerator / 8);
-        interruptDrawing = Util.forEachBreak(staff.chordList, 200, 200, (chord: IShmidusicChord) =>
+        var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
+        interruptDrawing = Util.forEachBreak(staff.chordList, 200, 200, (chord: Ds.IShmidusicChord) =>
         {
             var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length.toString())));
             var finishedTact = tacter.inject(chordLength);
@@ -281,7 +284,7 @@ Ns.SheetMusicPainter = function(parentId: string, config: HTMLElement): IPainter
                 width: (DX * 2) + 'px',
                 'margin-bottom': 4 * R + 'px',
             },
-            ':not(.playing) div.chordListCont > span.focused': {
+            ' div.chordListCont > span.focused': {
                 'background-color': 'rgba(255,192,0,0.3)',
             },
             ' div.chordListCont > span.tactFinisher': {
@@ -343,19 +346,15 @@ Ns.SheetMusicPainter = function(parentId: string, config: HTMLElement): IPainter
         },
         getChordList: getChordList,
         getFocusedNotes: getFocusedNotes,
-        setIsPlaying: (flag: boolean) => (flag
-            ? $parentEl.addClass('playing')
-            : $parentEl.removeClass('playing')),
         getControl: () => control,
     };
 };
 
-interface IPainter {
-    draw: { (song: IShmidusicStructure): void },
-    handleNoteOn: { (note: IShNote, chordIndex: number): void },
+export interface IPainter {
+    draw: { (song: Ds.IShmidusicStructure): void },
+    handleNoteOn: { (note: Ds.IShNote, chordIndex: number): void },
     setEnabled: { (v: boolean): void },
-    getChordList: { (): IShmidusicChord[] },
-    setIsPlaying: { (flag: boolean): void },
+    getChordList: { (): Ds.IShmidusicChord[] },
     getControl: { (): IControl },
-    getFocusedNotes: { (): IShNote[] },
+    getFocusedNotes: { (): Ds.IShNote[] },
 }
