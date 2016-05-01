@@ -7,7 +7,7 @@ __pycache__
 /mokona_game/libs
 .idea
 /HTML5Application/nbproject/private/
-/mokona_game
+/entry/mokona_game
 /midiCollection/*
 /midiCollectionDecoded/*
 /user_data.db

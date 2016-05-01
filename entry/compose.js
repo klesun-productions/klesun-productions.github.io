@@ -26,24 +26,34 @@ var wanted = [
     //"/util/typescript/synths/Fluid.js",
     //"/util/typescript/sheet_music/Painter.js",
     //"/util/typescript/sheet_music/Control.js",
-    //"/util/typescript/compose/Handler.js",
+    //"/util/typescript/entry/Handler.js",
     "/util/flowOut/Linker.js",
     "/util/flowOut/GoogleTranslateAdapter.js",
     "/util/flowOut/Transeeker.js",
 ];
 
-wanted = ['/util/typescript/MainPage.js', '/libs/jquery-2.1.4.js', '/libs/FileSaver.js', '/libs/SMFreader.js',
+wanted = ['/util/typescript/compose/Painter.js', '/util/typescript/compose/Handler.js',
+    '/libs/jquery-2.1.4.js', '/libs/FileSaver.js', '/libs/SMFreader.js',
     '/util/typescript/Tools.js'].concat(wanted);
 
-requirejs(wanted, (MainPage) =>
+requirejs(wanted, (Painter, Handler) =>
 {
-    var mainPage = MainPage.default($('#mainCont')[0]);
+    var painter = Painter.SheetMusicPainter('sheetMusicDiv', $('#visualConfigDiv')[0]);
+    painter.setEnabled(true);
 
-    mainPage.initIchigosMidiList();
-    // mainPage.initMyMusicList();
-    $('#startDemoButton').click(mainPage.playDemo);
-    $('#playRandomButton').click(mainPage.playRandom);
+    var handler = Handler.default(painter, $('#playbackConfigDiv')[0]);
 
-    onGoogleSignIn = u => mainPage.handleGoogleSignIn(u, $('.userInfoCont'));
+    var sheetMusicCont = $('#sheetMusicDiv')[0];
+    $(sheetMusicCont).attr('tabindex', 1);
+    handler.hangKeyboardHandlers(sheetMusicCont);
+    handler.hangGlobalKeyboardHandlers();
+
+    $('body').click(function(e) {
+        if (!['input', 'select'].includes(e.target.tagName.toLowerCase())) {
+            $(sheetMusicCont).focus();
+        }
+    });
+
+    $(sheetMusicCont).focus();
 });
 
