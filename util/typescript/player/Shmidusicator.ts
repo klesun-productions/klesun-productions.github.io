@@ -5,10 +5,11 @@
 import * as Ds from "../DataStructures";
 import {Kl} from "../Tools";
 import {Fraction} from "../Tools";
+import {ISMFreaded} from "../DataStructures";
 
 export default class Shmidusicator
 {
-    static fromMidi(midi: Ds.ISmfStructure): Ds.IShmidusicStructure
+    static fromMidJs(midi: Ds.IMidJsSong): Ds.IShmidusicStructure
     {
         var academicDivision = midi.division * 4;
 
@@ -35,7 +36,7 @@ export default class Shmidusicator
 
     /** @TODO: when doing playback, use this instead of StandardMidiFile - it is the solution to the
      * problem that leak pause-chords may be inserted and break indexing */
-    static collectChords(notes: Array<Ds.ISmfNote>, division: number): Array<Ds.ITimedShChord>
+    static collectChords(notes: Array<Ds.IMidJsNote>, division: number): Array<Ds.ITimedShChord>
     {
         if (notes.length < 1) {
             return [];
@@ -62,7 +63,7 @@ export default class Shmidusicator
 
         var getLength = (c: Ds.IShmidusicChord) => Math.min.apply(null, c.noteList.map(n => n.length));
         var makePause = (length: number) => 1 && {length: length, channel: 6, tune: 0};
-        var makeShnote = (n: Ds.ISmfNote) => 1 && {length: fixDuration(n.duration) / division, channel: n.channel, tune: n.tune};
+        var makeShnote = (n: Ds.IMidJsNote) => 1 && {length: fixDuration(n.duration) / division, channel: n.channel, tune: n.tune};
 
         curChord = {noteList: [makeShnote(notes[0])], timeFraction: notes[0].time / division};
         chordList.push(curChord);

@@ -62,16 +62,11 @@ export class Kl
         $(input).click();
     };
 
-    static openMidi = function(whenLoaded: { (midi: ISMFreaded): void })
-    {
-        /** @debug */
-        console.log('huj', Ns);
-
+    static openMidi = (whenLoaded: { (midi: ISMFreaded): void }) =>
         Kl.selectFileFromDisc(db64 =>
             whenLoaded(
             Ns.Libs.SMFreader(
             Kl._base64ToArrayBuffer(db64))));
-    };
 
     // http://stackoverflow.com/a/21797381/2750743
     private static _base64ToArrayBuffer = function(base64: string): ArrayBuffer

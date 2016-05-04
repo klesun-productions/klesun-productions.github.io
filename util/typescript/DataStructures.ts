@@ -64,7 +64,7 @@ export interface IShmidusicStructure {
     }>;
 }
 
-export interface ISmfNote {
+export interface IMidJsNote {
     /* midi value: [0..128) */
     tune: number;
     /* in "ticks" */
@@ -76,7 +76,7 @@ export interface ISmfNote {
 }
 
 // decoded midi file
-export interface ISmfStructure {
+export interface IMidJsSong {
     /*
     * "ticks" per second. the "ticks" is a conventional
     * unit, in which time will be represented further
@@ -90,7 +90,7 @@ export interface ISmfStructure {
     instrumentDict: {
         [id: number]: number;
     };
-    noteList: Array<ISmfNote>;
+    noteList: Array<IMidJsNote>;
 }
 
 export interface IGeneralStructure {
@@ -98,7 +98,7 @@ export interface IGeneralStructure {
     config: {
         tempo: number,
         // tempoOrigin likely unused
-        tempoOrigin: number,
+        tempoOrigin?: number,
         instrumentDict: {[ch: number]: number},
         loopStart: number,
         loopTimes: number,
@@ -155,20 +155,25 @@ export interface IDrumPreset {
     }>;
 }
 
-export interface ISMFmetaEvent {
-    delta: number, // 192
-    midiChannel: number, // 1
-    // i believe 9 is noteOn and 8 - noteOff
-    midiEventType: number, // 8
-    parameter1: number, // 68
-    parameter2: number, // 64
-    type: 'MIDI'
+export interface ISMFevent {
+    delta: number, // 0
+    type: 'meta' | 'MIDI',
 }
 
-export interface ISMFmidiEvent {
-    delta: number, // 0
+export interface ISMFmetaEvent extends ISMFevent {
+    metaType: number, // see midi docs. 3 - track name, 1 - text, 88 - tact size
+    metaData: number[], // array of bytes that mean different things for different metaType-s
     type: 'meta',
-    metaType: number // see midi docs. 3 - track name, 1 - text, 88 - tact size
+}
+
+export interface ISMFmidiEvent extends ISMFevent {
+    midiChannel: number, // 1
+    // i believe 9 is noteOn and 8 - noteOff,
+    // 11 - control change, 12 - program change
+    midiEventType: number, // 8
+    parameter1: number, // 68
+    parameter2?: number, // 64
+    type: 'MIDI',
 }
 
 export interface ISMFreaded {
@@ -179,7 +184,7 @@ export interface ISMFreaded {
     tracks: Array<{
         trackName?: string,
         byteLength: number,
-        events: ISMFmetaEvent[] | ISMFmidiEvent
+        events: ISMFevent[]
     }>
 }
 

@@ -8,7 +8,7 @@ import {Oscillator} from "./synths/Oscillator";
 import {IShNote} from "./DataStructures";
 import Shmidusicator from "./player/Shmidusicator";
 import {IGeneralStructure} from "./DataStructures";
-import {ISmfStructure} from "./DataStructures";
+import {IMidJsSong} from "./DataStructures";
 import {IShmidusicStructure} from "./DataStructures";
 import {SheetMusicPainter} from "./compose/Painter";
 import UnfairRandom from "./UnfairRandom";
@@ -18,6 +18,7 @@ import {TableGenerator} from "./TableGenerator";
 import {ColModel} from "./TableGenerator";
 import {Kl} from "./Tools";
 import {MidiDevice} from "./synths/MidiDevice";
+import {Structurator} from "./player/Structurator";
 type dict<Tx> = {[k: string]: Tx};
 
 declare var Util: any;
@@ -170,14 +171,14 @@ export default function MainPage(mainCont: HTMLDivElement)
 
         console.log('Fetching...');
 
-        performExternal(method_name, params, function(song: ISmfStructure)
+        performExternal(method_name, params, function(song: IMidJsSong)
         {
             console.log('Playing: ' + fileName, song);
 
             var whenFinished = () => playRandom({fileName: fileName});
 
             player.playStandardMidiFile(song, {fileName: fileName}, whenFinished);
-            sheetMusicPainter.draw(Shmidusicator.fromMidi(song));
+            sheetMusicPainter.draw(Shmidusicator.fromMidJs(song));
         })
     };
 
@@ -275,12 +276,12 @@ export default function MainPage(mainCont: HTMLDivElement)
         /** @TODO: token expires in about two hours - need to rerequest it */
     };
 
-    const playSMF = function(smf: ISMFreaded): void
-    {
-        console.log('playing midi: ', smf);
-    };
+    const playSMF = (smf: ISMFreaded) =>
+        player.playSheetMusic(Structurator(smf), {}, () => {}, 0);
 
-    drawSheetMusicFlag.onclick = () => sheetMusicPainter.setEnabled(drawSheetMusicFlag.checked);
+    drawSheetMusicFlag.onclick = () =>
+        sheetMusicPainter.setEnabled(drawSheetMusicFlag.checked);
+
     playMidiFromDiskBtn.onclick = () => Kl.openMidi(playSMF);
 
     return {
