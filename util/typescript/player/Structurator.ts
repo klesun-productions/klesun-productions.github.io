@@ -18,20 +18,12 @@ type ticks_t = number;
 
 export function Structurator(smf: ISMFreaded): IGeneralStructure
 {
-    var song: IGeneralStructure = {
-        chordList: [],
-        config: {
-            tempo: 120,
-            instrumentDict: {},
-            loopStart: 0,
-            loopTimes: 0,
-        },
-        misc: {},
-    };
+    var chordByTime: {[t: number]: IMidJsNote[]} = {};
+    var tempoByTime: {[t: number]: number} = {};
+    var presetByChannel: {[ch: number]: number} = {};
+    var openNotes: ticks_t[][] = Kl.range(0,16).map(i => []);
 
-    var handleChannelEvent =
-        (chordByTime: {[t: number]: IMidJsNote[]}, openNotes: ticks_t[][]) =>
-        (time: ticks_t, event: ISMFmidiEvent, trackIdx: number) =>
+    var handleChannelEvent = (time: ticks_t, event: ISMFmidiEvent, trackIdx: number) =>
     {
         var ch = event.midiChannel;
         var handleNote = (semitone: number, velocity: number) =>
@@ -59,7 +51,7 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
             handleNote(event.parameter1, velocity);
         } else if (+event.midiEventType === 12) {
             // program change
-            song.config.instrumentDict[event.midiChannel] = event.parameter1;
+            presetByChannel[event.midiChannel] = event.parameter1;
         } else if (+event.midiEventType === 11) {
             // control change
         } else {
@@ -80,8 +72,9 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
 
             33: (ch) => {}, // channel change - next meta messages are applied only for this channel
             47: (_) => {}, // EndOfTrack - useless, 8_elfenLied.mid
-            81: (value) => {}, // SetTempo value - The number of microseconds per beat, 8_elfenLied.mid
-                              // i believe due to uselessness cuz got TimeSignature,
+            81: (...bytes) => {  // SetTempo value - The number of microseconds per beat, 8_elfenLied.mid
+                tempoByTime[time] = 60 * 1000000 / bytes.reduce((a,b) => (a << 8) + b);
+            },
             84: (timeCodeType, h, m, s, f, ff) => {}, // SMPTEOffset, 8_bleach_never_meant_to_belong.mid
             88: (num, den, midClocksPerMetrClick, thirtySecondsPer24Clocks) => {}, // TimeSignature, 8_elfenLied.mid
             89: (fifths, mode) => {}, // KeySignature, 8_bleach_never_meant_to_belong.mid
@@ -97,18 +90,14 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
     };
 
     // static
-    var getChordsAndMetas = function(smf: ISMFreaded): [{[t: number]: IMidJsNote[]}, any]
+    var fillChordsAndMetas = function(smf: ISMFreaded): void
     {
-        var chordByTime: {[t: number]: IMidJsNote[]} = {};
-        var openNotes: ticks_t[][] = Kl.range(0,16).map(i => []);
-
         smf.tracks.forEach((t,i) => {
             var time = 0;
             t.events.forEach(e => {
                 time += e.delta;
-
                 if (e.type === 'MIDI') {
-                    handleChannelEvent(chordByTime, openNotes)(time, <ISMFmidiEvent>e, i);
+                    handleChannelEvent(time, <ISMFmidiEvent>e, i);
                 } else if (e.type === 'meta') {
                     handleMetaEvent(time, <ISMFmetaEvent>e, i);
                 } else {
@@ -116,24 +105,52 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
                 }
             });
         });
-
-        return [chordByTime, -100];
     };
 
-    var [tickChords, config] = getChordsAndMetas(smf);
-
     var ticksToAcademic = (t: number) => t / smf.ticksPerBeat / 4;
+    var getLongestTempo = function(): number
+    {
+        var prevTime = 0, prevTempo = 120;
 
-    song.chordList = Object.keys(tickChords)
-        .sort((a,b) => +a - +b)
-        .map(k => 1 && {
-            timeFraction: ticksToAcademic(+k),
-            noteList: tickChords[+k].map(n => 1 && {
-                length: ticksToAcademic(n.duration),
-                tune: n.tune,
-                channel: n.channel
-            })
-        });
+        var longestTempo = 120;
+        var longestDuration = 0;
 
-    return song;
+        Object.keys(tempoByTime)
+            .sort((a,b) => +a - +b)
+            .forEach((eTime =>
+        {
+            var lastDuration = +eTime - prevTime;
+
+            if (lastDuration > longestDuration) {
+                longestTempo = tempoByTime[+eTime];
+                longestDuration = lastDuration;
+            }
+
+            [prevTime, prevTempo] = [+eTime, tempoByTime[+eTime]];
+        }));
+
+        return longestTempo;
+    };
+
+    fillChordsAndMetas(smf);
+
+    return {
+        chordList: Object.keys(chordByTime)
+            .sort((a,b) => +a - +b)
+            .map(k => 1 && {
+                timeFraction: ticksToAcademic(+k),
+                noteList: chordByTime[+k].map(n => 1 && {
+                    length: ticksToAcademic(n.duration),
+                    tune: n.tune,
+                    channel: n.channel
+                })
+            }),
+        config: {
+            tempo: getLongestTempo(),
+            instrumentDict: presetByChannel,
+            loopStart: 0,
+            loopTimes: 0,
+        },
+        misc: {},
+    };
 };
