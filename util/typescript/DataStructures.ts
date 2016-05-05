@@ -109,7 +109,7 @@ export interface IGeneralStructure {
 }
 
 export interface ISmfFile {
-    rawFileName: string;
+    rawFileName: string; // relative path to file
     fileName: string; // score will be cropped
     score: string;
 }

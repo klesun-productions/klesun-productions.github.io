@@ -15,7 +15,7 @@ export default function UnfairRandom(songList: ISmfFile[])
     var weightRules: Array<[number, (song: ISmfFile) => boolean]> = [
         [0.2, (song) => song.rawFileName.startsWith('random_good_stuff/notre_dame/')],
         [0.1, (song) => song.rawFileName.startsWith('random_good_stuff/monkey_island/')],
-        [0.2, (song) => (song.rawFileName.startsWith('touhoumidi.altervista.org/') &&
+        [0.4, (song) => (song.rawFileName.startsWith('touhoumidi.altervista.org/') &&
                         !song.rawFileName.startsWith('touhoumidi.altervista.org/th6'))], // leaving normal priority only for EoSD
         [0.2, (song) => song.score === 'c7'],
         [1, (song) => true], // default

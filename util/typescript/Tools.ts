@@ -62,6 +62,24 @@ export class Kl
         $(input).click();
     };
 
+    static fetchBinaryFile = (url: string, whenLoaded: { (buf: ArrayBuffer): void }) =>
+    {
+        /** @debug */
+        console.log('gonna fetch binary file');
+
+        var oReq = new XMLHttpRequest();
+        oReq.open("GET", url, true);
+        oReq.responseType = "arraybuffer";
+        oReq.onload = () => whenLoaded(oReq.response);
+        oReq.send(null);
+    };
+
+    static fetchMidi = (url: string, whenLoaded: { (midi: ISMFreaded): void }) =>
+        Kl.fetchBinaryFile(url, buf =>
+            whenLoaded(
+            Ns.Libs.SMFreader(
+            buf)));
+
     static openMidi = (whenLoaded: { (midi: ISMFreaded): void }) =>
         Kl.selectFileFromDisc(db64 =>
             whenLoaded(

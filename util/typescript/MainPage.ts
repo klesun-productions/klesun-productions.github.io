@@ -56,6 +56,9 @@ export default function MainPage(mainCont: HTMLDivElement)
     });
 
     const presetListControl = PresetList(instrumentInfoBlock);
+    const sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
+    const pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
+
     const audioCtx = new AudioContext();
 
     const SynthAdapter = function(dropdownEl: HTMLSelectElement, controlEl: HTMLDivElement)
@@ -91,9 +94,6 @@ export default function MainPage(mainCont: HTMLDivElement)
         <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
         <HTMLDivElement>$(mainCont).find('#synthControl')[0]);
 
-    const sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
-    const pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
-
     const player = Util.Player($playbackControlCont);
     player.addNoteHandler({handleNoteOn: function(noteJs: IShNote, chordIndex: number)
     {
@@ -113,24 +113,34 @@ export default function MainPage(mainCont: HTMLDivElement)
 
     var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
 
+    const playSMF = (smf: ISMFreaded) =>
+        player.playSheetMusic(Structurator(smf), {}, () => {}, 0);
+
+    const playMidiFromServer = (relPath: string) =>
+        Kl.fetchMidi('/midiCollection/' + relPath, playSMF);
+
     const playStandardMidiFile = function(fileName: string, finishedFileName?: string)
     {
-        finishedFileName = finishedFileName || '';
+        /** @debug */
+        console.log('gonna play', fileName);
+        playMidiFromServer(fileName);
 
-        var params = {file_name: fileName, finished_file_name: finishedFileName};
-        var method_name = 'get_standard_midi_file';
-
-        console.log('Fetching...');
-
-        performExternal(method_name, params, function(song: IMidJsSong)
-        {
-            console.log('Playing: ' + fileName, song);
-
-            var whenFinished = () => playRandom({fileName: fileName});
-
-            player.playStandardMidiFile(song, {fileName: fileName}, whenFinished);
-            sheetMusicPainter.draw(Shmidusicator.fromMidJs(song));
-        })
+        //finishedFileName = finishedFileName || '';
+        //
+        //var params = {file_name: fileName, finished_file_name: finishedFileName};
+        //var method_name = 'get_standard_midi_file';
+        //
+        //console.log('Fetching...');
+        //
+        //performExternal(method_name, params, function(song: IMidJsSong)
+        //{
+        //    console.log('Playing: ' + fileName, song);
+        //
+        //    var whenFinished = () => playRandom({fileName: fileName});
+        //
+        //    player.playStandardMidiFile(song, {fileName: fileName}, whenFinished);
+        //    sheetMusicPainter.draw(Shmidusicator.fromMidJs(song));
+        //})
     };
 
     const initIchigosMidiList = function ()
@@ -226,9 +236,6 @@ export default function MainPage(mainCont: HTMLDivElement)
 
         /** @TODO: token expires in about two hours - need to rerequest it */
     };
-
-    const playSMF = (smf: ISMFreaded) =>
-        player.playSheetMusic(Structurator(smf), {}, () => {}, 0);
 
     drawSheetMusicFlag.onclick = () =>
         sheetMusicPainter.setEnabled(drawSheetMusicFlag.checked);
