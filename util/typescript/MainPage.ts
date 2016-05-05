@@ -19,6 +19,7 @@ import {ColModel} from "./TableGenerator";
 import {Kl} from "./Tools";
 import {MidiDevice} from "./synths/MidiDevice";
 import {Structurator} from "./player/Structurator";
+import {PresetList} from "./Views";
 type dict<Tx> = {[k: string]: Tx};
 
 declare var Util: any;
@@ -34,7 +35,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         sheetMusicCont = $(mainCont).find('.sheetMusicCont')[0],
         violinKeyImage = $(mainCont).find('.violinKeyImage')[0],
         bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
-        instrumentInfoBlock = $(mainCont).find('#instrumentInfoBlock')[0],
+        instrumentInfoBlock = <HTMLDivElement>$(mainCont).find('#instrumentInfoBlock')[0],
         drawSheetMusicFlag = <HTMLInputElement>$(mainCont).find('#drawSheetMusicFlag')[0],
         playMidiFromDiskBtn = $(mainCont).find('input[type="button"].playMidiFromDiskBtn')[0],
         O_O = 'O_O'
@@ -54,57 +55,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         success: callback
     });
 
-    var enabledChannels = new Set(Kl.range(0,16));
-
-    const repaintInstrumentInfo = (instrByChannel: {[c: number]: number}) =>
-    {
-        $(instrumentInfoBlock).empty();
-        enabledChannels = new Set(Kl.range(0,16));
-
-        var colorize = (channel: number) => $('<div></div>')
-            .append(channel + '')
-            .css('font-weight', 'bold')
-            .css('color', 'rgba(' + Kl.channelColors[channel].join(',') + ',1)');
-
-        const makeMuteFlag = (channel: number) => $('<input type="checkbox" checked="checked"/>')
-            .click((e: any) => (e.target.checked
-                    ? enabledChannels.add(channel)
-                    : enabledChannels.delete(channel)
-            ));
-
-        var colModel = [
-            {name: 'channelCode', caption: '*', formatter: makeMuteFlag},
-            {name: 'channelCode', caption: 'Chan', formatter: colorize},
-            {name: 'presetCode', caption: 'Pres'},
-            {name: 'description', caption: 'Description'},
-        ];
-
-        var rows = Kl.range(0, 16).map(function(i)
-        {
-            if (i in instrByChannel) {
-                const instrCode = instrByChannel[i];
-                return {
-                    channelCode: i,
-                    presetCode: instrCode,
-                    description: Kl.instrumentNames[instrCode],
-                    /** @TODO: color */
-                };
-            } else {
-                return {
-                    channelCode: i,
-                    presetCode: -1,
-                    description: $('<div></div>')
-                        .append('Channel Not Used')
-                        .addClass('notUsed'),
-                };
-            }
-        });
-
-        var $table = TableGenerator().generateTable(colModel, rows);
-
-        $(instrumentInfoBlock).append($table);
-    };
-
+    const presetListControl = PresetList(instrumentInfoBlock);
     const audioCtx = new AudioContext();
 
     const SynthAdapter = function(dropdownEl: HTMLSelectElement, controlEl: HTMLDivElement)
@@ -131,7 +82,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             handleNoteOn: (n: IShNote, i: number) => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),
             consumeConfig: function(config: {[c: number]: number})
             {
-                repaintInstrumentInfo(config);
+                presetListControl.repaint(config);
                 synths[$(dropdownEl).val()].consumeConfig(config)
             }
         };
@@ -146,7 +97,7 @@ export default function MainPage(mainCont: HTMLDivElement)
     const player = Util.Player($playbackControlCont);
     player.addNoteHandler({handleNoteOn: function(noteJs: IShNote, chordIndex: number)
     {
-        if (enabledChannels.has(noteJs.channel)) {
+        if (presetListControl.enabledChannels().has(noteJs.channel)) {
             var noteOffs = [
                 pianoLayout.handleNoteOn(noteJs, chordIndex),
                 synth.handleNoteOn(noteJs, chordIndex),
