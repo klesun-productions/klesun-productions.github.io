@@ -41,6 +41,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         instrumentInfoBlock = <HTMLDivElement>$(mainCont).find('#instrumentInfoBlock')[0],
         drawSheetMusicFlag = <HTMLInputElement>$(mainCont).find('#drawSheetMusicFlag')[0],
         playMidiFromDiskBtn = $(mainCont).find('input[type="button"].playMidiFromDiskBtn')[0],
+        midiFileCounter = <HTMLAnchorElement>$(mainCont).find('#midiFileCounter')[0],
         O_O = 'O_O'
         ;
 
@@ -88,7 +89,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             handleNoteOn: (sem: number, chan: number) => synths[$(dropdownEl).val()].playNote(sem, chan),
             consumeConfig: (config: {[c: number]: number}) =>
             {
-                presetListControl.repaint(config);
+                presetListControl.update(config);
                 synths[$(dropdownEl).val()].consumeConfig(config)
             },
             consumeConfigWithoutRepaint: (config: {[c: number]: number}) =>
@@ -169,10 +170,9 @@ export default function MainPage(mainCont: HTMLDivElement)
         /** @debug */
         console.log('gonna fetrch info');
 
-        var callback = function(rowList: [ISmfFile])
+        var callback = function(rowList: ISmfFile[])
         {
-            /** @debug */
-            console.log('fetched info');
+            $(midiFileCounter).html(rowList.length + '');
 
             var colModel: ColModel<ISmfFile> = [
                 {'name': 'fileName', 'caption': 'File Name', formatter: p => (p + '').split('/').pop()},

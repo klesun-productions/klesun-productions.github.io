@@ -109,7 +109,7 @@ export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string
             var correctionCents = determineCorrectionCents(semitone - sampleSemitone, generator);
             var freqFactor = Math.pow(2, correctionCents / 100 / 12);
 
-            var sampleUrl = sampleDirUrl + '/' + sampleInfo.sampleName.replace('#', '%23') + '.wav';
+            var sampleUrl = sampleDirUrl + '/' + sampleInfo.sampleName.replace('#', '%23') + '.ogg';
 
             var fetched: IFetchedSample = null;
             getBuffer(sampleUrl, (resp) => fetched = {

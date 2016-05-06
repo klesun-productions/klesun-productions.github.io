@@ -74,6 +74,7 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
             1: (...letters) => console.log('Text Event: ', time, strBytes(letters)),
             3: (...letters) => console.log('Text Event, Marker: ', time, strBytes(letters)), // TrackName
             4: (...letters) => console.log('Text Event, Instrument: ', strBytes(letters)),
+            5: (...letters) => {}, // lyrics
 
             6: (...letters) => {
                 console.log('Text Event, Technical Info: ', time, strBytes(letters));
@@ -136,18 +137,20 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
     {
         var prevTime = 0, prevTempo = 120;
 
-        var longestTempo = 120;
+        var longestTempo = 121;
         var longestDuration = 0;
 
         Object.keys(tempoByTime)
             .sort((a,b) => +a - +b)
+            .concat(Object.keys(chordByTime)
+                .sort((a,b) => +a - +b)
+                .slice(-1))
             .forEach((eTime =>
         {
             var lastDuration = +eTime - prevTime;
 
-            if (lastDuration > longestDuration) {
-                longestTempo = tempoByTime[+eTime];
-                longestDuration = lastDuration;
+            if (lastDuration >= longestDuration) {
+                [longestTempo, longestDuration] = [prevTempo, lastDuration];
             }
 
             [prevTime, prevTempo] = [+eTime, tempoByTime[+eTime]];
