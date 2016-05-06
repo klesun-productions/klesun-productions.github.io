@@ -20,16 +20,19 @@ import {Kl} from "./Tools";
 import {MidiDevice} from "./synths/MidiDevice";
 import {Structurator} from "./player/Structurator";
 import {PresetList} from "./Views";
+import PianoLayout from "./PianoLayout";
 type dict<Tx> = {[k: string]: Tx};
 
 declare var Util: any;
+
+type cb = () => void;
 
 /** @param mainCont - div dom with children
  * structure defined in index.html */
 export default function MainPage(mainCont: HTMLDivElement)
 {
     const
-        $pianoCanvas = $(mainCont).find('.pianoLayoutCanvas'),
+        pianoCanvas = <HTMLCanvasElement>$(mainCont).find('.pianoLayoutCanvas')[0],
         $playbackControlCont = $(mainCont).find('.playbackControlCont'),
         sheetMusicConfigCont = $(mainCont).find('#sheetMusicConfigDiv')[0],
         sheetMusicCont = $(mainCont).find('.sheetMusicCont')[0],
@@ -57,7 +60,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
     const presetListControl = PresetList(instrumentInfoBlock);
     const sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
-    const pianoLayout = Util.PianoLayoutPanel($pianoCanvas);
+    const pianoLayout = PianoLayout(pianoCanvas);
 
     const audioCtx = new AudioContext();
 
@@ -82,39 +85,50 @@ export default function MainPage(mainCont: HTMLDivElement)
         $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
 
         return {
-            handleNoteOn: (n: IShNote, i: number) => synths[$(dropdownEl).val()].playNote(n.tune, n.channel),
-            consumeConfig: function(config: {[c: number]: number})
+            handleNoteOn: (sem: number, chan: number) => synths[$(dropdownEl).val()].playNote(sem, chan),
+            consumeConfig: (config: {[c: number]: number}) =>
             {
                 presetListControl.repaint(config);
                 synths[$(dropdownEl).val()].consumeConfig(config)
-            }
+            },
+            consumeConfigWithoutRepaint: (config: {[c: number]: number}) =>
+                synths[$(dropdownEl).val()].consumeConfig(config),
         };
     };
     const synth = SynthAdapter(
         <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
         <HTMLDivElement>$(mainCont).find('#synthControl')[0]);
 
+    presetListControl.hangPresetChangeHandler(presByChan =>
+        synth.consumeConfigWithoutRepaint(presByChan));
+
     const player = Util.Player($playbackControlCont);
     player.addNoteHandler({handleNoteOn: function(noteJs: IShNote, chordIndex: number)
     {
         if (presetListControl.enabledChannels().has(noteJs.channel)) {
             var noteOffs = [
-                pianoLayout.handleNoteOn(noteJs, chordIndex),
-                synth.handleNoteOn(noteJs, chordIndex),
+                pianoLayout.handleNoteOn(noteJs),
+                synth.handleNoteOn(noteJs.tune, noteJs.channel),
                 sheetMusicPainter.handleNoteOn(noteJs, chordIndex),
             ];
 
-            return () => noteOffs.forEach(off => off());
+            return () => noteOffs.forEach((off: cb) => off());
         } else {
             return () => {};
         }
     }});
     player.addConfigConsumer(synth);
 
+    pianoLayout.hangClickListener((semitone) => synth.handleNoteOn(semitone, 0));
+
     var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
 
-    const playSMF = (smf: ISMFreaded) =>
-        player.playSheetMusic(Structurator(smf), {}, () => {}, 0);
+    const playSMF = (smf: ISMFreaded) => {
+        var structured = Structurator(smf);
+        player.playSheetMusic(structured, {}, () => {}, 0);
+        console.log('decoded', smf);
+        console.log('playing', structured);
+    };
 
     const playMidiFromServer = (relPath: string) =>
         Kl.fetchMidi('/midiCollection/' + relPath, playSMF);
@@ -122,6 +136,7 @@ export default function MainPage(mainCont: HTMLDivElement)
     const playStandardMidiFile = function(fileName: string, finishedFileName?: string)
     {
         /** @debug */
+        console.log(' ');
         console.log('gonna play', fileName);
         playMidiFromServer(fileName);
 
@@ -168,7 +183,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
             var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
 
-            var table = TableGenerator().generateTable(colModel, rowList, caption, 10, 25);
+            var table = TableGenerator().generateTable(colModel, rowList, caption, 50, 25);
             $('.random-midi-list-cont').append(table); // defined in index.html
 
             var random = UnfairRandom(rowList);

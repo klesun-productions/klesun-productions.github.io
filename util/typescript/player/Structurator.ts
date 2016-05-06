@@ -21,6 +21,9 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
     var chordByTime: {[t: number]: IMidJsNote[]} = {};
     var tempoByTime: {[t: number]: number} = {};
     var presetByChannel: {[ch: number]: number} = {};
+    var loopStart: number = null;
+    var loopEnd: number = 0;
+
     var openNotes: ticks_t[][] = Kl.range(0,16).map(i => []);
 
     var handleChannelEvent = (time: ticks_t, event: ISMFmidiEvent, trackIdx: number) =>
@@ -63,12 +66,26 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
 
     var handleMetaEvent = (time: ticks_t, event: ISMFmetaEvent, trackIdx: number) =>
     {
+        var strBytes = (letters: number[]) =>
+            letters.map(c => String.fromCharCode(c)).join('');
+
         // see http://www.recordingblogs.com/sa/tabid/88/Default.aspx?topic=MIDI+meta+messages
         var handlers: {[n: number]: (...bytes: number[]) => void} = {
-            1: (...letters) => {}, // TextEvent - each byte in e.metaData is a character, 8_elfenLied.mid
-            3: (...letters) => {}, // TrackName - each byte in e.metaData is a character, 8_elfenLied.mid
-            9: (...letters) => {}, // Song Name - each byte in e.metaData is a character, 8_elfenLied.mid
-            10: (...letters) => {}, // Transcribed by - each byte in e.metaData is a character, 8_elfenLied.mid
+            1: (...letters) => console.log('Text Event: ', time, strBytes(letters)),
+            3: (...letters) => console.log('Text Event, Marker: ', time, strBytes(letters)), // TrackName
+            4: (...letters) => console.log('Text Event, Instrument: ', strBytes(letters)),
+
+            6: (...letters) => {
+                console.log('Text Event, Technical Info: ', time, strBytes(letters));
+                switch(strBytes(letters)) {
+                    case 'loopStart':case 'Start': loopStart = time;
+                    case 'loopEnd': loopEnd = time;
+                }
+            },
+            8: (...letters) => console.log('Text Event, Song Name: ', strBytes(letters)),
+            9: (...letters) => console.log('Text Event, Album Name: ', strBytes(letters)),
+            10: (...letters) => console.log('Text Event, Author: ', strBytes(letters)),
+            12: (...letters) => console.log('Text Event, Author 2: ', strBytes(letters)),
 
             33: (ch) => {}, // channel change - next meta messages are applied only for this channel
             47: (_) => {}, // EndOfTrack - useless, 8_elfenLied.mid
@@ -78,6 +95,7 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
             84: (timeCodeType, h, m, s, f, ff) => {}, // SMPTEOffset, 8_bleach_never_meant_to_belong.mid
             88: (num, den, midClocksPerMetrClick, thirtySecondsPer24Clocks) => {}, // TimeSignature, 8_elfenLied.mid
             89: (fifths, mode) => {}, // KeySignature, 8_bleach_never_meant_to_belong.mid
+            127: (...bytes) => {}, // Sequencer Specific
         };
 
         if (event.metaType in handlers) {
@@ -85,13 +103,15 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
         } else if (!ignoredMetas.includes(event.metaType)) {
             console.log(
                 'got unknown meta code message', event.metaType, event.metaData,
-                event.metaData.map(c => String.fromCharCode(c)).join(''));
+                strBytes(event.metaData));
         }
     };
 
     // static
     var fillChordsAndMetas = function(smf: ISMFreaded): void
     {
+        var sysexes: [number, number[]][] = [];
+
         smf.tracks.forEach((t,i) => {
             var time = 0;
             t.events.forEach(e => {
@@ -100,11 +120,15 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
                     handleChannelEvent(time, <ISMFmidiEvent>e, i);
                 } else if (e.type === 'meta') {
                     handleMetaEvent(time, <ISMFmetaEvent>e, i);
+                } else if (e.type === 'sysex') {
+                    sysexes.push([time, (<any>e).metaData]);
                 } else {
                     console.log('unexpected SMF event type', e.type, e);
                 }
             });
         });
+
+        sysexes.length && console.log('Got Sysex Events: ', sysexes);
     };
 
     var ticksToAcademic = (t: number) => t / smf.ticksPerBeat / 4;
@@ -148,8 +172,8 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
         config: {
             tempo: getLongestTempo(),
             instrumentDict: presetByChannel,
-            loopStart: 0,
-            loopTimes: 0,
+            loopStart: ticksToAcademic(loopStart || 0),
+            loopTimes: loopStart !== null ? 3 : 0,
         },
         misc: {},
     };

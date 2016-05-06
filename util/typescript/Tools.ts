@@ -64,9 +64,6 @@ export class Kl
 
     static fetchBinaryFile = (url: string, whenLoaded: { (buf: ArrayBuffer): void }) =>
     {
-        /** @debug */
-        console.log('gonna fetch binary file');
-
         var oReq = new XMLHttpRequest();
         oReq.open("GET", url, true);
         oReq.responseType = "arraybuffer";

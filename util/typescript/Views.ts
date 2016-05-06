@@ -7,9 +7,28 @@
 import {Kl} from "./Tools";
 import {TableGenerator} from "./TableGenerator";
 
+type cons_conf_t = {(presByChan: {[ch: number]: number}): void};
+
 export function PresetList(instrumentInfoBlock: HTMLDivElement)
 {
     var enabledChannels = new Set(Kl.range(0,16));
+    var presetChanged: cons_conf_t = (_) => () => {};
+
+    var makePresetDropdown = function(chan: number, initialPreset: number): HTMLSelectElement
+    {
+        var select = document.createElement('select');
+
+        Kl.instrumentNames.forEach((d,i) =>
+            $(select).append($('<option></option>')
+                .val(i).html(i + ': ' + d)));
+
+        $(select).val(initialPreset)
+            .attr('readonly', 'readonly');
+
+        select.onchange = () => presetChanged({[chan]: $(select).val()});
+
+        return select;
+    };
 
     var repaintInstrumentInfo = (instrByChannel: {[c: number]: number}) =>
     {
@@ -29,30 +48,21 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement)
 
         var colModel = [
             {name: 'channelCode', caption: '*', formatter: makeMuteFlag},
-            {name: 'channelCode', caption: 'Chan', formatter: colorize},
-            {name: 'presetCode', caption: 'Pres'},
-            {name: 'description', caption: 'Description'},
+            {name: 'channelCode', caption: 'Ch', formatter: colorize},
+            {name: 'presetCode', caption: 'Preset'},
         ];
 
         var rows = Kl.range(0, 16).map(function(i)
         {
-            if (i in instrByChannel) {
-                const instrCode = instrByChannel[i];
-                return {
-                    channelCode: i,
-                    presetCode: instrCode,
-                    description: Kl.instrumentNames[instrCode],
-                    /** @TODO: color */
-                };
-            } else {
-                return {
-                    channelCode: i,
-                    presetCode: -1,
-                    description: $('<div></div>')
-                        .append('Channel Not Used')
-                        .addClass('notUsed'),
-                };
-            }
+            var instrCode = i in instrByChannel
+                ? instrByChannel[i]
+                : -1;
+
+            return {
+                channelCode: i,
+                presetCode: makePresetDropdown(i, instrCode),
+                /** @TODO: color */
+            };
         });
 
         var $table = TableGenerator().generateTable(colModel, rows);
@@ -60,8 +70,15 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement)
         $(instrumentInfoBlock).append($table);
     };
 
+    var hangPresetChangeHandler = (cb: cons_conf_t) =>
+    {
+        presetChanged = cb;
+        $(instrumentInfoBlock).find('select').removeAttr('readonly');
+    };
+
     return {
         repaint: repaintInstrumentInfo,
         enabledChannels: () => enabledChannels,
+        hangPresetChangeHandler: hangPresetChangeHandler,
     };
 };

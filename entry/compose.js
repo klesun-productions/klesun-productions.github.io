@@ -9,7 +9,6 @@ var wanted = [
     "/util//PlaybackControl.js",
     "/util//Playback.js",
     "/util//Compose.js",
-    "/util//PianoLayoutPanel.js",
 ];
 
 wanted = ['/util/typescript/compose/Painter.js', '/util/typescript/compose/Handler.js',
