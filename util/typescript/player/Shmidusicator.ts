@@ -1,4 +1,4 @@
-/// <reference path="../DataStructures.ts" />
+/// <reference path="../../../libs/definitelytyped/lib.es6.d.ts" />
 
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 
@@ -175,6 +175,7 @@ export default class Shmidusicator
                 instrumentDict: instrumentDict,
                 loopStart: staff.staffConfig.loopStart || 0,
                 loopTimes: staff.staffConfig.loopTimes || 0,
+                volumeByChannel: Kl.dicti(Kl.range(0,16).map((i): [number,number] => [i,127])),
             },
             misc: {
                 noteCount: -100

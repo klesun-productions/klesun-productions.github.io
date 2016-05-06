@@ -41,6 +41,20 @@ export class Kl
     static range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
         .map((nop: void, i: number) => l + i);
 
+    /** transforms array of [key, value] tuples into a dict */
+    static dict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
+        var result: {[k: string]: Tv} = {};
+        pairs.forEach(p => result[p[0]] = p[1]);
+        return result;
+    };
+
+    /** transforms array of [key, value] tuples into a dict */
+    static dicti = <Tv>(pairs: [number,Tv][]): {[k: number]: Tv} => {
+        var result: {[k: number]: Tv} = {};
+        pairs.forEach(p => result[p[0]] = p[1]);
+        return result;
+    };
+
     static selectFileFromDisc = function(whenLoaded: { (dataBase64: string): void }): void
     {
         var loadSelectedFile = function (fileInfo: File, whenLoaded: { (data: any): void }): void

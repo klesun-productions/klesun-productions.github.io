@@ -102,6 +102,7 @@ export interface IGeneralStructure {
         instrumentDict: {[ch: number]: number},
         loopStart: number,
         loopTimes: number,
+        volumeByChannel: {[ch: number]: number},
     },
     misc: {
         noteCount?: number

@@ -21,11 +21,6 @@ export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string
     var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
     var awaiting: { [url: string]: Array<{ (resp: AudioBuffer): void }> } = {};
 
-    var promiseCache: {(): IFetchedSample}[][][] = [
-        Kl.range(0,128).map(_ => []), // tunable
-        Kl.range(0,128).map(_ => [])  // drums
-    ];
-
     var getBuffer = function(url: string, onOk: { (resp: AudioBuffer): void }): void
     {
         if (!(url in cachedSampleBuffers)) {

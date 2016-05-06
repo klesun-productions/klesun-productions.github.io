@@ -21,8 +21,12 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
     var chordByTime: {[t: number]: IMidJsNote[]} = {};
     var tempoByTime: {[t: number]: number} = {};
     var presetByChannel: {[ch: number]: number} = {};
+    var volumeByChannel: {[ch: number]: number} = {};
+    var pitchBends: [number, number, number, number][] = [];
     var loopStart: number = null;
     var loopEnd: number = 0;
+
+    var unknownControlChanges: [number, number, number][] = [];
 
     var openNotes: ticks_t[][] = Kl.range(0,16).map(i => []);
 
@@ -48,6 +52,14 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
             }
         };
 
+        // http://www.nortonmusic.com/midi_cc.html
+        var controlHandlers: {[n: number]: (param: number) => void} = {
+            0: (p) => {}, // bank select
+            7: (p) => volumeByChannel[ch] = p,
+            10: (p) => {}, // pan select
+            32: (p) => {}, // bank select 2
+        };
+
         if ([8,9].includes(event.midiEventType)) {
             // noteOn/Off
             var velocity = event.midiEventType === 8 ? 0 : event.parameter2;
@@ -57,8 +69,17 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
             presetByChannel[event.midiChannel] = event.parameter1;
         } else if (+event.midiEventType === 11) {
             // control change
+            if (event.parameter1 in controlHandlers) {
+                controlHandlers[event.parameter1](event.parameter2);
+            } else {
+                unknownControlChanges.push([time, event.parameter1, event.parameter2]);
+            }
+        } else if (+event.midiEventType === 14) {
+            // pitch bend
+            pitchBends.push([time, ch, event.parameter1, event.parameter2]);
         } else {
             // ???
+            console.log('got unknown channel event: ', time, event);
         }
     };
 
@@ -71,8 +92,8 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
 
         // see http://www.recordingblogs.com/sa/tabid/88/Default.aspx?topic=MIDI+meta+messages
         var handlers: {[n: number]: (...bytes: number[]) => void} = {
-            1: (...letters) => console.log('Text Event: ', time, strBytes(letters)),
-            3: (...letters) => console.log('Text Event, Marker: ', time, strBytes(letters)), // TrackName
+            1: (...letters) => {}, // TextEvent
+            3: (...letters) => {}, // TrackName
             4: (...letters) => console.log('Text Event, Instrument: ', strBytes(letters)),
             5: (...letters) => {}, // lyrics
 
@@ -161,6 +182,10 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
 
     fillChordsAndMetas(smf);
 
+    /** @debug */
+    unknownControlChanges.length && console.log('got unknown control changes', unknownControlChanges);
+    pitchBends.length && console.log('got pitch bends', pitchBends);
+
     return {
         chordList: Object.keys(chordByTime)
             .sort((a,b) => +a - +b)
@@ -176,7 +201,8 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
             tempo: getLongestTempo(),
             instrumentDict: presetByChannel,
             loopStart: ticksToAcademic(loopStart || 0),
-            loopTimes: loopStart !== null ? 3 : 0,
+            loopTimes: loopStart !== null ? 1 : 0,
+            volumeByChannel: volumeByChannel,
         },
         misc: {},
     };

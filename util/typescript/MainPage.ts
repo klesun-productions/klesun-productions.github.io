@@ -127,36 +127,19 @@ export default function MainPage(mainCont: HTMLDivElement)
     const playSMF = (smf: ISMFreaded) => {
         var structured = Structurator(smf);
         player.playSheetMusic(structured, {}, () => {}, 0);
-        console.log('decoded', smf);
-        console.log('playing', structured);
     };
 
-    const playMidiFromServer = (relPath: string) =>
-        Kl.fetchMidi('/midiCollection/' + relPath, playSMF);
-
-    const playStandardMidiFile = function(fileName: string, finishedFileName?: string)
+    const playStandardMidiFile = function(fileName: string)
     {
         /** @debug */
         console.log(' ');
         console.log('gonna play', fileName);
-        playMidiFromServer(fileName);
 
-        //finishedFileName = finishedFileName || '';
-        //
-        //var params = {file_name: fileName, finished_file_name: finishedFileName};
-        //var method_name = 'get_standard_midi_file';
-        //
-        //console.log('Fetching...');
-        //
-        //performExternal(method_name, params, function(song: IMidJsSong)
-        //{
-        //    console.log('Playing: ' + fileName, song);
-        //
-        //    var whenFinished = () => playRandom({fileName: fileName});
-        //
-        //    player.playStandardMidiFile(song, {fileName: fileName}, whenFinished);
-        //    sheetMusicPainter.draw(Shmidusicator.fromMidJs(song));
-        //})
+        Kl.fetchMidi('/midiCollection/' + fileName, (smf: ISMFreaded) =>
+            player.playSheetMusic(
+                Structurator(smf),
+                {fileName: fileName},
+                () => playRandom({fileName: fileName})));
     };
 
     const initIchigosMidiList = function ()
@@ -183,7 +166,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
             var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
 
-            var table = TableGenerator().generateTable(colModel, rowList, caption, 50, 25);
+            var table = TableGenerator().generateTable(colModel, rowList, caption, 100, 25);
             $('.random-midi-list-cont').append(table); // defined in index.html
 
             var random = UnfairRandom(rowList);
@@ -192,7 +175,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             {
                 finishedFileInfo = finishedFileInfo || {fileName: ''};
 
-                playStandardMidiFile(random.getAny().rawFileName, finishedFileInfo.fileName);
+                playStandardMidiFile(random.getAny().rawFileName);
             };
         };
 
