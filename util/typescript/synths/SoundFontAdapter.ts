@@ -115,8 +115,8 @@ export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string
             getBuffer(sampleUrl, (resp) => fetched = {
                 buffer: resp,
                 frequencyFactor: freqFactor,
-                loopStart: sampleInfo.startLoop / sampleInfo.sampleRate,
-                loopEnd: sampleInfo.endLoop / sampleInfo.sampleRate,
+                loopStart: (sampleInfo.startLoop + (generator.startloopAddrsOffset || 0)) / sampleInfo.sampleRate,
+                loopEnd: (sampleInfo.endLoop + (generator.endloopAddrsOffset || 0)) / sampleInfo.sampleRate,
             });
 
             return fetched;

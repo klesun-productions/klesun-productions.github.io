@@ -126,6 +126,8 @@ export interface IGenerator {
     overridingRootKey?: number;
     fineTune?: number; // 100 of fineTune = 1 semitone
     coarseTune?: number;
+    startloopAddrsOffset?: number; // add to sample.startLoop if present
+    endloopAddrsOffset?: number; // add to sample.endLoop if present
 }
 
 export interface ISampleInfo {
