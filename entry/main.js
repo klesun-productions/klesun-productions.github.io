@@ -1,14 +1,7 @@
 
 // require.js ordered me to put the inline javascript code here
 
-// TODO: i should transform all these .js files to
-// .ts and remove from explicit import one day
-var wanted = [
-    "/util//Tools.js",
-    "/util//PlaybackControl.js",
-];
-
-wanted = ['/util/typescript/MainPage.js', '/libs/jquery-2.1.4.js', '/libs/FileSaver.js', '/libs/SMFreader.js'].concat(wanted);
+var wanted = ['/util/typescript/MainPage.js', '/libs/jquery-2.1.4.js', '/libs/FileSaver.js', '/libs/SMFreader.js'];
 
 requirejs(wanted, (MainPage) =>
 {

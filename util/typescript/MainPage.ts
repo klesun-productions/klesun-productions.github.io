@@ -21,10 +21,8 @@ import {MidiDevice} from "./synths/MidiDevice";
 import {Structurator} from "./player/Structurator";
 import {PresetList} from "./Views";
 import PianoLayout from "./PianoLayout";
-import Player from "./Player";
+import {Player} from "./Player";
 type dict<Tx> = {[k: string]: Tx};
-
-declare var Util: any;
 
 type cb = () => void;
 

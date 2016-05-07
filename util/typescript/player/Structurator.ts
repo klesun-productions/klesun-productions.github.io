@@ -185,6 +185,7 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
     /** @debug */
     unknownControlChanges.length && console.log('got unknown control changes', unknownControlChanges);
     pitchBends.length && console.log('got pitch bends', pitchBends);
+    Object.keys(volumeByChannel).length && console.log('got volumes per channel', volumeByChannel);
 
     return {
         chordList: Object.keys(chordByTime)

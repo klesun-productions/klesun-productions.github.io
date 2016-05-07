@@ -12,12 +12,10 @@ import {IShmidusicStructure} from "../DataStructures";
 import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
 import {Kl} from "../Tools";
-import Player from "../Player";
+import {Player} from "../Player";
 
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
-
-declare var Util: any;
 
 export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {

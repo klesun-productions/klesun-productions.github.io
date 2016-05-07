@@ -13,14 +13,14 @@ import {IMidJsSong} from "./DataStructures";
 import {Kl} from "./Tools";
 import {IPlayback} from "./Playback";
 import {Playback} from "./Playback";
-declare var Util: any;
+import PlaybackControl from "./views/PlaybackControl";
 
 interface INoteHandler {
     handleNoteOn: (noteJs: IShNote, chordIndex: number) => {(): void},
 }
 
 type millis_t = number;
-interface IFileInfo {
+export interface IFileInfo {
     fileName?: string,
     score?: string
 }
@@ -29,11 +29,14 @@ interface IConfigConsumer {
     consumeConfig: (config: {[ch: number]: number}) => void,
 }
 
+/** @param length - float: quarter will be 0.25, semibreve will be 1.0*/
+var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
+
 // TODO: instead of $controlCont we should pass something like "IControlProvider"
 /** @param piano - PianoLayoutPanel instance */
-export default function Player($controlCont: JQuery)
+export function Player($controlCont: JQuery)
 {
-    var control = Util.PlaybackControl($controlCont);
+    var control = PlaybackControl($controlCont);
 
     /** @var - a list of objects that have method handleNoteOn() that returns method handleNoteOff() */
     var noteHandlers: INoteHandler[] = [];
@@ -43,7 +46,6 @@ export default function Player($controlCont: JQuery)
     };
 
     var toFloat = (fractionString: string) => eval(fractionString);
-    var toMillis = Util.toMillis;
 
     // list of lambdas
     var toBeInterrupted: {(): void}[] = [];
@@ -99,8 +101,8 @@ export default function Player($controlCont: JQuery)
 
         currentPlayback && currentPlayback.pause();
 
-        control.setFields(sheetMusic)
-            .setFileInfo(fileInfo);
+        control.setFields(sheetMusic);
+        control.setFileInfo(fileInfo);
 
         configConsumer.consumeConfig(sheetMusic.config.instrumentDict);
 

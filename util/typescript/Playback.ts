@@ -140,7 +140,7 @@ export function Playback(
 
     var getTime = () => (chordIndex in sheetMusic.chordList)
         ? toMillis(sheetMusic.chordList[chordIndex].timeFraction, tempo)
-        : '?';
+        : -1;
 
     return {
         slideTo: slideTo,
@@ -160,7 +160,7 @@ export interface IPlayback {
     getTempo: () => number,
     setTempo: (n: number) => void,
     getChordIndex: () => number,
-    getTime: () => millis_t | string,
+    getTime: () => millis_t,
     pause: () => void,
     resume: () => void,
     setPauseHandler: (h: () => void) => void,
