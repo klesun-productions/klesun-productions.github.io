@@ -67,11 +67,15 @@ Util.StaffPanel = function(sheetMusic)
 
 Util.PlaybackControl = function($cont)
 {
-    var $tempoFactorInput = $cont.find('.tempoFactorInput');
-    var $secondsTotalHolder = $cont.find('.secondsTotal.holder');
-    var $timeSlider = $cont.find('.timeSlider');
-    var $staffCont = $cont.find('.staffCont');
-	var tempoHolder = $cont.find('.tempoInput');
+    var $tempoFactorInput = $cont.find('.tempoFactorInput'),
+        $secondsTotalHolder = $cont.find('.secondsTotal.holder'),
+        $timeSlider = $cont.find('.timeSlider'),
+        $staffCont = $cont.find('.staffCont'),
+	    tempoHolder = $cont.find('.tempoInput'),
+        $playBtn = $cont.find('.playBtn'),
+        $pauseBtn = $cont.find('.pauseBtn'),
+        O_O = 0-0;
+
     /** @TODO: CSS in CSS ! */
     var $staffMaskDiv = $cont.find('.staffMaskDiv').css('width', 0).css('height', 21).css('background-color', 'rgba(0,127,0,0.5)')
         .css('position', 'relative').css('left', '10px').css('top', '-21px').css('margin-bottom', '-20px');
@@ -141,6 +145,9 @@ Util.PlaybackControl = function($cont)
             playback.setTempo(+tempoHolder.val());
 			updateState();
         });
+
+        $playBtn.click(() => { playback.pause(); playback.resume(); });
+        $pauseBtn.click(playback.pause);
 	};
 
     var self = {

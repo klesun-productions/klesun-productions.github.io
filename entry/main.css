@@ -154,7 +154,7 @@
 
     .main-middle-cont * { font-size: 10px; }
     #playbackControl > div.general { background-color: rgb(140, 133, 208); }
-    #playbackControl > div > * {
+    #playbackControl > div > *:not(button) {
 		white-space: nowrap;
 		background-color: #ccf;
 		border: 1px solid grey;
@@ -180,6 +180,19 @@
         width: 50px;
 		font-size: 10px;
 		height: 16px;
+    }
+
+    #playbackControl button {
+        font-weight: bold;
+        letter-spacing:1px;
+    }
+    #playbackControl .playBtn {
+        color: #0b0;
+        text-shadow: 1px 0 #0b0;
+    }
+    #playbackControl .pauseBtn {
+        color: red;
+        text-shadow: 1px 0 red;
     }
 
 	input[type=range] {
