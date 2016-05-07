@@ -1,4 +1,3 @@
-
 /// <reference path="../references.ts" />
 
 import {IShmidusicChord} from "../DataStructures";

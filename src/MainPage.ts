@@ -1,4 +1,3 @@
-
 /// <reference path="references.ts" />
 
 // initialises the website main page - the js performed the moment page is loaded

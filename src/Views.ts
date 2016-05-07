@@ -1,4 +1,3 @@
-
 /// <reference path="references.ts" />
 
 // this module contains some object definitions

@@ -1,5 +1,5 @@
 
-/// <reference path="../../../libs/jqueryTyped/jquery.d.ts" />
+/// <reference path="../references.ts" />
 
 interface ISynth
 {

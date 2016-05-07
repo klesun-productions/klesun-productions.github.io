@@ -1,4 +1,3 @@
-
 /// <reference path="../references.ts" />
 
 // sends noteOn messages to a synth device rather than playing notes through speakers

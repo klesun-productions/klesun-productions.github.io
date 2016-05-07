@@ -1,4 +1,3 @@
-
 /// <reference path="../references.ts" />
 
 import {IGeneralStructure} from "../DataStructures";

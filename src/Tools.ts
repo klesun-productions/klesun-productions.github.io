@@ -1,5 +1,4 @@
-
-/// <reference path="../../libs/jqueryTyped/jquery.d.ts" />
+/// <reference path="../libs/jqueryTyped/jquery.d.ts" />
 
 import {ISMFreaded} from "./DataStructures";
 

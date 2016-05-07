@@ -1,4 +1,3 @@
-
 /// <reference path="references.ts" />
 
 // This class destiny is to read shmidusic json structure

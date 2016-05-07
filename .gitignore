@@ -15,10 +15,10 @@ __pycache__
 *-compiled.js
 *-compiled.js.map
 /ignored
-*/typescript/*/*.js
-*/typescript/*/*.js.map
-*/typescript/*.js
-*/typescript/*.js.map
+/src/*/*.js
+/src/*/*.js.map
+/src/*.js
+/src/*.js.map
 .*
 /node_modules
 /tests/flow_compilled
@@ -29,7 +29,7 @@ __pycache__
 
 /scripts/out.js
 /scripts/soundfonts_info2.js
-/util/flowOut/
+/src/flowOut/
 
 /util.bak/
 /libs.bak/

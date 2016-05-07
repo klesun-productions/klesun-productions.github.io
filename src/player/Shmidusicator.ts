@@ -1,4 +1,5 @@
-/// <reference path="../../../libs/definitelytyped/lib.es6.d.ts" />
+
+/// <reference path="../references.ts" />
 
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 

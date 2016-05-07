@@ -1,7 +1,7 @@
 
 // require.js ordered me to put the inline javascript code here
 
-var wanted = ['/util/typescript/compose/Painter.js', '/util/typescript/compose/Handler.js',
+var wanted = ['/src/compose/Painter.js', '/src/compose/Handler.js',
     '/libs/jquery-2.1.4.js', '/libs/FileSaver.js', '/libs/SMFreader.js'];
 
 requirejs(wanted, (Painter, Handler) =>

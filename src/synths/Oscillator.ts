@@ -1,8 +1,5 @@
 
-/// <reference path="../../../libs/jqueryTyped/jquery.d.ts" />
-/// <reference path="../../../libs/definitelytyped/waa.d.ts" />
-/// <reference path="ISynth.ts" />
-/// <reference path="../Tools.ts" />
+/// <reference path="../references.ts" />
 
 // this class provides ability to play notes with js Web Audio Api oscillator
 

@@ -1,5 +1,5 @@
 
-/// <reference path="../../../libs/definitelytyped/lib.es6.d.ts" />
+/// <reference path="../references.ts" />
 
 import {ISMFreaded} from "../DataStructures";
 import {IGeneralStructure} from "../DataStructures";
