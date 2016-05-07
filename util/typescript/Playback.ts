@@ -43,6 +43,7 @@ export function Playback(
         return -1;
     };
 
+    /** list of interrupting lambdas */
     var scheduled: {(): void}[] = [];
     var scheduleScrewable = function(timeSkip: millis_t, callback: () => void)
     {
@@ -70,13 +71,18 @@ export function Playback(
     var playNext = function()
     {
         ++chordIndex;
+
+        if (!(chordIndex in sheetMusic.chordList)) {
+            return;
+        }
+
         onChord(sheetMusic.chordList[chordIndex].noteList, tempo, chordIndex);
 
         var chordEndFraction = sheetMusic.chordList[chordIndex + 1]
             ? sheetMusic.chordList[chordIndex + 1].timeFraction
             : sheetMusic.chordList[chordIndex].timeFraction
-        + sheetMusic.chordList[chordIndex].noteList
-            .map(n => n.length).sort()[0] || 0;
+            + sheetMusic.chordList[chordIndex].noteList
+                .map(n => n.length).sort()[0] || 0;
 
         var timeSkip = toMillis(chordEndFraction, tempo) -
             (window.performance.now() - startMillis);
@@ -109,8 +115,11 @@ export function Playback(
     var setTempo = function(newTempo: number)
     {
         tempo = newTempo;
-        pause();
-        resume();
+
+        if ((chordIndex + 1) in sheetMusic.chordList) {
+            startMillis = window.performance.now() -
+                toMillis(sheetMusic.chordList[chordIndex + 1].timeFraction, tempo);
+        }
     };
 
     var slideTo = function(n: number)
@@ -119,12 +128,17 @@ export function Playback(
         // as "listened" on server
         whenFinished = () => {};
 
+        stopSounding();
+
+        startMillis = window.performance.now() -
+            toMillis(sheetMusic.chordList[n].timeFraction, tempo);
         chordIndex = n;
-        pause();
-        resume();
+
+        (n in sheetMusic.chordList) &&
+            onChord(sheetMusic.chordList[n].noteList, tempo, n);
     };
 
-    var getTime = () => (chordIndex > -1 && chordIndex < sheetMusic.chordList.length)
+    var getTime = () => (chordIndex in sheetMusic.chordList)
         ? toMillis(sheetMusic.chordList[chordIndex].timeFraction, tempo)
         : '?';
 
