@@ -11,6 +11,8 @@ import {IShmidusicStructure} from "./DataStructures";
 import Shmidusicator from "./player/Shmidusicator";
 import {IMidJsSong} from "./DataStructures";
 import {Kl} from "./Tools";
+import {IPlayback} from "./Playback";
+import {Playback} from "./Playback";
 declare var Util: any;
 
 interface INoteHandler {
@@ -102,7 +104,8 @@ export default function Player($controlCont: JQuery)
 
         configConsumer.consumeConfig(sheetMusic.config.instrumentDict);
 
-        var playback = currentPlayback = Util.Playback(sheetMusic, playChord, whenFinished, control.getTempoFactor() || 1, stopSounding);
+        var playback = currentPlayback = Playback(sheetMusic, playChord,
+            whenFinished, control.getTempoFactor() || 1, stopSounding);
 
         control.setPlayback(playback);
 
@@ -193,16 +196,4 @@ export default function Player($controlCont: JQuery)
         stop: () => stop,
         playChord: playChord,
     };
-};
-
-interface IPlayback {
-    slideTo: (n: number) => void,
-    getTempo: () => number,
-    setTempo: (n: number) => void,
-    getChordIndex: () => number,
-    getTime: () => millis_t | '?',
-    pause: () => void,
-    resume: () => void,
-    setPauseHandler: (h: () => void) => void,
-    setResumeHandler: (h: () => void) => void,
 };

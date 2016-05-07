@@ -6,8 +6,6 @@
 var wanted = [
     "/util//Tools.js",
     "/util//PlaybackControl.js",
-    "/util//Playback.js",
-    "/util//Compose.js",
 ];
 
 wanted = ['/util/typescript/MainPage.js', '/libs/jquery-2.1.4.js', '/libs/FileSaver.js', '/libs/SMFreader.js'].concat(wanted);

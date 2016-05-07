@@ -34,9 +34,6 @@ export class Kl
     static for = <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
         Object.keys(dict).forEach(k => callback(k, dict[k]));
 
-    static fori = <Tx>(dict: {[k: number]: Tx}, callback: { (k: number, v: Tx): void }) =>
-        Object.keys(dict).forEach(k => callback(+k, dict[+k]));
-
     /** @params l - left index inclusive, r - right index exclusive */
     static range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
         .map((nop: void, i: number) => l + i);
@@ -48,12 +45,17 @@ export class Kl
         return result;
     };
 
+    static map = <Tx, Ty>(val: Tx, f: (v: Tx) => Ty) => val && f(val);
+
     /** transforms array of [key, value] tuples into a dict */
     static dicti = <Tv>(pairs: [number,Tv][]): {[k: number]: Tv} => {
         var result: {[k: number]: Tv} = {};
         pairs.forEach(p => result[p[0]] = p[1]);
         return result;
     };
+
+    static fori = <Tx>(dict: {[k: number]: Tx}, callback: { (k: number, v: Tx): void }) =>
+            Object.keys(dict).forEach(k => callback(+k, dict[+k]));
 
     static selectFileFromDisc = function(whenLoaded: { (dataBase64: string): void }): void
     {
