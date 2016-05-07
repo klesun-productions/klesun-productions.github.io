@@ -1,31 +1,54 @@
 
-var Util = Util || {};
+/// <reference path="references.ts" />
 
 // This class destiny is to read shmidusic json structure
 // and send events to MIDI.js and PianoLayoutPanel
 
+import {IShNote} from "./DataStructures";
+import {IShmidusicChord} from "./DataStructures";
+import {IGeneralStructure} from "./DataStructures";
+import {IShmidusicStructure} from "./DataStructures";
+import Shmidusicator from "./player/Shmidusicator";
+import {IMidJsSong} from "./DataStructures";
+import {Kl} from "./Tools";
+declare var Util: any;
+
+interface INoteHandler {
+    handleNoteOn: (noteJs: IShNote, chordIndex: number) => {(): void},
+}
+
+type millis_t = number;
+interface IFileInfo {
+    fileName?: string,
+    score?: string
+}
+
+interface IConfigConsumer {
+    consumeConfig: (config: {[ch: number]: number}) => void,
+}
+
 // TODO: instead of $controlCont we should pass something like "IControlProvider"
 /** @param piano - PianoLayoutPanel instance */
-Util.Player = function ($controlCont)
+export default function Player($controlCont: JQuery)
 {
     var control = Util.PlaybackControl($controlCont);
 
     /** @var - a list of objects that have method handleNoteOn() that returns method handleNoteOff() */
-    var noteHandlers = [];
+    var noteHandlers: INoteHandler[] = [];
     var configConsumer = {
         // dull config consumer
-        consumeConfig: (config, callback) => callback()
+        consumeConfig: (config: {[ch: number]: number}) => {}
     };
 
-    var toFloat = fractionString => eval(fractionString);
+    var toFloat = (fractionString: string) => eval(fractionString);
     var toMillis = Util.toMillis;
 
     // list of lambdas
-    var toBeInterrupted = [];
+    var toBeInterrupted: {(): void}[] = [];
 
     /** @param dontExecute - if not true, the scheduled callback will be called even
      * if interrupted pre#devremenno */
-    var scheduleInterruptable = function(millis, taskList)
+    var scheduleInterruptable = function(millis: millis_t, taskList: {(): void}[])
     {
         var interrupted = false;
         var interruptLambda = function() {
@@ -42,72 +65,77 @@ Util.Player = function ($controlCont)
         }, millis);
     };
 
-    var playChord = function(chord, tempo, index)
+    var playChord = function(notes: IShNote[], tempo?: number, index?: number)
     {
         tempo = tempo || 120;
         index = index || -1;
 
-        chord['noteList'].forEach(function(noteJs)
+        notes.forEach(function(noteJs)
         {
-            var length = toFloat(noteJs.length);
+            var length = toFloat(noteJs.length + '');
             var offList = noteHandlers.map(h => h.handleNoteOn(noteJs, index));
 
-            scheduleInterruptable(toMillis(length, tempo), [_ => offList.forEach(c => c())]);
+            scheduleInterruptable(toMillis(length, tempo), [() => offList.forEach(c => c())]);
         });
     };
 
-    var tabSwitched = null;
-    var currentPlayback = null;
+    var tabSwitched: {(e: any): void} = null;
+    var currentPlayback: IPlayback = null;
     var stopSounding = function() {
         toBeInterrupted.forEach(c => c());
         toBeInterrupted.length = 0;
     };
 
-    var playSheetMusic = function (sheetMusic, fileInfo, whenFinished, startAt)
+    var playSheetMusic = function (
+        sheetMusic: IGeneralStructure,
+        fileInfo: IFileInfo,
+        whenFinished?: () => void,
+        startAt?: number)
     {
         startAt = startAt || 0;
+        whenFinished = whenFinished || (() => {});
 
-		whenFinished = whenFinished || (_ => {});
         currentPlayback && currentPlayback.pause();
 
         control.setFields(sheetMusic)
             .setFileInfo(fileInfo);
-		/** @TODO: passing the callback is legacy - remove */
-        configConsumer.consumeConfig(sheetMusic.config.instrumentDict, _ => {});
 
-		var playback = currentPlayback = Util.Playback(sheetMusic, playChord, whenFinished, control.getTempoFactor() || 1, stopSounding);
+        configConsumer.consumeConfig(sheetMusic.config.instrumentDict);
 
-		control.setPlayback(playback);
+        var playback = currentPlayback = Util.Playback(sheetMusic, playChord, whenFinished, control.getTempoFactor() || 1, stopSounding);
+
+        control.setPlayback(playback);
 
         startAt && playback.slideTo(startAt);
 
         // TODO: investigate, does not work if you switch tab, then move slider (to resume playback) and switch tab again
 
         document.removeEventListener('visibilitychange', tabSwitched);
-		tabSwitched = function(e)
-		{
-			playback.pause();
+        tabSwitched = function(e)
+        {
+            playback.pause();
             document.removeEventListener('visibilitychange', tabSwitched);
-		};
-		document.addEventListener('visibilitychange', tabSwitched);
+        };
+        document.addEventListener('visibilitychange', tabSwitched);
 
         window.onbeforeunload = playback.pause;
     };
 
     /** @param shmidusicJson - json in shmidusic project format */
-    var playShmidusic = function (shmidusicJson, fileName, whenFinished) {
+    var playShmidusic = function (shmidusicJson: IShmidusicStructure, fileName: string, whenFinished: () => void) {
 
-        whenFinished = whenFinished || ((_) => {});
+        whenFinished = whenFinished || (() => {});
         fileName = fileName || 'noNameFile';
 
         var adapted = Shmidusicator.generalizeShmidusic(shmidusicJson);
-        playSheetMusic(adapted, {fileName: fileName, score: 'Ne'}, whenFinished);
+        playSheetMusic(adapted, {fileName: fileName, score: 'Ne'}, whenFinished, 0);
     };
 
-    /** @TODO: move format normalization into separate class */
-    var playStandardMidiFile = function (smf, fileInfo, whenFinished)
+    /** @TODO: move format normalization into separate class
+     * @TODO: rename to playMidJs */
+    var playStandardMidiFile = function (smf: IMidJsSong, fileInfo: IFileInfo, whenFinished: () => void)
     {
-        whenFinished = whenFinished || ((_) => {});
+        whenFinished = whenFinished || (() => {});
 
         /** @TODO: handle _all_ tempo events, not just first. Should be easy once speed change by user is implemented */
         var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
@@ -115,11 +143,11 @@ Util.Player = function ($controlCont)
         var tempo = Math.max(Math.min(tempoEntry.tempo, 360), 15);
         var division = smf.division * 4;
 
-        var chordList = [];
+        var chordList: IShmidusicChord[] = [];
         var curTime = -100;
-        var curChord = [-100, -100];
+        var curChord: IShmidusicChord = null;
 
-        smf.noteList.forEach(function(note) {
+        smf.noteList.forEach(function(note: any) {
             note.length = note.duration / division;
             if (note.time == curTime) {
                 curChord.noteList.push(note);
@@ -139,27 +167,42 @@ Util.Player = function ($controlCont)
                 instrumentDict: smf.instrumentDict,
                 loopStart: 0,
                 loopTimes: 0,
+                volumeByChannel: Kl.dicti(Kl.range(0,16).map((i): [number,number] => [i,127])),
             },
-			misc: {
-				noteCount: smf.noteList.length
-			}
-        }, fileInfo, whenFinished);
+            misc: {
+                noteCount: smf.noteList.length
+            }
+        }, fileInfo, whenFinished, 0);
+    };
+
+    var stop = () => {
+        currentPlayback && currentPlayback.pause();
+        stopSounding();
     };
 
     // this class shouldn't be instanciated more than once, right?
     // besides, the playing notes are global thing.
-    window.onbeforeunload = _ => stop();
+    window.onbeforeunload = () => stop();
 
     return {
         playShmidusic: playShmidusic,
         playStandardMidiFile: playStandardMidiFile,
         playSheetMusic: playSheetMusic,
-        addNoteHandler: h => noteHandlers.push(h),
-        addConfigConsumer: cc => (configConsumer = cc),
-        stop: () => {
-            currentPlayback && currentPlayback.pause();
-            stopSounding();
-        },
+        addNoteHandler: (h: INoteHandler) => noteHandlers.push(h),
+        addConfigConsumer: (cc: IConfigConsumer) => (configConsumer = cc),
+        stop: () => stop,
         playChord: playChord,
     };
+};
+
+interface IPlayback {
+    slideTo: (n: number) => void,
+    getTempo: () => number,
+    setTempo: (n: number) => void,
+    getChordIndex: () => number,
+    getTime: () => millis_t | '?',
+    pause: () => void,
+    resume: () => void,
+    setPauseHandler: (h: () => void) => void,
+    setResumeHandler: (h: () => void) => void,
 };

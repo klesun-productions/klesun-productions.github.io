@@ -5,7 +5,6 @@
 // .ts and remove from explicit import one day
 var wanted = [
     "/util//Tools.js",
-    "/util//Player.js",
     "/util//PlaybackControl.js",
     "/util//Playback.js",
     "/util//Compose.js",

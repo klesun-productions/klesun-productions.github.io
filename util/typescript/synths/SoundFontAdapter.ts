@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 
-import * as Ds from "./DataStructures";
+import * as Ds from "../DataStructures";
 import {Kl} from "../Tools";
 
 // this object provides access to soundfont info

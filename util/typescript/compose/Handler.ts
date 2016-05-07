@@ -2,7 +2,7 @@
 /// <reference path="../references.ts" />
 
 import MIDIMessageEvent = WebMidi.MIDIMessageEvent;
-import {IPainter} from "Painter";
+import {IPainter} from "./Painter";
 import {IShNote} from "../DataStructures";
 import {IChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
@@ -12,6 +12,7 @@ import {IShmidusicStructure} from "../DataStructures";
 import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
 import {Kl} from "../Tools";
+import Player from "../Player";
 
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
@@ -22,7 +23,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
     var lastChordOn = 0;
     var synth = Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
-    var player = Util.Player($(''));
+    var player = Player($(''));
 
     var control = painter.getControl();
     var playback = false;
@@ -40,14 +41,14 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     });
 
     // well... i suppose something is wrong
-    var oneShotPlayer = Util.Player($(''));
+    var oneShotPlayer = Player($(''));
     oneShotPlayer.addNoteHandler({
         handleNoteOn: (n: IShNote, i: number) => synth.playNote(n.tune, n.channel)
     });
 
     var playNotes = (noteList: IShNote[]) => {
         oneShotPlayer.stop();
-        oneShotPlayer.playChord({ noteList: noteList });
+        oneShotPlayer.playChord(noteList);
     };
 
     var tabActive = true;

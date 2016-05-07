@@ -258,7 +258,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 };
 
 export interface IControl {
-    setNoteFocus: {(note: Ds.IShNote, chordIndex: number): void},
+    setNoteFocus: {(note: Ds.IShNote, chordIndex: number): () => void},
     setChordFocus: {(index: number): number},
     moveChordFocus: {(sign: number): number},
     moveChordFocusRow: {(sign: number): void},

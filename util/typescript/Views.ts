@@ -18,9 +18,14 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement)
     {
         var select = document.createElement('select');
 
-        Kl.instrumentNames.forEach((d,i) =>
+        var presetNames = +chan !== 9
+            ? Kl.instrumentNames
+            : Kl.range(0,128).map(_ => 'Drums');
+
+        presetNames.forEach((d,i) =>
             $(select).append($('<option></option>')
                 .val(i).html(i + ': ' + d)));
+
 
         $(select).attr('readonly', 'readonly');
 

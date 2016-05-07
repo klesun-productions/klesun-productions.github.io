@@ -21,6 +21,7 @@ import {MidiDevice} from "./synths/MidiDevice";
 import {Structurator} from "./player/Structurator";
 import {PresetList} from "./Views";
 import PianoLayout from "./PianoLayout";
+import Player from "./Player";
 type dict<Tx> = {[k: string]: Tx};
 
 declare var Util: any;
@@ -103,7 +104,7 @@ export default function MainPage(mainCont: HTMLDivElement)
     presetListControl.hangPresetChangeHandler(presByChan =>
         synth.consumeConfigWithoutRepaint(presByChan));
 
-    const player = Util.Player($playbackControlCont);
+    const player = Player($playbackControlCont);
     player.addNoteHandler({handleNoteOn: function(noteJs: IShNote, chordIndex: number)
     {
         if (presetListControl.enabledChannels().has(noteJs.channel)) {
@@ -189,7 +190,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
         console.log('Playing shmidusic: ' + name);
 
-        player.playShmidusic(song, name);
+        player.playShmidusic(song, name, () => {});
         sheetMusicPainter.draw(song);
     };
 

@@ -58,7 +58,7 @@ Util.Playback = function(sheetMusic, onChord, whenFinished, tempoFactor, stopSou
 	var playNext = function()
 	{
         ++chordIndex;
-        onChord(sheetMusic.chordList[chordIndex], tempo, chordIndex);
+        onChord(sheetMusic.chordList[chordIndex].noteList, tempo, chordIndex);
 
         var chordEndFraction = sheetMusic.chordList[chordIndex + 1]
             ? sheetMusic.chordList[chordIndex + 1].timeFraction

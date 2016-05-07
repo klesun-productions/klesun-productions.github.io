@@ -353,7 +353,7 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
 
 export interface IPainter {
     draw: (song: Ds.IShmidusicStructure) => void,
-    handleNoteOn: (note: Ds.IShNote, chordIndex: number) => void,
+    handleNoteOn: (note: Ds.IShNote, chordIndex: number) => () => void,
     setEnabled: (v: boolean) => void,
     getChordList: () => Ds.IShmidusicChord[],
     getControl: () => IControl,
