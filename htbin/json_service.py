@@ -40,6 +40,7 @@ def fetch_info_from_login_token(token):
         return None
 
 
+# works only under linux
 def read_post() -> dict:
 
     @contextmanager
@@ -62,18 +63,19 @@ def read_post() -> dict:
 
 
 method_dict = {
-    'get_standard_midi_file': MidiFileProvider.get_standard_midi_file,
     'get_ichigos_midi_names': MidiFileProvider.get_info_list,
-
 }
 
-
+'''
 post = read_post()
 
 method_name = post['methodName']
 params = post['params']
 user_info = (fetch_info_from_login_token(post['googleLogInIdToken'])
              if 'googleLogInIdToken' in post else None)
-
+             
 result = method_dict[method_name](params, user_info)
+ '''
+
+result = MidiFileProvider.get_info_list({}, None)
 print_response(json.dumps(result))

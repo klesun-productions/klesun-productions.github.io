@@ -28,7 +28,7 @@ type cb = () => void;
 /** @param mainCont - div dom with children
  * structure defined in index.html */
 export default function MainPage(mainCont: HTMLDivElement)
-{
+{ 
     const
         pianoCanvas = <HTMLCanvasElement>$(mainCont).find('.pianoLayoutCanvas')[0],
         $playbackControlCont = $(mainCont).find('.playbackControlCont'),

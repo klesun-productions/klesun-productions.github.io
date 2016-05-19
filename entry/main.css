@@ -81,6 +81,7 @@
         /*border: 3px solid rgba(255,127,0,0.3);*/
         background: white;
         max-width: 190px;
+        float: left !important;
     }
 
     #contentContainer{

@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import {IShmidusicChord} from "../DataStructures";
-import {SoundFontAdapter, IFetchedSample} from "./SoundFontAdapter";
+import {SoundFontAdapter, IFetchedSample, EStereoPan} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
 import {Kl} from "../Tools";
 
@@ -38,8 +38,19 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): IFuid
         sample.loopStart = fetchedSample.loopStart;
         sample.loopEnd = fetchedSample.loopEnd;
         sample.loop = true;
-        sample.connect(gainNode);
         sample.buffer = fetchedSample.buffer;
+
+        if (+fetchedSample.stereoPan === EStereoPan.LEFT) {
+            var splitter = audioCtx.createChannelSplitter(2);
+            sample.connect(splitter);
+            splitter.connect(gainNode, 0);
+        } else if (+fetchedSample.stereoPan === EStereoPan.RIGHT) {
+            var splitter = audioCtx.createChannelSplitter(2);
+            sample.connect(splitter);
+            splitter.connect(gainNode, 1);
+        } else {
+            sample.connect(gainNode);
+        }
 
         sample.start();
 

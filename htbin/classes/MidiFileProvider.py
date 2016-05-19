@@ -13,12 +13,10 @@ import classes.DbTables
 from classes.DbTables import Listened
 from pony.orm import db_session
 
+dirpath = os.path.dirname(os.path.realpath(__file__))
 
 class MidiFileProvider(object):
-    # content_folder = '/home/klesun/Dropbox/';
-    content_folder = '/home/klesun/fat/p/shmidusic.lv/'
-    decode_script_path = '/home/klesun/fat/p/shmidusic/bin/'
-    decode_script_class_path = 'org.shmidusic.stuff.scripts.MidiToReadableMidi'
+    content_folder = dirpath + '/../../'
 
     @classmethod
     def get_info_list(cls, params, user_ifno=None):
@@ -61,40 +59,3 @@ class MidiFileProvider(object):
                 result.append({"fileName": file, "sheetMusic": content_json})
 
         return result
-
-    @classmethod
-    def get_standard_midi_file(cls, params, user_info=None):
-
-        @db_session
-        def log_finished(file_name):
-            gmail_login = user_info['email'].split('@')[0] if user_info else 'anonymous'
-            hit = Listened(fileName=file_name, gmailLogin=gmail_login)
-            classes.DbTables.commit()
-
-        if 'finished_file_name' in params and params['finished_file_name']:
-            log_finished(params['finished_file_name'])
-
-        file_name = params['file_name']
-
-        result = {}
-
-        mid_path = cls.content_folder + '/midiCollection/' + file_name
-        mid_js_path = cls.content_folder + '/midiCollectionDecoded/' + file_name + '.js'
-        os.makedirs(os.path.dirname(mid_js_path), exist_ok=True)
-
-        if not os.path.isfile(mid_js_path):  # handling cases when a midi file was added or renamed
-            current_path = os.getcwd()
-            os.chdir(cls.decode_script_path)
-            cmd = ["java", cls.decode_script_class_path, mid_path, mid_js_path]
-            call(cmd)
-            os.chdir(current_path)
-
-        # 'cd /home/klesun/fat/p/shmidusic/out'
-        # 'java org.shmidusic.stuff.scripts.MidiToReadableMidi'
-        # ''
-
-        with codecs.open(mid_js_path, 'r', 'utf-8') as content:
-            content_json = json.load(content)
-            content.close()
-
-        return content_json

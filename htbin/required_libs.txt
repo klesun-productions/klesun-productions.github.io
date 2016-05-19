@@ -1,1 +1,2 @@
-pony orm
+pip install pony
+pip install oauth2client 
