@@ -99,11 +99,12 @@
     }
     #contentContainer .rightSideMainBlock {
         width: 250px;
-        max-height: 600px;
+        height: 600px;
     }
     .rightSideMainBlock .random-midi-list-cont {
         background-color: orange;
-        max-height: 300px;
+        min-height: 300px;
+        max-height: 500px;
         overflow-y: scroll;
     }
     .random-midi-list-cont table tr:not(.table-generator-title-tr) td {
@@ -115,6 +116,7 @@
     }
 
     #instrumentInfoBlock {
+        min-height: 200px;
         background-color: blue;
         margin: 2px;
     }

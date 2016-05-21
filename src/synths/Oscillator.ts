@@ -3,6 +3,7 @@
 
 // this class provides ability to play notes with js Web Audio Api oscillator
 
+import {ISynth} from "./ISynth";
 type EWave = 'sine' | 'triangle' | 'sawtooth' | 'square';
 
 export function Oscillator(audioCtx: AudioContext): ISynth
@@ -114,6 +115,7 @@ export function Oscillator(audioCtx: AudioContext): ISynth
     return {
         init: initControl,
         playNote: playNote,
-        consumeConfig: consumeConfig
+        consumeConfig: consumeConfig,
+        analyse: chords => {},
     };
 };

@@ -21,6 +21,8 @@ import {Structurator} from "./player/Structurator";
 import {PresetList} from "./Views";
 import PianoLayout from "./PianoLayout";
 import {Player} from "./Player";
+import {ISynth} from "./synths/ISynth";
+import {Switch} from "./synths/Switch";
 type dict<Tx> = {[k: string]: Tx};
 
 type cb = () => void;
@@ -56,69 +58,18 @@ export default function MainPage(mainCont: HTMLDivElement)
         contentType: 'application/json;UTF-8',
         success: callback
     });
-
-    const presetListControl = PresetList(instrumentInfoBlock);
+    
     const sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
-    const pianoLayout = PianoLayout(pianoCanvas);
-
-    const audioCtx = new AudioContext();
-
-    const SynthAdapter = function(dropdownEl: HTMLSelectElement, controlEl: HTMLDivElement)
-    {
-        var synths: dict<ISynth> = {
-            oscillator: Oscillator(audioCtx),
-            midiDevice: MidiDevice(),
-            FluidSynth3: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/fluid/'),
-            Arachno: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/arachno/'),
-            GeneralUser: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/generaluser/'),
-        };
-
-        var changeSynth = function() {
-            synths[$(dropdownEl).val()].init($(controlEl));
-        };
-
-        $(dropdownEl).empty();
-        Object.keys(synths).forEach(s => $(dropdownEl)
-            .append($('<option></option>').val(s).html(s)));
-
-        $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
-
-        return {
-            handleNoteOn: (sem: number, chan: number) => synths[$(dropdownEl).val()].playNote(sem, chan),
-            consumeConfig: (config: {[c: number]: number}) =>
-            {
-                presetListControl.update(config);
-                synths[$(dropdownEl).val()].consumeConfig(config)
-            },
-            consumeConfigWithoutRepaint: (config: {[c: number]: number}) =>
-                synths[$(dropdownEl).val()].consumeConfig(config),
-        };
-    };
-    const synth = SynthAdapter(
+    
+    const synth = Switch(
         <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
-        <HTMLDivElement>$(mainCont).find('#synthControl')[0]);
-
-    presetListControl.hangPresetChangeHandler(presByChan =>
-        synth.consumeConfigWithoutRepaint(presByChan));
+        <HTMLDivElement>$(mainCont).find('#synthControl')[0],
+        PresetList(instrumentInfoBlock),
+        PianoLayout(pianoCanvas)
+    );
 
     const player = Player($playbackControlCont);
-    player.addNoteHandler({handleNoteOn: function(noteJs: IShNote, chordIndex: number)
-    {
-        if (presetListControl.enabledChannels().has(noteJs.channel)) {
-            var noteOffs = [
-                pianoLayout.handleNoteOn(noteJs),
-                synth.handleNoteOn(noteJs.tune, noteJs.channel),
-                sheetMusicPainter.handleNoteOn(noteJs, chordIndex),
-            ];
-
-            return () => noteOffs.forEach((off: cb) => off());
-        } else {
-            return () => {};
-        }
-    }});
-    player.addConfigConsumer(synth);
-
-    pianoLayout.hangClickListener((semitone) => synth.handleNoteOn(semitone, 0));
+    player.addNoteHandler(synth);
 
     var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
 
@@ -156,7 +107,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             $(midiFileCounter).html(rowList.length + '');
 
             var colModel: ColModel<ISmfFile> = [
-                {'name': 'fileName', 'caption': 'File Name', formatter: p => (p + '').split('/').pop()},
+                {'name': 'fileName', 'caption': 'File Name'},
                 //{'name': 'length', 'caption': 'Length'},
                 {'name': 'score', 'caption': '*', formatter: null},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}

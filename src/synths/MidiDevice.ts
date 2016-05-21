@@ -5,6 +5,7 @@
 
 import {Kl} from "../Tools";
 import MIDIOutput = WebMidi.MIDIOutput;
+import {ISynth} from "./ISynth";
 
 export function MidiDevice(): ISynth
 {
@@ -96,6 +97,7 @@ export function MidiDevice(): ISynth
         init: init,
         playNote: playNote,
         consumeConfig: consumeConfig,
+        analyse: chords => {},
     };
 };
 

@@ -13,10 +13,7 @@ import {Kl} from "./Tools";
 import {IPlayback} from "./Playback";
 import {Playback} from "./Playback";
 import PlaybackControl from "./views/PlaybackControl";
-
-interface INoteHandler {
-    handleNoteOn: (noteJs: IShNote, chordIndex: number) => {(): void},
-}
+import {ISynth} from "./synths/ISynth";
 
 type millis_t = number;
 export interface IFileInfo {
@@ -38,11 +35,7 @@ export function Player($controlCont: JQuery)
     var control = PlaybackControl($controlCont);
 
     /** @var - a list of objects that have method handleNoteOn() that returns method handleNoteOff() */
-    var noteHandlers: INoteHandler[] = [];
-    var configConsumer = {
-        // dull config consumer
-        consumeConfig: (config: {[ch: number]: number}) => {}
-    };
+    var noteHandlers: ISynth[] = [];
 
     var toFloat = (fractionString: string) => eval(fractionString);
 
@@ -76,7 +69,7 @@ export function Player($controlCont: JQuery)
         notes.forEach(function(noteJs)
         {
             var length = toFloat(noteJs.length + '');
-            var offList = noteHandlers.map(h => h.handleNoteOn(noteJs, index));
+            var offList = noteHandlers.map(h => h.playNote(noteJs.tune, noteJs.channel));
 
             scheduleInterruptable(toMillis(length, tempo), [() => offList.forEach(c => c())]);
         });
@@ -103,16 +96,23 @@ export function Player($controlCont: JQuery)
         control.setFields(sheetMusic);
         control.setFileInfo(fileInfo);
 
-        configConsumer.consumeConfig(sheetMusic.config.instrumentDict);
+        noteHandlers.forEach(h => {
+            h.consumeConfig(sheetMusic.config.instrumentDict);
+            h.analyse(sheetMusic.chordList);
+        });
 
         var playback = currentPlayback = Playback(sheetMusic, playChord,
             whenFinished, control.getTempoFactor() || 1, stopSounding);
+
+        playback.pause();
 
         control.setPlayback(playback);
 
         startAt && playback.slideTo(startAt);
 
-        // TODO: investigate, does not work if you switch tab, then move slider (to resume playback) and switch tab again
+        // time-outing to give it time to pre-load the first chord
+        // samples. at least on my pc it will be in time =P
+        setTimeout(playback.resume, 300);
 
         document.removeEventListener('visibilitychange', tabSwitched);
         tabSwitched = function(e)
@@ -192,8 +192,7 @@ export function Player($controlCont: JQuery)
         playShmidusic: playShmidusic,
         playStandardMidiFile: playStandardMidiFile,
         playSheetMusic: playSheetMusic,
-        addNoteHandler: (h: INoteHandler) => noteHandlers.push(h),
-        addConfigConsumer: (cc: IConfigConsumer) => (configConsumer = cc),
+        addNoteHandler: (h: ISynth) => noteHandlers.push(h),
         stop: () => stop,
         playChord: playChord,
     };

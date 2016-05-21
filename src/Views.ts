@@ -8,7 +8,7 @@ import {TableGenerator} from "./TableGenerator";
 
 type cons_conf_t = {(presByChan: {[ch: number]: number}): void};
 
-export function PresetList(instrumentInfoBlock: HTMLDivElement)
+export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
 {
     var enabledChannels = new Set(Kl.range(0,16));
     var presetChanged: cons_conf_t = (_) => () => {};
@@ -84,4 +84,10 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement)
         enabledChannels: () => enabledChannels,
         hangPresetChangeHandler: hangPresetChangeHandler,
     };
+};
+
+export interface IPresetList {
+    update: (instrByChannel: {[c: number]: number}) => void,
+    enabledChannels: () => Set<number>,
+    hangPresetChangeHandler: (cb: cons_conf_t) => void,
 };

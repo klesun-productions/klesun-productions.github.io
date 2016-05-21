@@ -7,6 +7,8 @@ import {IShNote} from "./DataStructures";
 
 type color_t = [number, number, number];
 
+// TODO: move file into views folder
+
 // a helper to provide me with one-line methods: drawLine() and fillRect()
 var CanvasAdapter = function(canvas: HTMLCanvasElement)
 {
@@ -41,7 +43,7 @@ var CanvasAdapter = function(canvas: HTMLCanvasElement)
 };
 
 /** @param $canvas should have 490x30 size */
-export default function PianoLayout(canvas: HTMLCanvasElement)
+export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
 {
     var TUNE_COUNT = 84; // 7 octaves
     var IVORY_COUNT = TUNE_COUNT * 7/12;
@@ -109,27 +111,27 @@ export default function PianoLayout(canvas: HTMLCanvasElement)
     };
 
     /** @param {tune: int, channel: int} noteJs */
-    var unhighlight = function (noteJs: IShNote)
+    var unhighlight = function (sem: number, chan: number)
     {
-        var index = pressedNotes[noteJs.tune].indexOf(noteJs.channel);
-        pressedNotes[noteJs.tune].splice(index, 1);
+        var index = pressedNotes[sem].indexOf(chan);
+        pressedNotes[sem].splice(index, 1);
 
-        var isFlat = [1,3,6,8,10].indexOf(noteJs.tune % 12) > -1;
-        var color: color_t = pressedNotes[noteJs.tune].length > 0
-            ? channelColors[pressedNotes[noteJs.tune][0]] // we could probably use some indent and draw all of them one dya, but nah...
+        var isFlat = [1,3,6,8,10].indexOf(sem % 12) > -1;
+        var color: color_t = pressedNotes[sem].length > 0
+            ? channelColors[pressedNotes[sem][0]] // we could probably use some indent and draw all of them one dya, but nah...
             : (isFlat ? [191,191,191] : [255,255,255]);
 
-        fillTune(noteJs.tune, color);
+        fillTune(sem, color);
     };
 
     /** @param [{tune: int, channel: int}, ...] noteList */
-    var highlight = function (noteJs: IShNote)
+    var highlight = function (sem: number, chan: number)
     {
-        var color = channelColors[noteJs.channel];
-        fillTune(noteJs.tune, color);
-        (pressedNotes[noteJs.tune] || (pressedNotes[noteJs.tune] = [])).push(noteJs.channel);
+        var color = channelColors[chan];
+        fillTune(sem, color);
+        (pressedNotes[sem] || (pressedNotes[sem] = [])).push(chan);
 
-        return () => unhighlight(noteJs);
+        return () => unhighlight(sem, chan);
     };
 
     var detectSemitone = function(x: number, y: number): number
@@ -144,7 +146,7 @@ export default function PianoLayout(canvas: HTMLCanvasElement)
             e.clientY - $(canvas).offset().top
         );
 
-        var unhiglight = highlight({tune: sem, channel: 0, length: -100});
+        var unhiglight = highlight(sem, 0);
         var interrupt = cb(sem);
 
         setTimeout(() => { interrupt(); unhiglight(); }, 500);
@@ -153,7 +155,12 @@ export default function PianoLayout(canvas: HTMLCanvasElement)
     paintBase();
 
     return {
-        handleNoteOn: highlight,
+        playNote: highlight,
         hangClickListener: hangClickListener,
     };
+};
+
+export interface IPianoLayout {
+    playNote: (sem: number, chan: number) => () => void,
+    hangClickListener: (cb: {(semitone: number): {(): void}}) => void,
 };

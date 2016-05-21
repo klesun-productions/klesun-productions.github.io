@@ -4,16 +4,13 @@ import {IShmidusicChord} from "../DataStructures";
 import {SoundFontAdapter, IFetchedSample, EStereoPan} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
 import {Kl} from "../Tools";
+import {ISynth} from "./ISynth";
 
-// this class is rival of WavCasher.ts
-// the idea is same - we play sample audio files on "playNote()"
-// the difference is that here we stick to soundfonts a bit more
-//    the WavCasher treats single note as single audio file, it conflicts a bit with soundfont idea
-//    where one instrument may have mapping to many samples of different instruments
+// we play sample audio files on "playNote()"
 
 interface INote { play: { (): { (): void } } }
 
-export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): IFuid
+export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
 {
     var soundFont = SoundFontAdapter(audioCtx, soundfontDirUrl);
 
@@ -74,10 +71,27 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): IFuid
     var consumeConfig = (programs: { [id: number]: number; }) =>
         Kl.fori(programs, (k,v) => presetsByChannel[k] = v);
 
+    var interruptLastAnalysis = () => {};
+
     // starts a worker that runs through chords and loads samples for notes if required
-    var analyse = (chords: IShmidusicChord[]) => Kl.forChunk(chords, 100, 1, c =>
-        c.noteList.forEach(n =>
-            soundFont.fetchSample(n.tune, presetsByChannel[n.channel], +n.channel === 9)));
+    var analyse = function(chords: IShmidusicChord[])
+    {
+        interruptLastAnalysis();
+        var interrupted = false;
+        interruptLastAnalysis = () => interrupted = true;
+
+        var next = (i: number) => {
+            var c = chords[i];
+            c.noteList.forEach((n,i) => {
+                soundFont.fetchSample(n.tune, presetsByChannel[n.channel], +n.channel === 9);
+            });
+
+            i + 1 < chords.length && !interrupted
+                && setTimeout(() => next(i + 1), 50);
+        };
+
+        chords.length && next(0);
+    };
 
     var init = function($cont: JQuery): void
     {
@@ -92,7 +106,3 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): IFuid
         init : init,
     };
 };
-
-interface IFuid extends ISynth {
-    analyse: {(chords: IShmidusicChord[]): void}
-}

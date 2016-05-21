@@ -30,6 +30,8 @@ declare var saveAs: any;
 
 export class Kl
 {
+    static audioCtx = new AudioContext();
+    
     static for = <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
         Object.keys(dict).forEach(k => callback(k, dict[k]));
 

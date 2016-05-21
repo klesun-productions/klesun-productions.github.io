@@ -25,7 +25,7 @@ export function Playback(
     var startDeltaTime = Kl.map(sheetMusic.chordList[0], c => toMillis(c.timeFraction, tempo)) || 0;
     var startMillis = window.performance.now() - startDeltaTime;
 
-    var chordIndex = -1;
+    var chordIndex = 0;
     var loopsLeft = sheetMusic.config.loopTimes;
 
     var findBTime = function(chordTime: number)
@@ -101,7 +101,6 @@ export function Playback(
             scheduleScrewable(timeSkip, whenFinished);
         }
     };
-    playNext();
 
     var resume = function()
     {
