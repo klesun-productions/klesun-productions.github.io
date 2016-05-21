@@ -2,12 +2,6 @@
 
 // initialises the website main page - the js performed the moment page is loaded
 
-import {Fluid} from "./synths/Fluid";
-import {Oscillator} from "./synths/Oscillator";
-import {IShNote} from "./DataStructures";
-import Shmidusicator from "./player/Shmidusicator";
-import {IGeneralStructure} from "./DataStructures";
-import {IMidJsSong} from "./DataStructures";
 import {IShmidusicStructure} from "./DataStructures";
 import {SheetMusicPainter} from "./compose/Painter";
 import UnfairRandom from "./UnfairRandom";
@@ -16,12 +10,10 @@ import {ISMFreaded} from "./DataStructures";
 import {TableGenerator} from "./TableGenerator";
 import {ColModel} from "./TableGenerator";
 import {Kl} from "./Tools";
-import {MidiDevice} from "./synths/MidiDevice";
 import {Structurator} from "./player/Structurator";
 import {PresetList} from "./Views";
 import PianoLayout from "./PianoLayout";
 import {Player} from "./Player";
-import {ISynth} from "./synths/ISynth";
 import {Switch} from "./synths/Switch";
 type dict<Tx> = {[k: string]: Tx};
 
@@ -91,6 +83,8 @@ export default function MainPage(mainCont: HTMLDivElement)
                 () => playRandom({fileName: fileName})));
     };
 
+    const shortenPath = p => (p + '').split('/').pop();
+
     const initIchigosMidiList = function ()
     {
         var playButtonFormatter = function(cell: string, row: ISmfFile)
@@ -107,7 +101,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             $(midiFileCounter).html(rowList.length + '');
 
             var colModel: ColModel<ISmfFile> = [
-                {'name': 'fileName', 'caption': 'File Name'},
+                {'name': 'fileName', 'caption': 'File Name', formatter: shortenPath},
                 //{'name': 'length', 'caption': 'Length'},
                 {'name': 'score', 'caption': '*', formatter: null},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}

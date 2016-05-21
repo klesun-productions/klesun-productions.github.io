@@ -64,7 +64,7 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
         if (sample = soundFont.fetchSample(semitone, preset, isDrum)) {
             return playSample(sample);
         } else {
-            return fallbackOscillator.playNote(semitone, 0);
+            return fallbackOscillator.playNote(semitone, 0, -1);
         }
     };
 

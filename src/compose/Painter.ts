@@ -6,6 +6,7 @@ import {IControl} from "./Control";
 import {Control} from "./Control";
 import ShapeProvider from "./ShapeProvider";
 import {Kl} from "../Tools";
+import {ISynth} from "../synths/ISynth";
 
 export function TactMeasurer(tactSize: number)
 {
@@ -333,7 +334,7 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
 
     return {
         draw: draw,
-        handleNoteOn: control.setNoteFocus,
+        playNote: control.setNoteFocus,
         setEnabled: function(val: boolean)
         {
             if (enabled = val) {
@@ -348,14 +349,17 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
         getChordList: getChordList,
         getFocusedNotes: getFocusedNotes,
         getControl: () => control,
+
+        consumeConfig: () => {},
+        init: () => {},
+        analyse: () => {},
     };
 };
 
-export interface IPainter {
+export interface IPainter extends ISynth {
     draw: (song: Ds.IShmidusicStructure) => void,
-    handleNoteOn: (note: Ds.IShNote, chordIndex: number) => () => void,
     setEnabled: (v: boolean) => void,
     getChordList: () => Ds.IShmidusicChord[],
     getControl: () => IControl,
     getFocusedNotes: () => Ds.IShNote[],
-}
+};

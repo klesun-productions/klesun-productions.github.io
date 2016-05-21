@@ -37,12 +37,12 @@ export function Switch(
 
     $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
 
-    var playNote = function(sem: number, chan: number)
+    var playNote = function(sem: number, chan: number, chordIndex: number)
     {
         if (presetListControl.enabledChannels().has(chan)) {
             var noteOffs = [
                 pianoLayout.playNote(sem, chan),
-                synths[$(dropdownEl).val()].playNote(sem, chan),
+                synths[$(dropdownEl).val()].playNote(sem, chan, chordIndex),
             ];
 
             return () => noteOffs.forEach((off: () => void) => off());
@@ -54,7 +54,7 @@ export function Switch(
     presetListControl.hangPresetChangeHandler(presByChan =>
         synths[$(dropdownEl).val()].consumeConfig(presByChan));
 
-    pianoLayout.hangClickListener((semitone) => playNote(semitone, 0));
+    pianoLayout.hangClickListener((semitone) => playNote(semitone, 0, -1));
 
     // TODO: i believe, since we distinct soundfont synth-s here, we could declare the
     // TODO: "analyse()" only in them and remove the nasty method from the general interface

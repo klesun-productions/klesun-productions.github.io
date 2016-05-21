@@ -10,33 +10,9 @@ import {ISMFreaded} from "../DataStructures";
 
 export default class Shmidusicator
 {
-    static fromMidJs(midi: Ds.IMidJsSong): Ds.IShmidusicStructure
-    {
-        var academicDivision = midi.division * 4;
-
-        // group events by time, creating chord list
-
-        return {
-            staffList: [{
-                staffConfig: {
-                    numerator: 8, // 4/4. TODO: it's usually present in midi
-                    tempo: midi.tempoEventList.map(e => e.tempo)[0] || 120,
-                    keySignature: 0, // TODO: it's usually present in midi
-                    loopStart: 0,
-                    loopTimes: 0,
-                    channelList: Object.keys(midi.instrumentDict).map(channel => 1 && {
-                        channelNumber: +channel,
-                        instrument: midi.instrumentDict[+channel],
-                        volume: 127, // TODO: it's usually present in midi, .../issues/16
-                    }),
-                },
-                chordList: Shmidusicator.collectChords(midi.noteList, academicDivision)
-            }]
-        };
-    }
-
     /** @TODO: when doing playback, use this instead of StandardMidiFile - it is the solution to the
-     * problem that leak pause-chords may be inserted and break indexing */
+     * problem that leak pause-chords may be inserted and break indexing
+     * @unused */
     static collectChords(notes: Array<Ds.IMidJsNote>, division: number): Array<Ds.ITimedShChord>
     {
         if (notes.length < 1) {

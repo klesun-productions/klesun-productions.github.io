@@ -4,12 +4,9 @@
 // and send events to MIDI.js and PianoLayoutPanel
 
 import {IShNote} from "./DataStructures";
-import {IShmidusicChord} from "./DataStructures";
 import {IGeneralStructure} from "./DataStructures";
 import {IShmidusicStructure} from "./DataStructures";
 import Shmidusicator from "./player/Shmidusicator";
-import {IMidJsSong} from "./DataStructures";
-import {Kl} from "./Tools";
 import {IPlayback} from "./Playback";
 import {Playback} from "./Playback";
 import PlaybackControl from "./views/PlaybackControl";
@@ -33,8 +30,6 @@ var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 
 export function Player($controlCont: JQuery)
 {
     var control = PlaybackControl($controlCont);
-
-    /** @var - a list of objects that have method handleNoteOn() that returns method handleNoteOff() */
     var noteHandlers: ISynth[] = [];
 
     var toFloat = (fractionString: string) => eval(fractionString);
@@ -69,7 +64,7 @@ export function Player($controlCont: JQuery)
         notes.forEach(function(noteJs)
         {
             var length = toFloat(noteJs.length + '');
-            var offList = noteHandlers.map(h => h.playNote(noteJs.tune, noteJs.channel));
+            var offList = noteHandlers.map(h => h.playNote(noteJs.tune, noteJs.channel, index));
 
             scheduleInterruptable(toMillis(length, tempo), [() => offList.forEach(c => c())]);
         });
@@ -134,51 +129,7 @@ export function Player($controlCont: JQuery)
         var adapted = Shmidusicator.generalizeShmidusic(shmidusicJson);
         playSheetMusic(adapted, {fileName: fileName, score: 'Ne'}, whenFinished, 0);
     };
-
-    /** @TODO: move format normalization into separate class
-     * @TODO: rename to playMidJs */
-    var playStandardMidiFile = function (smf: IMidJsSong, fileInfo: IFileInfo, whenFinished: () => void)
-    {
-        whenFinished = whenFinished || (() => {});
-
-        /** @TODO: handle _all_ tempo events, not just first. Should be easy once speed change by user is implemented */
-        var tempoEntry = smf.tempoEventList.filter(t => t.time == 0)[0] ||
-            smf.tempoEventList[0] || {tempo: 120};
-        var tempo = Math.max(Math.min(tempoEntry.tempo, 360), 15);
-        var division = smf.division * 4;
-
-        var chordList: IShmidusicChord[] = [];
-        var curTime = -100;
-        var curChord: IShmidusicChord = null;
-
-        smf.noteList.forEach(function(note: any) {
-            note.length = note.duration / division;
-            if (note.time == curTime) {
-                curChord.noteList.push(note);
-            } else {
-                curTime = note.time;
-                curChord = {noteList: [note], timeFraction: curTime / division};
-                chordList.push(curChord);
-            }
-        });
-
-        playSheetMusic({
-            chordList: chordList,
-            config: {
-                tempo: tempo,
-                // tempoOrigin likely unused
-                tempoOrigin: tempo,
-                instrumentDict: smf.instrumentDict,
-                loopStart: 0,
-                loopTimes: 0,
-                volumeByChannel: Kl.dicti(Kl.range(0,16).map((i): [number,number] => [i,127])),
-            },
-            misc: {
-                noteCount: smf.noteList.length
-            }
-        }, fileInfo, whenFinished, 0);
-    };
-
+    
     var stop = () => {
         currentPlayback && currentPlayback.pause();
         stopSounding();
@@ -190,7 +141,6 @@ export function Player($controlCont: JQuery)
 
     return {
         playShmidusic: playShmidusic,
-        playStandardMidiFile: playStandardMidiFile,
         playSheetMusic: playSheetMusic,
         addNoteHandler: (h: ISynth) => noteHandlers.push(h),
         stop: () => stop,

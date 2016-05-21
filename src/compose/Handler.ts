@@ -23,25 +23,19 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     var player = Player($(''));
 
     var control = painter.getControl();
-    var playback = false;
+    var playback = false; 
     var playbackFinished = function()
     {
         player.stop();
         playback = false;
     };
 
-    player.addNoteHandler({
-        handleNoteOn: (n: IShNote, i: number) => [
-            synth.playNote(n.tune, n.channel),
-            painter.handleNoteOn(n, i),
-        ].reduce((offs: any, off: any) => () => { offs(); off(); })
-    });
+    player.addNoteHandler(synth);
+    player.addNoteHandler(painter);
 
     // well... i suppose something is wrong
     var oneShotPlayer = Player($(''));
-    oneShotPlayer.addNoteHandler({
-        handleNoteOn: (n: IShNote, i: number) => synth.playNote(n.tune, n.channel)
-    });
+    oneShotPlayer.addNoteHandler(synth);
 
     var playNotes = (noteList: IShNote[]) => {
         oneShotPlayer.stop();

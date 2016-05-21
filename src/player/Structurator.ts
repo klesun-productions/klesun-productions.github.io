@@ -6,9 +6,7 @@ import {IGeneralStructure} from "../DataStructures";
 import {ISMFmidiEvent} from "../DataStructures";
 import {ISMFmetaEvent} from "../DataStructures";
 import {Kl} from "../Tools";
-import {IShNote} from "../DataStructures";
 import {IMidJsNote} from "../DataStructures";
-import {IMidJsSong} from "../DataStructures";
 
 type ticks_t = number;
 

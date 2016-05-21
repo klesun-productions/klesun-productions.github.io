@@ -75,24 +75,6 @@ export interface IMidJsNote {
     time: number;
 }
 
-// decoded midi file
-export interface IMidJsSong {
-    /*
-    * "ticks" per second. the "ticks" is a conventional
-    * unit, in which time will be represented further
-    */
-    division: number;
-    tempoEventList: Array<{
-        tempo: number; // value
-        time: number; // start on
-    }>;
-    /* midi program numbers by channel number */
-    instrumentDict: {
-        [id: number]: number;
-    };
-    noteList: Array<IMidJsNote>;
-}
-
 export interface IGeneralStructure {
     chordList: IShmidusicChord[],
     config: {

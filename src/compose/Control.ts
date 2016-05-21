@@ -49,14 +49,14 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         return index;
     };
 
-    var setNoteFocus = function(note: Ds.IShNote, chordIndex: number)
+    var setNoteFocus = function(sem: number, chan: number, chordIndex: number)
     {
         var chord = $chordListCont.children()[chordIndex];
         chord && scrollToIfNeeded(chord);
 
         setChordFocus(chordIndex);
 
-        var $note = $(chord).find('.noteCanvas[data-tune="' + note.tune + '"][data-channel="' + note.channel + '"]');
+        var $note = $(chord).find('.noteCanvas[data-tune="' + sem + '"][data-channel="' + chan + '"]');
         $note.addClass('sounding');
 
         return () => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
@@ -258,7 +258,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 };
 
 export interface IControl {
-    setNoteFocus: {(note: Ds.IShNote, chordIndex: number): () => void},
+    setNoteFocus: (sem: number, chan: number, chordIndex: number) => () => void,
     setChordFocus: {(index: number): number},
     moveChordFocus: {(sign: number): number},
     moveChordFocusRow: {(sign: number): void},
