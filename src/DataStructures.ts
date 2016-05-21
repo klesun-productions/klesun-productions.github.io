@@ -10,6 +10,8 @@ export interface IShNote {
     channel: number;
     // midi noteOn event second byte - range [0..128)
     tune: number;
+    // 127 (default) - max volume; 0 - zero volume.
+    velocity?: number;
 }
 
 export interface IShmidusicChord {
@@ -64,6 +66,7 @@ export interface IShmidusicStructure {
     }>;
 }
 
+/** @unused */
 export interface IMidJsNote {
     /* midi value: [0..128) */
     tune: number;
@@ -73,6 +76,7 @@ export interface IMidJsNote {
     channel: number;
     /* in "ticks" - when note starts */
     time: number;
+    velocity: number;
 }
 
 export interface IGeneralStructure {

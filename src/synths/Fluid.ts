@@ -18,16 +18,18 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
         0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
     };
 
-    var volumeFactor = 0.3;
+    var volumeByChannel: number[] = Kl.range(0,16).map(i => 127);
+
+    var MAX_VOLUME = 0.3;
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need time to load it
     var fallbackOscillator = Oscillator(audioCtx);
 
-    var playSample = function(fetchedSample: IFetchedSample): {(): void}
+    var playSample = function(fetchedSample: IFetchedSample, volumeFactor: number): {(): void}
     {
         var gainNode = audioCtx.createGain();
-        gainNode.gain.value = volumeFactor;
+        gainNode.gain.value = MAX_VOLUME * volumeFactor;
         gainNode.connect(audioCtx.destination);
 
         var sample = audioCtx.createBufferSource();
@@ -54,7 +56,7 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
         return () => sample.stop();
     };
 
-    var playNote = function(semitone: number, channel: number)
+    var playNote = function(semitone: number, channel: number, velocity: number)
     {
         var isDrum = +channel === 9;
         var preset = presetsByChannel[channel] || 0;
@@ -62,9 +64,10 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
         var sample: IFetchedSample;
 
         if (sample = soundFont.fetchSample(semitone, preset, isDrum)) {
-            return playSample(sample);
+            var volumeFactor = velocity / 127 * volumeByChannel[channel] / 127;
+            return playSample(sample, volumeFactor);
         } else {
-            return fallbackOscillator.playNote(semitone, 0, -1);
+            return fallbackOscillator.playNote(semitone, 0, velocity, -1);
         }
     };
 

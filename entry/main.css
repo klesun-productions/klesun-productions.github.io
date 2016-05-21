@@ -92,7 +92,7 @@
         border: 2px solid green;
         margin-right: 4px;
         margin-left: 6px;
-        height: 600px; /* it should match the height of random-midi-list-cont */
+        height: 740px; /* it should match the height of random-midi-list-cont */
         text-align: left; /* for some reason, without it a horizontal scrollbar appears when vertical scrollbar appears */
 
         background: white url("/imgs/big/povestjoleneolene_400_400.png") no-repeat right bottom;

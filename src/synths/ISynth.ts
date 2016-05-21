@@ -8,7 +8,7 @@ export interface ISynth
 {
     /** @param $1 - semitone index; $2 - channel
      * @return lambda to call to interrupt note sounding */
-    playNote: (sem: number, cha: number, chordIndex: number) => () => void;
+    playNote: (sem: number, cha: number, velocity: number, chordIndex: number) => () => void;
     // call this to say what midi program (instrument)
     // each channel is assigned to
     consumeConfig: (programs: { [id: number]: number; }) => void;

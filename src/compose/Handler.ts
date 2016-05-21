@@ -20,12 +20,11 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
     var lastChordOn = 0;
     var synth = Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
-    var player = Player($(''));
+    const player = Player($(''));
 
     var control = painter.getControl();
     var playback = false; 
-    var playbackFinished = function()
-    {
+    var playbackFinished = () => {
         player.stop();
         playback = false;
     };
@@ -37,7 +36,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     var oneShotPlayer = Player($(''));
     oneShotPlayer.addNoteHandler(synth);
 
-    var playNotes = (noteList: IShNote[]) => {
+    var playNotes = (noteList: IShNote[]) => { 
         oneShotPlayer.stop();
         oneShotPlayer.playChord(noteList);
     };

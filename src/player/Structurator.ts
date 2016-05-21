@@ -9,6 +9,7 @@ import {Kl} from "../Tools";
 import {IMidJsNote} from "../DataStructures";
 
 type ticks_t = number;
+type velocity_t = number;
 
 // this function converts SMF midi events to a bit more structured representation
 // - there is only single noteOn with sounding duration
@@ -26,7 +27,7 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
 
     var unknownControlChanges: [number, number, number][] = [];
 
-    var openNotes: ticks_t[][] = Kl.range(0,16).map(i => []);
+    var openNotes: [ticks_t, velocity_t][][] = Kl.range(0,16).map(i => []);
 
     var handleChannelEvent = (time: ticks_t, event: ISMFmidiEvent, trackIdx: number) =>
     {
@@ -35,7 +36,7 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
         {
             if (!velocity && (semitone in openNotes[ch])) {
 
-                var startedAt = +openNotes[ch][semitone];
+                var [startedAt, velocity] = openNotes[ch][semitone];
                 delete openNotes[ch][semitone];
 
                 chordByTime[startedAt] = chordByTime[startedAt] || [];
@@ -43,10 +44,11 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
                     time: startedAt,
                     duration: time - startedAt,
                     tune: semitone,
-                    channel: ch
+                    channel: ch,
+                    velocity: velocity
                 });
             } else if (velocity && !(semitone in openNotes[ch])) {
-                openNotes[ch][semitone] = time;
+                openNotes[ch][semitone] = [time, velocity];
             }
         };
 
@@ -193,7 +195,8 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
                 noteList: chordByTime[+k].map(n => 1 && {
                     length: ticksToAcademic(n.duration),
                     tune: n.tune,
-                    channel: n.channel
+                    channel: n.channel,
+                    velocity: n.velocity
                 })
             }),
         config: {

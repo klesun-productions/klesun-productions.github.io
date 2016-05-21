@@ -83,13 +83,16 @@ export default function MainPage(mainCont: HTMLDivElement)
                 () => playRandom({fileName: fileName})));
     };
 
-    const shortenPath = p => (p + '').split('/').pop();
+    const shortenPath = (p: string) =>
+        p.startsWith('touhou')
+            ? p
+            : p.split('/').pop();
 
     const initIchigosMidiList = function ()
     {
         var playButtonFormatter = function(cell: string, row: ISmfFile)
         {
-            return $('<input type="button" value="Play!"/>')
+            return $('<input type="button" value=">"/>')
                 .click((_) => playStandardMidiFile(row.rawFileName));
         };
 
@@ -101,7 +104,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             $(midiFileCounter).html(rowList.length + '');
 
             var colModel: ColModel<ISmfFile> = [
-                {'name': 'fileName', 'caption': 'File Name', formatter: shortenPath},
+                {'name': 'fileName', 'caption': 'File Name', formatter: p => shortenPath(p + '').replace(/[_\/]/g, ' ')},
                 //{'name': 'length', 'caption': 'Length'},
                 {'name': 'score', 'caption': '*', formatter: null},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}

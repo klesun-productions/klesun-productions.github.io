@@ -64,7 +64,9 @@ export function Player($controlCont: JQuery)
         notes.forEach(function(noteJs)
         {
             var length = toFloat(noteJs.length + '');
-            var offList = noteHandlers.map(h => h.playNote(noteJs.tune, noteJs.channel, index));
+            var offList = noteHandlers.map(h => h.playNote(
+                noteJs.tune, noteJs.channel, noteJs.velocity || 127, index
+            ));
 
             scheduleInterruptable(toMillis(length, tempo), [() => offList.forEach(c => c())]);
         });
@@ -143,7 +145,7 @@ export function Player($controlCont: JQuery)
         playShmidusic: playShmidusic,
         playSheetMusic: playSheetMusic,
         addNoteHandler: (h: ISynth) => noteHandlers.push(h),
-        stop: () => stop,
+        stop: stop,
         playChord: playChord,
     };
 };
