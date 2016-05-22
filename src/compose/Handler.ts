@@ -12,6 +12,7 @@ import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
 import {Kl} from "../Tools";
 import {Player} from "../Player";
+import {Midiator} from "../player/Midiator";
 
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
@@ -169,7 +170,6 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-
     var importMidi = function(smf: ISMFreaded): void
     {
         console.log('decoded midi: ', smf);
@@ -184,7 +184,9 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             'Standard Midi File .mid': () => Kl.openMidi(importMidi),
         }),
         // "s"
-        83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveToDisc(JSON.stringify(collectSong(painter.getChordList()))),
+        83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveJsonToDisc(JSON.stringify(collectSong(painter.getChordList()))),
+        // "e"
+        69: (e: KeyboardEvent) => e.ctrlKey && Kl.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))), 
     };
 
     var focusedHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {

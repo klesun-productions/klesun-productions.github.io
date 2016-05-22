@@ -111,10 +111,16 @@ export class Kl
             .buffer;
     };
 
-    static saveToDisc = function(content: string): void
+    static saveJsonToDisc = function(content: string): void
     {
-        var blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+        var blob = new Blob([content], {type: "text/json;charset=utf-8"});
         saveAs(blob, 'song.mid.js', true);
+    };
+
+    static saveMidiToDisc = function(content: ArrayBuffer): void
+    {
+        var blob = new Blob([content], {type: "midi/binary"});
+        saveAs(blob, 'song.mid', true);
     };
 
     /** @param chunkSize - count of elements that will be foreached in one iteration
