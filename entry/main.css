@@ -102,17 +102,17 @@
         height: 600px;
     }
     .rightSideMainBlock .random-midi-list-cont {
-        background-color: orange;
+        background-color: #088;
         min-height: 300px;
         max-height: 500px;
         overflow-y: scroll;
     }
     .random-midi-list-cont table tr:not(.table-generator-title-tr) td {
-        background-color: #444;
-        color: yellow;
+        background-color: #fff;
         font-size: 10px;
         max-width: 130px;
         overflow: hidden;
+        padding: 3px;
     }
 
     #instrumentInfoBlock {
@@ -189,11 +189,15 @@
         font-weight: bold;
         letter-spacing:1px;
     }
-    #playbackControl .playBtn {
+    .playBtn {
+        font-weight: bold;
+        letter-spacing:1px;
         color: #0b0;
         text-shadow: 1px 0 #0b0;
     }
-    #playbackControl .pauseBtn {
+    .pauseBtn {
+        font-weight: bold;
+        letter-spacing:1px;
         color: red;
         text-shadow: 1px 0 red;
     }

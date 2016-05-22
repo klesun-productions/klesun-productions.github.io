@@ -42,6 +42,7 @@ export default function MainPage(mainCont: HTMLDivElement)
     const addToken = (p: dict<any>) => googleLogInIdToken === null
         ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
 
+    // TODO: make it "get" since it is just the single "getSongNames()" method, which could be cached and stuff
     const performExternal = (methodName: string, params: dict<any>, callback: {(data: {[k: string]: any}): void}) => $.ajax({
         url: '/htbin/json_service.py' + '?f=' + methodName, // GET params just for cosmetics
         type: "post",
@@ -88,11 +89,20 @@ export default function MainPage(mainCont: HTMLDivElement)
             ? p
             : p.split('/').pop();
 
+    const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement
+    {
+        var result = document.createElement('a');
+        result.setAttribute('href', 'http://shmidusic.lv/midiCollection/' + row.rawFileName);
+        result.innerHTML = shortenPath(path + '').replace(/[_\/]/g, ' ');
+
+        return result;
+    };
+
     const initIchigosMidiList = function ()
     {
         var playButtonFormatter = function(cell: string, row: ISmfFile)
         {
-            return $('<input type="button" value=">"/>')
+            return $('<input type="button" class="playBtn" value=">"/>')
                 .click((_) => playStandardMidiFile(row.rawFileName));
         };
 
@@ -104,13 +114,13 @@ export default function MainPage(mainCont: HTMLDivElement)
             $(midiFileCounter).html(rowList.length + '');
 
             var colModel: ColModel<ISmfFile> = [
-                {'name': 'fileName', 'caption': 'File Name', formatter: p => shortenPath(p + '').replace(/[_\/]/g, ' ')},
+                {'name': 'fileName', 'caption': 'File Name', formatter: makeFileName},
                 //{'name': 'length', 'caption': 'Length'},
                 {'name': 'score', 'caption': '*', formatter: null},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
             ];
 
-            var caption = 'From <a href="http://ichigos.com">ichigos.com</a>';
+            var caption = 'Mostly from <a href="http://ichigos.com">ichigos.com</a>';
 
             var table = TableGenerator().generateTable(colModel, rowList, caption, 100, 25);
             $('.random-midi-list-cont').append(table); // defined in index.html
