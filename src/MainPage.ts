@@ -2,15 +2,13 @@
 
 // initialises the website main page - the js performed the moment page is loaded
 
-import {IShmidusicStructure} from "./DataStructures";
+import {IShmidusicStructure, IGeneralStructure} from "./DataStructures";
 import {SheetMusicPainter} from "./compose/Painter";
 import UnfairRandom from "./UnfairRandom";
 import {ISmfFile} from "./DataStructures";
-import {ISMFreaded} from "./DataStructures";
 import {TableGenerator} from "./TableGenerator";
 import {ColModel} from "./TableGenerator";
 import {Kl} from "./Tools";
-import {Structurator} from "./player/Structurator";
 import {PresetList} from "./Views";
 import PianoLayout from "./PianoLayout";
 import {Player} from "./Player";
@@ -66,10 +64,8 @@ export default function MainPage(mainCont: HTMLDivElement)
 
     var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
 
-    const playSMF = (smf: ISMFreaded) => {
-        var structured = Structurator(smf);
-        player.playSheetMusic(structured, {}, () => {}, 0);
-    };
+    const playSMF = (song: IGeneralStructure) =>
+        player.playSheetMusic(song, {}, () => {}, 0);
 
     const playStandardMidiFile = function(fileName: string)
     {
@@ -77,10 +73,8 @@ export default function MainPage(mainCont: HTMLDivElement)
         console.log(' ');
         console.log('gonna play', fileName);
 
-        Kl.fetchMidi('/midiCollection/' + fileName, (smf: ISMFreaded) =>
-            player.playSheetMusic(
-                Structurator(smf),
-                {fileName: fileName},
+        Kl.fetchMidi('/midiCollection/' + fileName, (song: IGeneralStructure) =>
+            player.playSheetMusic(song, {fileName: fileName},
                 () => playRandom({fileName: fileName})));
     };
 

@@ -1,10 +1,7 @@
 
 /// <reference path="../references.ts" />
 
-import {ISMFreaded} from "../DataStructures";
 import {IGeneralStructure} from "../DataStructures";
-import {ISMFmidiEvent} from "../DataStructures";
-import {ISMFmetaEvent} from "../DataStructures";
 import {Kl} from "../Tools";
 import {IMidJsNote} from "../DataStructures";
 
@@ -15,8 +12,12 @@ type velocity_t = number;
 // - there is only single noteOn with sounding duration
 // - all control messages are gathered in a single place
 
-export function Structurator(smf: ISMFreaded): IGeneralStructure
+declare var Ns: {Libs: {SMFreader: (b: ArrayBuffer) => ISMFreaded}};
+
+export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
 {
+    var smf = Ns.Libs.SMFreader(smfBuf);
+
     var chordByTime: {[t: number]: IMidJsNote[]} = {};
     var tempoByTime: {[t: number]: number} = {};
     var presetByChannel: {[ch: number]: number} = {};
@@ -209,3 +210,36 @@ export function Structurator(smf: ISMFreaded): IGeneralStructure
         misc: {},
     };
 };
+
+interface ISMFevent {
+    delta: number, // 0
+    type: 'meta' | 'MIDI',
+}
+
+interface ISMFmetaEvent extends ISMFevent {
+    metaType: number, // see midi docs. 3 - track name, 1 - text, 88 - tact size
+    metaData: number[], // array of bytes that mean different things for different metaType-s
+    type: 'meta',
+}
+
+interface ISMFmidiEvent extends ISMFevent {
+    midiChannel: number, // 1
+    // i believe 9 is noteOn and 8 - noteOff,
+    // 11 - control change, 12 - program change
+    midiEventType: number, // 8
+    parameter1: number, // 68
+    parameter2?: number, // 64
+    type: 'MIDI',
+}
+
+interface ISMFreaded {
+    format: number, // 1
+    numTracks: number, // 3
+    // divide an event time by this to get time in seconds
+    ticksPerBeat: number, // 384
+    tracks: Array<{
+        trackName?: string,
+        byteLength: number,
+        events: ISMFevent[]
+    }>
+}

@@ -1,6 +1,7 @@
 /// <reference path="../libs/jqueryTyped/jquery.d.ts" />
 
-import {ISMFreaded} from "./DataStructures";
+import {IGeneralStructure} from "./DataStructures";
+import {Structurator} from "./player/Structurator";
 
 declare var Ns: any;
 Ns.Static = Ns.Static || {};
@@ -88,17 +89,13 @@ export class Kl
         oReq.send(null);
     };
 
-    static fetchMidi = (url: string, whenLoaded: { (midi: ISMFreaded): void }) =>
+    static fetchMidi = (url: string, whenLoaded: { (midi: IGeneralStructure): void }) =>
         Kl.fetchBinaryFile(url, buf =>
-            whenLoaded(
-            Ns.Libs.SMFreader(
-            buf)));
+            whenLoaded(Structurator(buf)));
 
-    static openMidi = (whenLoaded: { (midi: ISMFreaded): void }) =>
+    static openMidi = (whenLoaded: { (midi: IGeneralStructure): void }) =>
         Kl.selectFileFromDisc(db64 =>
-            whenLoaded(
-            Ns.Libs.SMFreader(
-            Kl._base64ToArrayBuffer(db64))));
+            whenLoaded(Structurator(Kl._base64ToArrayBuffer(db64))));
 
     // http://stackoverflow.com/a/21797381/2750743
     private static _base64ToArrayBuffer = function(base64: string): ArrayBuffer

@@ -6,7 +6,6 @@ import {IShNote} from "../DataStructures";
 import {IChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
 import Shmidusicator from "../player/Shmidusicator";
-import {ISMFreaded} from "../DataStructures";
 import {IShmidusicStructure} from "../DataStructures";
 import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
@@ -170,23 +169,15 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-    var importMidi = function(smf: ISMFreaded): void
-    {
-        console.log('decoded midi: ', smf);
-    };
-
     // separating to focused and global to
     // prevent conflicts with inputs, etc...
     var globalHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
         // "o"
-        79: (e: KeyboardEvent) => e.ctrlKey && Kl.promptSelect({
-            'Shmidusic Chords .mid.js': () => Kl.selectFileFromDisc(openSong),
-            'Standard Midi File .mid': () => Kl.openMidi(importMidi),
-        }),
+        79: (e: KeyboardEvent) => e.ctrlKey && Kl.selectFileFromDisc(openSong),
         // "s"
         83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveJsonToDisc(JSON.stringify(collectSong(painter.getChordList()))),
         // "e"
-        69: (e: KeyboardEvent) => e.ctrlKey && Kl.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))), 
+        69: (e: KeyboardEvent) => e.ctrlKey && Kl.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
     };
 
     var focusedHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {

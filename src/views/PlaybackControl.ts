@@ -27,7 +27,7 @@ export default function PlaybackControl($cont: JQuery)
         var chordCount = sheetMusic.chordList.length;
 
         tempoHolder.val(Math.floor(sheetMusic.config.tempo));
-        $cont.find('.tempoOrigin.holder').html(Math.floor(sheetMusic.config.tempoOrigin) + '');
+        $cont.find('.tempoOrigin.holder').html(Math.floor(sheetMusic.config.tempo) + '');
         $cont.find('.noteCount.holder').html(Kl.map(sheetMusic.misc.noteCount, c => c + '') || '?');
         $cont.find('.chordCount.holder').html(chordCount + '');
 

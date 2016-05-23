@@ -28,13 +28,17 @@ export interface ITimedShChord extends IShmidusicChord {
 // represents an info, persistent during song,
 // that is limited to a single channel number
 export interface IChannel {
-    // midi program number in range [0..128)
+    // midi program number in range [0..127]
     instrument: number;
     // midi channel number in range [0..16)
     channelNumber: number;
-    // midi channel starting volume in percents [0..100]
+    // midi channel starting volume [0..127]
     volume?: number;
 }
+
+export interface IShChannel {
+    
+};
 
 // output of github.com/klesun/shmidusic
 export interface IShmidusicStructure {
@@ -83,8 +87,6 @@ export interface IGeneralStructure {
     chordList: IShmidusicChord[],
     config: {
         tempo: number,
-        // tempoOrigin likely unused
-        tempoOrigin?: number,
         instrumentDict: {[ch: number]: number},
         loopStart: number,
         loopTimes: number,
@@ -99,39 +101,6 @@ export interface ISmfFile {
     rawFileName: string; // relative path to file
     fileName: string; // score will be cropped
     score: string;
-}
-
-export interface ISMFevent {
-    delta: number, // 0
-    type: 'meta' | 'MIDI',
-}
-
-export interface ISMFmetaEvent extends ISMFevent {
-    metaType: number, // see midi docs. 3 - track name, 1 - text, 88 - tact size
-    metaData: number[], // array of bytes that mean different things for different metaType-s
-    type: 'meta',
-}
-
-export interface ISMFmidiEvent extends ISMFevent {
-    midiChannel: number, // 1
-    // i believe 9 is noteOn and 8 - noteOff,
-    // 11 - control change, 12 - program change
-    midiEventType: number, // 8
-    parameter1: number, // 68
-    parameter2?: number, // 64
-    type: 'MIDI',
-}
-
-export interface ISMFreaded {
-    format: number, // 1
-    numTracks: number, // 3
-    // divide an event time by this to get time in seconds
-    ticksPerBeat: number, // 384
-    tracks: Array<{
-        trackName?: string,
-        byteLength: number,
-        events: ISMFevent[]
-    }>
 }
  
 export type seconds_t = number;

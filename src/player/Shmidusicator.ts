@@ -6,7 +6,6 @@
 import * as Ds from "../DataStructures";
 import {Kl} from "../Tools";
 import {Fraction} from "../Tools";
-import {ISMFreaded} from "../DataStructures";
 
 export default class Shmidusicator
 {
@@ -147,8 +146,6 @@ export default class Shmidusicator
             chordList: chordList,
             config: {
                 tempo: staff.staffConfig.tempo,
-                // tempoOrigin likely unused
-                tempoOrigin: staff.staffConfig.tempo,
                 instrumentDict: instrumentDict,
                 loopStart: staff.staffConfig.loopStart || 0,
                 loopTimes: staff.staffConfig.loopTimes || 0,
