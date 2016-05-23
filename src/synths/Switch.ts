@@ -7,8 +7,9 @@ import {MidiDevice} from "./MidiDevice";
 import {Fluid} from "./Fluid";
 import {ISynth} from "./ISynth";
 import {Kl} from "../Tools";
-import {IPresetList} from "../Views";
 import {IPianoLayout} from "../PianoLayout";
+import {IChannel, IShChannel} from "../DataStructures";
+import {IPresetList} from "../views/PresetList";
 
 export function Switch(
     dropdownEl: HTMLSelectElement,
@@ -49,7 +50,7 @@ export function Switch(
         } else {
             return () => {};
         }
-    };
+    }; 
 
     presetListControl.hangPresetChangeHandler(presByChan =>
         synths[$(dropdownEl).val()].consumeConfig(presByChan));
@@ -61,7 +62,7 @@ export function Switch(
 
     return {
         playNote: playNote,
-        consumeConfig: (config: {[c: number]: number}) => {
+        consumeConfig: (config: {[c: number]: IShChannel}) => {
             presetListControl.update(config);
             synths[$(dropdownEl).val()].consumeConfig(config)
         },

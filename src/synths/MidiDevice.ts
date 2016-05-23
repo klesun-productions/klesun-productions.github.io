@@ -6,6 +6,7 @@
 import {Kl} from "../Tools";
 import MIDIOutput = WebMidi.MIDIOutput;
 import {ISynth} from "./ISynth";
+import {IShChannel} from "../DataStructures";
 
 export function MidiDevice(): ISynth
 {
@@ -57,6 +58,9 @@ export function MidiDevice(): ISynth
     var setInstrument = (n: number, channel: number) =>
         midiOutputList.forEach(o => o.send([0xC0 - -channel, n]));
 
+    var setVolume = (val: number, chan: number) =>
+        midiOutputList.forEach(o => o.send([0xB0 + +chan, 7, val]));
+
     var openedDict: {[channel: number]: {[semitone: number]: number}} = {};
     Kl.range(0,16).forEach(n => (openedDict[n] = {}));
 
@@ -90,8 +94,11 @@ export function MidiDevice(): ISynth
     };
 
     /** @param instrumentDict {channelNumber: instrumentNumber} */
-    var consumeConfig = (instrumentDict: {[ch: number]: number}) =>
-        Object.keys(instrumentDict).forEach(ch => setInstrument(instrumentDict[+ch], +ch));
+    var consumeConfig = (instrumentDict: {[ch: number]: IShChannel}) =>
+        Object.keys(instrumentDict).forEach(ch => {
+            setInstrument(instrumentDict[+ch].preset, +ch);
+            setVolume(instrumentDict[+ch].volume, +ch);
+        });
 
     return {
         init: init,

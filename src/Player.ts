@@ -94,7 +94,7 @@ export function Player($controlCont: JQuery)
         control.setFileInfo(fileInfo);
 
         noteHandlers.forEach(h => {
-            h.consumeConfig(sheetMusic.config.instrumentDict);
+            h.consumeConfig(sheetMusic.config.channels);
             h.analyse(sheetMusic.chordList);
         });
 

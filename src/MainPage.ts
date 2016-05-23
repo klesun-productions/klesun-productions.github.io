@@ -9,10 +9,10 @@ import {ISmfFile} from "./DataStructures";
 import {TableGenerator} from "./TableGenerator";
 import {ColModel} from "./TableGenerator";
 import {Kl} from "./Tools";
-import {PresetList} from "./Views";
 import PianoLayout from "./PianoLayout";
 import {Player} from "./Player";
 import {Switch} from "./synths/Switch";
+import {PresetList} from "./views/PresetList";
 type dict<Tx> = {[k: string]: Tx};
 
 type cb = () => void;

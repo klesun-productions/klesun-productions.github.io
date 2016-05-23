@@ -1,7 +1,7 @@
 
 /// <reference path="../references.ts" />
 
-import {IGeneralStructure} from "../DataStructures";
+import {IGeneralStructure, IShChannel} from "../DataStructures";
 import {Kl} from "../Tools";
 import {IMidJsNote} from "../DataStructures";
 
@@ -20,8 +20,9 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
 
     var chordByTime: {[t: number]: IMidJsNote[]} = {};
     var tempoByTime: {[t: number]: number} = {};
-    var presetByChannel: {[ch: number]: number} = {};
-    var volumeByChannel: {[ch: number]: number} = {};
+    var presetByChannel: {[ch: number]: IShChannel} = Kl.range(0,16).map(i => 1 && {
+        preset: 0, volume: 127
+    });
     var pitchBends: [number, number, number, number][] = [];
     var loopStart: number = null;
     var loopEnd: number = 0;
@@ -56,7 +57,7 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
         // http://www.nortonmusic.com/midi_cc.html
         var controlHandlers: {[n: number]: (param: number) => void} = {
             0: (p) => {}, // bank select
-            7: (p) => volumeByChannel[ch] = p,
+            7: (p) => presetByChannel[ch].volume = p,
             10: (p) => {}, // pan select
             32: (p) => {}, // bank select 2
         };
@@ -67,7 +68,7 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
             handleNote(event.parameter1, velocity);
         } else if (+event.midiEventType === 12) {
             // program change
-            presetByChannel[event.midiChannel] = event.parameter1;
+            presetByChannel[event.midiChannel].preset = event.parameter1;
         } else if (+event.midiEventType === 11) {
             // control change
             if (event.parameter1 in controlHandlers) {
@@ -186,7 +187,6 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
     /** @debug */
     unknownControlChanges.length && console.log('got unknown control changes', unknownControlChanges);
     pitchBends.length && console.log('got pitch bends', pitchBends);
-    Object.keys(volumeByChannel).length && console.log('got volumes per channel', volumeByChannel);
 
     return {
         chordList: Object.keys(chordByTime)
@@ -202,10 +202,9 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
             }),
         config: {
             tempo: getLongestTempo(),
-            instrumentDict: presetByChannel,
+            channels: presetByChannel,
             loopStart: ticksToAcademic(loopStart || 0),
             loopTimes: loopStart !== null ? 1 : 0,
-            volumeByChannel: volumeByChannel,
         },
         misc: {},
     };

@@ -4,6 +4,8 @@
 // this class provides ability to play notes with js Web Audio Api oscillator
 
 import {ISynth} from "./ISynth";
+import {IShChannel} from "../DataStructures";
+import {Kl} from "../Tools";
 type EWave = 'sine' | 'triangle' | 'sawtooth' | 'square';
 
 export function Oscillator(audioCtx: AudioContext): ISynth
@@ -105,11 +107,11 @@ export function Oscillator(audioCtx: AudioContext): ISynth
         }
     };
 
-    var consumeConfig = function(instrByChan: { [id: number]: number })
+    var consumeConfig = function(instrByChan: { [id: number]: IShChannel })
     {
         /** @TODO: these presets that are generated from oscillator (not from samples), like
          * "Synth Bass", "Stuff from 80 to 100", "Synth Strings" should be played properly here */
-        instrumentDict = instrByChan;
+        instrumentDict = Kl.dict(Kl.mapi(instrByChan, (ch,chn): [string, number] => [''+chn, ch.preset]));
     };
 
     return {

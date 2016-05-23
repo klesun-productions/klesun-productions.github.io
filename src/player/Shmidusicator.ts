@@ -6,6 +6,7 @@
 import * as Ds from "../DataStructures";
 import {Kl} from "../Tools";
 import {Fraction} from "../Tools";
+import {IShChannel} from "../DataStructures";
 
 export default class Shmidusicator
 {
@@ -122,14 +123,19 @@ export default class Shmidusicator
     static generalizeShmidusic = function (shmidusicJson: Ds.IShmidusicStructure): Ds.IGeneralStructure
     {
         var staff = shmidusicJson['staffList'][0];
-
-        var instrumentDict: {[ch: number]: number} = {};
+        
+        var instrumentDict: {[ch: number]: IShChannel} = {};
 
         (staff.staffConfig.channelList || [])
             .filter(e => e.channelNumber < 16)
-            .forEach((e) => (instrumentDict[e.channelNumber] = e.instrument));
+            .forEach((e) => (instrumentDict[e.channelNumber] = {
+                preset: e.instrument,
+                volume: e.volume,
+            }));
 
-        Kl.range(0, 16).forEach((i: number) => (instrumentDict[i] |= 0));
+        Kl.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {
+            preset: 0, volume: 128,
+        }));
 
         var chordList = staff['chordList'];
 
@@ -146,10 +152,9 @@ export default class Shmidusicator
             chordList: chordList,
             config: {
                 tempo: staff.staffConfig.tempo,
-                instrumentDict: instrumentDict,
+                channels: instrumentDict,
                 loopStart: staff.staffConfig.loopStart || 0,
                 loopTimes: staff.staffConfig.loopTimes || 0,
-                volumeByChannel: Kl.dicti(Kl.range(0,16).map((i): [number,number] => [i,127])),
             },
             misc: {
                 noteCount: -100

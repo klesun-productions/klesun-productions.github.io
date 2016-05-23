@@ -57,7 +57,10 @@ export class Kl
     };
 
     static fori = <Tx>(dict: {[k: number]: Tx}, callback: { (k: number, v: Tx): void }) =>
-            Object.keys(dict).forEach(k => callback(+k, dict[+k]));
+        Object.keys(dict).forEach(k => callback(+k, dict[+k]));
+
+    static mapi = <Tx, Ty>(dict: {[k: number]: Tx}, callback: (v: Tx, k: number) => Ty) =>
+        Object.keys(dict).map(k => callback(dict[+k], +k));
 
     static selectFileFromDisc = function(whenLoaded: { (dataBase64: string): void }): void
     {

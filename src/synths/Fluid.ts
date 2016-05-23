@@ -1,6 +1,6 @@
 /// <reference path="../references.ts" />
 
-import {IShmidusicChord} from "../DataStructures";
+import {IShmidusicChord, IShChannel} from "../DataStructures";
 import {SoundFontAdapter, IFetchedSample, EStereoPan} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
 import {Kl} from "../Tools";
@@ -14,11 +14,8 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
 {
     var soundFont = SoundFontAdapter(audioCtx, soundfontDirUrl);
 
-    var presetsByChannel: { [id: number]: number } = {
-        0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0
-    };
-
-    var volumeByChannel: number[] = Kl.range(0,16).map(i => 127);
+    var channels: { [id: number]: IShChannel } = Kl.range(0,16).map(i =>
+        1 && {preset: 0, volume: 127});
 
     var MAX_VOLUME = 0.3;
 
@@ -59,20 +56,19 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
     var playNote = function(semitone: number, channel: number, velocity: number)
     {
         var isDrum = +channel === 9;
-        var preset = presetsByChannel[channel] || 0;
 
         var sample: IFetchedSample;
 
-        if (sample = soundFont.fetchSample(semitone, preset, isDrum)) {
-            var volumeFactor = velocity / 127 * volumeByChannel[channel] / 127;
+        if (sample = soundFont.fetchSample(semitone, channels[channel].preset, isDrum)) {
+            var volumeFactor = velocity / 127 * channels[channel].volume / 127;
             return playSample(sample, volumeFactor);
         } else {
             return fallbackOscillator.playNote(semitone, 0, velocity, -1);
         }
     };
 
-    var consumeConfig = (programs: { [id: number]: number; }) =>
-        Kl.fori(programs, (k,v) => presetsByChannel[k] = v);
+    var consumeConfig = (programs: { [id: number]: IShChannel; }) =>
+        Kl.fori(programs, (k,v) => channels[k] = v);
 
     var interruptLastAnalysis = () => {};
 
@@ -86,7 +82,7 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
         var next = (i: number) => {
             var c = chords[i];
             c.noteList.forEach((n,i) => {
-                soundFont.fetchSample(n.tune, presetsByChannel[n.channel], +n.channel === 9);
+                soundFont.fetchSample(n.tune, channels[n.channel].preset, +n.channel === 9);
             });
 
             i + 1 < chords.length && !interrupted

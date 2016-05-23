@@ -37,7 +37,8 @@ export interface IChannel {
 }
 
 export interface IShChannel {
-    
+    preset: number,
+    volume: number,
 };
 
 // output of github.com/klesun/shmidusic
@@ -87,10 +88,9 @@ export interface IGeneralStructure {
     chordList: IShmidusicChord[],
     config: {
         tempo: number,
-        instrumentDict: {[ch: number]: number},
         loopStart: number,
         loopTimes: number,
-        volumeByChannel: {[ch: number]: number},
+        channels: {[ch: number]: IShChannel},
     },
     misc: {
         noteCount?: number

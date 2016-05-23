@@ -1,12 +1,13 @@
-/// <reference path="references.ts" />
+/// <reference path="../references.ts" />
+
+import {IShChannel} from "../DataStructures";
+import {Kl} from "../Tools";
+import {TableGenerator} from "../TableGenerator";
 
 // this module contains some object definitions
 // that do communication between UX and code
 
-import {Kl} from "./Tools";
-import {TableGenerator} from "./TableGenerator";
-
-type cons_conf_t = {(presByChan: {[ch: number]: number}): void};
+type cons_conf_t = {(presByChan: {[ch: number]: IShChannel}): void};
 
 export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
 {
@@ -64,11 +65,11 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
         $(instrumentInfoBlock).append($table);
     };
 
-    var update = (instrByChannel: {[c: number]: number}) =>
+    var update = (instrByChannel: {[c: number]: IShChannel}) =>
     {
         enabledChannels = new Set(Kl.range(0,16));
         $(instrumentInfoBlock).find('tr select').toArray()
-            .forEach((sel,ch) => $(sel).val(instrByChannel[ch]));
+            .forEach((sel,ch) => $(sel).val(instrByChannel[ch].preset));
     };
 
     var hangPresetChangeHandler = (cb: cons_conf_t) =>
@@ -87,7 +88,7 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
 };
 
 export interface IPresetList {
-    update: (instrByChannel: {[c: number]: number}) => void,
+    update: (instrByChannel: {[c: number]: IShChannel}) => void,
     enabledChannels: () => Set<number>,
     hangPresetChangeHandler: (cb: cons_conf_t) => void,
 };
