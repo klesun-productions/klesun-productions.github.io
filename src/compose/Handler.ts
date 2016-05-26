@@ -77,7 +77,12 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             $select.append($('<option></option>').val(i).html(i + ': ' + d)));
         $select.val(chan.instrument);
 
-        var onchange = () => synth.consumeConfig({[chan.channelNumber]: $select.val()});
+        var onchange = () => synth.consumeConfig({
+            [chan.channelNumber]: {
+                preset: $select.val(),
+                volume: 127
+            }
+        });
         onchange();
 
         return $('<span></span>').attr('data-channel', chan.channelNumber)
