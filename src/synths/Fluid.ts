@@ -14,7 +14,14 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
 {
     var soundFont = SoundFontAdapter(audioCtx, soundfontDirUrl);
 
-    var channels: { [id: number]: IShChannel } = Kl.range(0,16).map(i =>
+    var channelNodes = Kl.range(0,16).map(i => {
+        var node = audioCtx.createGain();
+        node.gain.value = 1;
+        node.connect(audioCtx.destination);
+        return node;
+    });
+
+    var channels = Kl.range(0,16).map(i =>
         1 && {preset: 0, volume: 127});
 
     var MAX_VOLUME = 0.3;
@@ -23,11 +30,13 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
     // when new note is about to be played we need time to load it
     var fallbackOscillator = Oscillator(audioCtx);
 
-    var playSample = function(fetchedSample: IFetchedSample, volumeFactor: number): {(): void}
+    var playSample = function(fetchedSample: IFetchedSample, volumeFactor: number, parentNode: GainNode): () => void
     {
         var gainNode = audioCtx.createGain();
-        gainNode.gain.value = MAX_VOLUME * volumeFactor;
-        gainNode.connect(audioCtx.destination);
+        gainNode.gain.value = MAX_VOLUME * volumeFactor
+            * fetchedSample.volumeKoef
+            ;
+        gainNode.connect(parentNode);
 
         var sample = audioCtx.createBufferSource();
         sample.playbackRate.value = fetchedSample.frequencyFactor;
@@ -60,8 +69,8 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
         var sample: IFetchedSample;
 
         if (sample = soundFont.fetchSample(semitone, channels[channel].preset, isDrum)) {
-            var volumeFactor = velocity / 127 * channels[channel].volume / 127;
-            return playSample(sample, volumeFactor);
+            var volumeFactor = velocity / 127;
+            return playSample(sample, volumeFactor, channelNodes[channel]);
         } else {
             return fallbackOscillator.playNote(semitone, 0, velocity, -1);
         }

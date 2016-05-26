@@ -60,6 +60,9 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
             7: (p) => presetByChannel[ch].volume = p,
             10: (p) => {}, // pan select
             32: (p) => {}, // bank select 2
+            37: (p) => {}, // Portamento time
+            
+            91: (p) => {}, // Undefined on/off
         };
 
         if ([8,9].includes(event.midiEventType)) {
@@ -185,6 +188,7 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
     fillChordsAndMetas(smf);
 
     /** @debug */
+    console.log('decoded SMF: ', smf);
     unknownControlChanges.length && console.log('got unknown control changes', unknownControlChanges);
     pitchBends.length && console.log('got pitch bends', pitchBends);
 

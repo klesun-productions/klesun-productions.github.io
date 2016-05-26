@@ -29,7 +29,7 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
 
         $(select).attr('readonly', 'readonly');
 
-        select.onchange = () => presetChanged({[chan]: $(select).val()});
+        select.onchange = () => presetChanged({[chan]: {preset: $(select).val(), volume: 127}});
 
         return select;
     };

@@ -1,8 +1,6 @@
 /// <reference path="../references.ts" />
 
 
-import * as Ds from "../DataStructures";
-import {Kl} from "../Tools";
 import {seconds_t} from "../DataStructures";
 
 // this object provides access to soundfont info
@@ -60,19 +58,23 @@ export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string
     // overwrites global keys with local if any
     var updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
     {
-        return $.extend(global, local);
+        return $.extend({}, global, local);
     };
 
     // adds the tuning semi-tones and cents; multiplies whatever needs to be multiplied
     var combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
     {
-        var result = $.extend(local, {});
+        var result: IGenerator = $.extend({}, local);
 
-        result.fineTune = (result.fineTune || 0) + (global.fineTune || 0);
-        result.coarseTune = (result.coarseTune || 0) + (global.coarseTune || 0);
+        result.fineTune = (+result.fineTune || 0) + (+global.fineTune || 0);
+        result.coarseTune = (+result.coarseTune || 0) + (+global.coarseTune || 0);
+        result.initialAttenuation = (+result.initialAttenuation || 0) + (+global.initialAttenuation || 0);
 
         return result;
     };
+
+    /** @param db - soundfont decibel value */
+    var dBtoKoef = (db: number) => Math.pow(10, db/50); // yes, it is 50, not 10 and not 20 - see /tests/attenToPercents.txt
 
     /** @return value or starts fetching so next time you call it it was ready
      * @nullable */
@@ -94,7 +96,7 @@ export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string
             console.log('no sample!', semitone, preset);
         } else {
             var generator = combineGenerators(
-                presets[preset].generatorApplyToAll || {},
+                updateGenerator(presets[preset].generatorApplyToAll || {}, presets[preset].instrument.generator),
                 updateGenerator(presets[preset].instrument.generatorApplyToAll, sampleInfo.generator)
             );
 
@@ -114,6 +116,7 @@ export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string
                 loopStart: (sampleInfo.startLoop + (generator.startloopAddrsOffset || 0)) / sampleInfo.sampleRate,
                 loopEnd: (sampleInfo.endLoop + (generator.endloopAddrsOffset || 0)) / sampleInfo.sampleRate,
                 stereoPan: sampleInfo.sampleType,
+                volumeKoef: 'initialAttenuation' in generator ? dBtoKoef(-generator.initialAttenuation / 10) : 1,
             });
 
             return fetched;
@@ -131,6 +134,7 @@ export interface IFetchedSample {
     loopEnd: seconds_t,
     frequencyFactor: number,
     stereoPan: EStereoPan,
+    volumeKoef: number, // in [0..1]
 }
 
 interface IGenerator {
@@ -143,6 +147,7 @@ interface IGenerator {
     coarseTune?: number;
     startloopAddrsOffset?: number; // add to sample.startLoop if present
     endloopAddrsOffset?: number; // add to sample.endLoop if present
+    initialAttenuation?: number; // how much volume should be reduced in centibels
 }
  
 export enum EStereoPan {LEFT, MONO, RIGHT, LINK}
@@ -163,6 +168,7 @@ interface ISampleInfo {
 interface IPreset {
     instrument: {
         samples: Array<ISampleInfo>;
+        generator: IGenerator;
         generatorApplyToAll: IGenerator; // overriden by specific sample values if any
     };
     generatorApplyToAll: IGenerator; // combined with specific instrument values if any
