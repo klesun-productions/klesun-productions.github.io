@@ -19,7 +19,7 @@ import {Midiator} from "../player/Midiator";
 export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
     var lastChordOn = 0;
-    var synth = Fluid(new AudioContext(), 'http://shmidusic.lv/out/sf2parsed/fluid/');
+    var synth = Fluid(new AudioContext(), '/out/sf2parsed/fluid/');
     const player = Player($(''));
 
     var control = painter.getControl();

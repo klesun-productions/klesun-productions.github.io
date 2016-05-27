@@ -5,12 +5,13 @@ import {SoundFontAdapter, IFetchedSample, EStereoPan} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
 import {Kl} from "../Tools";
 import {ISynth} from "./ISynth";
+import {Cls} from "../Ns";
 
 // we play sample audio files on "playNote()"
 
 interface INote { play: { (): { (): void } } }
 
-export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
+export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
 {
     var soundFont = SoundFontAdapter(audioCtx, soundfontDirUrl);
 
@@ -24,7 +25,7 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
     var channels = Kl.range(0,16).map(i =>
         1 && {preset: 0, volume: 127});
 
-    var MAX_VOLUME = 0.3;
+    var MAX_VOLUME = 0.5;
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need time to load it
@@ -70,6 +71,10 @@ export function Fluid(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
 
         if (sample = soundFont.fetchSample(semitone, channels[channel].preset, isDrum)) {
             var volumeFactor = velocity / 127;
+
+            /** @debug */
+            volumeFactor *= +channel === 9 ? 2 : 1;
+
             return playSample(sample, volumeFactor, channelNodes[channel]);
         } else {
             return fallbackOscillator.playNote(semitone, 0, velocity, -1);

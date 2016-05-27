@@ -1,4 +1,5 @@
 
+import {ISynth} from "./synths/ISynth";
 export interface ISongInfo {
     rawFileName: string;
 }
@@ -95,6 +96,18 @@ export interface IGeneralStructure {
     misc: {
         noteCount?: number
     },
+}
+
+// should replace IGeneralStructure one day
+// the idea is each midi event is a labda,
+// that does something with ISynth, like playing
+// a note, bending pitch or changing volume
+export interface IAdaptedSmf {
+    tempo: number,
+    presetByChannel: {[chan: number]: number},
+    // time - absolute, float in academic 4/4 tacts,
+    // like 5/4 or 2 or 3/7 or 47/2
+    eventSequence: {[time: number]: Array<(s: ISynth) => [number, () => void]>},
 }
 
 export interface ISmfFile {

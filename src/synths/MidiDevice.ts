@@ -13,7 +13,7 @@ export function MidiDevice(): ISynth
     var NOTE_ON = 0x90;
     var NOTE_OFF = 0x80;
 
-    var volume = 64;
+    var volume = 127;
 
     var firstInit = true;
     var midiOutputList: MIDIOutput[] = [];

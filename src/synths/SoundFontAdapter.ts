@@ -2,13 +2,14 @@
 
 
 import {seconds_t} from "../DataStructures";
+import {Cls} from "../Ns";
 
 // this object provides access to soundfont info
 // particularly it has a method that
 // takes (semitone and preset) and
 // returns (AudioBuffer, frequencyFactor, loopStart, loopEnd)
 
-export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string)
+export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: AudioContext, soundfontDirUrl: string)
 {
     var sampleDirUrl = soundfontDirUrl + '/samples/';
 
@@ -80,6 +81,8 @@ export function SoundFontAdapter(audioCtx: AudioContext, soundfontDirUrl: string
      * @nullable */
     var fetchSample = (semitone: number, preset: number, isDrum: boolean): IFetchedSample =>
     {
+        isDrum = isDrum || false;
+
         var sampleListList = isDrum
             ? drumPreset.stateProperties.map(p => p.instrument.samples)
             : [presets[preset].instrument.samples];

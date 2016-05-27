@@ -5,14 +5,18 @@ import {IGeneralStructure, IShChannel} from "../DataStructures";
 import {Kl} from "../Tools";
 import {IMidJsNote} from "../DataStructures";
 
+declare var Ns: {
+    Libs:{
+        SMFreader: (b:ArrayBuffer) => ISMFreaded,
+    },
+};
+
 type ticks_t = number;
 type velocity_t = number;
 
 // this function converts SMF midi events to a bit more structured representation
 // - there is only single noteOn with sounding duration
 // - all control messages are gathered in a single place
-
-declare var Ns: {Libs: {SMFreader: (b: ArrayBuffer) => ISMFreaded}};
 
 export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
 {
@@ -235,7 +239,7 @@ interface ISMFmidiEvent extends ISMFevent {
     type: 'MIDI',
 }
 
-interface ISMFreaded {
+export interface ISMFreaded {
     format: number, // 1
     numTracks: number, // 3
     // divide an event time by this to get time in seconds

@@ -2,9 +2,9 @@
 
 import {IGeneralStructure} from "./DataStructures";
 import {Structurator} from "./player/Structurator";
+import {Cls} from "./Ns";
 
-declare var Ns: any;
-Ns.Static = Ns.Static || {};
+var Static: any = {};
 
 // some usefull shorthand methods
 
@@ -29,7 +29,7 @@ class Optional<T>
 // defined in /libs/FileSaver.js
 declare var saveAs: any;
 
-export class Kl
+export var Kl = Cls['Kl'] = class
 {
     static audioCtx = new AudioContext();
     
@@ -77,7 +77,7 @@ export class Kl
             }
         };
 
-        var input = Ns.Static.FILE_INPUT = Ns.Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
+        var input = Static.FILE_INPUT = Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
         input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
         input.onclick = (inputEvent: Event) => { input.value = null; };
         $(input).click();
