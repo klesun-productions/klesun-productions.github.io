@@ -25,7 +25,7 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
     var channels = Kl.range(0,16).map(i =>
         1 && {preset: 0, volume: 127});
 
-    var MAX_VOLUME = 0.5;
+    var MAX_VOLUME = 0.3;
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need time to load it

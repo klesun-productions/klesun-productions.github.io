@@ -20,6 +20,9 @@ export function Switch(
 {
     var audioCtx = Kl.audioCtx;
 
+    var channels: {[c: number]: IShChannel} = Kl.range(0,16).map(i =>
+        1 && {preset: 0, volume: 127});
+
     var synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(audioCtx),
         midiDevice: MidiDevice(),
@@ -30,6 +33,7 @@ export function Switch(
 
     var changeSynth = function() {
         synths[$(dropdownEl).val()].init($(controlEl));
+        synths[$(dropdownEl).val()].consumeConfig(channels);
     };
 
     $(dropdownEl).empty();
@@ -63,6 +67,7 @@ export function Switch(
     return {
         playNote: playNote,
         consumeConfig: (config: {[c: number]: IShChannel}) => {
+            channels = config;
             presetListControl.update(config);
             synths[$(dropdownEl).val()].consumeConfig(config)
         },
