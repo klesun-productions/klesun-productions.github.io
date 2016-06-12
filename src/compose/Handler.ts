@@ -149,10 +149,40 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             .forEach(el => $channelCont.append(el));
     };
 
-    // TODO reset to default before opening. some legacy songs do not have loopTimes/Start
-    var openSong = function(base64Song: string): void
+    var openSong = function(song: IShmidusicStructure): void
     {
-        var jsonSong = atob(base64Song);
+        painter.getControl().clear();
+
+        song.staffList
+            .forEach(s => {
+                var config: {[k: string]: any} = s.staffConfig;
+                Kl.for(config, (k, v) =>
+                    $(configCont).find('> .holder.' + k).val(v));
+
+                redrawChannels(s.staffConfig.channelList || []);
+
+                synth.analyse(s.chordList);
+                s.chordList.forEach(painter.getControl().addChord);
+            });
+
+        painter.getControl().setChordFocus(0);
+    };
+
+    // TODO reset to default before opening. some legacy songs do not have loopTimes/Start
+    var openSongFromJson = function(parsed: {[k: string]: any}): void
+    {
+        var song: IShmidusicStructure;
+        if (song = ShReflect().validateShmidusic(parsed)) {
+            openSong(song);
+        } else {
+            alert('Your file is valid json, but not valid Shmidusic!');
+        }
+    };
+
+    var openSongFromBase64 = function(b64Song: string): void
+    {
+        var jsonSong = atob(b64Song);
+
         try {
             var parsed = JSON.parse(jsonSong);
         } catch (err) {
@@ -160,33 +190,14 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             return;
         }
 
-        var song: IShmidusicStructure;
-        if (song = ShReflect().validateShmidusic(parsed)) {
-
-            painter.getControl().clear();
-
-            song.staffList
-                .forEach(s => {
-                    var config: {[k: string]: any} = s.staffConfig;
-                    Kl.for(config, (k, v) =>
-                        $(configCont).find('> .holder.' + k).val(v));
-
-                    redrawChannels(s.staffConfig.channelList || []);
-                    synth.analyse(s.chordList);
-
-                    s.chordList
-                        .forEach(painter.getControl().addChord)
-                });
-        } else {
-            alert('Your file is valid josn, but not valid Shmidusic!');
-        }
+        openSongFromJson(parsed);
     };
 
     // separating to focused and global to
     // prevent conflicts with inputs, etc...
     var globalHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
         // "o"
-        79: (e: KeyboardEvent) => e.ctrlKey && Kl.selectFileFromDisc(openSong),
+        79: (e: KeyboardEvent) => e.ctrlKey && Kl.selectFileFromDisc(openSongFromBase64),
         // "s"
         83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveJsonToDisc(JSON.stringify(collectSong(painter.getChordList()))),
         // "e"
@@ -319,7 +330,23 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         }
 
     };
+    
+    var handleHashChange = function()
+    {
+        var hash = new Map(location.hash.substr(1)
+            .split('&')
+            .map(p => <[string, string]>p.split('=')));
 
+        if (hash.has('songRelPath')) {
+            Kl.fetchJson('/Dropbox/yuzefa_git/a_opuses_json/' + hash.get('songRelPath'), songJson => {
+                openSongFromJson(songJson);
+                play();
+            });
+        }
+    };
+
+    window.onhashchange = handleHashChange;
+    handleHashChange();
     hangMidiHandlers();
     redrawChannels([]);
 

@@ -83,14 +83,20 @@ export var Kl = Cls['Kl'] = class
         $(input).click();
     };
 
-    static fetchBinaryFile = (url: string, whenLoaded: { (buf: ArrayBuffer): void }) =>
+    private static fetchFile(url: string, responseType: 'arraybuffer' | 'json' | 'text', whenLoaded: { (buf: any): void })
     {
         var oReq = new XMLHttpRequest();
         oReq.open("GET", url, true);
-        oReq.responseType = "arraybuffer";
+        oReq.responseType = responseType;
         oReq.onload = () => whenLoaded(oReq.response);
         oReq.send(null);
-    };
+    }
+
+    static fetchBinaryFile = (url: string, whenLoaded: (buf: ArrayBuffer) => void) =>
+        Kl.fetchFile(url, 'arraybuffer', whenLoaded);
+    
+    static fetchJson = (url: string, whenLoaded: (buf: {[k: string]: any}) => void) =>
+        Kl.fetchFile(url, 'json', whenLoaded);
 
     static fetchMidi = (url: string, whenLoaded: { (midi: IGeneralStructure): void }) =>
         Kl.fetchBinaryFile(url, buf =>

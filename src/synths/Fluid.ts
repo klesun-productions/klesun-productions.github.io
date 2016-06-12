@@ -84,7 +84,7 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
             var volumeFactor = velocity / 127;
 
             /** @debug */
-            volumeFactor *= +channel === 9 ? 2.5 : 1;
+            volumeFactor *= +channel === 9 ? 2 : 1;
 
             return playSample(sample, volumeFactor, channelNodes[channel]);
         } else {

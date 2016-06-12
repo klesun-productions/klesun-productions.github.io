@@ -15,8 +15,15 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
 
     var presets: IPreset[] = null;
     var drumPreset: IDrumPreset = null;
-    $.getJSON(soundfontDirUrl + '/presets.json', (result) => presets = result);
-    $.getJSON(soundfontDirUrl + '/drumPreset.json', (result) => drumPreset = result);
+    var whenLoaded: Array<() => void> = [];
+    $.getJSON(soundfontDirUrl + '/presets.json', (result) => {
+        presets = result;
+        drumPreset && whenLoaded.forEach(c => c());
+    });
+    $.getJSON(soundfontDirUrl + '/drumPreset.json', (result) => {
+        drumPreset = result;
+        presets && whenLoaded.forEach(c => c());
+    });
 
     var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
     var awaiting: { [url: string]: Array<{ (resp: AudioBuffer): void }> } = {};
@@ -82,6 +89,11 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
     var fetchSample = (semitone: number, preset: number, isDrum: boolean): IFetchedSample =>
     {
         isDrum = isDrum || false;
+
+        if (!presets || !drumPreset) {
+            whenLoaded.push(() => fetchSample(semitone, preset, isDrum));
+            return null;
+        }
 
         var sampleListList = isDrum
             ? drumPreset.stateProperties.map(p => p.instrument.samples)
