@@ -1,22 +1,31 @@
 /// <reference path="../references.ts" />
 
-// sends noteOn messages to a synth device rather than playing notes through speakers
-// Web MIDI is supported only by Chrome at the moment
 
 import {Kl} from "../Tools";
 import MIDIOutput = WebMidi.MIDIOutput;
 import {ISynth} from "./ISynth";
 import {IShChannel} from "../DataStructures";
+import {Cls} from "../Cls";
 
-export function MidiDevice(): ISynth
+// following constants represent the X in bits of midi message
+// XXXX???? ???????? ????????
+
+const NOTE_ON = 0x90;
+const NOTE_OFF = 0x80;
+const SET_PITCH_BEND = 224;
+
+// and channel number bits are Y in the
+// ????YYYY ???????? ????????
+
+/** sends noteOn messages to a synth device rather than playing notes through speakers
+  * Web MIDI is supported only by Chrome at the moment */
+export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
 {
-    var NOTE_ON = 0x90;
-    var NOTE_OFF = 0x80;
-
-    var volume = 127;
+    var volume = 110;
 
     var firstInit = true;
     var midiOutputList: MIDIOutput[] = [];
+    var send = (bytes: number[]) => midiOutputList.forEach(o => o.send(bytes));
 
     var initControl = function($controlEl: JQuery)
     {
@@ -49,26 +58,34 @@ export function MidiDevice(): ISynth
     };
 
     // 127 = max velocity
-    var noteOn = (tune: number,channel: number) =>
-        midiOutputList.forEach(o => o.send([NOTE_ON - -channel, tune, volume] ));
+    var noteOn = (tune: number,channel: number, velocity: number) => send([NOTE_ON - -channel, tune, velocity * volume / 127]);
+    var noteOff = (tune: number,channel: number) => send([NOTE_OFF - -channel, tune, 0x40]);
+    var setInstrument = (n: number, channel: number) => send([0xC0 - -channel, n]);
+    var setVolume = (val: number, chan: number) => send([0xB0 + +chan, 7, val]);
+    
+    var setPitchBendRange = function(semitones: number, channel: number)
+    {
+        send([0xB0 + channel, 100, 0]);
+        send([0xB0 + channel, 101, 0]);
+        send([0xB0 + channel, 6, semitones]);
+    };
+    
+    var setPitchBend = function(koef: number, chan: number)
+    {
+        var intvalue = koef * (64 << 8) + (64 << 8);
+        intvalue = Math.min(64 << 9 - 1, Math.max(0, intvalue));
 
-    var noteOff = (tune: number,channel: number) =>
-        midiOutputList.forEach(o => o.send([NOTE_OFF - -channel, tune, 0x40]));
+        var [b1,b2] = [intvalue % 128, intvalue >> 8];
 
-    var setInstrument = (n: number, channel: number) =>
-        midiOutputList.forEach(o => o.send([0xC0 - -channel, n]));
-
-    var setVolume = (val: number, chan: number) =>
-        midiOutputList.forEach(o => o.send([0xB0 + +chan, 7, val]));
+        send([SET_PITCH_BEND + +chan, b1, b2]);
+    };
 
     var openedDict: {[channel: number]: {[semitone: number]: number}} = {};
     Kl.range(0,16).forEach(n => (openedDict[n] = {}));
 
-    /** @TODO: change arguments from "noteJs" to explicit "tune" and "channel" */
-
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */
-    var playNote = function(tune: number, channel: number)
+    var playNote = function(tune: number, channel: number, velocity: number)
     {
         if (+tune === 0) { // pauses in shmidusic... very stupid idea
             return () => {};
@@ -79,7 +96,7 @@ export function MidiDevice(): ISynth
             noteOff(tune, channel);
         }
 
-        noteOn(tune, channel);
+        noteOn(tune, channel, velocity);
 
         openedDict[channel][tune] |= 0;
         openedDict[channel][tune] += 1;
@@ -97,7 +114,9 @@ export function MidiDevice(): ISynth
     var consumeConfig = (instrumentDict: {[ch: number]: IShChannel}) =>
         Object.keys(instrumentDict).forEach(ch => {
             setInstrument(instrumentDict[+ch].preset, +ch);
-            setVolume(instrumentDict[+ch].volume, +ch);
+            setPitchBendRange(instrumentDict[+ch].pitchBendRange || 2, +ch);
+            setPitchBend(0, +ch);
+            setVolume(127, +ch);
         });
 
     return {
@@ -105,6 +124,11 @@ export function MidiDevice(): ISynth
         playNote: playNote,
         consumeConfig: consumeConfig,
         analyse: chords => {},
+        sendCustom: send,
+        setPitchBend: setPitchBend,
     };
 };
 
+interface IMidiDevice extends ISynth {
+    sendCustom: (bytes: number[]) => void,
+}

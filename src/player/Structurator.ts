@@ -4,6 +4,7 @@
 import {IGeneralStructure, IShChannel} from "../DataStructures";
 import {Kl} from "../Tools";
 import {IMidJsNote} from "../DataStructures";
+import {ISynth} from "../synths/ISynth";
 
 declare var Ns: {
     Libs:{
@@ -24,8 +25,9 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
 
     var chordByTime: {[t: number]: IMidJsNote[]} = {};
     var tempoByTime: {[t: number]: number} = {};
-    var presetByChannel: {[ch: number]: IShChannel} = Kl.range(0,16).map(i => 1 && {
-        preset: 0, volume: 127
+    var controlsByTime: {[t: number]: Array<(s: ISynth) => void>} = {};
+    var channels: {[ch: number]: IShChannel} = Kl.range(0,16).map(i => 1 && {
+        preset: 0, volume: 127, pitchBendRange: 2,
     });
     var pitchBends: [number, number, number, number][] = [];
     var loopStart: number = null;
@@ -34,6 +36,7 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
     var unknownControlChanges: [number, number, number][] = [];
 
     var openNotes: [ticks_t, velocity_t][][] = Kl.range(0,16).map(i => []);
+    var pitchBendRangeA = false, pitchBendRangeB = false;
 
     var handleChannelEvent = (time: ticks_t, event: ISMFmidiEvent, trackIdx: number) =>
     {
@@ -61,12 +64,16 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
         // http://www.nortonmusic.com/midi_cc.html
         var controlHandlers: {[n: number]: (param: number) => void} = {
             0: (p) => {}, // bank select
-            7: (p) => presetByChannel[ch].volume = p,
+            6: (semitones) => pitchBendRangeB && pitchBendRangeB
+                    && (channels[ch].pitchBendRange = semitones),
+            7: (p) => {}, // volume - TODO:
             10: (p) => {}, // pan select
             32: (p) => {}, // bank select 2
             37: (p) => {}, // Portamento time
             
             91: (p) => {}, // Undefined on/off
+            100: (p) => pitchBendRangeA = (+p === 0), // continue multi-message event (RPN)
+            101: (p) => pitchBendRangeB = (+p === 0), // init multi-message event (RPN)
         };
 
         if ([8,9].includes(event.midiEventType)) {
@@ -75,14 +82,25 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
             handleNote(event.parameter1, velocity);
         } else if (+event.midiEventType === 12) {
             // program change
-            presetByChannel[event.midiChannel].preset = event.parameter1;
+            channels[event.midiChannel].preset = event.parameter1;
+
         } else if (+event.midiEventType === 11) {
             // control change
+            var wasPitchBendRangeA = pitchBendRangeA;
+            var wasPitchBendRangeB = pitchBendRangeB;
+
             if (event.parameter1 in controlHandlers) {
                 controlHandlers[event.parameter1](event.parameter2);
             } else {
                 unknownControlChanges.push([time, event.parameter1, event.parameter2]);
             }
+
+            if (pitchBendRangeA === wasPitchBendRangeA &&
+                pitchBendRangeB === wasPitchBendRangeB
+            ) {
+                pitchBendRangeA = pitchBendRangeB = false;
+            }
+
         } else if (+event.midiEventType === 14) {
             // pitch bend
             pitchBends.push([time, ch, event.parameter1, event.parameter2]);
@@ -208,9 +226,10 @@ export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
                     velocity: n.velocity
                 })
             }),
+        controlEvents: controlsByTime,
         config: {
             tempo: getLongestTempo(),
-            channels: presetByChannel,
+            channels: channels,
             loopStart: ticksToAcademic(loopStart || 0),
             loopTimes: loopStart !== null ? 1 : 0,
         },

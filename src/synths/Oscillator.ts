@@ -119,5 +119,6 @@ export function Oscillator(audioCtx: AudioContext): ISynth
         playNote: playNote,
         consumeConfig: consumeConfig,
         analyse: chords => {},
+        setPitchBend: (koef,chan) => {}, // TODO: implement
     };
 };

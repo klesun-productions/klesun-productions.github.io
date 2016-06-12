@@ -13,6 +13,17 @@ import {Kl} from "../Tools";
 import {Player} from "../Player";
 import {Midiator} from "../player/Midiator";
 
+// following constants represent the X in bits of midi message
+// XXXX???? ???????? ????????
+
+// TODO: move to some separate definitions class, since it is also used in MidiDevice.ts
+
+const NOTE_OFF = 0x08;
+const NOTE_ON = 0x09;
+
+// and channel number is
+// ????XXXX ???????? ????????
+
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
 
@@ -78,10 +89,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         $select.val(chan.instrument);
 
         var onchange = () => synth.consumeConfig({
-            [chan.channelNumber]: {
-                preset: $select.val(),
-                volume: 127
-            }
+            [chan.channelNumber]: {preset: $select.val(),}
         });
         onchange();
 
@@ -163,7 +171,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
                     Kl.for(config, (k, v) =>
                         $(configCont).find('> .holder.' + k).val(v));
 
-                    redrawChannels(s.staffConfig.channelList);
+                    redrawChannels(s.staffConfig.channelList || []);
                     synth.analyse(s.chordList);
 
                     s.chordList
@@ -265,18 +273,28 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-    var handleMidiEvent = function (message: MIDIMessageEvent) {
-        var eventType = // bit mask: "100X YYYY" -> x => noteOn: yes/no | YYYY => channelNumber
-            (message.data[0] === 144) ? 'noteOn' :
-            (message.data[0] === 128) ? 'noteOff' :
-                'unknown' + message.data[0];
+    var handleMidiEvent = function (message: MIDIMessageEvent)
+    {
+        var typeHandlers: {[type: number]: (b1: number, b2: number) => void} = {
+            // TODO: with this
+            14: (b1, b2) => console.log('Pitch Bend', ((b2 << 8) + b1 - (64 << 8)) / ((64 << 8))),
+            9: (b1,b2) => console.log('Note Off', b1),
+        };
+        
+        var midiEventType = message.data[0] >> 4;
+        var channel = message.data[0] & 0x0F;
 
-        var tune = message.data[1];
-        var velocity = message.data[2];
-        console.log('midi event tune: ' + tune + '; velocity: ' + velocity + '; type: ' + eventType, message);
+        if (midiEventType === NOTE_ON && message.data[2] > 0) {
+            var tune = message.data[1];
+            var velocity = message.data[2];
 
-        if (eventType === 'noteOn' && velocity > 0) {
+            console.log('Note On:', tune, velocity / 127);
+
             handleNoteOn(tune, message.receivedTime);
+        } else {
+            midiEventType in typeHandlers
+                ? typeHandlers[midiEventType](message.data[1], message.data[2])
+                : console.log('channel: ', channel, 'eventType: ', midiEventType, ' unknown midi event: ', message);
         }
     };
 

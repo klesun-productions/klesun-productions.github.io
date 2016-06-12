@@ -20,8 +20,9 @@ export function Switch(
 {
     var audioCtx = Kl.audioCtx;
 
-    var channels: {[c: number]: IShChannel} = Kl.range(0,16).map(i =>
-        1 && {preset: 0, volume: 127});
+    var channels: {[c: number]: IShChannel} = Kl.range(0,16).map(i => 1 && {preset: 0});
+    
+    var pitchBendByChannel: {[c: number]: number} = Kl.range(0,16).map(i => 0);
 
     var synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(audioCtx),
@@ -31,16 +32,19 @@ export function Switch(
         GeneralUser: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/generaluser/'),
     };
 
-    var changeSynth = function() {
-        synths[$(dropdownEl).val()].init($(controlEl));
-        synths[$(dropdownEl).val()].consumeConfig(channels);
+    var initSynth = function(choosen: ISynth)
+    {
+        choosen.init($(controlEl));
+        choosen.consumeConfig(channels);
+
+        Kl.fori(pitchBendByChannel, (chan,koef) => choosen.setPitchBend(koef, chan));
     };
 
     $(dropdownEl).empty();
     Object.keys(synths).forEach(s => $(dropdownEl)
         .append($('<option></option>').val(s).html(s)));
 
-    $(dropdownEl).val('FluidSynth3').change(_ => changeSynth()).trigger('change');
+    $(dropdownEl).val('FluidSynth3').change(_ => initSynth(synths[$(dropdownEl).val()])).trigger('change');
 
     var playNote = function(sem: number, chan: number, volumeFactor: number, chordIndex: number)
     {
@@ -66,10 +70,14 @@ export function Switch(
 
     return {
         playNote: playNote,
-        consumeConfig: (config: {[c: number]: IShChannel}) => {
+        consumeConfig: (config) => {
             channels = config;
             presetListControl.update(config);
-            synths[$(dropdownEl).val()].consumeConfig(config)
+            synths[$(dropdownEl).val()].consumeConfig(config);
+        },
+        setPitchBend: (koef, chan) => {
+            pitchBendByChannel[chan] = koef;
+            synths[$(dropdownEl).val()].setPitchBend(koef, chan);
         },
         init: () => {},
         analyse: chords => synths[$(dropdownEl).val()].analyse(chords),

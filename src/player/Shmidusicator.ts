@@ -130,11 +130,10 @@ export default class Shmidusicator
             .filter(e => e.channelNumber < 16)
             .forEach((e) => (instrumentDict[e.channelNumber] = {
                 preset: e.instrument,
-                volume: e.volume,
             }));
 
         Kl.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {
-            preset: 0, volume: 128,
+            preset: 0,
         }));
 
         var chordList = staff['chordList'];
@@ -150,6 +149,7 @@ export default class Shmidusicator
 
         return {
             chordList: chordList,
+            controlEvents: [],
             config: {
                 tempo: staff.staffConfig.tempo,
                 channels: instrumentDict,

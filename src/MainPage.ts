@@ -78,16 +78,11 @@ export default function MainPage(mainCont: HTMLDivElement)
                 () => playRandom({fileName: fileName})));
     };
 
-    const shortenPath = (p: string) =>
-        p.startsWith('touhou')
-            ? p
-            : p.split('/').pop();
-
     const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement
     {
         var result = document.createElement('a');
         result.setAttribute('href', 'http://shmidusic.lv/midiCollection/' + row.rawFileName);
-        result.innerHTML = shortenPath(path + '').replace(/[_\/]/g, ' ');
+        result.innerHTML = (path + '').replace(/[_\/]/g, ' ');
 
         return result;
     };

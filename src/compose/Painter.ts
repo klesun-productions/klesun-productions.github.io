@@ -353,6 +353,7 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
         consumeConfig: () => {},
         init: () => {},
         analyse: () => {},
+        setPitchBend: (koef,chan) => {},
     };
 };
 

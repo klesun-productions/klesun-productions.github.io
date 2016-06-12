@@ -39,7 +39,7 @@ export interface IChannel {
 
 export interface IShChannel {
     preset: number,
-    volume: number,
+    pitchBendRange?: number, // "2" if not present
 };
 
 // output of github.com/klesun/shmidusic
@@ -87,6 +87,7 @@ export interface IMidJsNote {
 
 export interface IGeneralStructure {
     chordList: IShmidusicChord[],
+    controlEvents: {[time: number]: Array<(s: ISynth) => void>},
     config: {
         tempo: number,
         loopStart: number,
@@ -105,6 +106,7 @@ export interface IGeneralStructure {
 export interface IAdaptedSmf {
     tempo: number,
     presetByChannel: {[chan: number]: number},
+    loopStart: number,
     // time - absolute, float in academic 4/4 tacts,
     // like 5/4 or 2 or 3/7 or 47/2
     eventSequence: {[time: number]: Array<(s: ISynth) => [number, () => void]>},

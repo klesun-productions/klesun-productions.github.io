@@ -12,14 +12,16 @@ export default function UnfairRandom(songList: ISmfFile[])
     /** @TODO: write some tester. I'm absolutely unsure whether it does what you think */
 
     var weightRules: Array<[number, (song: ISmfFile) => boolean]> = [
-        [0.2, (song) => song.rawFileName.startsWith('random_good_stuff/notre_dame/')],
-        [0.1, (song) => song.rawFileName.startsWith('random_good_stuff/monkey_island/')],
-        [0.1, (song) => song.rawFileName.startsWith('touhoumidi.altervista.org/') &&
-            !song.rawFileName.startsWith('touhoumidi.altervista.org/th6') &&
-            !song.rawFileName.startsWith('touhoumidi.altervista.org/th7') &&
-            !song.rawFileName.startsWith('touhoumidi.altervista.org/th8') &&
-            !song.rawFileName.startsWith('touhoumidi.altervista.org/th11')],
-        [0.05, (song) => song.score === 'c7'],
+        [0.3, (song) => song.rawFileName.startsWith('random/notre_dame/')],
+        [0.3, (song) => song.rawFileName.startsWith('random/monkey_island/')],
+        [0.3, (song) => song.rawFileName.startsWith('touhou') &&
+            !song.rawFileName.startsWith('touhou/06_eosd') &&
+            !song.rawFileName.startsWith('touhou/07_pcb') &&
+            !song.rawFileName.startsWith('touhou/08_in') &&
+            !song.rawFileName.startsWith('touhou/11_sa') &&
+            !song.rawFileName.startsWith('touhou/12_ufo') &&
+            true],
+        [0.1, (song) => song.score >= 'c7'],
         [1, (song) => true], // default
     ];
 

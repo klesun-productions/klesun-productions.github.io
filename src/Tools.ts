@@ -2,7 +2,7 @@
 
 import {IGeneralStructure} from "./DataStructures";
 import {Structurator} from "./player/Structurator";
-import {Cls} from "./Ns";
+import {Cls} from "./Cls";  
 
 var Static: any = {};
 

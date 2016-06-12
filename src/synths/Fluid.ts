@@ -5,7 +5,7 @@ import {SoundFontAdapter, IFetchedSample, EStereoPan} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
 import {Kl} from "../Tools";
 import {ISynth} from "./ISynth";
-import {Cls} from "../Ns";
+import {Cls} from "../Cls";
 
 // we play sample audio files on "playNote()"
 
@@ -22,8 +22,9 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
         return node;
     });
 
-    var channels = Kl.range(0,16).map(i =>
-        1 && {preset: 0, volume: 127});
+    var channels = Kl.range(0,16).map(i => 1 && {preset: 0});
+
+    var sounding: {[chan: number]: Array<AudioBufferSourceNode>} = [];
 
     var MAX_VOLUME = 0.3;
 
@@ -34,9 +35,8 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
     var playSample = function(fetchedSample: IFetchedSample, volumeFactor: number, parentNode: GainNode): () => void
     {
         var gainNode = audioCtx.createGain();
-        gainNode.gain.value = MAX_VOLUME * volumeFactor
-            * fetchedSample.volumeKoef
-            ;
+        var gainValue = MAX_VOLUME * volumeFactor * fetchedSample.volumeKoef;
+        gainNode.gain.value = gainValue;
         gainNode.connect(parentNode);
 
         var sample = audioCtx.createBufferSource();
@@ -60,7 +60,18 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
 
         sample.start();
 
-        return () => sample.stop();
+        return () => {
+            var iterations = 10;
+            var fade = (i: number) => {
+                if (i >= 0) {
+                    gainNode.gain.value = gainValue * (i / iterations);
+                    setTimeout(() => fade(i - 1), fetchedSample.fadeMillis / iterations);
+                } else {
+                    sample.stop();
+                }
+            };
+            fade(iterations - 1);
+        };
     };
 
     var playNote = function(semitone: number, channel: number, velocity: number)
@@ -73,7 +84,7 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
             var volumeFactor = velocity / 127;
 
             /** @debug */
-            volumeFactor *= +channel === 9 ? 2 : 1;
+            volumeFactor *= +channel === 9 ? 2.5 : 1;
 
             return playSample(sample, volumeFactor, channelNodes[channel]);
         } else {
@@ -117,5 +128,6 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
         consumeConfig: consumeConfig,
         analyse: analyse,
         init : init,
+        setPitchBend: (koef, chan) => {}, // TODO: implement
     };
 };
