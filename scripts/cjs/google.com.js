@@ -26,6 +26,9 @@ var blacklist = [
     'loveread.ec',
     'knijky.ru',
     'litmir.me', // "Конец ознакомительного фрагмента."
+    'lifeinbooks.net/', // "Конец ознакомительного фрагмента."
+    'coollib.com/', // читать бесплатно можно только на сайте
+    'fantasy-worlds.org', // платно
     
     // disgusting ads
     'inpearls.ru',

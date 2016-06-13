@@ -5,13 +5,13 @@ import {IPainter} from "./Painter";
 import {IShNote} from "../DataStructures";
 import {IChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
-import Shmidusicator from "../player/Shmidusicator";
+import Shmidusicator from "./Shmidusicator";
 import {IShmidusicStructure} from "../DataStructures";
 import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
 import {Kl} from "../Tools";
-import {Player} from "../Player";
-import {Midiator} from "../player/Midiator";
+import {Player} from "../player/Player";
+import {Midiator} from "./Midiator";
 
 // following constants represent the X in bits of midi message
 // XXXX???? ???????? ????????

@@ -9,8 +9,8 @@ import {ISmfFile} from "./DataStructures";
 import {TableGenerator} from "./TableGenerator";
 import {ColModel} from "./TableGenerator";
 import {Kl} from "./Tools";
-import PianoLayout from "./PianoLayout";
-import {Player} from "./Player";
+import PianoLayout from "./views/PianoLayout";
+import {Player} from "./player/Player";
 import {Switch} from "./synths/Switch";
 import {PresetList} from "./views/PresetList";
 type dict<Tx> = {[k: string]: Tx};
@@ -127,45 +127,6 @@ export default function MainPage(mainCont: HTMLDivElement)
         performExternal('get_ichigos_midi_names', {}, callback)
     };
 
-    const playShmidusicFile = function(file: {sheetMusic: IShmidusicStructure, fileName: string})
-    {
-        var song = file['sheetMusic'],
-            name = file['fileName'];
-
-        console.log('Playing shmidusic: ' + name);
-
-        player.playShmidusic(song, name, () => {});
-        sheetMusicPainter.draw(song);
-    };
-
-    const playDemo = function () {
-        var mineList: any = [];
-        var index = Math.floor(Math.random() * mineList.length);
-        playShmidusicFile(mineList[index]);
-    };
-
-    const initMyMusicList = function ()
-    {
-        var playButtonFormatter = function (cell: string, row: any) {
-            return $('<input type="button" value="Play!"/>')
-                .click((_) => playShmidusicFile(row));
-        };
-
-        /** @TODO: fetch it with a separate request */
-        var rowList: any[] = [];
-        rowList.sort((a,b) => a.fileName.localeCompare(b.fileName)); // sorting lexicographically
-
-        var colModel: ColModel<any> = [
-            {'name': 'fileName', 'caption': 'File Name', formatter: s => (s + '').split('_').join(' ')},
-            {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
-        ];
-
-        var caption = 'My music';
-
-        var table = TableGenerator().generateTable(colModel, rowList, caption);
-        $(mainCont).find('.myMusicCont').append(table); // defined in index.html
-    };
-
     const handleGoogleSignIn = function(googleUser: any, $infoCont: JQuery)
     {
         $infoCont.find('.g-signin2').css('display', 'none');
@@ -187,8 +148,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
     return {
         initIchigosMidiList: initIchigosMidiList,
-        // initMyMusicList: initMyMusicList,
-        playDemo: playDemo,
+        // initMyMusicList: initMyMusicList, 
         playRandom: () => playRandom({}),
         handleGoogleSignIn: handleGoogleSignIn,
     };

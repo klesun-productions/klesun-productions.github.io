@@ -5,9 +5,9 @@
 // to avoid passing 4 arguments to the playAt() method when we need
 // only one - index
 
-import {IGeneralStructure} from "./DataStructures";
-import {IShNote} from "./DataStructures";
-import {Kl} from "./Tools";
+import {IGeneralStructure} from "../DataStructures";
+import {IShNote} from "../DataStructures";
+import {Kl} from "../Tools";
 
 type millis_t = number;
 

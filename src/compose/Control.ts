@@ -1,11 +1,11 @@
 /// <reference path="../references.ts" />
-/// <reference path="../player/Shmidusicator.ts" />
+/// <reference path="./Shmidusicator.ts" />
 
 // this object provides some shortcut methods
 // to edit content of Painter.ts
 
 import * as Ds from "../DataStructures";
-import Shmidusicator from "../player/Shmidusicator";
+import Shmidusicator from "./Shmidusicator";
 import {ICanvasProvider} from "./Painter";
 import {TactMeasurer} from "./Painter";
 

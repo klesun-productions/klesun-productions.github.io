@@ -7,7 +7,7 @@ import {MidiDevice} from "./MidiDevice";
 import {Fluid} from "./Fluid";
 import {ISynth} from "./ISynth";
 import {Kl} from "../Tools";
-import {IPianoLayout} from "../PianoLayout";
+import {IPianoLayout} from "../views/PianoLayout";
 import {IChannel, IShChannel} from "../DataStructures";
 import {IPresetList} from "../views/PresetList";
 

@@ -1,16 +1,14 @@
-/// <reference path="references.ts" />
+/// <reference path="../references.ts" />
 
 // This class destiny is to read shmidusic json structure
 // and send events to MIDI.js and PianoLayoutPanel
 
-import {IShNote} from "./DataStructures";
-import {IGeneralStructure} from "./DataStructures";
-import {IShmidusicStructure} from "./DataStructures";
-import Shmidusicator from "./player/Shmidusicator";
+import {IShNote} from "../DataStructures";
+import {IGeneralStructure} from "../DataStructures";
 import {IPlayback} from "./Playback";
 import {Playback} from "./Playback";
-import PlaybackControl from "./views/PlaybackControl";
-import {ISynth} from "./synths/ISynth";
+import PlaybackControl from "../views/PlaybackControl";
+import {ISynth} from "../synths/ISynth";
 
 type millis_t = number;
 export interface IFileInfo {
@@ -121,16 +119,6 @@ export function Player($controlCont: JQuery)
 
         window.onbeforeunload = playback.pause;
     };
-
-    /** @param shmidusicJson - json in shmidusic project format */
-    var playShmidusic = function (shmidusicJson: IShmidusicStructure, fileName: string, whenFinished: () => void) {
-
-        whenFinished = whenFinished || (() => {});
-        fileName = fileName || 'noNameFile';
-
-        var adapted = Shmidusicator.generalizeShmidusic(shmidusicJson);
-        playSheetMusic(adapted, {fileName: fileName, score: 'Ne'}, whenFinished, 0);
-    };
     
     var stop = () => {
         currentPlayback && currentPlayback.pause();
@@ -142,7 +130,6 @@ export function Player($controlCont: JQuery)
     window.onbeforeunload = () => stop();
 
     return {
-        playShmidusic: playShmidusic,
         playSheetMusic: playSheetMusic,
         addNoteHandler: (h: ISynth) => noteHandlers.push(h),
         stop: stop,

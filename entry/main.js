@@ -9,7 +9,6 @@ requirejs(wanted, function(MainPage)
 
     mainPage.initIchigosMidiList();
     // mainPage.initMyMusicList();
-    $('#startDemoButton').click(mainPage.playDemo);
     $('#playRandomButton').click(mainPage.playRandom);
 
     onGoogleSignIn = u => mainPage.handleGoogleSignIn(u, $('.userInfoCont'));

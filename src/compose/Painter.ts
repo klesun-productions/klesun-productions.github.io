@@ -1,6 +1,6 @@
 /// <reference path="../references.ts" />
 
-import Shmidusicator from "../player/Shmidusicator";
+import Shmidusicator from "./Shmidusicator";
 import * as Ds from "../DataStructures";
 import {IControl} from "./Control";
 import {Control} from "./Control";

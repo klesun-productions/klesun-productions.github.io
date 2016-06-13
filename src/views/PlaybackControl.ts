@@ -2,8 +2,8 @@
 
 import {IGeneralStructure} from "../DataStructures";
 import {Kl} from "../Tools";
-import {IPlayback} from "../Playback";
-import {IFileInfo} from "../Player";
+import {IPlayback} from "../player/Playback";
+import {IFileInfo} from "../player/Player";
 
 // This class generates jquery dom with current song info
 // and some controlls, particularly - timeline slider

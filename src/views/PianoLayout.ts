@@ -1,6 +1,5 @@
 
-import {Kl} from "./Tools";
-import {IShNote} from "./DataStructures";
+import {Kl} from "../Tools";
 
 // draws a piano layout on a canvas
 // and highlights notes when asked
