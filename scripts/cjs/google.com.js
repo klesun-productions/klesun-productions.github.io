@@ -1,26 +1,13 @@
-
-/**
- * Shuffles array in place.
- * @param {Array} a items The array containing the items.
- */
-var shuffle = function(a) {
-    var j, x, i;
-    for (i = a.length; i; i -= 1) {
-        j = Math.floor(Math.random() * i);
-        x = a[i - 1];
-        a[i - 1] = a[j];
-        a[j] = x;
-    }
-};
+var $$ = s => Array.from(document.querySelectorAll(s));
 
 var blacklist = [
     // mp3 hosts with ads... hate them!
     'junglesvibes1.net',
     'daimp3.org',
-    
+
     // misc
     'w3schools.com',
-    
+
     // got books, but they are split into pages... hate them!
     'librebook.ru',
     'loveread.ec',
@@ -29,32 +16,35 @@ var blacklist = [
     'lifeinbooks.net/', // "Конец ознакомительного фрагмента."
     'coollib.com/', // читать бесплатно можно только на сайте
     'fantasy-worlds.org', // платно
-    
+
     // disgusting ads
     'inpearls.ru',
-    
+
     // paying service, seriously?!
     'booklistonline.com',
 ];
 
+var shuffle = arr => arr.forEach((_,i,__,
+    randIdx = Math.random() * arr.length | 0) =>
+        [arr[i], arr[randIdx]] = [arr[randIdx], arr[i]]);
+
 shuffle(blacklist);
 
-var redudantButtons = document.querySelectorAll('input[type="submit"]');
-for (var i = 0; i < redudantButtons.length; ++i) {
-    var btn = redudantButtons[i];
-    btn.style.display = 'none';
-}
-
-document.querySelector('#lst-ib').onkeydown = function(e)
+$$('#lst-ib')[0].onkeydown = function(e)
 {
     if (e.keyCode === 13) {
-        document.querySelector('#lst-ib').value += ' ' + blacklist.map(d => '-site:' + d).join(' ');
+        var was = $$('#lst-ib')[0].value;
+        $$('#lst-ib')[0].value += ' ' + blacklist.map(d => '-site:' + d).join(' ');
+        setTimeout(() => $$('#lst-ib')[0].value = was, 4);
     }
 };
 
-setInterval(() => {
-    document.getElementById('tads').style.display = 'none';
-    document.getElementById('tvcap').style.display = 'none';
-}, 500);
+var hideAds = function()
+{
+    var css = document.createElement("style");
+    css.type = "text/css";
+    css.innerHTML = '#lga, #tads, #tvcap, input[type="submit"] { display: none !important;  }';
+    document.body.appendChild(css);
+};
 
-document.querySelector('#lga').style.display = 'none';
+hideAds();
