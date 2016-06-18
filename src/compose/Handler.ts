@@ -174,6 +174,8 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         69: (e: KeyboardEvent) => e.ctrlKey && Kl.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
     };
 
+    // TODO: Key Code constants!
+    // TODO: change to tuple list to allow multiple mappings per action
     var focusedHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
         // space
         32: play,
@@ -205,12 +207,20 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         16: () => playNotes(control.pointNextNote()),
         // opening square bracket
         219: () => control.multiplyLength(0.5),
+        // num-pad minus
+        109: () => control.multiplyLength(0.5),
         // closing square bracket
         221: () => control.multiplyLength(2),
+        // num-pad plus
+        107: () => control.multiplyLength(2),
         // dot
         190: () => control.multiplyLength(1.5),
+        // num-pad star
+        106: () => control.multiplyLength(1.5),
         // comma
         188: () => control.multiplyLength(2/3),
+        // num-pad slash
+        111: () => control.multiplyLength(2/3),
         // enter
         13: () => playNotes(painter.getFocusedNotes()),
         // pause

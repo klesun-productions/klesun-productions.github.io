@@ -18,9 +18,88 @@
 </span>
 
 <div id="sheetMusicDiv"></div>
-<div id="presetListBlock"></div>
+
+<div style="display: flex;">
+    <div id="presetListBlock" style="float: left"></div>
+    <div style="flex: 1; margin-left: 20px; margin-top: 10px; background-color: #f8f8f8;">
+        <div class="manualCont">
+            <div style="width: 400px">
+                <table>
+                    <thead>
+                        <th>To</th><th>Press</th>
+                    </thead>
+                    <tbody>
+                        <tr><td>Enter Chords</td><td>Keys On Your Midi Device</td></tr>
+                        <tr><td>Navigate</td><td>Arrow Keys / Home / End</td></tr>
+                        <tr><td>Play</td><td>Space</td></tr>
+                        <tr><td>Save Song</td><td>Ctrl-S</td></tr>
+                        <tr><td>Open Song</td><td>Ctrl-O</td></tr>
+                        <tr><td>Save Song As .mid File (unopenable)</td><td>Ctrl-E</td></tr>
+                        <tr><td>Select Next Note</td><td>Shift</td></tr>
+                        <tr><td>Add Pause</td>
+                            <td>Pause Break <a class="comment">(Works Same As Adding Note From Midi Device)</a></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="manualCont" style="flex: 1">
+                <table>
+                    <thead>
+                        <tr><th colspan="2">Change Note In Chord (If Not Selected - Change Whole Chord)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Increase Note Length Twice</td>
+                            <td>[ <a class="comment">(Opening Square Bracket)</a> <a class="or">or</a> + <a class="comment">(Num Pad Plus)</a></td></tr>
+                        <tr><td>Decrease Note Length Twice</td>
+                            <td>] <a class="comment">(Closing Square Bracket)</a> <a class="or">or</a> - <a class="comment">(Num Pad Minus)</a></td></tr>
+                        <tr><td>Put Dot / Undo Triplet</td>
+                            <td>. <a class="comment">(Generic Dot)</a> <a class="or">or</a> * <a class="comment">(Num Pad Asterisk)</a></td></tr>
+                        <tr><td>Remove Dot / Make Triplet</td>
+                            <td>, <a class="comment">(Generic Comma)</a> <a class="or">or</a> / <a class="comment">(Num Pad Slash)</a></td></tr>
+
+                        <tr><td>Delete Note</td><td>Delete / Backspace</td></tr>
+                        <tr><td>Change Note Channel (Use Preset Table To Assign Other Instruments Than Piano To Channel Numbers)</td>
+                            <td>Numbers 0..9 On Numpad</td></tr>
+                        <tr><td>Append New Note To Chord</td>
+                            <td>Key On Midi Device (Works When Any Note In Chord Is Selected)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br clear="all"/>
+        Note: may be outdated. For most recent key mapping see
+        <a href="https://github.com/klesun/shmidusic.lv/blob/master/src/compose/Handler.ts#LC177">
+            Handler.ts::focusedHandlers
+        </a>
+    </div>
+</div>
 
 <style>
+    .manualCont {
+        display: flex;
+        background-color: #f8fff8;
+    }
+    .manualCont table {
+        border-collapse: collapse;
+        font-size: 11px;
+    }
+    .manualCont table th { background-color: #eef; }
+    .manualCont table td,th {
+        border: solid 1px green;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .manualCont table td:nth-child(odd) {
+        max-width: 275px;
+    }
+    .manualCont table td:nth-child(even) { font-weight: bold; }
+    .manualCont table td:nth-child(even) a.comment {
+        font-weight: normal;
+        color: #a00;
+    }
+    .manualCont table td:nth-child(even) a.or {
+        font-weight: normal;
+        color: #0a0;
+    }
 
     /** @TODO: export this to js somehow */
 
@@ -61,7 +140,9 @@
         outline: none;
     }
 
-    #presetListBlock { margin: 2px; }
+    #presetListBlock {
+        margin: 2px;
+    }
     #presetListBlock table { border-collapse: collapse; }
     #presetListBlock td {
         background-color: #f8f8f8;
