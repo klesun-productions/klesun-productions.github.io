@@ -12,6 +12,9 @@ import ShReflect from "../Reflect";
 import {Kl} from "../Tools";
 import {Player} from "../player/Player";
 import {Midiator} from "./Midiator";
+import {Switch} from "../synths/Switch";
+import {PresetList} from "../views/PresetList";
+import PianoLayout from "../views/PianoLayout";
 
 // following constants represent the X in bits of midi message
 // XXXX???? ???????? ????????
@@ -27,10 +30,20 @@ const NOTE_ON = 0x09;
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
 
+const $$ = (s: string) => Array.from(document.querySelectorAll(s));
+
 export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
+    const channelListControl = PresetList(<HTMLDivElement>$$('#presetListBlock')[0]);
+
+    const synthSwitch = Switch(
+        <HTMLSelectElement>$$('#synthDropdown')[0],
+        <HTMLDivElement>$$('#synthControl')[0],
+        channelListControl,
+        PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0])
+    );
+
     var lastChordOn = 0;
-    var synth = Fluid(new AudioContext(), '/out/sf2parsed/fluid/');
     const player = Player($(''));
 
     var control = painter.getControl();
@@ -40,12 +53,12 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         playback = false;
     };
 
-    player.addNoteHandler(synth);
+    player.addNoteHandler(synthSwitch);
     player.addNoteHandler(painter);
 
     // well... i suppose something is wrong
     var oneShotPlayer = Player($(''));
-    oneShotPlayer.addNoteHandler(synth);
+    oneShotPlayer.addNoteHandler(synthSwitch);
 
     var playNotes = (noteList: IShNote[]) => { 
         oneShotPlayer.stop();
@@ -80,34 +93,9 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-    var makeChannelSpan = function(chan: IChannel): HTMLSpanElement
-    {
-        var $select = $('<select></select>');
-
-        Kl.instrumentNames.forEach((d,i) =>
-            $select.append($('<option></option>').val(i).html(i + ': ' + d)));
-        $select.val(chan.instrument);
-
-        var onchange = () => synth.consumeConfig({
-            [chan.channelNumber]: {preset: $select.val(),}
-        });
-        onchange();
-
-        return $('<span></span>').attr('data-channel', chan.channelNumber)
-            .append(chan.channelNumber + '')
-            .append($select.change(onchange))
-            [0];
-    };
-
-    var collectChannelList = () => $(configCont).find('.channelListTable span').toArray()
-        .map(c => 1 && {
-            channelNumber: +$(c).attr('data-channel'),
-            instrument: +$(c).find('select').val() || 0
-        });
-
     var collectConfig = () => 1 && {
         tempo: $(configCont).find('.holder.tempo').val(),
-        channelList: collectChannelList(),
+        channelList: channelListControl.collectData(),
         loopStart: $(configCont).find('.holder.loopStart').val(),
         loopTimes: $(configCont).find('.holder.loopTimes').val(),
     };
@@ -130,25 +118,6 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         player.playSheetMusic(adapted, {}, playbackFinished, index);
     };
 
-    var redrawChannels = function(partial: IChannel[]): void
-    {
-        var channels: IChannel[] = [];
-
-        partial.forEach(c => channels[c.channelNumber] = 1 && {
-            channelNumber: c.channelNumber,
-            instrument: c.instrument || 0,
-        });
-
-        Kl.range(0,16).forEach(i => channels[i] || (channels[i] = {
-            channelNumber: i, instrument: 0
-        }));
-
-        var $channelCont = $(configCont).find('.channelListTable').empty();
-        channels
-            .map(makeChannelSpan)
-            .forEach(el => $channelCont.append(el));
-    };
-
     var openSong = function(song: IShmidusicStructure): void
     {
         painter.getControl().clear();
@@ -159,9 +128,10 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
                 Kl.for(config, (k, v) =>
                     $(configCont).find('> .holder.' + k).val(v));
 
-                redrawChannels(s.staffConfig.channelList || []);
+                synthSwitch.consumeConfig((s.staffConfig.channelList || [])
+                    .map(c => 1 && { preset: c.instrument }));
+                synthSwitch.analyse(s.chordList);
 
-                synth.analyse(s.chordList);
                 s.chordList.forEach(painter.getControl().addChord);
             });
 
@@ -348,7 +318,6 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     window.onhashchange = handleHashChange;
     handleHashChange();
     hangMidiHandlers();
-    redrawChannels([]);
 
     return {
         hangKeyboardHandlers: hangKeyboardHandlers,

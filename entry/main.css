@@ -131,10 +131,6 @@
         font-size: 10px;
         padding: 0px;
     }
-    #instrumentInfoBlock .notUsed {
-        background-color: darkgrey;
-        color: white;
-    }
     #instrumentInfoBlock input[type="checkbox"] {
         margin:0;
         margin-top: 1px;
@@ -242,4 +238,8 @@
         overflow-x: hidden;
         min-height: 120px;
         max-height: 360px; /* when note oval radius is 3px, this will be exactly 3 systems (360 / (3 * 40) = 3.0) */
+    }
+
+    table {
+        width:100%;
     }

@@ -1,6 +1,6 @@
 /// <reference path="../references.ts" />
 
-import {IShChannel} from "../DataStructures";
+import {IShChannel, IChannel} from "../DataStructures";
 import {Kl} from "../Tools";
 import {TableGenerator} from "../TableGenerator";
 
@@ -9,7 +9,7 @@ import {TableGenerator} from "../TableGenerator";
 
 type cons_conf_t = {(presByChan: {[ch: number]: IShChannel}): void};
 
-export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
+export function PresetList(cont: HTMLDivElement): IPresetList
 {
     var enabledChannels = new Set(Kl.range(0,16));
     var presetChanged: cons_conf_t = (_) => () => {};
@@ -36,7 +36,7 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
 
     var generateTable = function()
     {
-        $(instrumentInfoBlock).empty();
+        $(cont).empty();
 
         var colorize = (channel: number) => $('<div></div>')
             .append(channel + '')
@@ -44,10 +44,20 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
             .css('color', 'rgba(' + Kl.channelColors[channel].join(',') + ',1)');
 
         const makeMuteFlag = (channel: number) => $('<input type="checkbox" checked="checked"/>')
-            .click((e: any) => (e.target.checked
-                ? enabledChannels.add(channel)
-                : enabledChannels.delete(channel)
-            ));
+            .click((e: any) => {
+                if (e.target.checked) {
+                    enabledChannels.add(channel);
+
+                    $('body style.mutedChannelDeleteMe[data-channel="' + channel + '"]').remove();
+                } else {
+                    enabledChannels.delete(channel);
+
+                    // dirty, but so nice and simple...
+                    $('<style class="mutedChannelDeleteMe" data-channel="' + channel + '" type="text/css"> ' +
+                        'canvas.noteCanvas[data-channel="' + channel + '"] { opacity: 0.30;} ' +
+                    '</style>').appendTo('body');
+                }
+            });
 
         var colModel = [
             {name: 'channelCode', caption: '*', formatter: makeMuteFlag},
@@ -62,20 +72,31 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
 
         var $table = TableGenerator().generateTable(colModel, rows);
 
-        $(instrumentInfoBlock).append($table);
+        $(cont).append($table);
     };
 
-    var update = (instrByChannel: {[c: number]: IShChannel}) =>
+    const update = (instrByChannel: {[c: number]: IShChannel}) =>
     {
         enabledChannels = new Set(Kl.range(0,16));
-        $(instrumentInfoBlock).find('tr select').toArray()
+        $('body style.mutedChannelDeleteMe').remove();
+        $(cont).find('tr input[type="checkbox"]').prop('checked', true + '');
+
+        $(cont).find('tr select').toArray()
             .forEach((sel,ch) => $(sel).val(instrByChannel[ch].preset));
     };
 
-    var hangPresetChangeHandler = (cb: cons_conf_t) =>
+    const collectData = function(): IChannel[]
+    {
+        return $(cont).find('table tbody tr').toArray().map((tr,i) => 1 && {
+            instrument: $(tr).find('select').val(),
+            channelNumber: i,
+        });
+    };
+
+    const hangPresetChangeHandler = (cb: cons_conf_t) =>
     {
         presetChanged = cb;
-        $(instrumentInfoBlock).find('select').removeAttr('readonly');
+        $(cont).find('select').removeAttr('readonly');
     };
 
     generateTable();
@@ -84,6 +105,7 @@ export function PresetList(instrumentInfoBlock: HTMLDivElement): IPresetList
         update: update,
         enabledChannels: () => enabledChannels,
         hangPresetChangeHandler: hangPresetChangeHandler,
+        collectData: collectData,
     };
 };
 
@@ -91,4 +113,5 @@ export interface IPresetList {
     update: (instrByChannel: {[c: number]: IShChannel}) => void,
     enabledChannels: () => Set<number>,
     hangPresetChangeHandler: (cb: cons_conf_t) => void,
+    collectData: () => IChannel[],
 };

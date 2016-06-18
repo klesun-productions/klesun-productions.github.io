@@ -65,7 +65,11 @@ export default function MainPage(mainCont: HTMLDivElement)
     var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
 
     const playSMF = (song: IGeneralStructure) =>
+    {
+        synth.consumeConfig(song.config.channels);
+        synth.analyse(song.chordList);
         player.playSheetMusic(song, {}, () => {}, 0);
+    };
 
     const playStandardMidiFile = function(fileName: string)
     {
@@ -74,8 +78,12 @@ export default function MainPage(mainCont: HTMLDivElement)
         console.log('gonna play', fileName);
 
         Kl.fetchMidi('/midiCollection/' + fileName, (song: IGeneralStructure) =>
+        {
+            synth.consumeConfig(song.config.channels);
+            synth.analyse(song.chordList);
             player.playSheetMusic(song, {fileName: fileName},
-                () => playRandom({fileName: fileName})));
+                () => playRandom({fileName: fileName}));
+        });
     };
 
     const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement

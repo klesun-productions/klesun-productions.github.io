@@ -26,7 +26,7 @@ export function TableGenerator()
         chunkSize?: number,
         breakDuration?: number)
     {
-        var table = $('<table style="width:100%;" class="table" cellspacing="1"></table>');
+        var table = $('<table cellspacing="1"></table>');
 
         title && table.append(generateTitleRow(title));
         table.append(generateCaptionRow(colModel));
@@ -41,12 +41,12 @@ export function TableGenerator()
     };
 
     /** @argument colModel - [{"caption": str}, ...] */
-    function generateCaptionRow<Trow>(colModel: ColModel<Trow>): HTMLTableRowElement
+    function generateCaptionRow<Trow>(colModel: ColModel<Trow>): HTMLTableHeaderCellElement
     {
-        var row = $('<tr class="captionRow"></tr>');
-        colModel.forEach(m => row.append('<td><b>' + m.caption + '</b></td>'));
+        var $row = $('<tr class="captionRow"></tr>');
+        colModel.forEach(m => $row.append('<td><b>' + m.caption + '</b></td>'));
 
-        return <HTMLTableRowElement>row[0];
+        return <HTMLTableHeaderCellElement>$('<thead></thead>').append($row)[0];
     }
 
     function generateRow<Trow extends {[k: string]: any}>(colModel: ColModel<Trow>, row: Trow): HTMLTableRowElement

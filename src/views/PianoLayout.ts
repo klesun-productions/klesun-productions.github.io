@@ -151,6 +151,8 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
         setTimeout(() => { interrupt(); unhiglight(); }, 500);
     };
 
+    canvas.setAttribute('width', '' + (IVORY_COUNT * IVORY_WIDTH));
+    canvas.setAttribute('height', '' + IVORY_LENGTH);
     paintBase();
 
     return {

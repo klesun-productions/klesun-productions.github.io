@@ -39,6 +39,11 @@ $$('#lst-ib')[0].onkeydown = function(e)
     }
 };
 
+$$('#lst-ib')[0].value = $$('#lst-ib')[0].value
+    .split(' ')
+    .filter($w => $w[0] !== '-')
+    .join(' ');
+
 var hideAds = function()
 {
     var css = document.createElement("style");

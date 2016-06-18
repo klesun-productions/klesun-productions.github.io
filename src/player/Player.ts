@@ -91,11 +91,6 @@ export function Player($controlCont: JQuery)
         control.setFields(sheetMusic);
         control.setFileInfo(fileInfo);
 
-        noteHandlers.forEach(h => {
-            h.consumeConfig(sheetMusic.config.channels);
-            h.analyse(sheetMusic.chordList);
-        });
-
         var playback = currentPlayback = Playback(sheetMusic, playChord,
             whenFinished, control.getTempoFactor() || 1, stopSounding);
 
