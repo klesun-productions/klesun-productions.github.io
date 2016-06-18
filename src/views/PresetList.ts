@@ -81,8 +81,8 @@ export function PresetList(cont: HTMLDivElement): IPresetList
         $('body style.mutedChannelDeleteMe').remove();
         $(cont).find('tr input[type="checkbox"]').prop('checked', true + '');
 
-        $(cont).find('tr select').toArray()
-            .forEach((sel,ch) => $(sel).val(instrByChannel[ch].preset));
+        Kl.fori(instrByChannel, (i,ch) =>
+            $(cont).find('tr select').eq(i).val(ch.preset));
     };
 
     const collectData = function(): IChannel[]

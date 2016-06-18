@@ -326,6 +326,12 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     };
 
     window.onhashchange = handleHashChange;
+    $(document).keydown(function(e) {
+        if (e.which == 32) {
+            return false;
+        }
+    });
+
     handleHashChange();
     hangMidiHandlers();
 
