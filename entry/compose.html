@@ -13,7 +13,8 @@
                           onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
     </span>
     Synth: <select id="synthDropdown"></select>
-    <div id="synthControl"></div>
+    <span id="synthControl"></span>
+    <br clear="all"/>
     <canvas id="pianoCanvas"></canvas>
 </span>
 
@@ -74,6 +75,13 @@
 </div>
 
 <style>
+
+    #synthControl { background-color: #f8f8ff; }
+    #synthControl div {
+        background-color: #e8e8ff;
+        margin: 4px;
+    }
+
     .manualCont {
         display: flex;
         background-color: #f8fff8;
@@ -163,5 +171,10 @@
         padding: 0px;
         border: none;
     }
+
+    div.inlineBlock {
+        float: left;
+    }
+
 
 </style>

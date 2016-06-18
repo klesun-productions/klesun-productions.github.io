@@ -25,18 +25,22 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
 
     var firstInit = true;
     var midiOutputList: MIDIOutput[] = [];
+    var enabledOutputs: Set<number> = new Set([]);
 
     var midiAccessGranted = false;
     var whenAccessGranted: Array<() => void> = [];
 
     var send = (bytes: number[]) => {
-        var cb = () => midiOutputList.forEach(o => o.send(bytes));
+        var outputs = (bytes[0] & 0xF0) === NOTE_ON
+            ? Array.from(enabledOutputs).map(i => midiOutputList[i])
+            : midiOutputList;
+
+        var cb = () => outputs.forEach(o => o.send(bytes));
         if (midiAccessGranted) {
             cb();
         } else {
             whenAccessGranted.push(cb);
         }
-
     };
 
     var initControl = function($controlEl: JQuery)
@@ -47,6 +51,19 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
                 .append($('<input type="range" min="0" max="127" step="1"/>')
                     .addClass("smallSlider").val(volume)
                     .on("input change", (e: any) => (volume = e.target.value))));
+
+        midiOutputList.forEach((o,i) => {
+            $('<div class="inlineBlock"></div>')
+                .append(o.name)
+                .append($('<input type="checkbox"/>')
+                    .click((e: any) => e.target.checked
+                        ? enabledOutputs.add(i)
+                        : enabledOutputs.delete(i))
+                    .click())
+                .appendTo($controlEl);
+        });
+
+        $controlEl.append('<br clear="all"/>');
     };
 
     var init = function ($controlEl: JQuery)
@@ -60,8 +77,10 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
                 navigator.requestMIDIAccess().then(
                     ma => {
                         ma.outputs.forEach(o => midiOutputList.push(o));
+                        enabledOutputs = new Set(Kl.range(0, midiOutputList.length));
                         midiAccessGranted = true;
                         whenAccessGranted = whenAccessGranted.filter(cb => cb() && false);
+                        initControl($controlEl);
                     },
                     e => console.log("Failed To Access Midi, Even Though Your Browser Has The Method...", e)
                 );
@@ -69,8 +88,6 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
                 alert('Your browser does not support midi Devices. Pity, you could listen to music on your mega-device if you used chrome =P');
             }
         }
-
-        initControl($controlEl);
     };
 
     // 127 = max velocity
