@@ -25,7 +25,19 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
 
     var firstInit = true;
     var midiOutputList: MIDIOutput[] = [];
-    var send = (bytes: number[]) => midiOutputList.forEach(o => o.send(bytes));
+
+    var midiAccessGranted = false;
+    var whenAccessGranted: Array<() => void> = [];
+
+    var send = (bytes: number[]) => {
+        var cb = () => midiOutputList.forEach(o => o.send(bytes));
+        if (midiAccessGranted) {
+            cb();
+        } else {
+            whenAccessGranted.push(cb);
+        }
+
+    };
 
     var initControl = function($controlEl: JQuery)
     {
@@ -46,7 +58,11 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
             // upd.: open() does not help midiana, but it may be her problems. Musescore works alright with input
             if (navigator.requestMIDIAccess) {
                 navigator.requestMIDIAccess().then(
-                    ma => ma.outputs.forEach(o => midiOutputList.push(o)),
+                    ma => {
+                        ma.outputs.forEach(o => midiOutputList.push(o));
+                        midiAccessGranted = true;
+                        whenAccessGranted = whenAccessGranted.filter(cb => cb() && false);
+                    },
                     e => console.log("Failed To Access Midi, Even Though Your Browser Has The Method...", e)
                 );
             } else {

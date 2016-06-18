@@ -40,7 +40,6 @@ export function Switch(
         Kl.fori(pitchBendByChannel, (chan,koef) => choosen.setPitchBend(koef, chan));
     };
 
-    $(dropdownEl).empty();
     Object.keys(synths).forEach(s => $(dropdownEl)
         .append($('<option></option>').val(s).html(s)));
 
