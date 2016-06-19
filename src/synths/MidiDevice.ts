@@ -87,6 +87,8 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
             } else {
                 alert('Your browser does not support midi Devices. Pity, you could listen to music on your mega-device if you used chrome =P');
             }
+        } else if (midiAccessGranted) {
+            initControl($controlEl);
         }
     };
 

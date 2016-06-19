@@ -35,7 +35,7 @@ $$('#lst-ib')[0].onkeydown = function(e)
     if (e.keyCode === 13) {
         var was = $$('#lst-ib')[0].value;
         $$('#lst-ib')[0].value += ' ' + blacklist.map(d => '-site:' + d).join(' ');
-        setTimeout(() => $$('#lst-ib')[0].value = was, 4);
+        setTimeout(() => $$('#lst-ib')[0].value = was, 500);
     }
 };
 

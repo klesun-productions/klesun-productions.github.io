@@ -35,6 +35,19 @@ export function TactMeasurer(tactSize: number)
     };
 };
 
+var extractNote = (n: HTMLCanvasElement) => 1 && {
+    tune: +$(n).attr('data-tune'),
+    channel: +$(n).attr('data-channel'),
+    length: +$(n).attr('data-length')
+};
+
+export var SongAccess = {
+    extractChord: (c: HTMLSpanElement) => 1 && {
+        noteList: $(c).children('.noteCanvas').toArray()
+            .map(extractNote)
+    },
+};
+
 /** @param R - semibreve note oval vertical radius */
 export function CanvasProvider(R: number): ICanvasProvider
 {
@@ -116,7 +129,7 @@ export function CanvasProvider(R: number): ICanvasProvider
 
     var makeChordSpan = function(chord: Ds.IShmidusicChord): JQuery
     {
-        var $chordSpan = $('<span style="position: relative;"></span>')
+        var $chordSpan = $('<span style="position: relative;" class="chordSpan"></span>')
             .append($('<span class="tactNumberCont"></span>'));
 
         chord.noteList
@@ -126,21 +139,11 @@ export function CanvasProvider(R: number): ICanvasProvider
         return $chordSpan;
     };
 
-    var extractNote = (n: HTMLCanvasElement) => 1 && {
-        tune: +$(n).attr('data-tune'),
-        channel: +$(n).attr('data-channel'),
-        length: +$(n).attr('data-length')
-    };
-
     return {
         getNoteImage: getNoteImage,
         makeNoteCanvas: makeNoteCanvas,
         makeChordSpan: makeChordSpan,
         extractNote: extractNote,
-        extractChord: (c) => 1 && {
-            noteList: $(c).children('.noteCanvas').toArray()
-                .map(extractNote)
-        },
         getChordWidth: () => DX * 2,
     };
 };
@@ -150,7 +153,6 @@ export interface ICanvasProvider {
     makeNoteCanvas: { (n: Ds.IShNote): HTMLCanvasElement },
     makeChordSpan: { (c: Ds.IShmidusicChord): JQuery },
     extractNote: { (c: HTMLCanvasElement): Ds.IShNote },
-    extractChord: { (c: HTMLElement): Ds.IShmidusicChord },
     getChordWidth: { (): number },
 };
 
@@ -223,7 +225,7 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
         });
     };
 
-    var getChordList = () => $chordListCont.children().toArray().map(canvaser.extractChord);
+    var getChordList = () => $chordListCont.children().toArray().map(SongAccess.extractChord);
 
     var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
         ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)

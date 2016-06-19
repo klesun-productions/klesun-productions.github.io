@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import MIDIMessageEvent = WebMidi.MIDIMessageEvent;
-import {IPainter} from "./Painter";
+import {IPainter, SongAccess} from "./Painter";
 import {IShNote} from "../DataStructures";
 import {IChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
@@ -118,6 +118,39 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         player.playSheetMusic(adapted, {}, playbackFinished, index);
     };
 
+    const copyToClipboard = function(): void
+    {
+        var selection = window.getSelection();
+        var range = selection.getRangeAt(0);
+        var allWithinRangeParent = $(range.commonAncestorContainer).find('*').toArray();
+
+        var chordSpans: HTMLSpanElement[] = [];
+        var first = true;
+        for (var i = 0, el: Element; el = allWithinRangeParent[i]; i++) {
+            if (el.classList.contains('chordSpan') &&
+                selection.containsNode(el, first)
+            ) {
+                first = false;
+                chordSpans.push(<HTMLSpanElement>el);
+            }
+        }
+
+        var textArea = document.createElement("textarea");
+        textArea.value = JSON.stringify(chordSpans.map(SongAccess.extractChord));
+
+        document.body.appendChild(textArea);
+
+        try {
+            textArea.select();
+            var successful = document.execCommand('copy');
+            successful || alert('Oops, unable to copy');
+        } catch (err) {
+            alert('Oops, unable to copy');
+        }
+
+        document.body.removeChild(textArea);
+    };
+
     var openSong = function(song: IShmidusicStructure): void
     {
         painter.getControl().clear();
@@ -178,7 +211,10 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     // TODO: change to tuple list to allow multiple mappings per action
     var focusedHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
         // space
-        32: play,
+        32: e => {
+            e.preventDefault();
+            play();
+        },
         // left arrow
         37: () => {
             control.moveChordFocus(-1);
@@ -232,6 +268,8 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             e.preventDefault();
             control.deleteFocused(true);
         },
+        // "c"
+        67: (e: KeyboardEvent) => e.ctrlKey && copyToClipboard(),
     };
 
     // 48 - zero, 96 - numpad zero
@@ -243,6 +281,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     {
         if (keyEvent.keyCode in focusedHandlers) {
             if (playback) {
+                keyEvent.preventDefault();
                 playbackFinished();
             } else {
                 focusedHandlers[keyEvent.keyCode](keyEvent);
@@ -326,11 +365,6 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     };
 
     window.onhashchange = handleHashChange;
-    $(document).keydown(function(e) {
-        if (e.which == 32) {
-            return false;
-        }
-    });
 
     handleHashChange();
     hangMidiHandlers();

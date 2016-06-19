@@ -16,12 +16,6 @@ requirejs(wanted, (Painter, Handler) =>
     handler.hangKeyboardHandlers(sheetMusicCont);
     handler.hangGlobalKeyboardHandlers();
 
-    $('body').click(function(e) {
-        if (!['input', 'select'].includes(e.target.tagName.toLowerCase())) {
-            $(sheetMusicCont).focus();
-        }
-    });
-
     $(sheetMusicCont).focus();
 });
 
