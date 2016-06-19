@@ -15,6 +15,7 @@ import {Midiator} from "./Midiator";
 import {Switch} from "../synths/Switch";
 import {PresetList} from "../views/PresetList";
 import PianoLayout from "../views/PianoLayout";
+import {ISynth} from "../synths/ISynth";
 
 // following constants represent the X in bits of midi message
 // XXXX???? ???????? ????????
@@ -151,6 +152,12 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         document.body.removeChild(textArea);
     };
 
+    const pasteFromClipboard = function(text: string): void
+    {
+        var chords = ShReflect().validateChordList(text);
+        chords && chords.forEach(painter.getControl().addChord);
+    };
+
     var openSong = function(song: IShmidusicStructure): void
     {
         painter.getControl().clear();
@@ -277,18 +284,20 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         focusedHandlers[i + 48] = focusedHandlers[i + 96] = () =>
             control.setChannel(i));
 
-    var hangKeyboardHandlers = (el: HTMLElement) => el.onkeydown = function(keyEvent: KeyboardEvent)
-    {
-        if (keyEvent.keyCode in focusedHandlers) {
-            if (playback) {
-                keyEvent.preventDefault();
-                playbackFinished();
+    var hangKeyboardHandlers = (el: HTMLElement) => {
+        el.onkeydown = function (keyEvent:KeyboardEvent) {
+            if (keyEvent.keyCode in focusedHandlers) {
+                if (playback) {
+                    keyEvent.preventDefault();
+                    playbackFinished();
+                } else {
+                    focusedHandlers[keyEvent.keyCode](keyEvent);
+                }
             } else {
-                focusedHandlers[keyEvent.keyCode](keyEvent);
+                console.log('Unknown Key Event: ', keyEvent);
             }
-        } else {
-            console.log('Unknown Key Event: ', keyEvent);
-        }
+        };
+        el.onpaste = (e: any) => pasteFromClipboard(e.clipboardData.getData('Text'));
     };
 
     var hangGlobalKeyboardHandlers = () => $('body')[0].onkeydown = function(keyEvent: KeyboardEvent)

@@ -108,7 +108,8 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
 
         /** @debug */
         if (!sampleInfo) {
-            console.log('no sample!', semitone, preset);
+            console.log('no sample!', semitone, preset); 
+            return null;
         } else {
             var generator = combineGenerators(
                 updateGenerator(presets[preset].generatorApplyToAll || {}, presets[preset].instrument.generator),
