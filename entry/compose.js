@@ -4,7 +4,7 @@
 var wanted = ['/src/compose/Painter.js', '/src/compose/Handler.js',
     '/libs/jquery-2.1.4.js', '/libs/FileSaver.js', '/libs/SMFreader.js', '/libs/jsmidgen.js'];
 
-requirejs(wanted, (Painter, Handler) =>
+requirejs(wanted, function(Painter, Handler)
 {
     var painter = Painter.SheetMusicPainter('sheetMusicDiv', $('#visualConfigDiv')[0]);
     painter.setEnabled(true);

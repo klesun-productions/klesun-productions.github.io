@@ -43,7 +43,7 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
         sample.playbackRate.value = fetchedSample.frequencyFactor;
         sample.loopStart = fetchedSample.loopStart;
         sample.loopEnd = fetchedSample.loopEnd;
-        sample.loop = true;
+        sample.loop = fetchedSample.isLooped;
         sample.buffer = fetchedSample.buffer;
 
         if (+fetchedSample.stereoPan === EStereoPan.LEFT) {
@@ -88,7 +88,9 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
 
             return playSample(sample, volumeFactor, channelNodes[channel]);
         } else {
-            return fallbackOscillator.playNote(semitone, 0, velocity, -1);
+            return +channel !== 9
+                ? fallbackOscillator.playNote(semitone, 0, velocity, -1)
+                : () => {};
         }
     };
 

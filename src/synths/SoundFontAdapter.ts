@@ -108,7 +108,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
 
         /** @debug */
         if (!sampleInfo) {
-            console.log('no sample!', semitone, preset); 
+            console.log('no sample!', semitone, preset);
             return null;
         } else {
             var generator = combineGenerators(
@@ -129,6 +129,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
             getBuffer(sampleUrl, (resp) => fetched = {
                 buffer: resp,
                 frequencyFactor: freqFactor,
+                isLooped: 'sampleModes' in generator && generator.sampleModes === 1,
                 loopStart: (sampleInfo.startLoop + (generator.startloopAddrsOffset || 0)) / sampleInfo.sampleRate,
                 loopEnd: (sampleInfo.endLoop + (generator.endloopAddrsOffset || 0)) / sampleInfo.sampleRate,
                 stereoPan: sampleInfo.sampleType,
@@ -147,6 +148,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
 
 export interface IFetchedSample {
     buffer: AudioBuffer,
+    isLooped: boolean,
     loopStart: seconds_t,
     loopEnd: seconds_t,
     frequencyFactor: number,
@@ -166,6 +168,7 @@ interface IGenerator {
     startloopAddrsOffset?: number, // add to sample.startLoop if present
     endloopAddrsOffset?: number, // add to sample.endLoop if present
     initialAttenuation?: number, // how much volume should be reduced in centibels
+    sampleModes?: number,
 }
  
 export enum EStereoPan {LEFT, MONO, RIGHT, LINK}

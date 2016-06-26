@@ -16,6 +16,7 @@ var blacklist = [
     'lifeinbooks.net/', // "Конец ознакомительного фрагмента."
     'coollib.com/', // читать бесплатно можно только на сайте
     'fantasy-worlds.org', // платно
+    'e-reading.club', // конец ознакомительного просмотра
 
     // disgusting ads
     'inpearls.ru',

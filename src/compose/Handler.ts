@@ -35,14 +35,15 @@ const $$ = (s: string) => Array.from(document.querySelectorAll(s));
 
 export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
-    const channelListControl = PresetList(<HTMLDivElement>$$('#presetListBlock')[0]);
-
-    const synthSwitch = Switch(
-        <HTMLSelectElement>$$('#synthDropdown')[0],
-        <HTMLDivElement>$$('#synthControl')[0],
-        channelListControl,
-        PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0])
-    );
+    var channelListControl = PresetList(<HTMLDivElement>$$('#presetListBlock')[0]),
+        synthSwitch = Switch(
+            <HTMLSelectElement>$$('#synthDropdown')[0],
+            <HTMLDivElement>$$('#synthControl')[0],
+            channelListControl,
+            PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0])
+        ),
+        enableMidiInputFlag = <HTMLInputElement>$$('#enableMidiInputFlag')[0],
+        O_O = 0-0;
 
     var lastChordOn = 0;
     const player = Player($(''));
@@ -57,11 +58,11 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     player.addNoteHandler(synthSwitch);
     player.addNoteHandler(painter);
 
-    // well... i suppose something is wrong
+    // well... i suppose something is  wrong
     var oneShotPlayer = Player($(''));
     oneShotPlayer.addNoteHandler(synthSwitch);
 
-    var playNotes = (noteList: IShNote[]) => { 
+    var playNotes = (noteList: IShNote[]) => {
         oneShotPlayer.stop();
         oneShotPlayer.playChord(noteList);
     };
@@ -72,7 +73,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 
     var handleNoteOn = function(semitone: number, receivedTime: number)
     {
-        if (!tabActive) {
+        if (!tabActive || !enableMidiInputFlag.checked) {
             return;
         }
 
@@ -212,6 +213,8 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveJsonToDisc(JSON.stringify(collectSong(painter.getChordList()))),
         // "e"
         69: (e: KeyboardEvent) => e.ctrlKey && Kl.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
+        // F4
+        115: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
     };
 
     // TODO: Key Code constants!
