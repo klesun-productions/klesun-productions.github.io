@@ -31,7 +31,7 @@ const NOTE_ON = 0x09;
 // this function bounds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
 
-const $$ = (s: string) => Array.from(document.querySelectorAll(s));
+const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorAll(s));
 
 export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {

@@ -2,22 +2,22 @@
     <meta charset="utf-8"/>
     <script data-main="/entry/compose" src="/libs/require.js"></script>
 </head>
-
+<body tabIndex="-1">
 <span id="playbackConfigDiv">
-    Tempo: <input type="number" class="holder tempo" value="120" min="15" max="480"
-                  onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
-    Loop Start: <input type="number" class="holder loopStart" value="0"/>
-    Loop Times: <input type="number" class="holder loopTimes" value="0"/>
-    <span id="visualConfigDiv">
+    <label>Tempo: <input type="number" class="holder tempo" value="120" min="15" max="480"
+                  onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/></label>
+    <label>Loop Start: <input type="number" class="holder loopStart" value="0"/></label>
+    <label>Loop Times: <input type="number" class="holder loopTimes" value="0"/></label>
+    <label id="visualConfigDiv">
         Tact Size: <input type="number" class="holder tactSize" value="1" min="0.25" max="16" step="0.25"
                           onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
-    </span>
+    </label>
     Synth: <select id="synthDropdown"></select>
     <span id="synthControl"></span>
     <br clear="all"/>
     <canvas id="pianoCanvas" width="10px" height="10px"></canvas>
     <label>
-        Enable MIDI Input: <input type="checkbox" checked="checked" id="enableMidiInputFlag"/>
+        Enable MIDI Input: <input type="checkbox" checked="checked" id="enableMidiInputFlag" title="Use the F4, Luke"/>
     </label>
 </span>
 
@@ -181,3 +181,4 @@
 
 
 </style>
+</body>

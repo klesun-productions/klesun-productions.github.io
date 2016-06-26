@@ -17,5 +17,9 @@ requirejs(wanted, function(Painter, Handler)
     handler.hangGlobalKeyboardHandlers();
 
     $(sheetMusicCont).focus();
+
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+    $$('input,select').forEach(el => el.onchange = () => sheetMusicCont.focus());
+    $$('body')[0].addEventListener('focus', () => sheetMusicCont.focus());
 });
 
