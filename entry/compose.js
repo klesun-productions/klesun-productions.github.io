@@ -19,7 +19,14 @@ requirejs(wanted, function(Painter, Handler)
     $(sheetMusicCont).focus();
 
     const $$ = (s) => Array.from(document.querySelectorAll(s));
-    $$('input,select').forEach(el => el.onchange = () => sheetMusicCont.focus());
+    
+    $$('input,select').forEach(el => {
+        var wasCb = el.onchange;
+        el.onchange = () => {
+            wasCb();
+            sheetMusicCont.focus();
+        };
+    });
     $$('body')[0].addEventListener('focus', () => sheetMusicCont.focus());
 });
 
