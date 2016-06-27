@@ -48,19 +48,87 @@ export var SongAccess = {
     },
 };
 
+type sign_e = 'none' | 'flat' | 'sharp' | 'natural';
+
+// damn typescript with wrong signatures
+interface huj_t {
+    findIndex: (predicate: (value: number, i: number) => boolean) => number,
+}
+
+/** @return [ivoryIndex, sign] */
+const determinePosition = function(semitone: number, keySignature: number): [number, sign_e]
+{
+    var ebonySignMap: {[s: number]: number[]} = {
+        [-7]: [-1, -1, -1, -1, -1, -1, -1],
+        [-6]: [-1, -1, -1,  0, -1, -1, -1],
+        [-5]: [ 0, -1, -1,  0, -1, -1, -1],
+        [-4]: [ 0, -1, -1,  0,  0, -1, -1],
+        [-3]: [ 0,  0, -1,  0,  0, -1, -1],
+        [-2]: [ 0,  0, -1,  0,  0,  0, -1],
+        [-1]: [ 0,  0,  0,  0,  0,  0, -1],
+        [+0]: [ 0,  0,  0,  0,  0,  0,  0],
+        [+1]: [ 0,  0,  0, +1,  0,  0,  0],
+        [+2]: [+1,  0,  0, +1,  0,  0,  0],
+        [+3]: [+1,  0,  0, +1, +1,  0,  0],
+        [+4]: [+1, +1,  0, +1, +1,  0,  0],
+        [+5]: [+1, +1,  0, +1, +1, +1,  0],
+        [+6]: [+1, +1, +1, +1, +1, +1,  0],
+        [+7]: [+1, +1, +1, +1, +1, +1, +1],
+    };
+
+    var octave = Math.floor(semitone / 12);
+    
+    var ivory = (<huj_t>ebonySignMap[keySignature]).findIndex((sign, idx) =>
+        [0,2,4,5,7,9,11][idx] + sign === semitone % 12);
+
+    if (ivory > -1) {
+        // present in base key signature
+        return [ivory + octave * 7, 'none'];
+    } else {
+        var becarIvory = (<huj_t>ebonySignMap[keySignature]).findIndex((sign, idx) =>
+            sign !== 0 && [0,2,4,5,7,9,11][idx] === semitone % 12);
+
+        if (becarIvory > -1) {
+            return [becarIvory + octave * 7, 'natural'];
+        } else {
+            // treating all special note-s as flat - even when it is clearly heard as sharp
+            var ivoryIndex = [0,2,4,5,7,9,11].indexOf(semitone % 12 + 1);
+
+            return [ivoryIndex + octave * 7, 'flat'];
+        }
+    }
+};
+
 /** @param R - semibreve note oval vertical radius */
 export function CanvasProvider(R: number): ICanvasProvider
 {
     var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
     var NOTE_CANVAS_HEIGHT = R * 9;
+    var keySignature = 0;
 
     // tuple: 16 channels, ~14 lengths each (6 (1/32 .. 1/1) * 2 (triplets) * 2 (dots))
     var noteCanvasCache: Array<{ [lenFra: string]: HTMLCanvasElement }> = [
         {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
     ];
-    // tuple: 16 channels
-    var flatSignCache: HTMLCanvasElement[] = [];
+    var flatSign = <HTMLCanvasElement>$('<canvas></canvas>')
+        .attr('width', DX * 2)
+        .attr('height', NOTE_CANVAS_HEIGHT + R)
+        [0];
+
+    var sharpSign = <HTMLCanvasElement>$('<canvas></canvas>')
+        .attr('width', DX * 2)
+        .attr('height', NOTE_CANVAS_HEIGHT + R)
+        [0];
+
+    var naturalSign = <HTMLCanvasElement>$('<canvas></canvas>')
+        .attr('width', DX * 2)
+        .attr('height', NOTE_CANVAS_HEIGHT + R)
+        [0];
+
+    ShapeProvider(flatSign.getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
+    ShapeProvider(sharpSign.getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawSharpSign();
+    ShapeProvider(naturalSign.getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawNaturalSign();
 
     var getNoteImage = function(length: number, channel: number): HTMLCanvasElement
     {
@@ -84,13 +152,9 @@ export function CanvasProvider(R: number): ICanvasProvider
 
     var makeNoteCanvas = function(note: Ds.IShNote): HTMLCanvasElement
     {
-        var isEbony = [1,3,6,8,10].indexOf(note.tune % 12) > -1;
-        var ivoryIndex = !isEbony
-            ? [0,2,4,5,7,9,11].indexOf(note.tune % 12)
-            : [0,2,4,5,7,9,11].indexOf(note.tune % 12 + 1); // treating all as flats for now - ignoring file key signature
-        var octave = Math.floor(note.tune / 12);
+        var [ivoryIndex, sign] = determinePosition(note.tune, keySignature);
 
-        var shift = 56 - ivoryIndex - octave * 7; // 56 - some number that divides by 7
+        var shift = 56 - ivoryIndex; // 56 - some number that divides by 7
 
         if (+note.channel === 9) { // drum
             shift = 35 + 2; // lowest note on my synth and 2 more steps downer
@@ -110,18 +174,13 @@ export function CanvasProvider(R: number): ICanvasProvider
 
         ctx.drawImage(getNoteImage(note.length, note.channel), 0, 0);
 
-        if (isEbony) {
-            /** @TODO: here lies a bug - all cached flats have same color, black, since you don't change it while drawing
-             * it is pretty nice, though. maybe could make flat sign color a bit darker, than note color? */
-            if (!flatSignCache[note.channel]) {
-                flatSignCache[note.channel] = <HTMLCanvasElement>$('<canvas></canvas>canvas>')
-                    .attr('width', noteCanvas.width)
-                    .attr('height', noteCanvas.height)
-                    [0];
-
-                ShapeProvider(flatSignCache[note.channel].getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
-            }
-            ctx.drawImage(flatSignCache[note.channel], 0, 0);
+        if (note.channel === 9) {
+        } else  if (sign === 'flat') {
+            ctx.drawImage(flatSign, 0, 0);
+        } else if (sign === 'sharp') {
+            ctx.drawImage(sharpSign, 0, 0);
+        } else if (sign === 'natural') {
+            ctx.drawImage(naturalSign, 0, 0);
         }
 
         return noteCanvas;
@@ -145,15 +204,17 @@ export function CanvasProvider(R: number): ICanvasProvider
         makeChordSpan: makeChordSpan,
         extractNote: extractNote,
         getChordWidth: () => DX * 2,
+        setKeySignature: v => keySignature = v,
     };
 };
 
 export interface ICanvasProvider {
-    getNoteImage: { (l: number, c: number): HTMLCanvasElement },
-    makeNoteCanvas: { (n: Ds.IShNote): HTMLCanvasElement },
-    makeChordSpan: { (c: Ds.IShmidusicChord): JQuery },
-    extractNote: { (c: HTMLCanvasElement): Ds.IShNote },
-    getChordWidth: { (): number },
+    getNoteImage: (l: number, c: number) => HTMLCanvasElement,
+    makeNoteCanvas: (n: Ds.IShNote) => HTMLCanvasElement,
+    makeChordSpan: (c: Ds.IShmidusicChord) => JQuery,
+    extractNote: (c: HTMLCanvasElement) => Ds.IShNote,
+    getChordWidth: () => number,
+    setKeySignature: (v: number) => void,
 };
 
 export function SheetMusicPainter(parentId: string, config: HTMLElement): IPainter
@@ -351,6 +412,13 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
         getChordList: getChordList,
         getFocusedNotes: getFocusedNotes,
         getControl: () => control,
+        setKeySignature: v => {
+            canvaser.setKeySignature(v);
+            var chords = getChordList();
+            // TODO: optimize!
+            control.clear();
+            chords.forEach(control.addChord);
+        },
 
         consumeConfig: () => {},
         init: () => {},
@@ -365,4 +433,5 @@ export interface IPainter extends ISynth {
     getChordList: () => Ds.IShmidusicChord[],
     getControl: () => IControl,
     getFocusedNotes: () => Ds.IShNote[],
+    setKeySignature: (v: number) => void,
 };

@@ -100,6 +100,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         channelList: channelListControl.collectData(),
         loopStart: $(configCont).find('.holder.loopStart').val(),
         loopTimes: $(configCont).find('.holder.loopTimes').val(),
+        keySignature: $(configCont).find('.holder.keySignature').val(),
     };
 
     var collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
@@ -167,12 +168,13 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             .forEach(s => {
                 var config: {[k: string]: any} = s.staffConfig;
                 Kl.for(config, (k, v) =>
-                    $(configCont).find('> .holder.' + k).val(v));
+                    $(configCont).find('.holder.' + k).val(v));
 
                 synthSwitch.consumeConfig((s.staffConfig.channelList || [])
                     .map(c => 1 && { preset: c.instrument }));
                 synthSwitch.analyse(s.chordList);
 
+                painter.setKeySignature(s.staffConfig.keySignature || 0);
                 s.chordList.forEach(painter.getControl().addChord);
             });
 
@@ -380,6 +382,9 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 
     handleHashChange();
     hangMidiHandlers();
+
+    $(configCont).find('.holder.keySignature').change((e: any) =>
+        painter.setKeySignature(e.target.value));
 
     return {
         hangKeyboardHandlers: hangKeyboardHandlers,

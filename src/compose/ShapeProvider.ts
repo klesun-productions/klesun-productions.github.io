@@ -151,6 +151,37 @@ export default function ShapeProvider(ctx: CanvasRenderingContext2D, r: number, 
         ctx.globalCompositeOperation = 'source-over';
     };
 
+    var drawSharpSign = function()
+    {
+        ctx.beginPath();
+        ctx.moveTo(x - r * 0.5, y - r * 2);
+        ctx.lineTo(x - r * 0.5, y + r * 2);
+
+        ctx.moveTo(x + r * 0.5, y - r * 2);
+        ctx.lineTo(x + r * 0.5, y + r * 2);
+
+        ctx.moveTo(x - r, y - r * 0.25);
+        ctx.lineTo(x + r, y - r * 1.25);
+
+        ctx.moveTo(x - r, y + r * 1.25);
+        ctx.lineTo(x + r, y + r * 0.25);
+
+        ctx.stroke();
+    };
+
+    var drawNaturalSign = function()
+    {
+        ctx.beginPath();
+        ctx.moveTo(x - r * 0.5, y - r * 2);
+        ctx.lineTo(x - r * 0.5, y + r * 1.5);
+        ctx.lineTo(x + r * 0.5, y + r * 0.5);
+
+        ctx.moveTo(x + r * 0.5, y + r * 2);
+        ctx.lineTo(x + r * 0.5, y - r * 1.5);
+        ctx.lineTo(x - r * 0.5, y - r * 0.5);
+        ctx.stroke();
+    };
+
     // we treat image borders center for pivot point during scaling
     var drawSvg = function(img: any, scaleFactor: number)
     {
@@ -166,5 +197,7 @@ export default function ShapeProvider(ctx: CanvasRenderingContext2D, r: number, 
     return {
         drawNote: drawNote,
         drawFlatSign: drawFlatSign,
+        drawSharpSign: drawSharpSign,
+        drawNaturalSign: drawNaturalSign,
     }
 };

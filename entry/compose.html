@@ -6,13 +6,14 @@
 <span id="playbackConfigDiv">
     <label>Tempo: <input type="number" class="holder tempo" value="120" min="15" max="480"
                   onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/></label>
-    <label>Loop Start: <input type="number" class="holder loopStart" value="0"/></label>
+    <label>Loop Start: <input type="number" class="holder loopStart float" value="0"/></label>
     <label>Loop Times: <input type="number" class="holder loopTimes" value="0"/></label>
     <label id="visualConfigDiv">
         Tact Size: <input type="number" class="holder tactSize" value="1" min="0.25" max="16" step="0.25"
                           onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
     </label>
-    Synth: <select id="synthDropdown"></select>
+    <label>Key Signature: <input type="number" min="-7" max="7" value="0" class="holder keySignature"/></label>
+    <label>Synth: <select id="synthDropdown"></select></label>
     <span id="synthControl"></span>
     <br clear="all"/>
     <canvas id="pianoCanvas" width="10px" height="10px"></canvas>
@@ -135,6 +136,10 @@
     body {
         font-size: 12px;
         font-family: monospace;
+    }
+    #playbackConfigDiv * { font-size: 10px; }
+    #playbackConfigDiv input[type="number"]:not(.float) {
+        width: 40px;
     }
     #sheetMusicDiv {
         margin-top: 20px;

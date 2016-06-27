@@ -66,7 +66,7 @@ export interface IShmidusicStructure {
             // count of times playback will be rewinded
             // to the loopStart after last chord
             loopTimes: number,
-            channelList: IChannel[];
+            channelList: IChannel[],
         };
         chordList: Array<IShmidusicChord>;
     }>;
