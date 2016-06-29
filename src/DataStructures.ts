@@ -115,7 +115,7 @@ export interface IAdaptedSmf {
 export interface ISmfFile {
     rawFileName: string; // relative path to file
     fileName: string; // score will be cropped
-    score: string;
+    rating: string;
 }
  
 export type seconds_t = number;

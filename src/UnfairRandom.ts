@@ -21,7 +21,6 @@ export default function UnfairRandom(songList: ISmfFile[])
             !song.rawFileName.startsWith('touhou/11_sa') &&
             !song.rawFileName.startsWith('touhou/12_ufo') &&
             true],
-        [0.1, (song) => song.score >= 'c7'],
         [0.1, (song) => song.rawFileName.startsWith('ismayil112')],
         [1, (song) => true], // default
     ];

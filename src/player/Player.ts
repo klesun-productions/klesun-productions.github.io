@@ -9,12 +9,9 @@ import {IPlayback} from "./Playback";
 import {Playback} from "./Playback";
 import PlaybackControl from "../views/PlaybackControl";
 import {ISynth} from "../synths/ISynth";
+import {IPlaybackControl} from "../views/PlaybackControl";
 
 type millis_t = number;
-export interface IFileInfo {
-    fileName?: string,
-    score?: string
-}
 
 interface IConfigConsumer {
     consumeConfig: (config: {[ch: number]: number}) => void,
@@ -23,11 +20,8 @@ interface IConfigConsumer {
 /** @param length - float: quarter will be 0.25, semibreve will be 1.0*/
 var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
 
-// TODO: instead of $controlCont we should pass something like "IControlProvider"
-/** @param piano - PianoLayoutPanel instance */
-export function Player($controlCont: JQuery)
+export function Player(control: IPlaybackControl)
 {
-    var control = PlaybackControl($controlCont);
     var noteHandlers: ISynth[] = [];
 
     var toFloat = (fractionString: string) => eval(fractionString);
@@ -79,7 +73,6 @@ export function Player($controlCont: JQuery)
 
     var playSheetMusic = function (
         sheetMusic: IGeneralStructure,
-        fileInfo: IFileInfo,
         whenFinished?: () => void,
         startAt?: number)
     {
@@ -87,9 +80,6 @@ export function Player($controlCont: JQuery)
         whenFinished = whenFinished || (() => {});
 
         currentPlayback && currentPlayback.pause();
-
-        control.setFields(sheetMusic);
-        control.setFileInfo(fileInfo);
 
         var playback = currentPlayback = Playback(sheetMusic, playChord,
             whenFinished, control.getTempoFactor() || 1, stopSounding);

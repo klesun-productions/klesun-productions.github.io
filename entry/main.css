@@ -243,3 +243,6 @@
     table {
         width:100%;
     }
+
+    button.rateGood {color: #0a0}
+    button.rateBad {color: #a00}

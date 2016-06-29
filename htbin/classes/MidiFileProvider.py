@@ -3,25 +3,25 @@
 
 import os
 import re
-import json
 import os.path
-from subprocess import call
-import subprocess
-import itertools
-import codecs
-import classes.DbTables
-from classes.DbTables import Listened
-from pony.orm import db_session
+from pony.orm import select, db_session
+from classes.DbTables import SongRating
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
+
+
+def make_order_value(rating: str) -> str:
+    return rating.replace('1', 'a').replace('0', 'c').ljust(31, 'b')
+
 
 class MidiFileProvider(object):
     content_folder = dirpath + '/../../'
 
     @classmethod
-    def get_info_list(cls, params, user_ifno=None):
+    @db_session
+    def get_info_list(cls):
 
-		# TODO: investigate, this function likely takes ~0.6 second every time, what i think is VERY SLOW
+        # TODO: investigate, this function likely takes ~0.6 second every time, what i think is VERY SLOW
 
         result = []
 
@@ -33,29 +33,15 @@ class MidiFileProvider(object):
             for curDir, _, fileNames in os.walk(root) if not curDir.endswith('source_ichigos_com')
                 for fileName in fileNames if fileName.endswith('.mid')]
 
+        rating_by_name = {r.fileName: r.rating for r in select(r for r in SongRating)}
+
         for file in fileList:
-            matches = pattern.findall(file)
-            if len(matches):
-                result.append({"fileName": matches[0][1], "score": matches[0][0], 'rawFileName': file})
-            else:
-                result.append({"fileName": file, "score": '', 'rawFileName': file})
+            result.append({
+                "fileName": file,
+                "rawFileName": file,
+                "rating": rating_by_name[file] if file in rating_by_name else ''
+            })
 
-        result = sorted(result, key=lambda k: (k['score'] if len(k['score']) > 0 else 'zzz' + k['fileName']))
-
-        return result
-
-    @classmethod
-    def get_shmidusic_list(cls):
-
-        result = []
-
-        dir = cls.content_folder + '/Dropbox/yuzefa_git/a_opuses_json'
-        for file in os.listdir(dir):
-            if file.endswith(".mid.js"):
-                with codecs.open(dir + "/" + file, 'r', 'utf-8') as content:
-                    content_json = json.load(content, encoding='utf-8')
-                    content.close()
-
-                result.append({"fileName": file, "sheetMusic": content_json})
+        result = sorted(result, key=lambda k: (make_order_value(k['rating']) + k['fileName']))
 
         return result

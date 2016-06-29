@@ -23,7 +23,7 @@ requirejs(wanted, function(Painter, Handler)
     $$('input,select').forEach(el => {
         var wasCb = el.onchange;
         el.onchange = () => {
-            wasCb();
+            wasCb && wasCb();
             sheetMusicCont.focus();
         };
     });

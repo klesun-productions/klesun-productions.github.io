@@ -46,7 +46,10 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         O_O = 0-0;
 
     var lastChordOn = 0;
-    const player = Player($(''));
+    const player = Player({
+        setPlayback: () => {}, setFields: () => {},
+        setFileInfo: () => {}, getTempoFactor: () => -100,
+    });
 
     var control = painter.getControl();
     var playback = false; 
@@ -59,7 +62,10 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     player.addNoteHandler(painter);
 
     // well... i suppose something is  wrong
-    var oneShotPlayer = Player($(''));
+    var oneShotPlayer = Player({
+        setPlayback: () => {}, setFields: () => {},
+        setFileInfo: () => {}, getTempoFactor: () => -100,
+    });
     oneShotPlayer.addNoteHandler(synthSwitch);
 
     var playNotes = (noteList: IShNote[]) => {
@@ -118,7 +124,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         var adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
         var index = Math.max(0, painter.getControl().getFocusIndex());
-        player.playSheetMusic(adapted, {}, playbackFinished, index);
+        player.playSheetMusic(adapted, playbackFinished, index);
     };
 
     const copyToClipboard = function(): void

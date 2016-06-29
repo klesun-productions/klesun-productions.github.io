@@ -13,6 +13,7 @@ import PianoLayout from "./views/PianoLayout";
 import {Player} from "./player/Player";
 import {Switch} from "./synths/Switch";
 import {PresetList} from "./views/PresetList";
+import PlaybackControl from "./views/PlaybackControl";
 type dict<Tx> = {[k: string]: Tx};
 
 type cb = () => void;
@@ -41,12 +42,9 @@ export default function MainPage(mainCont: HTMLDivElement)
         ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
 
     // TODO: make it "get" since it is just the single "getSongNames()" method, which could be cached and stuff
-    const performExternal = (methodName: string, params: dict<any>, callback: {(data: {[k: string]: any}): void}) => $.ajax({
+    const performExternal = (methodName: string, params: dict<any>, callback: (json: any) => void) => $.ajax({
         url: '/htbin/json_service.py' + '?f=' + methodName, // GET params just for cosmetics
-        type: "post",
-        data: JSON.stringify(addToken({methodName: methodName, params: params})),
-        dataType: "json",
-        contentType: 'application/json;UTF-8',
+        cache: true,
         success: callback
     });
     
@@ -59,7 +57,8 @@ export default function MainPage(mainCont: HTMLDivElement)
         PianoLayout(pianoCanvas)
     );
 
-    const player = Player($playbackControlCont);
+    const control = PlaybackControl($playbackControlCont);
+    const player = Player(control);
     player.addNoteHandler(synth);
 
     var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
@@ -68,21 +67,24 @@ export default function MainPage(mainCont: HTMLDivElement)
     {
         synth.consumeConfig(song.config.channels);
         synth.analyse(song.chordList);
-        player.playSheetMusic(song, {}, () => {}, 0);
+
+        player.playSheetMusic(song, () => {}, 0);
     };
 
-    const playStandardMidiFile = function(fileName: string)
+    const playStandardMidiFile = function(fileInfo: ISmfFile)
     {
         /** @debug */
         console.log(' ');
-        console.log('gonna play', fileName);
+        console.log('gonna play', fileInfo.fileName);
 
-        Kl.fetchMidi('/midiCollection/' + fileName, (song: IGeneralStructure) =>
+        Kl.fetchMidi('/midiCollection/' + fileInfo.fileName, (song: IGeneralStructure) =>
         {
             synth.consumeConfig(song.config.channels);
             synth.analyse(song.chordList);
-            player.playSheetMusic(song, {fileName: fileName},
-                () => playRandom({fileName: fileName}));
+            control.setFields(song);
+            control.setFileInfo(fileInfo);
+
+            player.playSheetMusic(song, () => playRandom(fileInfo));
         });
     };
 
@@ -100,7 +102,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         var playButtonFormatter = function(cell: string, row: ISmfFile)
         {
             return $('<input type="button" class="playBtn" value=">"/>')
-                .click((_) => playStandardMidiFile(row.rawFileName));
+                .click((_) => playStandardMidiFile(row));
         };
 
         /** @debug */
@@ -113,13 +115,13 @@ export default function MainPage(mainCont: HTMLDivElement)
             var colModel: ColModel<ISmfFile> = [
                 {'name': 'fileName', 'caption': 'File Name', formatter: makeFileName},
                 //{'name': 'length', 'caption': 'Length'},
-                {'name': 'score', 'caption': '*', formatter: null},
+                {'name': 'rating', 'caption': '*', formatter: null},
                 {'name': 'playButton', 'caption': 'Play', formatter: playButtonFormatter}
             ];
 
             var caption = 'Mostly from <a href="http://ichigos.com">ichigos.com</a>';
 
-            var table = TableGenerator().generateTable(colModel, rowList, caption, 50, 50);
+            var table = TableGenerator().generateTable(colModel, rowList, caption, 500, 100);
             $('.random-midi-list-cont').append(table); // defined in index.html
 
             var random = UnfairRandom(rowList);
@@ -128,7 +130,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             {
                 finishedFileInfo = finishedFileInfo || {fileName: ''};
 
-                playStandardMidiFile(random.getAny().rawFileName);
+                playStandardMidiFile(random.getAny());
             };
         };
 

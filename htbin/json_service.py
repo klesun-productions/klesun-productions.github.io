@@ -3,15 +3,18 @@
 
 # this should be the only script we call from ajax
 # it will contain the actionName -> method mapping
+import cgi
 
 import cgitb
-
 cgitb.enable()
+
+from classes.Contribution import Contribution
 
 import json
 import signal
 import os, sys
 import time
+import http.server
 
 from classes.MidiFileProvider import MidiFileProvider
 #from classes.TransLinker import TransLinker
@@ -19,15 +22,17 @@ from contextlib import contextmanager
 from oauth2client import client, crypt
 
 
-def print_response(response):
+def print_response(response: dict, headers: list):
     print("Content-Type: text/json")  # can be either html (in case of exceptions) or json
+    for header in headers:
+        print(header)
+
     print('')
-    print(response)
+    print(json.dumps(response))
 
 
 class TimeoutException(Exception):
     pass
-
 
 # @return dict|None
 def fetch_info_from_login_token(token):
@@ -63,19 +68,18 @@ def read_post() -> dict:
 
 
 method_dict = {
-    'get_ichigos_midi_names': MidiFileProvider.get_info_list,
+    'get_ichigos_midi_names': (MidiFileProvider.get_info_list, ['Cache-Control: max-age=86400']),
+    'add_song_rating': (lambda: Contribution.add_song_rating(read_post()), []),
 }
 
-'''
-post = read_post()
+get_params = {k: v for k,v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}
+method = get_params['f']
 
-method_name = post['methodName']
-params = post['params']
-user_info = (fetch_info_from_login_token(post['googleLogInIdToken'])
-             if 'googleLogInIdToken' in post else None)
-             
-result = method_dict[method_name](params, user_info)
- '''
+if method in method_dict:
+    func, headers = method_dict[method]
+    print_response(func(), headers)
+else:
+    print("Content-Type: text")
+    print('')
+    print('Bad Request - Undefined Function - GET["f"] = "' + method + '"')
 
-result = MidiFileProvider.get_info_list({}, None)
-print_response(json.dumps(result))

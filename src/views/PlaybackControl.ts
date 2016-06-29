@@ -1,9 +1,8 @@
 /// <reference path="../references.ts" />
 
-import {IGeneralStructure} from "../DataStructures";
+import {IGeneralStructure, ISmfFile} from "../DataStructures";
 import {Kl} from "../Tools";
 import {IPlayback} from "../player/Playback";
-import {IFileInfo} from "../player/Player";
 
 // This class generates jquery dom with current song info
 // and some controlls, particularly - timeline slider
@@ -11,14 +10,21 @@ import {IFileInfo} from "../player/Player";
 /** @param length - float: quarter will be 0.25, semibreve will be 1.0*/
 var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
 
-export default function PlaybackControl($cont: JQuery)
+var verySecurePassword = '';
+
+export default function PlaybackControl($cont: JQuery): IPlaybackControl
 {
+    const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorAll(s));
+
     var $tempoFactorInput = $cont.find('.tempoFactorInput'),
         $secondsTotalHolder = $cont.find('.secondsTotal.holder'),
         $timeSlider = $cont.find('.timeSlider'),
         tempoHolder = $cont.find('.tempoInput'),
         $playBtn = $cont.find('.playBtn'),
         $pauseBtn = $cont.find('.pauseBtn'),
+        ratingHolder = $$('.rating.holder')[0],
+        rateGoodBtn = $$('button.rateGood')[0],
+        rateBadBtn = $$('button.rateBad')[0],
         O_O = 0-0;
 
     var setFields = function(sheetMusic: IGeneralStructure)
@@ -90,13 +96,56 @@ export default function PlaybackControl($cont: JQuery)
         $pauseBtn.off().click(playback.pause);
     };
 
+    const askForPassword = function(cb: (pwd: string) => void)
+    {
+        // TODO: make it assynchrous to not break playback
+        cb(verySecurePassword || (verySecurePassword = prompt('Password?')));
+    };
+
+    const rateSong = function(isGood: boolean, fileName: string)
+    {
+        askForPassword(pwd => $.ajax('/htbin/json_service.py?f=add_song_rating', {
+            type: "post",
+            data: JSON.stringify({
+                'fileName': fileName,
+                'isGood': isGood,
+                'verySecurePassword': pwd,
+            }),
+            dataType: "json",
+            contentType: 'application/json;UTF-8',
+            success: (tuple: [string, string]) => {
+                var [totalRating, error] = tuple;
+                if (!error) {
+                    ratingHolder.innerHTML = totalRating;
+                } else {
+                    console.log('failed to rate:', error);
+                    verySecurePassword = error !== 'wrongPassword' && verySecurePassword;
+                }
+            },
+        }));
+    };
+
+    const setFileInfo = function(info: ISmfFile)
+    {
+        $cont.find('.fileName.holder').html(info.fileName);
+        $cont.find('.rating.holder').html(info.rating || '_');
+
+        rateGoodBtn.onclick = () => rateSong(true, info.fileName);
+        rateBadBtn.onclick = () => rateSong(false, info.fileName);
+    };
+
     return {
         setPlayback: setPlayback,
-        setFileInfo: function(info: IFileInfo) {
-            $cont.find('.fileName.holder').html(info.fileName);
-            $cont.find('.score.holder').html(info.score || '_');
-        },
+        setFileInfo: setFileInfo,
         setFields: setFields,
-        getTempoFactor: () => $tempoFactorInput.val(),
+        getTempoFactor: () => +$tempoFactorInput.val(),
     };
 };
+
+export interface IPlaybackControl
+{
+    setPlayback: (p: IPlayback) => void,
+    setFileInfo: (i: ISmfFile) => void,
+    setFields: (s: IGeneralStructure) => void,
+    getTempoFactor: () => number,
+}
