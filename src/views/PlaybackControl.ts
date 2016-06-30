@@ -25,6 +25,7 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
         ratingHolder = $$('.rating.holder')[0],
         rateGoodBtn = $$('button.rateGood')[0],
         rateBadBtn = $$('button.rateBad')[0],
+        rateUndoBtn = $$('button.rateUndo')[0],
         O_O = 0-0;
 
     var setFields = function(sheetMusic: IGeneralStructure)
@@ -98,25 +99,27 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
 
     const askForPassword = function(cb: (pwd: string) => void)
     {
-        // TODO: make it assynchrous to not break playback
-        cb(verySecurePassword || (verySecurePassword = prompt('Password?')));
+        if (verySecurePassword) {
+            cb(verySecurePassword);
+        } else {
+            Kl.promptAssync('Password?', (pwd) => cb(verySecurePassword = pwd));
+        }
     };
 
-    const rateSong = function(isGood: boolean, fileName: string)
+    const contribute = function(functionName: string, params: {}, cb: (r: any) => void)
     {
-        askForPassword(pwd => $.ajax('/htbin/json_service.py?f=add_song_rating', {
+        askForPassword(pwd => $.ajax('/htbin/json_service.py?f=' + functionName, {
             type: "post",
             data: JSON.stringify({
-                'fileName': fileName,
-                'isGood': isGood,
+                'params': params,
                 'verySecurePassword': pwd,
             }),
             dataType: "json",
             contentType: 'application/json;UTF-8',
             success: (tuple: [string, string]) => {
-                var [totalRating, error] = tuple;
+                var [result, error] = tuple;
                 if (!error) {
-                    ratingHolder.innerHTML = totalRating;
+                    cb(result);
                 } else {
                     console.log('failed to rate:', error);
                     verySecurePassword = error !== 'wrongPassword' && verySecurePassword;
@@ -125,6 +128,16 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
         }));
     };
 
+    const rateSong = (isGood: boolean, fileName: string) =>
+        contribute('add_song_rating',
+            {isGood: isGood, fileName: fileName},
+            r => ratingHolder.innerHTML = r);
+
+    const undoRating = (fileName: string) =>
+        contribute('undo_song_rating',
+            {fileName: fileName},
+            r => ratingHolder.innerHTML = r);
+
     const setFileInfo = function(info: ISmfFile)
     {
         $cont.find('.fileName.holder').html(info.fileName);
@@ -132,6 +145,7 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
 
         rateGoodBtn.onclick = () => rateSong(true, info.fileName);
         rateBadBtn.onclick = () => rateSong(false, info.fileName);
+        rateUndoBtn.onclick = () => undoRating(info.fileName);
     };
 
     return {

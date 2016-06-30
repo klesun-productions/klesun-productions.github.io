@@ -19,7 +19,7 @@ class MidiFileProvider(object):
 
     @classmethod
     @db_session
-    def get_info_list(cls):
+    def get_info_list(cls, params: dict) -> tuple:
 
         # TODO: investigate, this function likely takes ~0.6 second every time, what i think is VERY SLOW
 

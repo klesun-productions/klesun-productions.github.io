@@ -12,25 +12,26 @@ class Contribution(object):
 
     @staticmethod
     @db_session
-    def add_song_rating(params: dict):
+    def add_song_rating(params: dict) -> str:
 
-        local_config_path = 'unversioned/local.config.json'
-        with open(os.path.dirname(__file__) + '/../../' + local_config_path) as f:
-            config = json.load(f)
+        rating = SongRating.get(fileName=params['fileName']) \
+            or SongRating(fileName=params['fileName'])
 
-        if not params['verySecurePassword'] == config['verySecurePassword']:
-            return None, 'wrongPassword'
-
-        rating = SongRating.get(fileName=params['fileName'])
-        postfix = '1' if params['isGood'] else '0'
-        if rating is None:
-            rating = SongRating(fileName=params['fileName'], rating=postfix)
-        else:
-            rating.rating += postfix
+        rating.rating += '1' if params['isGood'] else '0'
 
         classes.DbTables.commit()
 
-        return rating.rating, None
+        return rating.rating
+
+    @staticmethod
+    @db_session
+    def undo_song_rating(params: dict) -> str:
+        rating = SongRating.get(fileName=params['fileName']) \
+            or SongRating(fileName=params['fileName'])
+        rating.rating = rating.rating[:-1]
+        classes.DbTables.commit()
+
+        return rating.rating
 
     @staticmethod
     @db_session

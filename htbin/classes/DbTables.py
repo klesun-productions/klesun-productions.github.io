@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from pony.orm import Database, Required, Set, db_session
+from pony.orm import Database, Required, Set, db_session, Optional
 import os.path
 
 # this module contains all Pony ORM models in the project
@@ -18,7 +18,7 @@ class Listened(db.Entity):
 
 class SongRating(db.Entity):
     fileName = Required(str)
-    rating = Required(str)
+    rating = Optional(str, default='')
 
 
 db.generate_mapping(create_tables=True)

@@ -42,7 +42,7 @@ export default function MainPage(mainCont: HTMLDivElement)
         ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
 
     // TODO: make it "get" since it is just the single "getSongNames()" method, which could be cached and stuff
-    const performExternal = (methodName: string, params: dict<any>, callback: (json: any) => void) => $.ajax({
+    const performExternal = (methodName: string, params: dict<any>, callback: (tuple: [any, string]) => void) => $.ajax({
         url: '/htbin/json_service.py' + '?f=' + methodName, // GET params just for cosmetics
         cache: true,
         success: callback
@@ -108,8 +108,14 @@ export default function MainPage(mainCont: HTMLDivElement)
         /** @debug */
         console.log('gonna fetrch info');
 
-        var callback = function(rowList: ISmfFile[])
+        var callback = function(tuple: [ISmfFile[], string])
         {
+            var [rowList, error] = tuple;
+            if (error) {
+                alert('Failed to retrieve song names' + error);
+                return;
+            }
+            
             $(midiFileCounter).html(rowList.length + '');
 
             var colModel: ColModel<ISmfFile> = [

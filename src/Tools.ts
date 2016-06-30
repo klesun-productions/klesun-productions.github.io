@@ -152,6 +152,25 @@ export var Kl = Cls['Kl'] = class
         return interrupt;
     };
 
+    static promptAssync = function(msg: string, cb: (txt: string) => void)
+    {
+        var $input = $('<input type="text"/>');
+
+        var $dialog = $('<div class="modalDialog"></div>')
+            .append(msg).append('<br/>').append($input)
+            .append($('<button>Ok</button>').click(() => {
+                cb($input.val());
+                $dialog.remove();
+            }))
+            .append($('<button>Cancel</button>').click(() => { $dialog.remove(); }));
+
+        // TODO: enter from input - submit
+        // TODO: escape from input - cancel
+        // TODO: initial focus
+
+        $('body').prepend($dialog);
+    };
+
     static promptSelect = function(options: {[k: string]: {(): void}}, message?: string): void
     {
         message = message || 'It*s Time To Choose!';
@@ -161,7 +180,7 @@ export var Kl = Cls['Kl'] = class
         Kl.for(options, (n,_) =>
             $select.append($('<option></option>').val(n).html(n)));
 
-        var $dialog = $('<div></div>')
+        var $dialog = $('<div class="modalDialog"></div>')
             .append(message).append('<br/>')
             .append($select.change(() => {
                 $select.val() in options
@@ -169,16 +188,6 @@ export var Kl = Cls['Kl'] = class
                     : alert('System Failure, Unknown Option Selected: ' + $select.val())
                 $dialog.remove();
             }));
-
-        $dialog.css({
-            position: 'absolute',
-            left: '40%',
-            top: '40%',
-            width: '20%',
-            heigh: '20%',
-            'background-color': 'lightgrey',
-            'z-index': 1002,
-        });
 
         $('body').prepend($dialog);
     };
