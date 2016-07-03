@@ -127,7 +127,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
             var caption = 'Mostly from <a href="http://ichigos.com">ichigos.com</a>';
 
-            var table = TableGenerator().generateTable(colModel, rowList, caption, 500, 100);
+            var table = TableGenerator().generateTable(colModel, rowList, caption, 500, 200);
             $('.random-midi-list-cont').append(table); // defined in index.html
 
             var random = UnfairRandom(rowList);

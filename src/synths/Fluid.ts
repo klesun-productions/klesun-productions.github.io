@@ -32,13 +32,14 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
     // when new note is about to be played we need time to load it
     var fallbackOscillator = Oscillator(audioCtx);
 
-    var playSample = function(fetchedSample: IFetchedSample, volumeFactor: number, parentNode: AudioNode): () => void
+    var playSample = function(fetchedSample: IFetchedSample, parentNode: AudioNode): () => void
     {
         var gainNode = audioCtx.createGain();
-        var gainValue = MAX_VOLUME * volumeFactor * fetchedSample.volumeKoef;
+        var gainValue = MAX_VOLUME * fetchedSample.volumeKoef;
         gainNode.gain.value = gainValue;
 
-        for (var node of fetchedSample.audioNodes.concat(gainNode)) {
+        var audioNodes = fetchedSample.audioNodes.concat([gainNode]);
+        for (var node of audioNodes) {
             node.connect(parentNode);
             parentNode = node;
         }
@@ -84,13 +85,8 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
 
         var sample: IFetchedSample;
 
-        if (sample = soundFont.fetchSample(semitone, channels[channel].preset, isDrum)) {
-            var volumeFactor = velocity / 127;
-
-            /** @debug */
-            volumeFactor *= +channel === 9 ? 2 : 1;
-
-            return playSample(sample, volumeFactor, channelNodes[channel]);
+        if (sample = soundFont.fetchSample(semitone, channels[channel].preset, isDrum, velocity)) {
+            return playSample(sample, channelNodes[channel]);
         } else {
             return +channel !== 9
                 ? fallbackOscillator.playNote(semitone, 0, velocity, -1)
@@ -113,7 +109,7 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
         var next = (i: number) => {
             var c = chords[i];
             c.noteList.forEach((n,i) => {
-                soundFont.fetchSample(n.tune, channels[n.channel].preset, +n.channel === 9);
+                soundFont.fetchSample(n.tune, channels[n.channel].preset, +n.channel === 9, 0);
             });
 
             i + 1 < chords.length && !interrupted

@@ -86,12 +86,12 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
 
     /** @return value or starts fetching so next time you call it it was ready
      * @nullable */
-    var fetchSample = (semitone: number, preset: number, isDrum: boolean): IFetchedSample =>
+    var fetchSample = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample =>
     {
         isDrum = isDrum || false;
 
         if (!presets || !drumPreset) {
-            whenLoaded.push(() => fetchSample(semitone, preset, isDrum));
+            whenLoaded.push(() => fetchSample(semitone, preset, isDrum, velocity));
             return null;
         }
 
@@ -121,18 +121,19 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
                 : sampleInfo.originalPitch;
 
             var correctionCents = determineCorrectionCents(semitone - sampleSemitone, generator);
-            var freqFactor = Math.pow(2, correctionCents / 100 / 12);
+            var freqFactor = Math.pow(2, correctionCents / 1200);
 
             var sampleUrl = sampleDirUrl + '/' + sampleInfo.sampleName.replace('#', '%23') + '.ogg';
 
             var audioNodes: AudioNode[] = [];
             if ('initialFilterFc' in generator) {
-                var biquadFilter = audioCtx.createBiquadFilter();
-                biquadFilter.type = 'lowpass';
-                // don't ask why "0.122322364", i just found two cases that match the equation in polyphone
-                biquadFilter.frequency.value = generator.initialFilterFc / 0.122322364;
-                biquadFilter.Q.value = 'initialFilterQ' in generator ? generator.initialFilterQ / 10 : 1.0;
-                audioNodes.push(biquadFilter);
+                // taking twice CPU time... should cache it somehow
+                // var biquadFilter = audioCtx.createBiquadFilter();
+                // biquadFilter.type = 'lowpass';
+                // // don't ask why "0.122322364", i just found two cases that match the equation in polyphone
+                // biquadFilter.frequency.value = (2 ** (generator.initialFilterFc / 1200)) / 0.122322364;
+                // biquadFilter.Q.value = 'initialFilterQ' in generator ? generator.initialFilterQ / 10 : 1.0;
+                // audioNodes.push(biquadFilter);
             }
 
             var fetched: IFetchedSample = null;
@@ -143,7 +144,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
                 loopStart: (sampleInfo.startLoop + (generator.startloopAddrsOffset || 0)) / sampleInfo.sampleRate,
                 loopEnd: (sampleInfo.endLoop + (generator.endloopAddrsOffset || 0)) / sampleInfo.sampleRate,
                 stereoPan: sampleInfo.sampleType,
-                volumeKoef: 'initialAttenuation' in generator ? dBtoKoef(-generator.initialAttenuation / 10) : 1,
+                volumeKoef: ('initialAttenuation' in generator ? dBtoKoef(-generator.initialAttenuation / 10) : 1) * (velocity / 127),
                 fadeMillis: 50,
                 audioNodes: audioNodes,
             });
@@ -181,7 +182,7 @@ interface IGenerator {
     endloopAddrsOffset?: number, // add to sample.endLoop if present
     initialAttenuation?: number, // how much volume should be reduced in centibels
     initialFilterQ?: number, // BiquadFilterNode::Q * 10
-    initialFilterFc?: number, // BiquadFilterNode::frequency * 0.122322364
+    initialFilterFc?: number, // 2 ^ (it / 1200) = BiquadFilterNode::frequency * 0.122322364
     sampleModes?: number,
 }
  
