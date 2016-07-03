@@ -32,12 +32,16 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
     // when new note is about to be played we need time to load it
     var fallbackOscillator = Oscillator(audioCtx);
 
-    var playSample = function(fetchedSample: IFetchedSample, volumeFactor: number, parentNode: GainNode): () => void
+    var playSample = function(fetchedSample: IFetchedSample, volumeFactor: number, parentNode: AudioNode): () => void
     {
         var gainNode = audioCtx.createGain();
         var gainValue = MAX_VOLUME * volumeFactor * fetchedSample.volumeKoef;
         gainNode.gain.value = gainValue;
-        gainNode.connect(parentNode);
+
+        for (var node of fetchedSample.audioNodes.concat(gainNode)) {
+            node.connect(parentNode);
+            parentNode = node;
+        }
 
         var sample = audioCtx.createBufferSource();
         sample.playbackRate.value = fetchedSample.frequencyFactor;

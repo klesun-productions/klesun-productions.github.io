@@ -234,7 +234,7 @@
     .sheetMusicCont {
         background-color: rgba(255, 255, 255, 0.42);
         border: solid 10px transparent;
-        overflow-y: scroll;
+        overflow-y: auto;
         overflow-x: hidden;
         min-height: 120px;
         max-height: 360px; /* when note oval radius is 3px, this will be exactly 3 systems (360 / (3 * 40) = 3.0) */

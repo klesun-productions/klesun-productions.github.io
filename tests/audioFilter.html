@@ -1,0 +1,58 @@
+<body>
+
+<div>
+Gonna test, what sort of Filter is supposed to be used by soundfonts when playing midi
+</div>
+
+<script>
+
+var audioCtx = new AudioContext();
+
+//var sampleInfo = {
+//    url: 'http://shmidusic.lv/out/sf2parsed/fluid/samples/Sawtooth%20Wave%20A3.ogg',
+//    loopStart: 51,
+//    loopEnd: 151,
+//    sampleRate: 44100,
+//};
+
+var sampleInfo = {
+    url: 'http://shmidusic.lv/out/sf2parsed/fluid/samples/Square%20Wave%20A3.ogg',
+    loopStart: 47,
+    loopEnd: 147,
+    sampleRate: 44100,
+};
+
+var playBuffer = function(buffer)
+{
+    var biquadFilter = audioCtx.createBiquadFilter();
+    biquadFilter.type = 'lowpass';
+    biquadFilter.frequency.value = 1720; // initialFilterFc / 0.122322364... don't ask why "0.122322364", i just found two cases that match the equation in polyphone
+//    biquadFilter.Q.value = 1.0; // initialFilterQ / 10
+
+    var sample = audioCtx.createBufferSource();
+    sample.loopStart = sampleInfo.loopStart / sampleInfo.sampleRate;
+    sample.loopEnd = sampleInfo.loopEnd / sampleInfo.sampleRate;
+    sample.loop = true;
+    sample.buffer = buffer;
+
+//    sample.connect(audioCtx.destination);
+    sample.connect(biquadFilter);
+    biquadFilter.connect(audioCtx.destination);
+
+    sample.start();
+};
+
+window.onload = function()
+{
+    var request = new XMLHttpRequest();
+    request.open('GET', sampleInfo.url, true);
+    request.responseType = 'arraybuffer';
+    request.send();
+    request.onload = function() {
+        audioCtx.decodeAudioData(request.response, playBuffer)
+    };
+};
+
+</script>
+
+</body>

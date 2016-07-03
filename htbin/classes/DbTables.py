@@ -7,7 +7,7 @@ import os.path
 
 dirpath = os.path.dirname(__file__)
 
-db = Database('sqlite', dirpath + '/../../user_data.db')
+db = Database('sqlite', dirpath + '/../../unversioned/user_data.db')
 
 
 class Listened(db.Entity):

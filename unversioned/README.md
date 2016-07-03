@@ -1,1 +1,3 @@
 This folder consists of heavy files like soundfonts; big audio; big images...
+
+Some important stuff lying here:

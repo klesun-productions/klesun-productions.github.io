@@ -17,7 +17,7 @@ class Contribution(object):
         rating = SongRating.get(fileName=params['fileName']) \
             or SongRating(fileName=params['fileName'])
 
-        rating.rating += '1' if params['isGood'] else '0'
+        rating.rating += '+' if params['isGood'] else '-'
 
         classes.DbTables.commit()
 

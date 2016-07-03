@@ -11,7 +11,7 @@ dirpath = os.path.dirname(os.path.realpath(__file__))
 
 
 def make_order_value(rating: str) -> str:
-    return rating.replace('1', 'a').replace('0', 'c').ljust(31, 'b')
+    return rating.replace('+', 'a').replace('-', 'c').ljust(31, 'b')
 
 
 class MidiFileProvider(object):
@@ -20,7 +20,6 @@ class MidiFileProvider(object):
     @classmethod
     @db_session
     def get_info_list(cls, params: dict) -> tuple:
-
         # TODO: investigate, this function likely takes ~0.6 second every time, what i think is VERY SLOW
 
         result = []
@@ -29,13 +28,13 @@ class MidiFileProvider(object):
 
         root = cls.content_folder + '/midiCollection/'
 
-        fileList = [os.path.relpath(curDir, root) + '/' + fileName
-            for curDir, _, fileNames in os.walk(root) if not curDir.endswith('source_ichigos_com')
-                for fileName in fileNames if fileName.endswith('.mid')]
+        file_list = [os.path.relpath(curDir, root) + '/' + fileName
+                     for curDir, _, fileNames in os.walk(root) if not curDir.endswith('source_ichigos_com')
+                     for fileName in fileNames if fileName.endswith('.mid')]
 
         rating_by_name = {r.fileName: r.rating for r in select(r for r in SongRating)}
 
-        for file in fileList:
+        for file in file_list:
             result.append({
                 "fileName": file,
                 "rawFileName": file,

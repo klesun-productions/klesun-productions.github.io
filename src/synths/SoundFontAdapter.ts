@@ -125,6 +125,16 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
 
             var sampleUrl = sampleDirUrl + '/' + sampleInfo.sampleName.replace('#', '%23') + '.ogg';
 
+            var audioNodes: AudioNode[] = [];
+            if ('initialFilterFc' in generator) {
+                var biquadFilter = audioCtx.createBiquadFilter();
+                biquadFilter.type = 'lowpass';
+                // don't ask why "0.122322364", i just found two cases that match the equation in polyphone
+                biquadFilter.frequency.value = generator.initialFilterFc / 0.122322364;
+                biquadFilter.Q.value = 'initialFilterQ' in generator ? generator.initialFilterQ / 10 : 1.0;
+                audioNodes.push(biquadFilter);
+            }
+
             var fetched: IFetchedSample = null;
             getBuffer(sampleUrl, (resp) => fetched = {
                 buffer: resp,
@@ -135,6 +145,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
                 stereoPan: sampleInfo.sampleType,
                 volumeKoef: 'initialAttenuation' in generator ? dBtoKoef(-generator.initialAttenuation / 10) : 1,
                 fadeMillis: 50,
+                audioNodes: audioNodes,
             });
 
             return fetched;
@@ -155,6 +166,7 @@ export interface IFetchedSample {
     stereoPan: EStereoPan,
     volumeKoef: number, // in [0..1]
     fadeMillis: number,
+    audioNodes: AudioNode[], // filters that will be applied to the sample
 }
 
 interface IGenerator {
@@ -168,6 +180,8 @@ interface IGenerator {
     startloopAddrsOffset?: number, // add to sample.startLoop if present
     endloopAddrsOffset?: number, // add to sample.endLoop if present
     initialAttenuation?: number, // how much volume should be reduced in centibels
+    initialFilterQ?: number, // BiquadFilterNode::Q * 10
+    initialFilterFc?: number, // BiquadFilterNode::frequency * 0.122322364
     sampleModes?: number,
 }
  
