@@ -6,7 +6,7 @@ import {IControl} from "./Control";
 import {Control} from "./Control";
 import ShapeProvider from "./ShapeProvider";
 import {Kl} from "../Tools";
-import {ISynth} from "../synths/ISynth";
+import {ISynth} from "../synths/ISynth"; 
 
 export function TactMeasurer(tactSize: number)
 {
@@ -77,7 +77,7 @@ const determinePosition = function(semitone: number, keySignature: number): [num
     };
 
     var octave = Math.floor(semitone / 12);
-    
+
     var ivory = (<huj_t>ebonySignMap[keySignature]).findIndex((sign, idx) =>
         [0,2,4,5,7,9,11][idx] + sign === semitone % 12);
 

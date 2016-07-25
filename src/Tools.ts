@@ -1,4 +1,4 @@
-/// <reference path="../libs/jqueryTyped/jquery.d.ts" />
+/// <reference path="references.ts" />
 
 import {IGeneralStructure} from "./DataStructures";
 import {Structurator} from "./player/Structurator";
@@ -28,6 +28,10 @@ class Optional<T>
 
 // defined in /libs/FileSaver.js
 declare var saveAs: any;
+
+// for asynchronous buffer retrieval
+var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
+var awaiting: { [url: string]: Array<{ (resp: AudioBuffer): void }> } = {};
 
 export var Kl = Cls['Kl'] = class
 {
@@ -105,6 +109,21 @@ export var Kl = Cls['Kl'] = class
     static openMidi = (whenLoaded: { (midi: IGeneralStructure): void }) =>
         Kl.selectFileFromDisc(db64 =>
             whenLoaded(Structurator(Kl._base64ToArrayBuffer(db64))));
+
+    static getAudioBuffer = function(url: string, onOk: { (resp: AudioBuffer): void }): void
+    {
+        if (!(url in cachedSampleBuffers)) {
+            awaiting[url] = awaiting[url] || [];
+            awaiting[url].push(onOk);
+            Kl.fetchBinaryFile(url, (resp) => Kl.audioCtx.decodeAudioData(resp, (decoded) => {
+                awaiting[url].forEach(a => a(decoded));
+                awaiting[url] = [];
+                cachedSampleBuffers[url] = decoded;
+            }));
+        } else {
+            onOk(cachedSampleBuffers[url]);
+        }
+    };
 
     // http://stackoverflow.com/a/21797381/2750743
     private static _base64ToArrayBuffer = function(base64: string): ArrayBuffer

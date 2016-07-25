@@ -3,13 +3,14 @@
 
 import {seconds_t} from "../DataStructures";
 import {Cls} from "../Cls";
+import {Kl} from "../Tools";
 
 // this object provides access to soundfont info
 // particularly it has a method that
 // takes (semitone and preset) and
 // returns (AudioBuffer, frequencyFactor, loopStart, loopEnd)
 
-export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: AudioContext, soundfontDirUrl: string)
+export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl: string): ISoundFontAdapter
 {
     var sampleDirUrl = soundfontDirUrl + '/samples/';
 
@@ -24,29 +25,6 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
         drumPreset = result;
         presets && whenLoaded.forEach(c => c());
     });
-
-    var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
-    var awaiting: { [url: string]: Array<{ (resp: AudioBuffer): void }> } = {};
-
-    var getBuffer = function(url: string, onOk: { (resp: AudioBuffer): void }): void
-    {
-        if (!(url in cachedSampleBuffers)) {
-            var request = new XMLHttpRequest();
-            request.open('GET', url, true);
-            request.responseType = 'arraybuffer';
-            request.send();
-            awaiting[url] = awaiting[url] || [];
-            awaiting[url].push(onOk);
-            request.onload = () => audioCtx.decodeAudioData(request.response, function(decoded)
-            {
-                awaiting[url].forEach(a => a(decoded));
-                awaiting[url] = [];
-                cachedSampleBuffers[url] = decoded;
-            });
-        } else {
-            onOk(cachedSampleBuffers[url]);
-        }
-    };
 
     var determineCorrectionCents = function(delta: number, generator: IGenerator): number
     {
@@ -137,7 +115,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
             }
 
             var fetched: IFetchedSample = null;
-            getBuffer(sampleUrl, (resp) => fetched = {
+            Kl.getAudioBuffer(sampleUrl, (resp) => fetched = {
                 buffer: resp,
                 frequencyFactor: freqFactor,
                 isLooped: 'sampleModes' in generator && generator.sampleModes === 1,
@@ -156,6 +134,10 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(audioCtx: Audio
     return {
         fetchSample: fetchSample,
     };
+};
+
+export interface ISoundFontAdapter {
+    fetchSample: (semitone: number, preset: number, isDrum: boolean, velocity: number) => IFetchedSample,
 };
 
 export interface IFetchedSample {

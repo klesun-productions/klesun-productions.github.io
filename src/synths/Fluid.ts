@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import {IShmidusicChord, IShChannel} from "../DataStructures";
-import {SoundFontAdapter, IFetchedSample, EStereoPan} from "./SoundFontAdapter";
+import {SoundFontAdapter, IFetchedSample, EStereoPan, ISoundFontAdapter} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
 import {Kl} from "../Tools";
 import {ISynth} from "./ISynth";
@@ -11,9 +11,9 @@ import {Cls} from "../Cls";
 
 interface INote { play: { (): { (): void } } }
 
-export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirUrl: string): ISynth
+export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 {
-    var soundFont = SoundFontAdapter(audioCtx, soundfontDirUrl);
+    var audioCtx = Kl.audioCtx;
 
     var channelNodes = Kl.range(0,16).map(i => {
         var node = audioCtx.createGain();
@@ -67,6 +67,7 @@ export var Fluid = Cls['Fluid'] = function(audioCtx: AudioContext, soundfontDirU
 
         return () => {
             var iterations = 10;
+            sample.loop = false;
             var fade = (i: number) => {
                 if (i >= 0) {
                     gainNode.gain.value = gainValue * (i / iterations);

@@ -54,21 +54,7 @@ def read_post() -> dict:
         return {}
     post_length = int(os.environ['CONTENT_LENGTH']) - 1
 
-    @contextmanager
-    def time_limit(seconds):
-        def signal_handler(signum, frame):
-            raise TimeoutException("Timed out! " + os.environ['CONTENT_LENGTH'])
-
-        signal.signal(signal.SIGALRM, signal_handler)
-        signal.alarm(seconds)
-        try:
-            yield
-        finally:
-            signal.alarm(0)
-
-    with time_limit(1):
-        # post_length stores byte count, but stdin.read, apparently, takes the character count
-        post_string = sys.stdin.buffer.read(post_length + 1).decode('utf-8')
+    post_string = sys.stdin.buffer.read(post_length + 1).decode('utf-8')
     return json.loads(post_string)
 
 def is_correct_password(entered_password: str) -> bool:

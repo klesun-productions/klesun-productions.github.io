@@ -43,12 +43,13 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0])
         ),
         enableMidiInputFlag = <HTMLInputElement>$$('#enableMidiInputFlag')[0],
+        enablePlayOnKeyDownFlag = <HTMLInputElement>$$('#enablePlayOnKeyDownFlag')[0],
         O_O = 0-0;
 
     var lastChordOn = 0;
     const player = Player({
         setPlayback: () => {}, setFields: () => {},
-        setFileInfo: () => {}, getTempoFactor: () => -100,
+        setFileInfo: () => {}, getTempoFactor: () => 1,
     });
 
     var control = painter.getControl();
@@ -88,6 +89,8 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             channel: 0,
             length: 0.25
         };
+
+        enablePlayOnKeyDownFlag.checked && oneShotPlayer.playChord([note]);
 
         if (!playback) {
             if (receivedTime - lastChordOn < 100) {

@@ -10,6 +10,8 @@ import {Kl} from "../Tools";
 import {IPianoLayout} from "../views/PianoLayout";
 import {IChannel, IShChannel} from "../DataStructures";
 import {IPresetList} from "../views/PresetList";
+import {SoundFontAdapter} from "./SoundFontAdapter";
+import {DenyaAdapter} from "./DenyaAdapter";
 
 export function Switch(
     dropdownEl: HTMLSelectElement,
@@ -18,18 +20,17 @@ export function Switch(
     pianoLayout: IPianoLayout
 ): ISynth
 {
-    var audioCtx = Kl.audioCtx;
-
     var channels: {[c: number]: IShChannel} = Kl.range(0,16).map(i => 1 && {preset: 0});
     
     var pitchBendByChannel: {[c: number]: number} = Kl.range(0,16).map(i => 0);
 
     var synths: {[k: string]: ISynth} = {
-        oscillator: Oscillator(audioCtx),
+        oscillator: Oscillator(Kl.audioCtx),
         midiDevice: MidiDevice(),
-        FluidSynth3: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/fluid/'),
-        Arachno: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/arachno/'),
-        GeneralUser: Fluid(audioCtx, 'http://shmidusic.lv/out/sf2parsed/generaluser/'),
+        FluidSynth3: Fluid(SoundFontAdapter('/out/sf2parsed/fluid/')),
+        Arachno: Fluid(SoundFontAdapter('/out/sf2parsed/arachno/')),
+        GeneralUser: Fluid(SoundFontAdapter('/out/sf2parsed/generaluser/')),
+        DenyaSynth: Fluid(DenyaAdapter()), 
     };
 
     var initSynth = function(choosen: ISynth)

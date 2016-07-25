@@ -1,11 +1,5 @@
-/// <reference path="synths/SoundFontAdapter.ts" />
-/// <reference path="Tools.ts" />
-/// <reference path="compose/Painter.ts" />
-/// <reference path="../libs/jqueryTyped/jquery.d.ts" />
-/// <reference path="compose/Shmidusicator.ts" />
-/// <reference path="compose/Control.ts" />
-/// <reference path="Reflect.ts" />
-/// <reference path="synths/ISynth.ts" />
+/// <reference path="../libs/dts/jquery.d.ts" />
+/// <reference path="../libs/dts/lib.es6.d.ts" />
+/// <reference path="../libs/dts/webmidi.d.ts" />
+/// <reference path="../libs/dts/custom.d.ts" />
 
-/// <reference path="../libs/definitelytyped/webmidi.d.ts" />
-/// <reference path="../libs/definitelytyped/custom.d.ts" />

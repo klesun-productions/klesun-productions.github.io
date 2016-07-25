@@ -1,5 +1,5 @@
 /// <reference path="DataStructures.ts" />
-/// <reference path="../libs/definitelytyped/lib.es6.d.ts" />
+/// <reference path="references.ts" />
 
 // and so i thought, that we could have pretty complicated logic of how
 // frequently should be played this song and how rarely this... that's

@@ -21,7 +21,8 @@ type cb = () => void;
 /** @param mainCont - div dom with children
  * structure defined in index.html */
 export default function MainPage(mainCont: HTMLDivElement)
-{ 
+{
+
     const
         pianoCanvas = <HTMLCanvasElement>$(mainCont).find('.pianoLayoutCanvas')[0],
         $playbackControlCont = $(mainCont).find('.playbackControlCont'),
@@ -91,7 +92,7 @@ export default function MainPage(mainCont: HTMLDivElement)
     const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement
     {
         var result = document.createElement('a');
-        result.setAttribute('href', 'http://shmidusic.lv/midiCollection/' + row.rawFileName);
+        result.setAttribute('href', '/midiCollection/' + row.rawFileName);
         result.innerHTML = (path + '').replace(/[_\/]/g, ' ');
 
         return result;

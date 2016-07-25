@@ -19,7 +19,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
          * scroll window heavily to the buttom and play, say, elfen lied */
 
         var chordRect = chordEl.getBoundingClientRect();
-        var scrollPaneRect = $parentEl[0].getBoundingClientRect();
+        var scrollPaneRect = $parentEl[0].getBoundingClientRect(); 
 
         var isVisible = chordRect.top >= scrollPaneRect.top &&
             chordRect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
