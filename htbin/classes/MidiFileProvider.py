@@ -13,9 +13,8 @@ dirpath = os.path.dirname(os.path.realpath(__file__))
 def make_order_value(rating: str) -> str:
     return rating.replace('+', 'a').replace('-', 'c').ljust(31, 'b')
 
-
 class MidiFileProvider(object):
-    content_folder = dirpath + '/../../'
+    content_folder = dirpath + '/../../Dropbox/web/'
 
     @classmethod
     @db_session

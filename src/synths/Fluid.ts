@@ -11,6 +11,9 @@ import {Cls} from "../Cls";
 
 interface INote { play: { (): { (): void } } }
 
+// to make sound and graphics more fitting to each other
+const DELAY_FOR_GRAPHICS = 10;
+
 export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 {
     var audioCtx = Kl.audioCtx;
@@ -63,7 +66,9 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
             sample.connect(gainNode);
         }
 
-        sample.start();
+        // sample.start();
+        /** @debug */
+        setTimeout(() => sample.start(), DELAY_FOR_GRAPHICS);
 
         return () => {
             var iterations = 10;
@@ -76,7 +81,9 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
                     sample.stop();
                 }
             };
-            fade(iterations - 1);
+            // fade(iterations - 1);
+            /** @debug */
+            setTimeout(() => fade(iterations - 1), DELAY_FOR_GRAPHICS);
         };
     };
 

@@ -32,7 +32,8 @@ export default function MainPage(mainCont: HTMLDivElement)
         bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
         instrumentInfoBlock = <HTMLDivElement>$(mainCont).find('#instrumentInfoBlock')[0],
         drawSheetMusicFlag = <HTMLInputElement>$(mainCont).find('#drawSheetMusicFlag')[0],
-        playMidiFromDiskBtn = $(mainCont).find('input[type="button"].playMidiFromDiskBtn')[0],
+        playRandomBtn = $(mainCont).find('.playRandomBtn')[0],
+        playMidiFromDiskBtn = $(mainCont).find('.playMidiFromDiskBtn')[0],
         midiFileCounter = <HTMLAnchorElement>$(mainCont).find('#midiFileCounter')[0],
         O_O = 'O_O'
         ;
@@ -62,7 +63,7 @@ export default function MainPage(mainCont: HTMLDivElement)
     const player = Player(control);
     player.addNoteHandler(synth);
 
-    var playRandom = (_: any) => alert("Please, wait till midi names load from ajax!");
+    var playRandom = () => alert("Please, wait till midi names load from ajax!");
 
     const playSMF = (song: IGeneralStructure) =>
     {
@@ -72,27 +73,29 @@ export default function MainPage(mainCont: HTMLDivElement)
         player.playSheetMusic(song, () => {}, 0);
     };
 
+    const songDirUrl = '/Dropbox/web/midiCollection/';
+
     const playStandardMidiFile = function(fileInfo: ISmfFile)
     {
         /** @debug */
         console.log(' ');
         console.log('gonna play', fileInfo.fileName);
 
-        Kl.fetchMidi('/midiCollection/' + fileInfo.fileName, (song: IGeneralStructure) =>
+        Kl.fetchMidi(songDirUrl + '/' + fileInfo.fileName, (song: IGeneralStructure) =>
         {
             synth.consumeConfig(song.config.channels);
             synth.analyse(song.chordList);
             control.setFields(song);
             control.setFileInfo(fileInfo);
 
-            player.playSheetMusic(song, () => playRandom(fileInfo));
+            player.playSheetMusic(song, () => playRandom());
         });
     };
 
     const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement
     {
         var result = document.createElement('a');
-        result.setAttribute('href', '/midiCollection/' + row.rawFileName);
+        result.setAttribute('href', songDirUrl + '/' + row.rawFileName);
         result.innerHTML = (path + '').replace(/[_\/]/g, ' ');
 
         return result;
@@ -133,12 +136,7 @@ export default function MainPage(mainCont: HTMLDivElement)
 
             var random = UnfairRandom(rowList);
 
-            playRandom = function(finishedFileInfo)
-            {
-                finishedFileInfo = finishedFileInfo || {fileName: ''};
-
-                playStandardMidiFile(random.getAny());
-            };
+            playRandom = () => playStandardMidiFile(random.getAny());
         };
 
         performExternal('get_ichigos_midi_names', {}, callback)
@@ -162,11 +160,11 @@ export default function MainPage(mainCont: HTMLDivElement)
         sheetMusicPainter.setEnabled(drawSheetMusicFlag.checked);
 
     playMidiFromDiskBtn.onclick = () => Kl.openMidi(playSMF);
+    playRandomBtn.onclick = () => playRandom();
 
     return {
         initIchigosMidiList: initIchigosMidiList,
         // initMyMusicList: initMyMusicList, 
-        playRandom: () => playRandom({}),
         handleGoogleSignIn: handleGoogleSignIn,
     };
 };

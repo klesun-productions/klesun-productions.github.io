@@ -61,7 +61,6 @@
     }
 
     #pianoControlDiv {
-        width: 1000px;
         margin-left: auto ;
         margin-right: auto ;
     }
@@ -75,13 +74,11 @@
         float: left;
         border: 1px solid rgba(255,0,0,0.0); /* invisible border - to ensure that these divs _do_ take these 200px */
     }
-    .piano-side-div input {
+    .filters button {
         font-size: 10px;
-        float: left;
         /*border: 3px solid rgba(255,127,0,0.3);*/
         background: white;
         max-width: 190px;
-        float: left !important;
     }
 
     #contentContainer{
@@ -89,13 +86,10 @@
     }
     #contentContainer .main-middle-cont {
         flex: 1;
-        border: 2px solid green;
         margin-right: 4px;
         margin-left: 6px;
-        height: 740px; /* it should match the height of random-midi-list-cont */
         text-align: left; /* for some reason, without it a horizontal scrollbar appears when vertical scrollbar appears */
 
-        background: white url("/imgs/big/povestjoleneolene_400_400.png") no-repeat right bottom;
     }
     #contentContainer .rightSideMainBlock {
         width: 250px;
@@ -123,7 +117,6 @@
 
     #instrumentInfoBlock {
         min-height: 200px;
-        background-color: blue;
         margin: 2px;
     }
     #instrumentInfoBlock td {
@@ -158,14 +151,15 @@
     }
 
     .main-middle-cont * { font-size: 10px; }
-    #playbackControl > div.general { background-color: rgb(140, 133, 208); }
-    #playbackControl > div > *:not(button) {
+    #playbackControl .general { flex: 1; }
+    #playbackControl #instrumentInfoBlock { max-width: 240px; }
+    #playbackControl div.general { background-color: rgb(140, 133, 208); }
+    #playbackControl div.controls > div {
 		white-space: nowrap;
 		background-color: #ccf;
 		border: 1px solid grey;
 	}
-    div#synthControl > * { background-color: #fce; }
-	div#synthControl { background-color: rgba(220, 91, 164, 1); }
+    #synthControl { background-color: rgba(220, 91, 164, 1); }
 	
     div.inlineBlock {
         padding: 3px;
@@ -173,19 +167,20 @@
         height: 14px;
     }
     #synthControl div.inlineBlock { height: 18px; }
-	#playbackControl > * > div.inlineBlock > span { width: 50px; }
-	#playbackControl > * > * > span { /* field value */
+	#playbackControl .controls > div.inlineBlock > span { width: 50px; }
+	#playbackControl .controls > * > span { /* field value */
         background-color: #e4e4e4;
         font-weight: bold;
         border: 1px solid black;
 
         display: inline-block;
     }
-	#playbackControl > * > * > input[type=number] {
+	#playbackControl input[type=number] {
         width: 50px;
 		font-size: 10px;
 		height: 16px;
     }
+    #synthControl { background-color: #fce; }
 
     #playbackControl button {
         font-weight: bold;

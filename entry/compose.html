@@ -16,7 +16,7 @@
     <label>Synth: <select id="synthDropdown"></select></label>
     <span id="synthControl"></span>
     <br clear="all"/>
-    <canvas id="pianoCanvas" width="10px" height="10px"></canvas>
+    <canvas id="pianoCanvas" width="735px" height="45px" octaves="7" style="background-color: white;"></canvas>
     <label>MIDI Input:
         <input type="checkbox" checked="checked" id="enableMidiInputFlag" title="Use the F4, Luke"/>
     </label>
@@ -142,6 +142,7 @@
         font-size: 12px;
         font-family: monospace;
     }
+    #playbackConfigDiv { background-color: #ddf; }
     #playbackConfigDiv * { font-size: 10px; }
     #playbackConfigDiv input[type="number"]:not(.float) {
         width: 40px;

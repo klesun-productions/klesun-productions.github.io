@@ -35,97 +35,101 @@
     </div>
     <br/>
 
-    <div id="pianoControlDiv" align="center">
-        <div class="piano-side-div">
-            <select id="synthDropdown" style="float: right; margin-right: 10px; background-color: rgba(255, 63, 0, 0.2)"></select>
-        </div>
-        <div class="piano-cont">
-            <canvas id="pianoLayoutPanel" class="pianoLayoutCanvas" width="490px" height="30px"></canvas>
-        </div>
-        <div class="piano-side-div">
-            <input id="playRandomButton" type="button" value="Play Random" style="float:right"/>
-            <input class="playMidiFromDiskBtn" type="button" value="Play your .mid file"/>
-        </div>
-    </div>
-    <br clear="all"/>
-
     <div id="contentContainer">
         <div class="main-middle-cont">
-            <div id="synthControl"></div>
+            <div id="pianoControlDiv" align="right">
+                <!-- the good width/height proportion is 49/3 for 7 octaves -->
+                <canvas id="pianoLayoutPanel" class="pianoLayoutCanvas" width="735px" height="45px" data-octaves="7" style="background-color: white;"></canvas>
+            </div>
             <div id="playbackControl" class="playbackControlCont">
-                <div class="globalControl">
-                    <div class="inlineBlock">
-                        Speed:
-                        <select class="tempoFactorInput">
-                            <option value="1" selected>x1</option>
-                            <option value="1.5">x1.5</option>
-                            <option value="2">x2</option>
-                            <option value="3">x3</option>
-                            <option value="4">x4</option>
-                        </select>
-                    </div>
-                    <br clear="all"/>
-                </div>
+                <div><input class="timeSlider" type="range" min="0" max="0" step=1/></div>
+                <div style="display: flex;">
+                    <div class="general">
+                        <div class="controls">
+                            <div class="globalControl">
+                                <div class="inlineBlock">
+                                    <button class="playBtn"> ></button>
+                                    <button class="pauseBtn">||</button>
+                                </div>
 
-                <div class="general">
+                                <div class="inlineBlock">
+                                    Speed:
+                                    <select class="tempoFactorInput">
+                                        <option value="1" selected>x1</option>
+                                        <option value="1.5">x1.5</option>
+                                        <option value="2">x2</option>
+                                        <option value="3">x3</option>
+                                        <option value="4">x4</option>
+                                    </select>
+                                </div>
 
-                    <div>File Name: <span class="fileName holder">?</span></div>
+                                <div class="inlineBlock">
+                                    <button class="rateGood" onclick="alert('Play a song!')">Plus</button>
+                                    <button class="rateBad" onclick="alert('Play a song!')">Minus</button>
+                                    <button class="rateUndo" onclick="alert('Play a song!')"><</button>
+                                </div>
 
-                    <div class="inlineBlock">
-                        Chord: <span class="chordIndex holder">?</span>
-                        /<span class="chordCount holder">?</span>
-                    </div>
-                    <div class="inlineBlock">
-                        Note Count: <span class="noteCount holder">?</span>
-                    </div>
-                    <div class="inlineBlock">
-                        Tempo: <input type="number" min="15" class="tempoInput"/>
-                        <span class="tempoOrigin holder">?</span>
-                    </div>
-                    <div class="inlineBlock">
-                        Seconds: <span class="seconds holder">?</span>
-                        / <span class="secondsTotal holder">?</span>
+                                <br clear="all"/>
+                            </div>
+
+                            <div>
+                                <div class="inlineBlock">
+                                    <select id="synthDropdown"></select>
+                                </div>
+                                <div class="inlineBlock">
+                                    <div id="synthControl"></div>
+                                </div>
+                                <br clear="all"/>
+                            </div>
+
+                            <div>File Name: <span class="fileName holder">?</span></div>
+
+                            <div class="inlineBlock">
+                                Chord: <span class="chordIndex holder">?</span>
+                                /<span class="chordCount holder">?</span>
+                            </div>
+                            <div class="inlineBlock">
+                                Note Count: <span class="noteCount holder">?</span>
+                            </div>
+                            <div class="inlineBlock">
+                                Tempo: <input type="number" min="15" class="tempoInput"/>
+                                <span class="tempoOrigin holder">?</span>
+                            </div>
+                            <div class="inlineBlock">
+                                Seconds: <span class="seconds holder">?</span>
+                                / <span class="secondsTotal holder">?</span>
+                            </div>
+                            <div class="inlineBlock">
+                                Rating: <span class="rating holder">?</span>
+                            </div>
+
+                            <br clear="all"/>
+
+                            <div id="sheetMusicConfigDiv">
+                                Draw Sheet Music:
+                                <input type="checkbox" id="drawSheetMusicFlag"/>
+                                Tact Size:
+                                <input type="number" class="holder tactSize" value="1"/>
+                            </div>
+                        </div>
+                        <div style="background-color: white">
+                            <div class="sheetMusicCont" id="mainSongContainer"></div>
+                        </div>
                     </div>
 
-                    <div class="inlineBlock">
-                        <button class="playBtn"> ></button>
-                        <button class="pauseBtn">||</button>
-                    </div>
-                    <div class="inlineBlock">
-                        Rating: <span class="rating holder">?</span>
-                        <button class="rateGood" onclick="alert('Play a song!')">Elven</button>
-                        <button class="rateBad" onclick="alert('Play a song!')">Orcish</button>
-                        <button class="rateUndo" onclick="alert('Play a song!')"><</button>
-                    </div>
-
-                    <br clear="all"/>
-
-                    <div>
-                        <input class="timeSlider" type="range" min="0" max="0" step=1/>
-                    </div>
-                </div>
-                <div class="userInfoCont">
-                    <img class="userImage" src=""/>
-                    <span class="logInStatusHolder">Not Logged-In: cant rate songs</span>
-                    <div class="g-signin2" data-onsuccess="onGoogleSignIn" data-theme="dark"></div>
-                    <br clear="all" />
+                    <div id="instrumentInfoBlock"></div>
                 </div>
             </div>
-            <div id="sheetMusicConfigDiv">
-                Draw Sheet Music:
-                <input type="checkbox" id="drawSheetMusicFlag"/>
-                Tact Size:
-                <input type="number" class="holder tactSize" value="1"/>
-            </div>
-            <div class="sheetMusicCont" id="mainSongContainer"></div>
         </div>
 
         <div class="rightSideMainBlock">
-            <div id="instrumentInfoBlock"></div>
+            <div class="filters">
+                <button class="playRandomBtn">Play Random</button>
+                <button class="playMidiFromDiskBtn">Play your .mid file</button>
+                <button class="findChordsBtn" onclick="alert('TODO: implement');">Find Chords</button>
+            </div>
             <div class="random-midi-list-cont"></div>
         </div>
-
-        <br clear="all"/>
     </div>
 
     <!-- TODO: join it with random midi list -->

@@ -44,14 +44,14 @@ var CanvasAdapter = function(canvas: HTMLCanvasElement)
 /** @param $canvas should have 490x30 size */
 export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
 {
-    var TUNE_COUNT = 84; // 7 octaves
+    var TUNE_COUNT = (+canvas.getAttribute('data-octaves') || 7) * 12;
     var IVORY_COUNT = TUNE_COUNT * 7/12;
     var FIRST_TUNE = 24;
 
-    var IVORY_WIDTH = 10;
+    var IVORY_WIDTH = canvas.width / IVORY_COUNT;
     var EBONY_WIDTH = IVORY_WIDTH * 3/5;
 
-    var IVORY_LENGTH = 30;
+    var IVORY_LENGTH = canvas.height;
     var EBONY_LENGTH = IVORY_LENGTH * 3/5;
 
     var context = canvas.getContext("2d");
@@ -127,6 +127,10 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
     var highlight = function (sem: number, chan: number)
     {
         var color = channelColors[chan];
+        // TODO: determine that time since pressed is less than epsilon (see 0_a7_League of Legends - Warriors.mid)
+        // if (sem in pressedNotes && pressedNotes[sem].includes(chan)) {
+        //     unhighlight(sem, chan);
+        // }
         fillTune(sem, color);
         (pressedNotes[sem] || (pressedNotes[sem] = [])).push(chan);
 
@@ -151,8 +155,6 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
         setTimeout(() => { interrupt(); unhiglight(); }, 500);
     };
 
-    canvas.setAttribute('width', '' + (IVORY_COUNT * IVORY_WIDTH));
-    canvas.setAttribute('height', '' + IVORY_LENGTH);
     paintBase();
 
     return {
