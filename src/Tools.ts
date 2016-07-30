@@ -33,6 +33,36 @@ declare var saveAs: any;
 var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
 var awaiting: { [url: string]: Array<{ (resp: AudioBuffer): void }> } = {};
 
+const dict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
+    var result: {[k: string]: Tv} = {};
+    pairs.forEach(p => result[p[0]] = p[1]);
+    return result;
+};
+
+const range = (l: number, r: number): Array<number> =>
+    Array.apply(null, Array(r - l)).map((nop: void, i: number) => l + i);
+
+
+
+const cssReflection: {[selector: string]: {[name: string]: string}} =
+    <any>dict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
+        .map((r: any) => [r.selectorText, dict(Array.from(r.style)
+            .map((name: string) => <any>[name, r.style[name]]))]));
+
+const parseRgbCss = function(rgbCss: string): [number, number, number]
+{
+    // TODO: also parse rgba(), #FDE, #FFDDEE
+
+    var result = /rgb\((\d+), *(\d+), *(\d+)\)/
+        .exec(rgbCss)
+        .slice(1);
+
+    return <any>result;
+};
+
+/** @debug */
+console.log(cssReflection);
+
 export var Kl = Cls['Kl'] = class
 {
     static audioCtx = new AudioContext();
@@ -41,15 +71,10 @@ export var Kl = Cls['Kl'] = class
         Object.keys(dict).forEach(k => callback(k, dict[k]));
 
     /** @params l - left index inclusive, r - right index exclusive */
-    static range = (l: number, r: number): Array<number> => Array.apply(null, Array(r - l))
-        .map((nop: void, i: number) => l + i);
+    static range = range;
 
     /** transforms array of [key, value] tuples into a dict */
-    static dict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
-        var result: {[k: string]: Tv} = {};
-        pairs.forEach(p => result[p[0]] = p[1]);
-        return result;
-    };
+    static dict = dict;
 
     static map = <Tx, Ty>(val: Tx, f: (v: Tx) => Ty) => val && f(val);
 
@@ -173,7 +198,7 @@ export var Kl = Cls['Kl'] = class
 
     static promptAssync = function(msg: string, cb: (txt: string) => void)
     {
-        var $input = $('<input type="text"/>');
+        var $input = $('<input type="password"/>');
 
         var $dialog = $('<div class="modalDialog"></div>')
             .append(msg).append('<br/>').append($input)
@@ -211,26 +236,8 @@ export var Kl = Cls['Kl'] = class
         $('body').prepend($dialog);
     };
 
-    // TODO: sync somehow with .channelColors CSS
-    static channelColors: [number,number,number][] = [
-        [0,0,0], // black
-        [192,0,0], // red
-        [0,148,0], // green
-        [60,60,255], // blue
-        [152,152,0], // yellow
-        [0,152,152], // cyan
-        [192,0,192], // magenta
-        [255,128,0], // orange
-        [91,0,255], // bluish magenta
-
-        [128,128,128], // drum
-        [127,255,0], // TODO: !!!
-        [255,0,255], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0], // TODO: !!!
-        [0,255,0] // TODO: !!!
-    ];
+    static channelColors: [number,number,number][] = range(0,16)
+        .map(ch => parseRgbCss(cssReflection['.channelColors [data-channel="' + ch + '"]']['color']));
 
     // here is exactly 128 preset names in correct order
     static instrumentNames: string[] = ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",

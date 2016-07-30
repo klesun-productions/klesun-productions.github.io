@@ -1,0 +1,16 @@
+.channelColors [data-channel="0"] { color: rgb(0, 0, 0); } /* black */
+.channelColors [data-channel="1"] { color: rgb(192, 0, 0); } /* red */
+.channelColors [data-channel="2"] { color: rgb(0, 148, 0); } /* green */
+.channelColors [data-channel="3"] { color: rgb(60, 60, 255); } /* blue */
+.channelColors [data-channel="4"] { color: rgb(152, 152, 0); } /* yellow */
+.channelColors [data-channel="5"] { color: rgb(0, 152, 152); } /* cyan */
+.channelColors [data-channel="6"] { color: rgb(192, 0, 192); } /* magenta */
+.channelColors [data-channel="7"] { color: rgb(255, 128, 0); } /* orange */
+.channelColors [data-channel="8"] { color: rgb(91, 0, 255); } /* bluish magenta */
+.channelColors [data-channel="9"] { color: rgb(128, 128, 128); } /* drum */
+.channelColors [data-channel="10"] { color: rgb(127, 255, 0); }
+.channelColors [data-channel="11"] { color: rgb(255, 0, 255); }
+.channelColors [data-channel="12"] { color: rgb(64, 128, 255); }
+.channelColors [data-channel="13"] { color: rgb(192, 128, 0); }
+.channelColors [data-channel="14"] { color: rgb(130, 200, 0); }
+.channelColors [data-channel="15"] { color: rgb(255, 32, 0); }

@@ -66,9 +66,7 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
             sample.connect(gainNode);
         }
 
-        // sample.start();
-        /** @debug */
-        setTimeout(() => sample.start(), DELAY_FOR_GRAPHICS);
+        sample.start();
 
         return () => {
             var iterations = 10;
@@ -81,9 +79,7 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
                     sample.stop();
                 }
             };
-            // fade(iterations - 1);
-            /** @debug */
-            setTimeout(() => fade(iterations - 1), DELAY_FOR_GRAPHICS);
+            fade(iterations - 1);
         };
     };
 

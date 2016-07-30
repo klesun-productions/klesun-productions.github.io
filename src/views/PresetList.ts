@@ -24,7 +24,7 @@ export function PresetList(cont: HTMLDivElement): IPresetList
 
         presetNames.forEach((d,i) =>
             $(select).append($('<option></option>')
-                .val(i).html(i + ': ' + d)));
+                .val(i).html(('00' + i).slice(-3) + ': ' + d)));
 
 
         $(select).attr('readonly', 'readonly');
