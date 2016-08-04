@@ -3,8 +3,8 @@
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 
 import * as Ds from "../DataStructures";
-import {Kl} from "../Tools";
-import {Fraction} from "../Tools";
+import {Tls} from "../utils/Tls";
+import {Fraction} from "../utils/Tls";
 import {IShChannel} from "../DataStructures";
 
 export default class Shmidusicator
@@ -131,7 +131,7 @@ export default class Shmidusicator
                 preset: e.instrument,
             }));
 
-        Kl.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {
+        Tls.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {
             preset: 0,
         }));
 

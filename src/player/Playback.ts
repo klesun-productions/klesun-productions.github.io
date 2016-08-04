@@ -7,7 +7,7 @@
 
 import {IGeneralStructure} from "../DataStructures";
 import {IShNote} from "../DataStructures";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 
 type millis_t = number;
 
@@ -22,7 +22,7 @@ export function Playback(
     stopSounding: () => void): IPlayback
 {
     var tempo = sheetMusic.config.tempo * tempoFactor;
-    var startDeltaTime = Kl.map(sheetMusic.chordList[0], c => toMillis(c.timeFraction, tempo)) || 0;
+    var startDeltaTime = Tls.map(sheetMusic.chordList[0], c => toMillis(c.timeFraction, tempo)) || 0;
     var startMillis = window.performance.now() - startDeltaTime;
 
     var chordIndex = 0;

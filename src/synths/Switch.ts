@@ -6,7 +6,7 @@ import {Oscillator} from "./Oscillator";
 import {MidiDevice} from "./MidiDevice";
 import {Fluid} from "./Fluid";
 import {ISynth} from "./ISynth";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 import {IPianoLayout} from "../views/PianoLayout";
 import {IChannel, IShChannel} from "../DataStructures";
 import {IPresetList} from "../views/PresetList";
@@ -20,12 +20,12 @@ export function Switch(
     pianoLayout: IPianoLayout
 ): ISynth
 {
-    var channels: {[c: number]: IShChannel} = Kl.range(0,16).map(i => 1 && {preset: 0});
+    var channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
     
-    var pitchBendByChannel: {[c: number]: number} = Kl.range(0,16).map(i => 0);
+    var pitchBendByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 0);
 
     var synths: {[k: string]: ISynth} = {
-        oscillator: Oscillator(Kl.audioCtx),
+        oscillator: Oscillator(Tls.audioCtx),
         midiDevice: MidiDevice(),
         FluidSynth3: Fluid(SoundFontAdapter('/out/sf2parsed/fluid/')),
         Arachno: Fluid(SoundFontAdapter('/out/sf2parsed/arachno/')),
@@ -38,7 +38,7 @@ export function Switch(
         choosen.init($(controlEl));
         choosen.consumeConfig(channels);
 
-        Kl.fori(pitchBendByChannel, (chan,koef) => choosen.setPitchBend(koef, chan));
+        Tls.fori(pitchBendByChannel, (chan, koef) => choosen.setPitchBend(koef, chan));
     };
 
     Object.keys(synths).forEach(s => $(dropdownEl)

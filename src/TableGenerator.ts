@@ -1,6 +1,6 @@
 /// <reference path="references.ts" />
 
-import {Kl} from "./Tools";
+import {Tls} from "./utils/Tls";
 type NodeT = (string | HTMLElement | JQuery);
 
 export type ColModel<Trow> = Array<{
@@ -35,7 +35,7 @@ export function TableGenerator()
         breakDuration = breakDuration || 100;
 
         /** @TODO: add some sign that we finished loading */
-        Kl.forChunk(rowList, breakDuration, chunkSize, row => table.append(generateRow(colModel, row)));
+        Tls.forChunk(rowList, breakDuration, chunkSize, row => table.append(generateRow(colModel, row)));
 
         return table;
     };

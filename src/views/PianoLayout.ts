@@ -1,5 +1,5 @@
 
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 
 // draws a piano layout on a canvas
 // and highlights notes when asked
@@ -60,7 +60,7 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
     var canvasAdapter = CanvasAdapter(canvas);
     var drawLine = canvasAdapter.drawLine;
     var fillRect = canvasAdapter.fillRect;
-    var channelColors = Kl.channelColors;
+    var channelColors = Tls.channelColors;
 
     var ivoryToSemitone = (ivory: number) => {
         var result = (ivory / 7 | 0) * 12 + [0,2,4,5,7,9,11][ivory % 7];

@@ -8,7 +8,7 @@ import UnfairRandom from "./UnfairRandom";
 import {ISmfFile} from "./DataStructures";
 import {TableGenerator} from "./TableGenerator";
 import {ColModel} from "./TableGenerator";
-import {Kl} from "./Tools";
+import {Tls} from "./utils/Tls";
 import PianoLayout from "./views/PianoLayout";
 import {Player} from "./player/Player";
 import {Switch} from "./synths/Switch";
@@ -70,7 +70,7 @@ export let MainPage = function (mainCont: HTMLDivElement)
         console.log(' ');
         console.log('gonna play', fileInfo.fileName);
 
-        Kl.fetchMidi(songDirUrl + '/' + fileInfo.fileName, (song: IGeneralStructure) =>
+        Tls.fetchMidi(songDirUrl + '/' + fileInfo.fileName, (song: IGeneralStructure) =>
         {
             synth.consumeConfig(song.config.channels);
             synth.analyse(song.chordList);
@@ -122,7 +122,7 @@ export let MainPage = function (mainCont: HTMLDivElement)
     drawSheetMusicFlag.onclick = () =>
         sheetMusicPainter.setEnabled(drawSheetMusicFlag.checked);
 
-    playMidiFromDiskBtn.onclick = () => Kl.openMidi(playSMF);
+    playMidiFromDiskBtn.onclick = () => Tls.openMidi(playSMF);
     playRandomBtn.onclick = () => playRandom();
 
     initIchigosMidiList();

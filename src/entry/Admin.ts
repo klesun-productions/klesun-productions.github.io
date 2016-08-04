@@ -13,7 +13,7 @@ export let Admin = function(mainControl: HTMLDivElement)
     let updateLinksBtn = $$(mainControl).q('#updateLinks')[0],
         O=0;
 
-    updateLinksBtn.onclick = ServApi.get_ichigos_midi_names((songs) => {
+    updateLinksBtn.onclick = () => ServApi.get_ichigos_midi_names((songs) => {
         console.log(songs);
 
         alert('TODO: implement!');

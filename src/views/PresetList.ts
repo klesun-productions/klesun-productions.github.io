@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import {IShChannel, IChannel} from "../DataStructures";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 import {TableGenerator} from "../TableGenerator";
 
 // this module contains some object definitions
@@ -11,7 +11,7 @@ type cons_conf_t = {(presByChan: {[ch: number]: IShChannel}): void};
 
 export function PresetList(cont: HTMLDivElement): IPresetList
 {
-    var enabledChannels = new Set(Kl.range(0,16));
+    var enabledChannels = new Set(Tls.range(0,16));
     var presetChanged: cons_conf_t = (_) => () => {};
 
     var makePresetDropdown = function(chan: number): HTMLSelectElement
@@ -19,8 +19,8 @@ export function PresetList(cont: HTMLDivElement): IPresetList
         var select = document.createElement('select');
 
         var presetNames = +chan !== 9
-            ? Kl.instrumentNames
-            : Kl.range(0,128).map(_ => 'Drums');
+            ? Tls.instrumentNames
+            : Tls.range(0,128).map(_ => 'Drums');
 
         presetNames.forEach((d,i) =>
             $(select).append($('<option></option>')
@@ -41,7 +41,7 @@ export function PresetList(cont: HTMLDivElement): IPresetList
         var colorize = (channel: number) => $('<div></div>')
             .append(channel + '')
             .css('font-weight', 'bold')
-            .css('color', 'rgba(' + Kl.channelColors[channel].join(',') + ',1)');
+            .css('color', 'rgba(' + Tls.channelColors[channel].join(',') + ',1)');
 
         const makeMuteFlag = (channel: number) => $('<input type="checkbox" checked="checked"/>')
             .click((e: any) => {
@@ -65,7 +65,7 @@ export function PresetList(cont: HTMLDivElement): IPresetList
             {name: 'presetCode', caption: 'Preset'},
         ];
 
-        var rows = Kl.range(0, 16).map((i) => 1 && {
+        var rows = Tls.range(0, 16).map((i) => 1 && {
             channelCode: i,
             presetCode: makePresetDropdown(i),
         });
@@ -77,11 +77,11 @@ export function PresetList(cont: HTMLDivElement): IPresetList
 
     const update = (instrByChannel: {[c: number]: IShChannel}) =>
     {
-        enabledChannels = new Set(Kl.range(0,16));
+        enabledChannels = new Set(Tls.range(0,16));
         $('body style.mutedChannelDeleteMe').remove();
         $(cont).find('tr input[type="checkbox"]').prop('checked', true + '');
 
-        Kl.fori(instrByChannel, (i,ch) =>
+        Tls.fori(instrByChannel, (i, ch) =>
             $(cont).find('tr select').eq(i).val(ch.preset));
     };
 

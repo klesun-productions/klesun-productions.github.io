@@ -5,7 +5,7 @@ import * as Ds from "../DataStructures";
 import {IControl} from "./Control";
 import {Control} from "./Control";
 import ShapeProvider from "./ShapeProvider";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 import {ISynth} from "../synths/ISynth"; 
 
 export function TactMeasurer(tactSize: number)
@@ -253,7 +253,7 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
         var staff = song.staffList[0];
 
         var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
-        interruptDrawing = Kl.forChunk(staff.chordList, 200, 200, (chord: Ds.IShmidusicChord) =>
+        interruptDrawing = Tls.forChunk(staff.chordList, 200, 200, (chord: Ds.IShmidusicChord) =>
         {
             var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length.toString())));
             var finishedTact = tacter.inject(chordLength);

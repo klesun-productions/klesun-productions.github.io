@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 import MIDIOutput = WebMidi.MIDIOutput;
 import {ISynth} from "./ISynth";
 import {IShChannel} from "../DataStructures";
@@ -77,7 +77,7 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
                 navigator.requestMIDIAccess().then(
                     ma => {
                         ma.outputs.forEach(o => midiOutputList.push(o));
-                        enabledOutputs = new Set(Kl.range(0, midiOutputList.length));
+                        enabledOutputs = new Set(Tls.range(0, midiOutputList.length));
                         midiAccessGranted = true;
                         whenAccessGranted = whenAccessGranted.filter(cb => cb() && false);
                         initControl($controlEl);
@@ -116,7 +116,7 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
     };
 
     var openedDict: {[channel: number]: {[semitone: number]: number}} = {};
-    Kl.range(0,16).forEach(n => (openedDict[n] = {}));
+    Tls.range(0,16).forEach(n => (openedDict[n] = {}));
 
     /** @param noteJs - shmidusic Note external representation
      * @return function - lambda to interrupt note */

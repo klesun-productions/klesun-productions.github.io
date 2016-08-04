@@ -1,6 +1,6 @@
 
 import {ISmfFile} from "../DataStructures";
-import {Kl} from "../Tools";
+import {Tls} from "./Tls";
 
 var verySecurePassword = '';
 
@@ -9,7 +9,7 @@ let askForPassword = function(cb: (pwd: string) => void)
     if (verySecurePassword) {
         cb(verySecurePassword);
     } else {
-        Kl.promptAssync('Password?', (pwd) => cb(verySecurePassword = pwd));
+        Tls.promptAssync('Password?', (pwd) => cb(verySecurePassword = pwd));
     }
 };
 
@@ -24,7 +24,7 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: s
         if (!error) {
             whenLoaded(result);
         } else {
-            Kl.showError('failed to rate: ' + error);
+            Tls.showError('failed to rate: ' + error);
             verySecurePassword = error !== 'wrongPassword' && verySecurePassword;
         }
     };

@@ -9,7 +9,7 @@ import Shmidusicator from "./Shmidusicator";
 import {IShmidusicStructure} from "../DataStructures";
 import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 import {Player} from "../player/Player";
 import {Midiator} from "./Midiator";
 import {Switch} from "../synths/Switch";
@@ -176,7 +176,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         song.staffList
             .forEach(s => {
                 var config: {[k: string]: any} = s.staffConfig;
-                Kl.for(config, (k, v) =>
+                Tls.for(config, (k, v) =>
                     $(configCont).find('.holder.' + k).val(v));
 
                 synthSwitch.consumeConfig((s.staffConfig.channelList || [])
@@ -219,11 +219,11 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     // prevent conflicts with inputs, etc...
     var globalHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
         // "o"
-        79: (e: KeyboardEvent) => e.ctrlKey && Kl.selectFileFromDisc(openSongFromBase64),
+        79: (e: KeyboardEvent) => e.ctrlKey && Tls.selectFileFromDisc(openSongFromBase64),
         // "s"
-        83: (e: KeyboardEvent) => e.ctrlKey && Kl.saveJsonToDisc(JSON.stringify(collectSong(painter.getChordList()))),
+        83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(JSON.stringify(collectSong(painter.getChordList()))),
         // "e"
-        69: (e: KeyboardEvent) => e.ctrlKey && Kl.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
+        69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
         // F4
         115: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
     };
@@ -294,7 +294,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
     };
 
     // 48 - zero, 96 - numpad zero
-    Kl.range(0,10).forEach(i =>
+    Tls.range(0,10).forEach(i =>
         focusedHandlers[i + 48] = focusedHandlers[i + 96] = () =>
             control.setChannel(i));
 
@@ -380,7 +380,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             .map(p => <[string, string]>p.split('=')));
 
         if (hash.has('songRelPath')) {
-            Kl.fetchJson('/Dropbox/yuzefa_git/a_opuses_json/' + hash.get('songRelPath'), songJson => {
+            Tls.fetchJson('/Dropbox/yuzefa_git/a_opuses_json/' + hash.get('songRelPath'), songJson => {
                 openSongFromJson(songJson);
                 play();
             });

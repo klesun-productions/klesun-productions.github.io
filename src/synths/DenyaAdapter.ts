@@ -1,6 +1,6 @@
 
 import {ISoundFontAdapter, IFetchedSample, EStereoPan} from "./SoundFontAdapter";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 
 /**
  * uses Denya-s screaming recording as note samples
@@ -18,7 +18,7 @@ export var DenyaAdapter = function(): ISoundFontAdapter
 
         var sampleUrl = '/src/synths/denyaAhh.ogg';
         var fetched: IFetchedSample = null;
-        Kl.getAudioBuffer(sampleUrl, (resp) => fetched = {
+        Tls.getAudioBuffer(sampleUrl, (resp) => fetched = {
             buffer: resp,
             frequencyFactor: freqFactor,
             isLooped: true,

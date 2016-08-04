@@ -3,7 +3,7 @@
 
 import {seconds_t} from "../DataStructures";
 import {Cls} from "../Cls";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 
 // this object provides access to soundfont info
 // particularly it has a method that
@@ -115,7 +115,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
             }
 
             var fetched: IFetchedSample = null;
-            Kl.getAudioBuffer(sampleUrl, (resp) => fetched = {
+            Tls.getAudioBuffer(sampleUrl, (resp) => fetched = {
                 buffer: resp,
                 frequencyFactor: freqFactor,
                 isLooped: 'sampleModes' in generator && generator.sampleModes === 1,

@@ -4,7 +4,7 @@
 
 /// <reference path="../references.ts" />
 
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 /** @param ctx - html5 canvas context
  * @param r - note oval vertical radius */
 export default function ShapeProvider(ctx: CanvasRenderingContext2D, r: number, x: number, ySteps: number)
@@ -79,8 +79,8 @@ export default function ShapeProvider(ctx: CanvasRenderingContext2D, r: number, 
     {
         +channel === 9 && drawCross(r * 2);
 
-        ctx.fillStyle = 'rgba(' + Kl.channelColors[channel].join(',') + ',0.85)';
-        ctx.strokeStyle = 'rgba(' + Kl.channelColors[channel].join(',') + ',1)';
+        ctx.fillStyle = 'rgba(' + Tls.channelColors[channel].join(',') + ',0.85)';
+        ctx.strokeStyle = 'rgba(' + Tls.channelColors[channel].join(',') + ',1)';
 
         var length = Fraction(lengthStr);
         if (length.den() % 3 === 0) {

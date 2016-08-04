@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import {IGeneralStructure, ISmfFile} from "../DataStructures";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 import {IPlayback} from "../player/Playback";
 import {ServApi} from "../utils/ServApi";
 
@@ -34,7 +34,7 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
 
         tempoHolder.val(Math.floor(sheetMusic.config.tempo));
         $cont.find('.tempoOrigin.holder').html(Math.floor(sheetMusic.config.tempo) + '');
-        $cont.find('.noteCount.holder').html(Kl.map(sheetMusic.misc.noteCount, c => c + '') || '?');
+        $cont.find('.noteCount.holder').html(Tls.map(sheetMusic.misc.noteCount, c => c + '') || '?');
         $cont.find('.chordCount.holder').html(chordCount + '');
 
         $secondsTotalHolder.html('' + Math.floor(secondsTotal / $tempoFactorInput.val() * 100) / 100);

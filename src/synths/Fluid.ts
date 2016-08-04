@@ -3,7 +3,7 @@
 import {IShmidusicChord, IShChannel} from "../DataStructures";
 import {SoundFontAdapter, IFetchedSample, EStereoPan, ISoundFontAdapter} from "./SoundFontAdapter";
 import {Oscillator} from "./Oscillator";
-import {Kl} from "../Tools";
+import {Tls} from "../utils/Tls";
 import {ISynth} from "./ISynth";
 import {Cls} from "../Cls";
 
@@ -16,16 +16,16 @@ const DELAY_FOR_GRAPHICS = 10;
 
 export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 {
-    var audioCtx = Kl.audioCtx;
+    var audioCtx = Tls.audioCtx;
 
-    var channelNodes = Kl.range(0,16).map(i => {
+    var channelNodes = Tls.range(0,16).map(i => {
         var node = audioCtx.createGain();
         node.gain.value = 1;
         node.connect(audioCtx.destination);
         return node;
     });
 
-    var channels = Kl.range(0,16).map(i => 1 && {preset: 0});
+    var channels = Tls.range(0,16).map(i => 1 && {preset: 0});
 
     var sounding: {[chan: number]: Array<AudioBufferSourceNode>} = [];
 
@@ -99,7 +99,7 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
     };
 
     var consumeConfig = (programs: { [id: number]: IShChannel; }) =>
-        Kl.fori(programs, (k,v) => channels[k] = v);
+        Tls.fori(programs, (k, v) => channels[k] = v);
 
     var interruptLastAnalysis = () => {};
 
