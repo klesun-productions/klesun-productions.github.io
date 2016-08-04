@@ -42,8 +42,6 @@ const dict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
 const range = (l: number, r: number): Array<number> =>
     Array.apply(null, Array(r - l)).map((nop: void, i: number) => l + i);
 
-
-
 const cssReflection: {[selector: string]: {[name: string]: string}} =
     <any>dict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
         .map((r: any) => [r.selectorText, dict(Array.from(r.style)
@@ -59,9 +57,6 @@ const parseRgbCss = function(rgbCss: string): [number, number, number]
 
     return <any>result;
 };
-
-/** @debug */
-console.log(cssReflection);
 
 export var Kl = Cls['Kl'] = class
 {
@@ -196,23 +191,35 @@ export var Kl = Cls['Kl'] = class
         return interrupt;
     };
 
-    static promptAssync = function(msg: string, cb: (txt: string) => void)
+    static showDialog = function(msg: string, content?: HTMLElement)
     {
-        var $input = $('<input type="password"/>');
-
         var $dialog = $('<div class="modalDialog"></div>')
-            .append(msg).append('<br/>').append($input)
-            .append($('<button>Ok</button>').click(() => {
-                cb($input.val());
-                $dialog.remove();
-            }))
+            .append(msg).append('<br/>').append(content)
             .append($('<button>Cancel</button>').click(() => { $dialog.remove(); }));
 
-        // TODO: enter from input - submit
-        // TODO: escape from input - cancel
-        // TODO: initial focus
-
+        // TODO: escape - cancel
         $('body').prepend($dialog);
+
+        return () => $dialog.remove();
+    };
+
+    static promptAssync = function(msg: string, cb: (txt: string) => void)
+    {
+        let $input = $('<input type="password"/>');
+        let closeDialog = Kl.showDialog(msg, $('<div></div>')
+            .append($input)
+            .append($('<button>Ok</button>').click(() => {
+                cb($input.val());
+                closeDialog();
+            }))[0]);
+
+        // TODO: enter from input - submit
+        // TODO: initial focus
+    };
+
+    static showError = (msg: string) => {
+        let closeDialog = Kl.showDialog(msg);
+        setTimeout(closeDialog, 15000);
     };
 
     static promptSelect = function(options: {[k: string]: {(): void}}, message?: string): void
@@ -237,7 +244,7 @@ export var Kl = Cls['Kl'] = class
     };
 
     static channelColors: [number,number,number][] = range(0,16)
-        .map(ch => parseRgbCss(cssReflection['.channelColors [data-channel="' + ch + '"]']['color']));
+        .map(ch => parseRgbCss((cssReflection['.channelColors [data-channel="' + ch + '"]']||{})['color'] || 'rgb(255,0,0)'));
 
     // here is exactly 128 preset names in correct order
     static instrumentNames: string[] = ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",

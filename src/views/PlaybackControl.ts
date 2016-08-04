@@ -3,14 +3,13 @@
 import {IGeneralStructure, ISmfFile} from "../DataStructures";
 import {Kl} from "../Tools";
 import {IPlayback} from "../player/Playback";
+import {ServApi} from "../utils/ServApi";
 
 // This class generates jquery dom with current song info
 // and some controlls, particularly - timeline slider
 
 /** @param length - float: quarter will be 0.25, semibreve will be 1.0*/
 var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
-
-var verySecurePassword = '';
 
 export default function PlaybackControl($cont: JQuery): IPlaybackControl
 {
@@ -97,55 +96,14 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
         $pauseBtn.off().click(playback.pause);
     };
 
-    const askForPassword = function(cb: (pwd: string) => void)
-    {
-        if (verySecurePassword) {
-            cb(verySecurePassword);
-        } else {
-            Kl.promptAssync('Password?', (pwd) => cb(verySecurePassword = pwd));
-        }
-    };
-
-    const contribute = function(functionName: string, params: {}, cb: (r: any) => void)
-    {
-        askForPassword(pwd => $.ajax('/htbin/json_service.py?f=' + functionName, {
-            type: "post",
-            data: JSON.stringify({
-                'params': params,
-                'verySecurePassword': pwd,
-            }),
-            dataType: "json",
-            contentType: 'application/json;UTF-8',
-            success: (tuple: [string, string]) => {
-                var [result, error] = tuple;
-                if (!error) {
-                    cb(result);
-                } else {
-                    console.log('failed to rate:', error);
-                    verySecurePassword = error !== 'wrongPassword' && verySecurePassword;
-                }
-            },
-        }));
-    };
-
-    const rateSong = (isGood: boolean, fileName: string) =>
-        contribute('add_song_rating',
-            {isGood: isGood, fileName: fileName},
-            r => ratingHolder.innerHTML = r);
-
-    const undoRating = (fileName: string) =>
-        contribute('undo_song_rating',
-            {fileName: fileName},
-            r => ratingHolder.innerHTML = r);
-
     const setFileInfo = function(info: ISmfFile)
     {
         $cont.find('.fileName.holder').html(info.fileName);
         $cont.find('.rating.holder').html(info.rating || '_');
 
-        rateGoodBtn.onclick = () => rateSong(true, info.fileName);
-        rateBadBtn.onclick = () => rateSong(false, info.fileName);
-        rateUndoBtn.onclick = () => undoRating(info.fileName);
+        rateGoodBtn.onclick = () => ServApi.rateSong(true, info.fileName, r => ratingHolder.innerHTML = r);
+        rateBadBtn.onclick = () => ServApi.rateSong(false, info.fileName, r => ratingHolder.innerHTML = r);
+        rateUndoBtn.onclick = () => ServApi.undoRating(info.fileName, r => ratingHolder.innerHTML = r);
     };
 
     return {

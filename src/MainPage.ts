@@ -14,13 +14,14 @@ import {Player} from "./player/Player";
 import {Switch} from "./synths/Switch";
 import {PresetList} from "./views/PresetList";
 import PlaybackControl from "./views/PlaybackControl";
+import {ServApi} from "./utils/ServApi";
 type dict<Tx> = {[k: string]: Tx};
 
 type cb = () => void;
 
 /** @param mainCont - div dom with children
  * structure defined in index.html */
-export default function MainPage(mainCont: HTMLDivElement)
+export let MainPage = function (mainCont: HTMLDivElement)
 {
 
     const
@@ -37,18 +38,6 @@ export default function MainPage(mainCont: HTMLDivElement)
         midiFileCounter = <HTMLAnchorElement>$(mainCont).find('#midiFileCounter')[0],
         O_O = 'O_O'
         ;
-
-    var googleLogInIdToken: string = null;
-
-    const addToken = (p: dict<any>) => googleLogInIdToken === null
-        ? p : $.extend({}, p, {googleLogInIdToken: googleLogInIdToken});
-
-    // TODO: make it "get" since it is just the single "getSongNames()" method, which could be cached and stuff
-    const performExternal = (methodName: string, params: dict<any>, callback: (tuple: [any, string]) => void) => $.ajax({
-        url: '/htbin/json_service.py' + '?f=' + methodName, // GET params just for cosmetics
-        cache: true,
-        success: callback
-    });
     
     const sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
     
@@ -109,17 +98,7 @@ export default function MainPage(mainCont: HTMLDivElement)
                 .click((_) => playStandardMidiFile(row));
         };
 
-        /** @debug */
-        console.log('gonna fetrch info');
-
-        var callback = function(tuple: [ISmfFile[], string])
-        {
-            var [rowList, error] = tuple;
-            if (error) {
-                alert('Failed to retrieve song names' + error);
-                return;
-            }
-            
+        ServApi.get_ichigos_midi_names((rowList: ISmfFile[]) => {
             $(midiFileCounter).html(rowList.length + '');
 
             var colModel: ColModel<ISmfFile> = [
@@ -137,23 +116,7 @@ export default function MainPage(mainCont: HTMLDivElement)
             var random = UnfairRandom(rowList);
 
             playRandom = () => playStandardMidiFile(random.getAny());
-        };
-
-        performExternal('get_ichigos_midi_names', {}, callback)
-    };
-
-    const handleGoogleSignIn = function(googleUser: any, $infoCont: JQuery)
-    {
-        $infoCont.find('.g-signin2').css('display', 'none');
-
-        var profile = googleUser.getBasicProfile();
-
-        $infoCont.find('.logInStatusHolder').html('Logged-In as ' + profile.getEmail().split('@')[0]);
-        $infoCont.find('.userImage').attr('src', profile.getImageUrl());
-
-        googleLogInIdToken = googleUser.getAuthResponse().id_token;
-
-        /** @TODO: token expires in about two hours - need to rerequest it */
+        });
     };
 
     drawSheetMusicFlag.onclick = () =>
@@ -162,9 +125,5 @@ export default function MainPage(mainCont: HTMLDivElement)
     playMidiFromDiskBtn.onclick = () => Kl.openMidi(playSMF);
     playRandomBtn.onclick = () => playRandom();
 
-    return {
-        initIchigosMidiList: initIchigosMidiList,
-        // initMyMusicList: initMyMusicList, 
-        handleGoogleSignIn: handleGoogleSignIn,
-    };
+    initIchigosMidiList();
 };

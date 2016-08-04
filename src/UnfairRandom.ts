@@ -12,6 +12,8 @@ export default function UnfairRandom(songList: ISmfFile[])
     /** @TODO: write some tester. I'm absolutely unsure whether it does what you think */
 
     var weightRules: Array<[number, (song: ISmfFile) => boolean]> = [
+        [0.0, (song) => song.rating.startsWith('-')],
+        [0.0, (song) => song.rating.startsWith('+---')],
         [0.3, (song) => song.rawFileName.startsWith('random/notre_dame/')],
         [0.3, (song) => song.rawFileName.startsWith('random/monkey_island/')],
         [0.3, (song) => song.rawFileName.startsWith('touhou') &&
