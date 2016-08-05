@@ -3,9 +3,10 @@
 import json
 import os
 import sys
-from pony.orm import db_session
+from pony.orm import select, db_session
 import classes
-from classes.DbTables import Listened, SongRating
+from classes.DbTables import Listened, SongRating, SongYoutubeLink
+from collections import defaultdict
 
 
 class Contribution(object):
@@ -32,6 +33,37 @@ class Contribution(object):
         classes.DbTables.commit()
 
         return rating.rating
+
+    @staticmethod
+    @db_session
+    def link_youtube_links(params: dict) -> int:
+        link = None
+        for link in params['links']:
+            youtubeId, viewCount = link
+            linkLink = SongYoutubeLink(
+                fileName=params['fileName'],
+                youtubeId=youtubeId,
+                viewCount=viewCount
+            )
+        classes.DbTables.commit()
+
+        return linkLink.id
+
+    @staticmethod
+    @db_session
+    def get_youtube_links(params: dict) -> defaultdict:
+        result = defaultdict(list)
+        for rec in select(rec for rec in SongYoutubeLink):
+            result[rec.fileName].append({
+                "youtubeId": rec.youtubeId,
+                "viewCount": rec.viewCount,
+            })
+
+        # sorting by views and
+        for song_name, links in result.items():
+            result[song_name] = links[:3]
+
+        return result
 
     @staticmethod
     @db_session

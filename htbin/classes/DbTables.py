@@ -22,6 +22,12 @@ class SongRating(db.Entity):
     rating = Optional(str, default='')
 
 
+class SongYoutubeLink(db.Entity):
+    fileName = Required(str)
+    youtubeId = Required(str, 11)
+    viewCount = Required(int)
+
+
 db.generate_mapping(create_tables=True)
 
 

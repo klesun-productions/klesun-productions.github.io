@@ -23,7 +23,6 @@ type cb = () => void;
  * structure defined in index.html */
 export let MainPage = function (mainCont: HTMLDivElement)
 {
-
     const
         pianoCanvas = <HTMLCanvasElement>$(mainCont).find('.pianoLayoutCanvas')[0],
         $playbackControlCont = $(mainCont).find('.playbackControlCont'),
@@ -36,6 +35,7 @@ export let MainPage = function (mainCont: HTMLDivElement)
         playRandomBtn = $(mainCont).find('.playRandomBtn')[0],
         playMidiFromDiskBtn = $(mainCont).find('.playMidiFromDiskBtn')[0],
         midiFileCounter = <HTMLAnchorElement>$(mainCont).find('#midiFileCounter')[0],
+        youtubeEmbededVideosCont = <HTMLDivElement>$(mainCont).find('#youtubeEmbededVideosCont')[0],
         O_O = 'O_O'
         ;
     
@@ -53,6 +53,9 @@ export let MainPage = function (mainCont: HTMLDivElement)
     player.addNoteHandler(synth);
 
     var playRandom = () => alert("Please, wait till midi names load from ajax!");
+    let linksBySongName: {[fileName: string]: Array<{ youtubeId: string, viewCount: number }>} = {};
+    // time-outing cuz i suspect it slows down initialization
+    setTimeout(() => ServApi.getYoutubeLinks((links) => linksBySongName = links), 4);
 
     const playSMF = (song: IGeneralStructure) =>
     {
@@ -70,7 +73,27 @@ export let MainPage = function (mainCont: HTMLDivElement)
         console.log(' ');
         console.log('gonna play', fileInfo.fileName);
 
-        Tls.fetchMidi(songDirUrl + '/' + fileInfo.fileName, (song: IGeneralStructure) =>
+        // <iframe width="320" height="240" src="https://www.youtube.com/embed/_M-ytoRguS8" frameborder="0" allowfullscreen></iframe>
+
+        // TODO: in row them, not in col
+        youtubeEmbededVideosCont.innerHTML = '';
+        if (fileInfo.fileName in linksBySongName) {
+            linksBySongName[fileInfo.fileName].forEach(record => {
+                youtubeEmbededVideosCont.appendChild($('<div style="float: left"></div>')
+                    .append($('<div></div>')
+                        .append(record.viewCount + ''))
+                    .append($('<iframe></iframe>')
+                        .attr('width', 320)
+                        .attr('height', 240)
+                        .attr('src', 'https://www.youtube.com/embed/' + record.youtubeId)
+                        // likely optional
+                        .attr('frameborder', '0')
+                        .attr('allowfullscreen', 'allowfullscreen')
+                    )[0]);
+            });
+        }
+
+        setTimeout(() => Tls.fetchMidi(songDirUrl + '/' + fileInfo.fileName, (song: IGeneralStructure) =>
         {
             synth.consumeConfig(song.config.channels);
             synth.analyse(song.chordList);
@@ -78,7 +101,7 @@ export let MainPage = function (mainCont: HTMLDivElement)
             control.setFileInfo(fileInfo);
 
             player.playSheetMusic(song, () => playRandom());
-        });
+        }), 500); // timeout for youtube embeded videos to load so it did not lag
     };
 
     const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement

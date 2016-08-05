@@ -6,7 +6,7 @@ import {Cls} from "../Cls";
 
 var Static: any = {};
 
-// some usefull shorthand methods
+// some useful shorthand methods
 
 class Optional<T>
 {
@@ -78,7 +78,8 @@ let _base64ToArrayBuffer = function(base64: string): ArrayBuffer
         .buffer;
 };
 
-export var Tls = Cls['Tls'] = {
+export let Tls = Cls['Tls'] = {
+
     audioCtx: new AudioContext(),
     
     for: <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
@@ -125,6 +126,8 @@ export var Tls = Cls['Tls'] = {
         input.onclick = (inputEvent: Event) => { input.value = null; };
         $(input).click();
     },
+
+    fetchFile: fetchFile,
 
     fetchBinaryFile: (url: string, whenLoaded: (buf: ArrayBuffer) => void) =>
         fetchFile(url, 'arraybuffer', whenLoaded),

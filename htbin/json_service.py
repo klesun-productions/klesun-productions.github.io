@@ -71,6 +71,11 @@ method_dict = {
         headers=['Cache-Control: max-age=86400'],
         is_secure=False,
     ),
+    'get_youtube_links': Fun(
+        closure=Contribution.get_youtube_links,
+        headers=['Cache-Control: max-age=86400'],
+        is_secure=False,
+    ),
     'add_song_rating': Fun(
         closure=Contribution.add_song_rating,
         headers=[],
@@ -78,6 +83,11 @@ method_dict = {
     ),
     'undo_song_rating': Fun(
         closure=Contribution.undo_song_rating,
+        headers=[],
+        is_secure=True,
+    ),
+    'link_youtube_links': Fun(
+        closure=Contribution.link_youtube_links,
         headers=[],
         is_secure=True,
     ),
