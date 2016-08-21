@@ -17,6 +17,7 @@ import signal
 import os, sys
 import time
 import http.server
+import time
 
 from classes.MidiFileProvider import MidiFileProvider
 #from classes.TransLinker import TransLinker
@@ -64,6 +65,10 @@ def is_correct_password(entered_password: str) -> bool:
 
     return entered_password == config['verySecurePassword']
 
+def get_dull_heavy_data (params):
+    time.sleep(5)
+    return None
+
 Fun = namedtuple('Fun', ['closure', 'headers', 'is_secure'])
 method_dict = {
     'get_ichigos_midi_names': Fun(
@@ -90,6 +95,11 @@ method_dict = {
         closure=Contribution.link_youtube_links,
         headers=[],
         is_secure=True,
+    ),
+    'get_dull_heavy_data': Fun(
+        closure=get_dull_heavy_data,
+        headers=[],
+        is_secure=False,
     ),
 }
 

@@ -1,6 +1,7 @@
 
 import {ISmfFile} from "../DataStructures";
 import {Tls} from "./Tls";
+import {ytlink_t} from "../MainPage";
 
 var verySecurePassword = '';
 
@@ -51,9 +52,9 @@ export let ServApi = {
     undoRating: (fileName: string, cb: (rating: string) => void) =>
         contribute('undo_song_rating', {fileName: fileName}, cb),
 
-    linkYoutubeLinks: (fileName: string, links: [string, number][], cb: (id: number) => void) =>
+    linkYoutubeLinks: (fileName: string, links: ytlink_t[], cb: (id: number) => void) =>
         contribute('link_youtube_links', {fileName: fileName, links: links}, cb),
 
-    getYoutubeLinks: (cb: (links: {[fileName: string]: Array<{ youtubeId: string, viewCount: number }>}) => void) =>
+    getYoutubeLinks: (cb: (links: {[fileName: string]: ytlink_t[]}) => void) =>
         ajax('get_youtube_links', 'GET', {}, cb),
 };

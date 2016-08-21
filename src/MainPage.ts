@@ -19,23 +19,32 @@ type dict<Tx> = {[k: string]: Tx};
 
 type cb = () => void;
 
+export interface ytlink_t {
+    youtubeId: string,
+    viewCount: number,
+    videoName: string,
+};
+
+let $$ = (selector: string, el?: HTMLElement) =>
+    <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
+
 /** @param mainCont - div dom with children
  * structure defined in index.html */
 export let MainPage = function (mainCont: HTMLDivElement)
 {
-    const
-        pianoCanvas = <HTMLCanvasElement>$(mainCont).find('.pianoLayoutCanvas')[0],
-        $playbackControlCont = $(mainCont).find('.playbackControlCont'),
-        sheetMusicConfigCont = $(mainCont).find('#sheetMusicConfigDiv')[0],
-        sheetMusicCont = $(mainCont).find('.sheetMusicCont')[0],
-        violinKeyImage = $(mainCont).find('.violinKeyImage')[0],
-        bassKeyImage = $(mainCont).find('.bassKeyImage')[0],
-        instrumentInfoBlock = <HTMLDivElement>$(mainCont).find('#instrumentInfoBlock')[0],
-        drawSheetMusicFlag = <HTMLInputElement>$(mainCont).find('#drawSheetMusicFlag')[0],
-        playRandomBtn = $(mainCont).find('.playRandomBtn')[0],
-        playMidiFromDiskBtn = $(mainCont).find('.playMidiFromDiskBtn')[0],
-        midiFileCounter = <HTMLAnchorElement>$(mainCont).find('#midiFileCounter')[0],
-        youtubeEmbededVideosCont = <HTMLDivElement>$(mainCont).find('#youtubeEmbededVideosCont')[0],
+    let pianoCanvas = <HTMLCanvasElement>$$('.pianoLayoutCanvas', mainCont)[0],
+        $playbackControlCont = $(mainCont).find('.playbackControlCont'), // TODO: get rid of
+        sheetMusicConfigCont = $$('#sheetMusicConfigDiv', mainCont)[0],
+        sheetMusicCont = $$('.sheetMusicCont', mainCont)[0],
+        violinKeyImage = $$('.violinKeyImage', mainCont)[0],
+        bassKeyImage = $$('.bassKeyImage', mainCont)[0],
+        instrumentInfoBlock = <HTMLDivElement>$$('#instrumentInfoBlock', mainCont)[0],
+        drawSheetMusicFlag = <HTMLInputElement>$$('#drawSheetMusicFlag', mainCont)[0],
+        playRandomBtn = $$('.playRandomBtn', mainCont)[0],
+        playMidiFromDiskBtn = $$('.playMidiFromDiskBtn', mainCont)[0],
+        midiFileCounter = <HTMLAnchorElement>$$('#midiFileCounter', mainCont)[0],
+        youtubeEmbededVideosCont = <HTMLDivElement>$$('#youtubeEmbededVideosCont', mainCont)[0],
+        preCompiledOggControl = <HTMLAudioElement>$$('#preCompiledOggControl', mainCont)[0],
         O_O = 'O_O'
         ;
     
@@ -53,9 +62,9 @@ export let MainPage = function (mainCont: HTMLDivElement)
     player.addNoteHandler(synth);
 
     var playRandom = () => alert("Please, wait till midi names load from ajax!");
-    let linksBySongName: {[fileName: string]: Array<{ youtubeId: string, viewCount: number }>} = {};
+    let linksBySongName: {[fileName: string]: ytlink_t[]} = {};
     // time-outing cuz i suspect it slows down initialization
-    setTimeout(() => ServApi.getYoutubeLinks((links) => linksBySongName = links), 4);
+    setTimeout(() => ServApi.getYoutubeLinks((links) => linksBySongName = links), 500);
 
     const playSMF = (song: IGeneralStructure) =>
     {
@@ -66,6 +75,30 @@ export let MainPage = function (mainCont: HTMLDivElement)
     };
 
     const songDirUrl = '/Dropbox/web/midiCollection/';
+    const preCompiledOggRoot = '/out/convertedOgg/';
+
+    let embedYoutubeVideos = function(urls: ytlink_t[])
+    {
+        let badWords = ['acapella', 'piano', 'cover', 'synthesia', 'remix'];
+
+        youtubeEmbededVideosCont.innerHTML = '';
+        urls
+            // .sort((a,b) => b.viewCount - a.viewCount)
+            .forEach(record => {
+                youtubeEmbededVideosCont.appendChild($('<div style="float: left"></div>')
+                    .append($('<div></div>')
+                        .append(record.viewCount + ''))
+                    .append($('<button>Embed!</button>').click(function() {
+                        $(this).replaceWith($('<iframe></iframe>')
+                            .attr('width', 320)
+                            .attr('height', 240)
+                            .attr('src', 'https://www.youtube.com/embed/' + record.youtubeId + '?autoplay=1')
+                            // likely optional
+                            .attr('frameborder', '0')
+                            .attr('allowfullscreen', 'allowfullscreen'));
+                    }))[0]);
+            });
+    };
 
     const playStandardMidiFile = function(fileInfo: ISmfFile)
     {
@@ -73,26 +106,7 @@ export let MainPage = function (mainCont: HTMLDivElement)
         console.log(' ');
         console.log('gonna play', fileInfo.fileName);
 
-        // <iframe width="320" height="240" src="https://www.youtube.com/embed/_M-ytoRguS8" frameborder="0" allowfullscreen></iframe>
-
-        // TODO: in row them, not in col
-        youtubeEmbededVideosCont.innerHTML = '';
-        if (fileInfo.fileName in linksBySongName) {
-            linksBySongName[fileInfo.fileName].forEach(record => {
-                youtubeEmbededVideosCont.appendChild($('<div style="float: left"></div>')
-                    .append($('<div></div>')
-                        .append(record.viewCount + ''))
-                    .append($('<iframe></iframe>')
-                        .attr('width', 320)
-                        .attr('height', 240)
-                        .attr('src', 'https://www.youtube.com/embed/' + record.youtubeId)
-                        // likely optional
-                        .attr('frameborder', '0')
-                        .attr('allowfullscreen', 'allowfullscreen')
-                    )[0]);
-            });
-        }
-
+        player.stop();
         setTimeout(() => Tls.fetchMidi(songDirUrl + '/' + fileInfo.fileName, (song: IGeneralStructure) =>
         {
             synth.consumeConfig(song.config.channels);
@@ -101,7 +115,14 @@ export let MainPage = function (mainCont: HTMLDivElement)
             control.setFileInfo(fileInfo);
 
             player.playSheetMusic(song, () => playRandom());
-        }), 500); // timeout for youtube embeded videos to load so it did not lag
+        })); // timeout for youtube embeded videos to load so it did not lag
+
+        embedYoutubeVideos(linksBySongName[fileInfo.fileName] || []);
+        (<any>$$('source', preCompiledOggControl)[0]).src = preCompiledOggRoot + '/' + fileInfo.fileName + '.ogg';
+        // to trigger audio reload. HTMLMediaElement.load() is not an option, it does synchronous http request
+        let par = preCompiledOggControl.parentElement;
+        par.innerHTML = par.innerHTML;
+        preCompiledOggControl = <HTMLAudioElement>$$('audio', par)[0];
     };
 
     const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement

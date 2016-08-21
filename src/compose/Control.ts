@@ -36,14 +36,14 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
     /** @return the focused index after applying bounds */
     var setChordFocus = function(index: number): number
     {
-        var $chords = $chordListCont.children();
+        var $chords = $chordListCont.find(' > .chordSpan');
         index = Math.min($chords.length - 1, Math.max(-1, index));
 
         var chord = $chords[index];
         chord && scrollToIfNeeded(chord);
 
         $chordListCont.find('.focused .pointed').removeClass('pointed');
-        $chordListCont.children('.focused').removeClass('focused');
+        $chordListCont.find(' > .chordSpan.focused').removeClass('focused');
         $(chord).addClass('focused');
 
         return index;
@@ -51,7 +51,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 
     var setNoteFocus = function(sem: number, chan: number, velocity: number, chordIndex: number)
     {
-        var chord = $chordListCont.children()[chordIndex];
+        var chord = $chordListCont.find(' > .chordSpan')[chordIndex];
         chord && scrollToIfNeeded(chord);
 
         setChordFocus(chordIndex);
@@ -89,13 +89,13 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         var tactSize = $(configCont).find('.holder.tactSize').val() || 1.0;
 
         $chordListCont.find('.tactNumberCont').html('&nbsp;');
-        $chordListCont.children()
+        $chordListCont.find(' > .chordSpan')
             .removeClass('tactFinisher')
             .removeClass('doesNotFitIntoTact')
             .removeAttr('data-rest');
 
         var tacter = TactMeasurer(tactSize);
-        var $chords = $chordListCont.children().toArray().map(c => $(c));
+        var $chords = $chordListCont.find(' > .chordSpan').toArray().map(c => $(c));
 
         $chords.forEach(($span: JQuery) =>
         {
@@ -134,10 +134,10 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 
         if (index <= 0) {
             $chordListCont.prepend($chord);
-        } else if (index >= $chordListCont.children().length) {
+        } else if (index >= $chordListCont.find(' > .chordSpan').length) {
             $chordListCont.append($chord);
         } else {
-            $chordListCont.children(':eq(' + index + ')').before($chord);
+            $chordListCont.find(' > .chordSpan:eq(' + index + ')').before($chord);
         }
 
         requestRecalcTacts();
@@ -242,7 +242,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
             setChordFocus($chordListCont.find('.focused').index() + sign),
         moveChordFocusRow: (sign: number) => {
             var index = $chordListCont.find('.focused').index() + sign * chordsPerRow();
-            if (index > -1 && index < $chordListCont.children().length) {
+            if (index > -1 && index < $chordListCont.find(' > .chordSpan').length) {
                 setChordFocus(index);
             }
         },

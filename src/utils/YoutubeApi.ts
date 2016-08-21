@@ -1,5 +1,6 @@
 
 import {Tls} from "./Tls";
+import {ytlink_t} from "../MainPage";
 
 // TODO: replace implementation with official OAuth 2.0
 // if it is not related with too much of annal occupation
@@ -24,20 +25,21 @@ export var YoutubeApi = function()
             /^\.?\/?(random)?(0_[A-Za-z0-9]+_)?(.+).mid$/
                 .exec(songPath);
         cleanName = cleanName.replace(/[\-\/_\d]/g, ' ');
+        cleanName = cleanName.replace(/\((.*)?\)/g, '');
 
-        /** @debug */
-        console.log(cleanName);
+        cleanName += ' ost';
 
         return cleanName;
     };
 
-    let xmlToLinks = (page: Document): [string, number][] =>
-        $$(page).q('#results ol.item-section > li > .yt-lockup-video').map((div) => <any>[
-            $$(div).q('.yt-lockup-title a')[0].getAttribute('href').substr('/watch?v='.length),
-            $$(div).q('.yt-lockup-meta-info li')[1].innerHTML.replace(/[^\d]/g, '') || 0,
-        ]);
+    let xmlToLinks = (page: Document): ytlink_t[] =>
+        $$(page).q('#results ol.item-section > li > .yt-lockup-video').map((div) => 1 && {
+            'youtubeId': $$(div).q('.yt-lockup-title a')[0].getAttribute('href').substr('/watch?v='.length),
+            'videoName': $$(div).q('.yt-lockup-title a')[0].innerHTML,
+            'viewCount': +$$(div).q('.yt-lockup-meta-info li')[1].innerHTML.replace(/[^\d]/g, ''),
+        });
 
-    let getVideoUrlsByApproxName = function(name: string, cb: (urls: [string, number][]) => void)
+    let getVideoUrlsByApproxName = function(name: string, cb: (urls: ytlink_t[]) => void)
     {
         let searchUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(getCleanName(name));
 

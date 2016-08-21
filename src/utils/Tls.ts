@@ -42,10 +42,17 @@ const dict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
 const range = (l: number, r: number): Array<number> =>
     Array.apply(null, Array(r - l)).map((nop: void, i: number) => l + i);
 
-const cssReflection: {[selector: string]: {[name: string]: string}} =
-    <any>dict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
-        .map((r: any) => [r.selectorText, dict(Array.from(r.style)
-            .map((name: string) => <any>[name, r.style[name]]))]));
+// firefox fails - TODO: investigate
+var cssReflection: {[selector: string]: {[name: string]: string}};
+try {
+    cssReflection =
+        <any>dict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
+            .map((r: any) => [r.selectorText, dict(Array.from(r.style)
+                .map((name: string) => <any>[name, r.style[name]]))]));
+} catch (e) {
+    console.log('Failed to get CSS reflection', e);
+    cssReflection = {};
+}
 
 const parseRgbCss = function(rgbCss: string): [number, number, number]
 {
@@ -245,8 +252,11 @@ export let Tls = Cls['Tls'] = {
         $('body').prepend($dialog);
     },
 
-    channelColors: range(0,16)
-        .map(ch => parseRgbCss((cssReflection['.channelColors [data-channel="' + ch + '"]']||{})['color'] || 'rgb(255,0,0)')),
+    channelColors: range(0,16).map((ch): [number, number, number] => {
+        let selector = '.channelColors [data-channel="' + ch + '"]';
+        let colorStr = (cssReflection[selector] || {})['color'] || null;
+        return colorStr ? parseRgbCss(colorStr) : range(0,3).map(_ => Math.random() * 256 | 0);
+    }),
 
     // here is exactly 128 preset names in correct order
     instrumentNames: ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",

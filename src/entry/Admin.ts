@@ -2,16 +2,15 @@
 import {ServApi} from "../utils/ServApi";
 import {YoutubeApi} from "../utils/YoutubeApi";
 
-var $$ = (el: any) => typeof el === 'string'
-    ? (<any>Array).from(document.querySelectorAll(el))
-    : {q: (s: string): HTMLElement => (<any>Array).from(el.querySelectorAll(s))};
+var $$ = (selector: string, el?: HTMLElement) =>
+    <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
 
 /**
  * initializes the admin.html page controls
  */
 export let Admin = function(mainControl: HTMLDivElement)
 {
-    let updateLinksBtn = $$(mainControl).q('#updateLinks')[0],
+    let updateLinksBtn = $$('#updateLinks', mainControl)[0],
         O=0;
 
     updateLinksBtn.onclick = () =>

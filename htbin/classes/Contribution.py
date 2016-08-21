@@ -42,8 +42,9 @@ class Contribution(object):
             youtubeId, viewCount = link
             linkLink = SongYoutubeLink(
                 fileName=params['fileName'],
-                youtubeId=youtubeId,
-                viewCount=viewCount
+                youtubeId=link['youtubeId'],
+                viewCount=link['viewCount'],
+                videoName=link['videoName']
             )
         classes.DbTables.commit()
 
@@ -61,7 +62,7 @@ class Contribution(object):
 
         # sorting by views and
         for song_name, links in result.items():
-            result[song_name] = links[:3]
+            result[song_name] = links
 
         return result
 

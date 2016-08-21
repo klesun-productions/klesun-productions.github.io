@@ -241,52 +241,11 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
      * shmidusic program - github.com/klesun/shmidusic */
     var draw = function(song: Ds.IShmidusicStructure)
     {
-        currentSong = song;
-
-        if (!enabled) {
-            return;
-        }
-
-        interruptDrawing();
-        $chordListCont.empty();
-
-        var staff = song.staffList[0];
-
-        var tacter = TactMeasurer(staff.staffConfig.numerator / 8);
-        interruptDrawing = Tls.forChunk(staff.chordList, 200, 200, (chord: Ds.IShmidusicChord) =>
-        {
-            var chordLength = Math.min.apply(null, chord.noteList.map(n => toFloat(n.length.toString())));
-            var finishedTact = tacter.inject(chordLength);
-
-            /** @debug */
-            if (chord.noteList.length === 1 &&
-                chord.noteList[0].tune == 0 &&
-                chord.noteList[0].channel == 6)
-            {
-                /** @TODO: don't actually omit them, just set them width: 0 or something, cuz
-                 * a tact may end on a pause - see "Detective Conan - Negaigoto Hitotsu Dake.mid" */
-
-                // artificial pause to match shmidusic format
-                return;
-            }
-
-            var $span = canvaser.makeChordSpan(chord);
-            if (finishedTact) {
-                $span.find('.tactNumberCont').html(tacter.tactNumber().toString());
-                $span.addClass('tactFinisher');
-                if (tacter.hasRest()) {
-                    $span.addClass('doesNotFitIntoTact')
-                        .attr('data-rest', tacter.getRest())
-                }
-            } else {
-                $span.find('.tactNumberCont').html('&nbsp;');
-            }
-
-            $chordListCont.append($span);
-        });
+        // TODO: replace usage with "addChord()"
     };
 
-    var getChordList = () => $chordListCont.children().toArray().map(SongAccess.extractChord);
+    /** @TODO: move to Control.ts cuz come on */
+    var getChordList = () => $chordListCont.find(' > .chordSpan').toArray().map(SongAccess.extractChord);
 
     var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
         ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)
