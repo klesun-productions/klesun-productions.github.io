@@ -64,7 +64,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
 
     /** @return value or starts fetching so next time you call it it was ready
      * @nullable */
-    var fetchSample = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample =>
+    let fetchSample = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample =>
     {
         isDrum = isDrum || false;
 
@@ -73,40 +73,43 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
             return null;
         }
 
-        var sampleListList = isDrum
+        let getGenerator: (s: ISampleInfo) => IGenerator = isDrum
+            ? (s) => s.generator
+            : sampleInfo => combineGenerators(
+                updateGenerator(presets[preset].generatorApplyToAll || {}, presets[preset].instrument.generator),
+                updateGenerator(presets[preset].instrument.generatorApplyToAll, sampleInfo.generator)
+            );
+
+        let sampleListList = isDrum
             ? drumPreset.stateProperties.map(p => p.instrument.samples)
             : [presets[preset].instrument.samples];
 
-        var sampleList: ISampleInfo[] = [].concat.apply([], sampleListList);
+        let sampleList: ISampleInfo[] = [].concat.apply([], sampleListList);
 
-        var sampleInfo = sampleList
+        let sampleInfo = sampleList
             .filter(s => !('keyRange' in s.generator) ? true :
-            s.generator.keyRange.lo <= semitone &&
-            s.generator.keyRange.hi >= semitone)[0];
+                s.generator.keyRange.lo <= semitone &&
+                s.generator.keyRange.hi >= semitone)[0];
 
         /** @debug */
         if (!sampleInfo) {
             console.log('no sample!', semitone, preset);
             return null;
         } else {
-            var generator = combineGenerators(
-                updateGenerator(presets[preset].generatorApplyToAll || {}, presets[preset].instrument.generator),
-                updateGenerator(presets[preset].instrument.generatorApplyToAll, sampleInfo.generator)
-            );
-
-            var sampleSemitone = 'overridingRootKey' in sampleInfo.generator
+            let generator = getGenerator(sampleInfo);
+            let sampleSemitone = 'overridingRootKey' in sampleInfo.generator
                 ? sampleInfo.generator.overridingRootKey
                 : sampleInfo.originalPitch;
 
-            var correctionCents = determineCorrectionCents(semitone - sampleSemitone, generator);
-            var freqFactor = Math.pow(2, correctionCents / 1200);
+            let correctionCents = determineCorrectionCents(semitone - sampleSemitone, generator);
+            let freqFactor = Math.pow(2, correctionCents / 1200);
 
             var sampleUrl = sampleDirUrl + '/' + sampleInfo.sampleName.replace('#', '%23') + '.ogg';
 
-            var audioNodes: AudioNode[] = [];
+            let audioNodes: AudioNode[] = [];
             if ('initialFilterFc' in generator) {
-                // taking twice CPU time... should cache it somehow
-                // var biquadFilter = audioCtx.createBiquadFilter();
+                // // taking twice CPU time... should cache it somehow
+                // var biquadFilter = Tls.audioCtx.createBiquadFilter();
                 // biquadFilter.type = 'lowpass';
                 // // don't ask why "0.122322364", i just found two cases that match the equation in polyphone
                 // biquadFilter.frequency.value = (2 ** (generator.initialFilterFc / 1200)) / 0.122322364;
@@ -114,7 +117,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
                 // audioNodes.push(biquadFilter);
             }
 
-            var fetched: IFetchedSample = null;
+            let fetched: IFetchedSample = null;
             Tls.getAudioBuffer(sampleUrl, (resp) => fetched = {
                 buffer: resp,
                 frequencyFactor: freqFactor,
@@ -123,7 +126,7 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
                 loopEnd: (sampleInfo.endLoop + (generator.endloopAddrsOffset || 0)) / sampleInfo.sampleRate,
                 stereoPan: sampleInfo.sampleType,
                 volumeKoef: ('initialAttenuation' in generator ? dBtoKoef(-generator.initialAttenuation / 10) : 1) * (velocity / 127),
-                fadeMillis: 50,
+                fadeMillis: isDrum ? 10000 : 100, // TODO: update the drum sample format to include generators for instrument and presetssss
                 audioNodes: audioNodes,
             });
 

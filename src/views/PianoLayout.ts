@@ -139,7 +139,18 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
 
     var detectSemitone = function(x: number, y: number): number
     {
-        return FIRST_TUNE + ivoryToSemitone(x / IVORY_WIDTH | 0);
+        let ivory = x / IVORY_WIDTH | 0;
+        let semitone = FIRST_TUNE + ivoryToSemitone(ivory);
+        if (y <= EBONY_LENGTH) {
+            let inFlatGap = ivory * IVORY_WIDTH + EBONY_WIDTH / 2 >= x;
+            let inSharpGap = (ivory + 1) * IVORY_WIDTH - EBONY_WIDTH / 2 <= x;
+            if (inFlatGap && [1,2,4,5,6].includes(ivory % 7)) {
+                semitone -= 1;
+            } else if (inSharpGap && [0,1,3,4,5].includes(ivory % 7)) {
+                semitone += 1;
+            }
+        }
+        return semitone;
     };
 
     var hangClickListener = (cb: {(semitone: number): {(): void}}) => canvas.onclick = (e) =>
