@@ -255,7 +255,7 @@ export let Tls = Cls['Tls'] = {
     channelColors: range(0,16).map((ch): [number, number, number] => {
         let selector = '.channelColors [data-channel="' + ch + '"]';
         let colorStr = (cssReflection[selector] || {})['color'] || null;
-        return colorStr ? parseRgbCss(colorStr) : range(0,3).map(_ => Math.random() * 256 | 0);
+        return colorStr ? parseRgbCss(colorStr) : <any>range(0,3).map(_ => Math.random() * 256 | 0);
     }),
 
     // here is exactly 128 preset names in correct order

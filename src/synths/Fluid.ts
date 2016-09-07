@@ -70,7 +70,6 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 
         return () => {
             var iterations = 10;
-            sample.loop = false;
             var fade = (i: number) => {
                 if (i >= 0) {
                     gainNode.gain.value = gainValue * (i / iterations);

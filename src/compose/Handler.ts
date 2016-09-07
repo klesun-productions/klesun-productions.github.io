@@ -180,7 +180,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
                     $(configCont).find('.holder.' + k).val(v));
 
                 synthSwitch.consumeConfig((s.staffConfig.channelList || [])
-                    .map(c => 1 && { preset: c.instrument }));
+                    .map(c => 1 && { preset: c.instrument || 0 }));
                 synthSwitch.analyse(s.chordList);
 
                 painter.setKeySignature(s.staffConfig.keySignature || 0);
