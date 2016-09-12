@@ -106,10 +106,10 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 
     var collectConfig = () => 1 && {
         tempo: $(configCont).find('.holder.tempo').val(),
-        channelList: channelListControl.collectData(),
         loopStart: $(configCont).find('.holder.loopStart').val(),
         loopTimes: $(configCont).find('.holder.loopTimes').val(),
         keySignature: $(configCont).find('.holder.keySignature').val(),
+        channelList: channelListControl.collectData(),
     };
 
     var collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
@@ -221,7 +221,8 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         // "o"
         79: (e: KeyboardEvent) => e.ctrlKey && Tls.selectFileFromDisc(openSongFromBase64),
         // "s"
-        83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(JSON.stringify(collectSong(painter.getChordList()))),
+        // TODO: pretty print: attributes in single row, each nested child collection from new line
+        83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(Tls.xmlyJson(collectSong(painter.getChordList()))),
         // "e"
         69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
         // F4

@@ -85,6 +85,21 @@ let _base64ToArrayBuffer = function(base64: string): ArrayBuffer
         .buffer;
 };
 
+/** json-encodes "data" in such indent format that attributes are not line-broken */
+let xmlyJson = function($var: any, $margin?: string): string
+{
+    var ind = '    ';
+    $margin = $margin || '';
+
+    return Array.isArray($var) ? '[\n'
+            + $var.map((el: any) => $margin + ind + xmlyJson(el, $margin + ind)).join(',\n')
+            + '\n' + $margin + ']'
+        : (typeof $var === 'object' && $var !== null) ? '{'
+            + Object.keys($var).map(k => JSON.stringify(k) + ': ' + xmlyJson($var[k], $margin)).join(', ')
+            + '}'
+        : JSON.stringify($var);
+};
+
 export let Tls = Cls['Tls'] = {
 
     audioCtx: new AudioContext(),
@@ -251,6 +266,8 @@ export let Tls = Cls['Tls'] = {
 
         $('body').prepend($dialog);
     },
+
+    xmlyJson: xmlyJson,
 
     channelColors: range(0,16).map((ch): [number, number, number] => {
         let selector = '.channelColors [data-channel="' + ch + '"]';
