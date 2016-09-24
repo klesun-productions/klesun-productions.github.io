@@ -66,8 +66,6 @@ export var Switch = function(
     {
         presetListControl.onChange(presByChan =>
             synths[$(dropdownEl).val()].consumeConfig(presByChan));
-
-        pianoLayout.onClick((semitone) => playNote(semitone, 0, 127, -1));
     };
 
     init();

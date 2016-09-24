@@ -15,9 +15,6 @@ import {Switch} from "./synths/Switch";
 import {PresetList} from "./views/PresetList";
 import PlaybackControl from "./views/PlaybackControl";
 import {ServApi} from "./utils/ServApi";
-type dict<Tx> = {[k: string]: Tx};
-
-type cb = () => void;
 
 export interface ytlink_t {
     youtubeId: string,
@@ -49,13 +46,15 @@ export let MainPage = function (mainCont: HTMLDivElement)
         ;
     
     const sheetMusicPainter = SheetMusicPainter('mainSongContainer', sheetMusicConfigCont);
-    
+
+    const piano = PianoLayout(pianoCanvas);
     const synth = Switch(
         <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
         <HTMLDivElement>$(mainCont).find('#synthControl')[0],
         PresetList(instrumentInfoBlock),
-        PianoLayout(pianoCanvas)
+        piano
     );
+    piano.onClick((semitone) => synth.playNote(semitone, 0, 127, -1));
 
     const control = PlaybackControl($playbackControlCont);
     const player = Player(control);

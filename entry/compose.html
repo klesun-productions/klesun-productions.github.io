@@ -4,83 +4,92 @@
     <script data-main="/entry/compose" src="/libs/require.js"></script>
 </head>
 <body tabIndex="-1">
-<span id="playbackConfigDiv">
-    <label>Tempo: <input type="number" class="holder tempo" value="120" min="15" max="480"
-                  onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/></label>
-    <label>Loop Start: <input type="number" class="holder loopStart float" value="0"/></label>
-    <label>Loop Times: <input type="number" class="holder loopTimes" value="0"/></label>
-    <label id="visualConfigDiv">
-        Tact Size: <input type="number" class="holder tactSize" value="1" min="0.25" max="16" step="0.25"
-                          onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
-    </label>
-    <label>Key Signature: <input type="number" min="-7" max="7" value="0" class="holder keySignature"/></label>
-    <label>Synth: <select id="synthDropdown"></select></label>
-    <span id="synthControl"></span>
-    <br clear="all"/>
-    <canvas id="pianoCanvas" width="735px" height="45px" octaves="7" style="background-color: white;"></canvas>
-    <label>MIDI Input:
-        <input type="checkbox" checked="checked" id="enableMidiInputFlag" title="Use the F4, Luke"/>
-    </label>
-    <label>Play On Key Down:
-        <input type="checkbox" id="enablePlayOnKeyDownFlag" title="
-            Use after setting playback volume on your device to zero.
-            Designed for people who want to hear exactly how it will sound instantly."/>
-    </label>
-</span>
 
-<div id="sheetMusicDiv"></div>
-
-<div style="display: flex;">
-    <div id="presetListBlock" style="float: left"></div>
-    <div style="flex: 1; margin-left: 20px; margin-top: 10px; background-color: #f8f8f8;">
-        <div class="manualCont">
-            <div style="width: 400px">
-                <table>
-                    <thead>
-                        <th>To</th><th>Press</th>
-                    </thead>
-                    <tbody>
-                        <tr><td>Enter Chords</td><td>Keys On Your Midi Device</td></tr>
-                        <tr><td>Navigate</td><td>Arrow Keys / Home / End</td></tr>
-                        <tr><td>Play</td><td>Space</td></tr>
-                        <tr><td>Save Song</td><td>Ctrl-S</td></tr>
-                        <tr><td>Open Song</td><td>Ctrl-O</td></tr>
-                        <tr><td>Save Song As .mid File</td><td>Ctrl-E</td></tr>
-                        <tr><td>Select Next Note</td><td>Shift</td></tr>
-                        <tr><td>Add Pause</td>
-                            <td>Pause Break <a class="comment">(Works Same As Adding Note From Midi Device)</a></td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="manualCont" style="flex: 1">
-                <table>
-                    <thead>
-                        <tr><th colspan="2">Change Note In Chord (If Not Selected - Change Whole Chord)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Increase Note Length Twice</td>
-                            <td>[ <a class="comment">(Opening Square Bracket)</a> <a class="or">or</a> + <a class="comment">(Num Pad Plus)</a></td></tr>
-                        <tr><td>Decrease Note Length Twice</td>
-                            <td>] <a class="comment">(Closing Square Bracket)</a> <a class="or">or</a> - <a class="comment">(Num Pad Minus)</a></td></tr>
-                        <tr><td>Put Dot / Undo Triplet</td>
-                            <td>. <a class="comment">(Generic Dot)</a> <a class="or">or</a> * <a class="comment">(Num Pad Asterisk)</a></td></tr>
-                        <tr><td>Remove Dot / Make Triplet</td>
-                            <td>, <a class="comment">(Generic Comma)</a> <a class="or">or</a> / <a class="comment">(Num Pad Slash)</a></td></tr>
-
-                        <tr><td>Delete Note</td><td>Delete / Backspace</td></tr>
-                        <tr><td>Change Note Channel (Use Preset Table To Assign Other Instruments Than Piano To Channel Numbers)</td>
-                            <td>Numbers 0..9 On Numpad</td></tr>
-                        <tr><td>Append New Note To Chord</td>
-                            <td>Key On Midi Device (Works When Any Note In Chord Is Selected)</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div id="composeCont">
+    <span id="playbackConfigDiv">
+        <label>Tempo: <input type="number" class="holder tempo" value="120" min="15" max="480"
+                      onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/></label>
+        <label>Loop Start: <input type="number" class="holder loopStart float" value="0"/></label>
+        <label>Loop Times: <input type="number" class="holder loopTimes" value="0"/></label>
+        <label id="visualConfigDiv">
+            Tact Size: <input type="number" class="holder tactSize" value="1" min="0.25" max="16" step="0.25"
+                              onchange="this.value = Math.min(Math.max(this.value, this.min), this.max);"/>
+        </label>
+        <label>Key Signature: <input type="number" min="-7" max="7" value="0" class="holder keySignature"/></label>
+        <label>Synth: <select id="synthDropdown"></select></label>
+        <span id="synthControl"></span>
         <br clear="all"/>
-        Note: may be outdated. For most recent key mapping see
-        <a href="https://github.com/klesun/shmidusic.lv/blob/master/src/compose/Handler.ts#LC177">
-            Handler.ts::focusedHandlers
-        </a>
+        <canvas id="pianoCanvas" width="735px" height="45px" octaves="7" style="background-color: white;"></canvas>
+        <label>MIDI Input:
+            <input type="checkbox" checked="checked" id="enableMidiInputFlag" title="Use the F4, Luke"/>
+        </label>
+        <label>Play On Key Down:
+            <input type="checkbox" id="enablePlayOnKeyDownFlag" title="
+                Use after setting playback volume on your device to zero.
+                Designed for people who want to hear exactly how it will sound instantly."/>
+        </label>
+    </span>
+
+    <div id="sheetMusicDiv"></div>
+
+    <div style="display: flex;">
+        <div style="float: left">
+            <div class="channelColors" title="notes you input will be in such color">
+                <label>Input Channel:</label>
+                <select class="inputChannelDropdown"></select>
+            </div>
+            <div id="presetListBlock"></div>
+        </div>
+        <div style="flex: 1; margin-left: 20px; margin-top: 10px; background-color: #f8f8f8;">
+            <div class="manualCont">
+                <div style="width: 400px">
+                    <table>
+                        <thead>
+                            <th>To</th><th>Press</th>
+                        </thead>
+                        <tbody>
+                            <tr><td>Enter Chords</td><td>Keys On Your Midi Device</td></tr>
+                            <tr><td>Navigate</td><td>Arrow Keys / Home / End</td></tr>
+                            <tr><td>Play</td><td>Space</td></tr>
+                            <tr><td>Save Song</td><td>Ctrl-S</td></tr>
+                            <tr><td>Open Song</td><td>Ctrl-O</td></tr>
+                            <tr><td>Save Song As .mid File</td><td>Ctrl-E</td></tr>
+                            <tr><td>Select Next Note</td><td>Shift</td></tr>
+                            <tr><td>Add Pause</td>
+                                <td>Pause Break <a class="comment">(Works Same As Adding Note From Midi Device)</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="manualCont" style="flex: 1">
+                    <table>
+                        <thead>
+                            <tr><th colspan="2">Change Note In Chord (If Not Selected - Change Whole Chord)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Increase Note Length Twice</td>
+                                <td>[ <a class="comment">(Opening Square Bracket)</a> <a class="or">or</a> + <a class="comment">(Num Pad Plus)</a></td></tr>
+                            <tr><td>Decrease Note Length Twice</td>
+                                <td>] <a class="comment">(Closing Square Bracket)</a> <a class="or">or</a> - <a class="comment">(Num Pad Minus)</a></td></tr>
+                            <tr><td>Put Dot / Undo Triplet</td>
+                                <td>. <a class="comment">(Generic Dot)</a> <a class="or">or</a> * <a class="comment">(Num Pad Asterisk)</a></td></tr>
+                            <tr><td>Remove Dot / Make Triplet</td>
+                                <td>, <a class="comment">(Generic Comma)</a> <a class="or">or</a> / <a class="comment">(Num Pad Slash)</a></td></tr>
+
+                            <tr><td>Delete Note</td><td>Delete / Backspace</td></tr>
+                            <tr><td>Change Note Channel (Use Preset Table To Assign Other Instruments Than Piano To Channel Numbers)</td>
+                                <td>Numbers 0..9 On Numpad</td></tr>
+                            <tr><td>Append New Note To Chord</td>
+                                <td>Key On Midi Device (Works When Any Note In Chord Is Selected)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br clear="all"/>
+            Note: may be outdated. For most recent key mapping see
+            <a href="https://github.com/klesun/shmidusic.lv/blob/master/src/compose/Handler.ts#LC177">
+                Handler.ts::focusedHandlers
+            </a>
+        </div>
     </div>
 </div>
 

@@ -1,3 +1,5 @@
+
+.channelColors [data-channel] { font-weight: bold; }
 .channelColors [data-channel="0"] { color: rgb(0, 0, 0); } /* black */
 .channelColors [data-channel="1"] { color: rgb(192, 0, 0); } /* red */
 .channelColors [data-channel="2"] { color: rgb(0, 148, 0); } /* green */
@@ -14,3 +16,5 @@
 .channelColors [data-channel="13"] { color: rgb(192, 128, 0); }
 .channelColors [data-channel="14"] { color: rgb(130, 200, 0); }
 .channelColors [data-channel="15"] { color: rgb(255, 32, 0); }
+
+canvas#pianoCanvas { cursor: pointer; }
