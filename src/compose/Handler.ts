@@ -11,7 +11,7 @@ import {Fluid} from "../synths/Fluid";
 import ShReflect from "../Reflect";
 import {Tls} from "../utils/Tls";
 import {Player} from "../player/Player";
-import {Midiator} from "./Midiator";
+import {EncodeMidi} from "./EncodeMidi";
 import {Switch} from "../synths/Switch";
 import {PresetList} from "../views/PresetList";
 import PianoLayout from "../views/PianoLayout";
@@ -229,7 +229,7 @@ export var Handler = function(painter: IPainter, configCont: HTMLDivElement, she
         // "s"
         83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(Tls.xmlyJson(collectSong(painter.getChordList()))),
         // "e"
-        69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
+        69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(EncodeMidi(collectSong(painter.getChordList()))),
         // F4
         115: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
     };

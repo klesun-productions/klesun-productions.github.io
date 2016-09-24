@@ -28,7 +28,7 @@ var getLength = (c: IShmidusicChord) => Math.min.apply(null, c.noteList.map(n =>
 var toTicks = (academic: number) =>
     academic * TICKS_PER_BEAT * 4; // likely correct
 
-export function Midiator(song: IShmidusicStructure): ArrayBuffer // sequence of bytes
+export function EncodeMidi(song: IShmidusicStructure): ArrayBuffer // sequence of bytes
 {
     var configTrack = new Midi.Track();
     configTrack.setTempo(song.staffList[0].staffConfig.tempo);

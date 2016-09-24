@@ -18,8 +18,7 @@ type velocity_t = number;
 // this function converts SMF midi events to a bit more structured representation
 // - there is only single noteOn with sounding duration
 // - all control messages are gathered in a single place
-
-export function Structurator(smfBuf: ArrayBuffer): IGeneralStructure
+export function ParseMidi(smfBuf: ArrayBuffer): IGeneralStructure
 {
     var smf = Ns.Libs.SMFreader(smfBuf);
 
