@@ -153,8 +153,10 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
         return semitone;
     };
 
-    var hangClickListener = (cb: {(semitone: number): {(): void}}) => canvas.onclick = (e) =>
-    {
+    var onClicks: {(semitone: number): {(): void}}[] = [];
+    var onClick = (cb: {(semitone: number): {(): void}}) => onClicks.push(cb);
+
+    canvas.onclick = (e) => onClicks.forEach(cb => {
         var sem = detectSemitone(
             e.clientX - $(canvas).offset().left,
             e.clientY - $(canvas).offset().top
@@ -164,17 +166,16 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
         var interrupt = cb(sem);
 
         setTimeout(() => { interrupt(); unhiglight(); }, 500);
-    };
-
+    });
     paintBase();
 
     return {
         playNote: highlight,
-        hangClickListener: hangClickListener,
+        onClick: onClick,
     };
 };
 
 export interface IPianoLayout {
     playNote: (sem: number, chan: number) => () => void,
-    hangClickListener: (cb: {(semitone: number): {(): void}}) => void,
+    onClick: (cb: {(semitone: number): {(): void}}) => void,
 };

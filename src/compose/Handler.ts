@@ -35,12 +35,13 @@ const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorA
 
 export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 {
+    var piano = PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0]);
     var channelListControl = PresetList(<HTMLDivElement>$$('#presetListBlock')[0]),
         synthSwitch = Switch(
             <HTMLSelectElement>$$('#synthDropdown')[0],
             <HTMLDivElement>$$('#synthControl')[0],
             channelListControl,
-            PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0])
+            piano
         ),
         enableMidiInputFlag = <HTMLInputElement>$$('#enableMidiInputFlag')[0],
         enablePlayOnKeyDownFlag = <HTMLInputElement>$$('#enablePlayOnKeyDownFlag')[0],
@@ -221,7 +222,6 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         // "o"
         79: (e: KeyboardEvent) => e.ctrlKey && Tls.selectFileFromDisc(openSongFromBase64),
         // "s"
-        // TODO: pretty print: attributes in single row, each nested child collection from new line
         83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(Tls.xmlyJson(collectSong(painter.getChordList()))),
         // "e"
         69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(Midiator(collectSong(painter.getChordList()))),
@@ -392,6 +392,10 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 
     handleHashChange();
     hangMidiHandlers();
+    piano.onClick(semitone => {
+        handleNoteOn(semitone, window.performance.now());
+        return () => {}; // () => handleNoteOff()
+    });
 
     $(configCont).find('.holder.keySignature').change((e: any) =>
         painter.setKeySignature(e.target.value));

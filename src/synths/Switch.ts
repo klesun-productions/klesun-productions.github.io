@@ -63,7 +63,7 @@ export function Switch(
     presetListControl.hangPresetChangeHandler(presByChan =>
         synths[$(dropdownEl).val()].consumeConfig(presByChan));
 
-    pianoLayout.hangClickListener((semitone) => playNote(semitone, 0, 127, -1));
+    pianoLayout.onClick((semitone) => playNote(semitone, 0, 127, -1));
 
     // TODO: i believe, since we distinct soundfont synth-s here, we could declare the
     // TODO: "analyse()" only in them and remove the nasty method from the general interface
