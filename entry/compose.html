@@ -20,27 +20,35 @@
         <span id="synthControl"></span>
         <br clear="all"/>
         <canvas id="pianoCanvas" width="735px" height="45px" octaves="7" style="background-color: white;"></canvas>
-        <label>MIDI Input:
-            <input type="checkbox" checked="checked" id="enableMidiInputFlag" title="Use the F4, Luke"/>
+        <label title="Use the F4, Luke">MIDI Input:
+            <input type="checkbox" checked="checked" class="enableMidiInputFlag"/>
         </label>
-        <label>Play On Key Down:
-            <input type="checkbox" id="enablePlayOnKeyDownFlag" title="
-                Use after setting playback volume on your device to zero.
-                Designed for people who want to hear exactly how it will sound instantly."/>
+        <label title="
+Use after setting playback volume on your device to zero.
+Designed for people who want to hear exactly how it will sound instantly.">Play On Key Down:
+            <input type="checkbox" class="enablePlayOnKeyDownFlag"/>
+        </label>
+        <label title="
+Treats you PC keyboard as piano keyboard according to keys placement
+(Left Shift - C, Z - C#, X - D, C - D#, V - E, B - F ... and so on...)">Pseudo-Piano Input:
+            <input type="checkbox" class="enablePseudoPianoInputFlag"/>
         </label>
     </span>
 
     <div id="sheetMusicDiv"></div>
 
     <div style="display: flex;">
-        <div style="float: left">
+        <div>
             <div class="channelColors" title="notes you input will be in such color">
                 <label>Input Channel:</label>
                 <select class="inputChannelDropdown"></select>
             </div>
             <div id="presetListBlock"></div>
         </div>
-        <div style="flex: 1; margin-left: 20px; margin-top: 10px; background-color: #f8f8f8;">
+        <div style="margin-left: 20px; margin-top: 10px; background-color: #f8f8f8;">
+            <div style="text-align: center">
+                <img class="pseudoPianoImg" src="/imgs/pseudoPiano.png">
+            </div>
             <div class="manualCont">
                 <div style="width: 400px">
                     <table>

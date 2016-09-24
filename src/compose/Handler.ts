@@ -38,9 +38,10 @@ export var Handler = function(cont: HTMLDivElement)
     var piano = gui.piano,
         channelListControl = gui.channelListControl,
         synthSwitch = gui.synthSwitch,
-        enableMidiInputFlag = gui.enableMidiInputFlag,
         inputChannelDropdown = gui.inputChannelDropdown,
+        enableMidiInputFlag = gui.enableMidiInputFlag,
         enablePlayOnKeyDownFlag = gui.enablePlayOnKeyDownFlag,
+        enablePseudoPianoInputFlag = gui.enablePseudoPianoInputFlag,
         player = Player({
             setPlayback: () => {}, setFields: () => {},
             setFileInfo: () => {}, getTempoFactor: () => 1,
@@ -299,25 +300,25 @@ export var Handler = function(cont: HTMLDivElement)
             control.setChannel(i));
 
     var hangKeyboardHandlers = (el: HTMLElement) => {
-        var pseudoPianoEnabled = false;
-
         var semitoneByKey = PseudoPiano().semitoneByKey;
-        el.onkeydown = function (keyEvent:KeyboardEvent) {
-            if (pseudoPianoEnabled) {
+        el.onkeydown = function (keyEvent: KeyboardEvent) {
+            if (enablePseudoPianoInputFlag.checked) {
                 var semitone: number;
-                if (semitone = semitoneByKey[keyEvent.keyCode]) {
+                if (semitone = semitoneByKey[(<any>keyEvent).code]) {
+                    keyEvent.preventDefault();
                     var note = handleNoteOn(semitone, window.performance.now());
-                    playNotes([note]);
+                    oneShotPlayer.playChord([note]);
+                    return;
                 }
-            } else {
-                var handler: key_handler_d;
-                if (handler = focusedHandlers[keyEvent.keyCode]) {
-                    if (playback) {
-                        keyEvent.preventDefault();
-                        playbackFinished();
-                    } else {
-                        handler(keyEvent);
-                    }
+            }
+
+            var handler: key_handler_d;
+            if (handler = focusedHandlers[keyEvent.keyCode]) {
+                if (playback) {
+                    keyEvent.preventDefault();
+                    playbackFinished();
+                } else {
+                    handler(keyEvent);
                 }
             }
         };
@@ -381,7 +382,6 @@ export var Handler = function(cont: HTMLDivElement)
         } else {
             console.log("No MIDI support in your browser.");
         }
-
     };
     
     var handleHashChange = function()
@@ -406,7 +406,7 @@ export var Handler = function(cont: HTMLDivElement)
         hangMidiHandlers();
         piano.onClick(semitone => {
             var note = handleNoteOn(semitone, window.performance.now());
-            playNotes([note]);
+            oneShotPlayer.playChord([note]);
             return () => {}; // () => handleNoteOff()
         });
         hangKeyboardHandlers(gui.sheetMusictCont);
