@@ -7,12 +7,13 @@ import {TableGenerator} from "../TableGenerator";
 // this module contains some object definitions
 // that do communication between UX and code
 
+// i believe the decryption is "consume config type"
 type cons_conf_t = {(presByChan: {[ch: number]: IShChannel}): void};
 
 export function PresetList(cont: HTMLDivElement): IPresetList
 {
     var enabledChannels = new Set(Tls.range(0,16));
-    var presetChanged: cons_conf_t = (_) => () => {};
+    var onChanges: cons_conf_t[] = [];
 
     var makePresetDropdown = function(chan: number): HTMLSelectElement
     {
@@ -29,7 +30,7 @@ export function PresetList(cont: HTMLDivElement): IPresetList
 
         $(select).attr('readonly', 'readonly');
 
-        select.onchange = () => presetChanged({[chan]: {preset: $(select).val()}});
+        select.onchange = () => onChanges.forEach(cb => cb({[chan]: {preset: $(select).val()}}));
 
         return select;
     };
@@ -93,9 +94,9 @@ export function PresetList(cont: HTMLDivElement): IPresetList
         });
     };
 
-    const hangPresetChangeHandler = (cb: cons_conf_t) =>
+    const onChange = (cb: cons_conf_t) =>
     {
-        presetChanged = cb;
+        onChanges.push(cb);
         $(cont).find('select').removeAttr('readonly');
     };
 
@@ -104,7 +105,7 @@ export function PresetList(cont: HTMLDivElement): IPresetList
     return {
         update: update,
         enabledChannels: () => enabledChannels,
-        hangPresetChangeHandler: hangPresetChangeHandler,
+        onChange: onChange,
         collectData: collectData,
     };
 };
@@ -112,6 +113,6 @@ export function PresetList(cont: HTMLDivElement): IPresetList
 export interface IPresetList {
     update: (instrByChannel: {[c: number]: IShChannel}) => void,
     enabledChannels: () => Set<number>,
-    hangPresetChangeHandler: (cb: cons_conf_t) => void,
+    onChange: (cb: cons_conf_t) => void,
     collectData: () => IChannel[],
 };

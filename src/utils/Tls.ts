@@ -168,13 +168,16 @@ export let Tls = Cls['Tls'] = {
     getAudioBuffer: function(url: string, onOk: { (resp: AudioBuffer): void }): void
     {
         if (!(url in cachedSampleBuffers)) {
-            awaiting[url] = awaiting[url] || [];
-            awaiting[url].push(onOk);
-            Tls.fetchBinaryFile(url, (resp) => Tls.audioCtx.decodeAudioData(resp, (decoded) => {
-                awaiting[url].forEach(a => a(decoded));
-                awaiting[url] = [];
-                cachedSampleBuffers[url] = decoded;
-            }));
+            if (awaiting[url]) {
+                awaiting[url].push(onOk);
+            } else {
+                awaiting[url] = [onOk];
+                Tls.fetchBinaryFile(url, (resp) => Tls.audioCtx.decodeAudioData(resp, (decoded) => {
+                    awaiting[url].forEach(a => a(decoded));
+                    awaiting[url] = [];
+                    cachedSampleBuffers[url] = decoded;
+                }));
+            }
         } else {
             onOk(cachedSampleBuffers[url]);
         }

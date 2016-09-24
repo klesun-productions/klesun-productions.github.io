@@ -9,12 +9,10 @@ requirejs(wanted, function(Painter, Handler)
     var painter = Painter.SheetMusicPainter('sheetMusicDiv', $('#visualConfigDiv')[0]);
     painter.setEnabled(true);
 
-    var handler = Handler.default(painter, $('#playbackConfigDiv')[0]);
-
     var sheetMusicCont = $('#sheetMusicDiv')[0];
     $(sheetMusicCont).attr('tabindex', 1);
-    handler.hangKeyboardHandlers(sheetMusicCont);
-    handler.hangGlobalKeyboardHandlers();
+
+    var handler = Handler.Handler(painter, $('#playbackConfigDiv')[0], sheetMusicCont);
 
     $(sheetMusicCont).focus();
 

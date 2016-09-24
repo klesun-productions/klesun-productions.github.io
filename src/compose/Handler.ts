@@ -16,6 +16,7 @@ import {Switch} from "../synths/Switch";
 import {PresetList} from "../views/PresetList";
 import PianoLayout from "../views/PianoLayout";
 import {ISynth} from "../synths/ISynth";
+import {PseudoPiano} from "./PseudoPiano";
 
 // following constants represent the X in bits of midi message
 // XXXX???? ???????? ????????
@@ -33,10 +34,10 @@ const NOTE_ON = 0x09;
 
 const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorAll(s));
 
-export default function Handler(painter: IPainter, configCont: HTMLDivElement)
+export var Handler = function(painter: IPainter, configCont: HTMLDivElement, sheetMusictCont: HTMLDivElement)
 {
-    var piano = PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0]);
-    var channelListControl = PresetList(<HTMLDivElement>$$('#presetListBlock')[0]),
+    var piano = PianoLayout(<HTMLCanvasElement>$$('#pianoCanvas')[0]),
+        channelListControl = PresetList(<HTMLDivElement>$$('#presetListBlock')[0]),
         synthSwitch = Switch(
             <HTMLSelectElement>$$('#synthDropdown')[0],
             <HTMLDivElement>$$('#synthControl')[0],
@@ -45,13 +46,17 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         ),
         enableMidiInputFlag = <HTMLInputElement>$$('#enableMidiInputFlag')[0],
         enablePlayOnKeyDownFlag = <HTMLInputElement>$$('#enablePlayOnKeyDownFlag')[0],
+        player = Player({
+            setPlayback: () => {}, setFields: () => {},
+            setFileInfo: () => {}, getTempoFactor: () => 1,
+        }),
         O_O = 0-0;
 
+    // pre-loading samples
+    synthSwitch.analyzeActivePresets();
+    channelListControl.onChange(synthSwitch.analyzeActivePresets);
+
     var lastChordOn = 0;
-    const player = Player({
-        setPlayback: () => {}, setFields: () => {},
-        setFileInfo: () => {}, getTempoFactor: () => 1,
-    });
 
     var control = painter.getControl();
     var playback = false; 
@@ -87,7 +92,7 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
 
         var note = {
             tune: semitone,
-            channel: 0,
+            channel: 0, // TODO: add a dropdown for input channel
             length: 0.25
         };
 
@@ -229,9 +234,11 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         115: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
     };
 
+    type key_handler_d = (e?: KeyboardEvent) => void;
+
     // TODO: Key Code constants!
     // TODO: change to tuple list to allow multiple mappings per action
-    var focusedHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
+    var focusedHandlers: { [code: number]: key_handler_d } = {
         // space
         32: e => {
             e.preventDefault();
@@ -300,16 +307,25 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
             control.setChannel(i));
 
     var hangKeyboardHandlers = (el: HTMLElement) => {
+        var pseudoPianoEnabled = false;
+
+        var semitoneByKey = PseudoPiano().semitoneByKey;
         el.onkeydown = function (keyEvent:KeyboardEvent) {
-            if (keyEvent.keyCode in focusedHandlers) {
-                if (playback) {
-                    keyEvent.preventDefault();
-                    playbackFinished();
-                } else {
-                    focusedHandlers[keyEvent.keyCode](keyEvent);
+            if (pseudoPianoEnabled) {
+                var semitone: number;
+                if (semitone = semitoneByKey[keyEvent.keyCode]) {
+                    handleNoteOn(semitone, window.performance.now());
                 }
             } else {
-                console.log('Unknown Key Event: ', keyEvent);
+                var handler: key_handler_d;
+                if (handler = focusedHandlers[keyEvent.keyCode]) {
+                    if (playback) {
+                        keyEvent.preventDefault();
+                        playbackFinished();
+                    } else {
+                        handler(keyEvent);
+                    }
+                }
             }
         };
         el.onpaste = (e: any) => pasteFromClipboard(e.clipboardData.getData('Text'));
@@ -388,20 +404,22 @@ export default function Handler(painter: IPainter, configCont: HTMLDivElement)
         }
     };
 
-    window.onhashchange = handleHashChange;
+    var init = function()
+    {
+        window.onhashchange = handleHashChange;
 
-    handleHashChange();
-    hangMidiHandlers();
-    piano.onClick(semitone => {
-        handleNoteOn(semitone, window.performance.now());
-        return () => {}; // () => handleNoteOff()
-    });
+        handleHashChange();
+        hangMidiHandlers();
+        piano.onClick(semitone => {
+            handleNoteOn(semitone, window.performance.now());
+            return () => {}; // () => handleNoteOff()
+        });
+        hangKeyboardHandlers(sheetMusictCont);
+        hangGlobalKeyboardHandlers();
 
-    $(configCont).find('.holder.keySignature').change((e: any) =>
-        painter.setKeySignature(e.target.value));
-
-    return {
-        hangKeyboardHandlers: hangKeyboardHandlers,
-        hangGlobalKeyboardHandlers: hangGlobalKeyboardHandlers,
+        $(configCont).find('.holder.keySignature').change((e: any) =>
+            painter.setKeySignature(e.target.value));
     };
+
+    init();
 };

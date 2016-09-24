@@ -8,17 +8,17 @@ import {Fluid} from "./Fluid";
 import {ISynth} from "./ISynth";
 import {Tls} from "../utils/Tls";
 import {IPianoLayout} from "../views/PianoLayout";
-import {IChannel, IShChannel} from "../DataStructures";
+import {IChannel, IShChannel, IShmidusicChord} from "../DataStructures";
 import {IPresetList} from "../views/PresetList";
 import {SoundFontAdapter} from "./SoundFontAdapter";
 import {DenyaAdapter} from "./DenyaAdapter";
 
-export function Switch(
+export var Switch = function(
     dropdownEl: HTMLSelectElement,
     controlEl: HTMLDivElement,
     presetListControl: IPresetList,
     pianoLayout: IPianoLayout
-): ISynth
+): ISwitch
 {
     var channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
     
@@ -58,12 +58,19 @@ export function Switch(
         } else {
             return () => {};
         }
-    }; 
+    };
 
-    presetListControl.hangPresetChangeHandler(presByChan =>
-        synths[$(dropdownEl).val()].consumeConfig(presByChan));
+    var analyse = (chords: IShmidusicChord[]) => synths[$(dropdownEl).val()].analyse(chords);
 
-    pianoLayout.onClick((semitone) => playNote(semitone, 0, 127, -1));
+    var init = function()
+    {
+        presetListControl.onChange(presByChan =>
+            synths[$(dropdownEl).val()].consumeConfig(presByChan));
+
+        pianoLayout.onClick((semitone) => playNote(semitone, 0, 127, -1));
+    };
+
+    init();
 
     // TODO: i believe, since we distinct soundfont synth-s here, we could declare the
     // TODO: "analyse()" only in them and remove the nasty method from the general interface
@@ -80,6 +87,17 @@ export function Switch(
             synths[$(dropdownEl).val()].setPitchBend(koef, chan);
         },
         init: () => {},
-        analyse: chords => synths[$(dropdownEl).val()].analyse(chords),
+        analyse: analyse,
+        analyzeActivePresets: () => analyse([{
+            noteList: Tls.range(0, 16 * 128).map(i => 1 && {
+                channel: i / 128 | 0,
+                tune: i % 128,
+                length: 0,
+            }),
+        }]),
     };
 };
+
+interface ISwitch extends ISynth {
+    analyzeActivePresets: () => void,
+}
