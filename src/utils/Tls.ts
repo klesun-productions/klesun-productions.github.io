@@ -186,7 +186,7 @@ export let Tls = Cls['Tls'] = {
     saveJsonToDisc: function(content: string): void
     {
         var blob = new Blob([content], {type: "text/json;charset=utf-8"});
-        saveAs(blob, 'song.mid.js', true);
+        saveAs(blob, 'song.mid.json', true);
     },
 
     saveMidiToDisc: function(content: ArrayBuffer): void

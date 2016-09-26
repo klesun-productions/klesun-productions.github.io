@@ -30,7 +30,7 @@ let $$ = (selector: string, el?: HTMLElement) =>
 export let MainPage = function (mainCont: HTMLDivElement)
 {
     let pianoCanvas = <HTMLCanvasElement>$$('.pianoLayoutCanvas', mainCont)[0],
-        $playbackControlCont = $(mainCont).find('.playbackControlCont'), // TODO: get rid of
+        $playbackControlCont = $(mainCont).find('.playbackControlCont'), // TODO: get rid of $
         sheetMusicConfigCont = $$('#sheetMusicConfigDiv', mainCont)[0],
         sheetMusicCont = $$('.sheetMusicCont', mainCont)[0],
         violinKeyImage = $$('.violinKeyImage', mainCont)[0],

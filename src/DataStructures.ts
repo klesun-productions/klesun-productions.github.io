@@ -68,7 +68,7 @@ export interface IShmidusicStructure {
             loopTimes: number,
             channelList: IChannel[],
         };
-        chordList: Array<IShmidusicChord>;
+        chordList: IShmidusicChord[];
     }>;
 }
 
@@ -86,7 +86,7 @@ export interface IMidJsNote {
 }
 
 export interface IGeneralStructure {
-    chordList: IShmidusicChord[],
+    chordList: ITimedShChord[],
     controlEvents: {[time: number]: Array<(s: ISynth) => void>},
     config: {
         tempo: number,

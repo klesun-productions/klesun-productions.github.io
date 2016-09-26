@@ -147,7 +147,7 @@ export var Handler = function(cont: HTMLDivElement)
         }
 
         var textArea = document.createElement("textarea");
-        textArea.value = JSON.stringify(chordSpans.map(SongAccess.extractChord));
+        textArea.value = Tls.xmlyJson(chordSpans.map(SongAccess.extractChord));
 
         document.body.appendChild(textArea);
 
@@ -221,10 +221,14 @@ export var Handler = function(cont: HTMLDivElement)
         79: (e: KeyboardEvent) => e.ctrlKey && Tls.selectFileFromDisc(openSongFromBase64),
         // "s"
         83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(Tls.xmlyJson(collectSong(painter.getChordList()))),
-        // "e"
+        // "e" stands for "export midi"
         69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(EncodeMidi(collectSong(painter.getChordList()))),
+        // "i" stands for "import midi"
+        73: (e: KeyboardEvent) => e.ctrlKey && Tls.openMidi(m => openSong(Shmidusicator.generalToShmidusic(m))),
         // F4
         115: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
+        // Insert
+        45: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
     };
 
     type key_handler_d = (e?: KeyboardEvent) => void;
@@ -261,8 +265,8 @@ export var Handler = function(cont: HTMLDivElement)
         36: () => control.setChordFocus(-1),
         // end
         35: () => control.setChordFocus(99999999999), // backoffice style!
-        // shift
-        16: () => playNotes(control.pointNextNote()),
+        // backslash
+        220: () => playNotes(control.pointNextNote()),
         // opening square bracket
         219: () => control.multiplyLength(0.5),
         // num-pad minus
@@ -302,13 +306,18 @@ export var Handler = function(cont: HTMLDivElement)
     var hangKeyboardHandlers = (el: HTMLElement) => {
         var semitoneByKey = PseudoPiano().semitoneByKey;
         el.onkeydown = function (keyEvent: KeyboardEvent) {
+
+            // TODO: remap SHIFT ro free it for Pseudo-Piano
+
             if (enablePseudoPianoInputFlag.checked) {
-                var semitone: number;
-                if (semitone = semitoneByKey[(<any>keyEvent).code]) {
-                    keyEvent.preventDefault();
-                    var note = handleNoteOn(semitone, window.performance.now());
-                    oneShotPlayer.playChord([note]);
-                    return;
+                if (!keyEvent.ctrlKey && !keyEvent.altKey) {
+                    var semitone: number;
+                    if (semitone = semitoneByKey[(<any>keyEvent).code]) {
+                        keyEvent.preventDefault();
+                        var note = handleNoteOn(semitone, window.performance.now());
+                        oneShotPlayer.playChord([note]);
+                        return;
+                    }
                 }
             }
 
@@ -323,18 +332,18 @@ export var Handler = function(cont: HTMLDivElement)
             }
         };
         el.onpaste = (e: any) => pasteFromClipboard(e.clipboardData.getData('Text'));
-    };
 
-    var hangGlobalKeyboardHandlers = () => $('body')[0].onkeydown = function(keyEvent: KeyboardEvent)
-    {
-        if (keyEvent.keyCode in globalHandlers) {
-            keyEvent.preventDefault();
-            if (playback) {
-                playbackFinished();
-            } else {
-                globalHandlers[keyEvent.keyCode](keyEvent);
+        $('body')[0].onkeydown = function(keyEvent: KeyboardEvent)
+        {
+            if (keyEvent.keyCode in globalHandlers) {
+                keyEvent.preventDefault();
+                if (playback) {
+                    playbackFinished();
+                } else {
+                    globalHandlers[keyEvent.keyCode](keyEvent);
+                }
             }
-        }
+        };
     };
 
     var handleMidiEvent = function (message: MIDIMessageEvent)
@@ -410,7 +419,6 @@ export var Handler = function(cont: HTMLDivElement)
             return () => {}; // () => handleNoteOff()
         });
         hangKeyboardHandlers(gui.sheetMusictCont);
-        hangGlobalKeyboardHandlers();
 
         $(configCont).find('.holder.keySignature').change((e: any) =>
             painter.setKeySignature(e.target.value));

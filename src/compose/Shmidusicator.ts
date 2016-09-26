@@ -1,18 +1,95 @@
 /// <reference path="../references.ts" />
 
-// this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
-
 import * as Ds from "../DataStructures";
 import {Tls} from "../utils/Tls";
 import {Fraction} from "../utils/Tls";
 import {IShChannel} from "../DataStructures";
+import {IShmidusicChord} from "../DataStructures";
+import {ITimedShChord} from "../DataStructures";
+import {Adp} from "../Adp";
 
+var roundNoteLength = (v: number) => +v.toFixed(8);
+
+// this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 export default class Shmidusicator
 {
-    /** @TODO: when doing playback, use this instead of StandardMidiFile - it is the solution to the
-     * problem that leak pause-chords may be inserted and break indexing
-     * @unused */
-    static collectChords(notes: Array<Ds.IMidJsNote>, division: number): Array<Ds.ITimedShChord>
+    static generalToShmidusic(source: Ds.IGeneralStructure): Ds.IShmidusicStructure
+    {
+        var timedChords: ITimedShChord[] = JSON.parse(JSON.stringify(source.chordList));
+        var pausedChords: IShmidusicChord[] = [];
+
+        for (var i = 0; i < timedChords.length; ++i) {
+            var chord = Adp.Chord(timedChords[i]);
+            pausedChords.push(chord.s); // note that we may mutate chord further
+
+            var next: ITimedShChord;
+            if (next = timedChords[i + 1]) {
+                var requiredLength = next.timeFraction - chord.s.timeFraction;
+                var actualLength = chord.getLength();
+                if (requiredLength > actualLength) {
+                    let pauseLength = requiredLength - actualLength;
+                    var eps = 0.001;
+                    if (!Shmidusicator.isValidLength(actualLength) &&
+                        Shmidusicator.isValidLength(requiredLength)
+                    ) {
+                        // watched/8_elfenLied.mid
+                        // watched/8_Bakemonogatari - Sugar sweet nightmare-piano version-.mid
+                        // maybe more, but since i fixed it i can't see them
+                        // sometimes MIDI noteOff events are fired shortly before they are supposed to, probably to prevent portamento
+                        // TODO: if this becomes relevant one day, fix the length of notes not affecting chor length too
+                        // this is likely possible, the stoccato time is relative to note length in ticks... i believe
+                        // just fixing it
+                        chord.setLength(requiredLength);
+                    } else if (pauseLength > eps) {
+                        let pause = {tune: 0, channel: 9, length: pauseLength};
+                        pausedChords.push({noteList: [pause]});
+                    }
+                } else if (requiredLength < actualLength) {
+                    let pause = {tune: 0, channel: 9, length: requiredLength};
+                    chord.s.noteList.push(pause);
+                }
+            }
+        }
+
+        var result = {
+            staffList: [{
+                staffConfig: {
+                    tempo: source.config.tempo,
+                    loopStart: source.config.loopStart,
+                    loopTimes: source.config.loopTimes,
+                    channelList: Tls.mapi(source.config.channels, (c, i) => 1 && {
+                        instrument: c.preset,
+                        channelNumber: i,
+                    }),
+                },
+                chordList: pausedChords,
+            }],
+        };
+
+        /** @debug */
+        console.log('General to Shmidusic conversion');
+        console.log('Input: ', source);
+        console.log('Output: ', result);
+
+        var badLengthCount = pausedChords
+            .map(Adp.Chord)
+            .filter(c => !Shmidusicator.isValidLength(c.getLength()))
+            .length;
+
+        if (badLengthCount > 0) {
+            console.log('Failed to detect length of ' + badLengthCount + ' chords');
+            var occurrenceCountByLength = pausedChords.reduce((r, chord) => {
+                chord.noteList.forEach(n => r[n.length] = (r[n.length] || 0) + 1);
+                return r;
+            }, <{[l: number]: number}>{});
+            console.log(occurrenceCountByLength);
+        }
+
+        return result;
+    };
+
+    /** @unused */
+    static putPauses(notes: Array<Ds.IMidJsNote>, division: number): Array<Ds.IShmidusicChord>
     {
         if (notes.length < 1) {
             return [];
@@ -104,7 +181,7 @@ export default class Shmidusicator
 
         Shmidusicator.getLengthOptions().forEach(function(e)
         {
-            if (floatLength <= e.float()) {
+            if (roundNoteLength(floatLength) <= roundNoteLength(e.float())) {
                 result = e;
             }
         });
@@ -115,7 +192,7 @@ export default class Shmidusicator
     static isValidLength(length: number): boolean
     {
         return Shmidusicator.getLengthOptions()
-            .some(o => o.float().toFixed(8) === length.toFixed(8));
+            .some(o => roundNoteLength(o.float()) === roundNoteLength(length));
     }
 
     /** @param shmidusicJson - json in shmidusic project format */
@@ -131,11 +208,9 @@ export default class Shmidusicator
                 preset: e.instrument,
             }));
 
-        Tls.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {
-            preset: 0,
-        }));
+        Tls.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {preset: 0}));
 
-        var chordList = staff['chordList'];
+        var chordList: ITimedShChord[] = JSON.parse(JSON.stringify(staff.chordList));
 
         var timeFraction = 0;
 
