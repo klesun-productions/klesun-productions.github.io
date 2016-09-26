@@ -108,6 +108,7 @@ export var Handler = function(cont: HTMLDivElement)
         loopStart: $(configCont).find('.holder.loopStart').val(),
         loopTimes: $(configCont).find('.holder.loopTimes').val(),
         keySignature: $(configCont).find('.holder.keySignature').val(),
+        tactSize: $(configCont).find('.holder.tactSize').val(),
         channelList: channelListControl.collectData(),
     };
 
@@ -175,8 +176,7 @@ export var Handler = function(cont: HTMLDivElement)
         song.staffList
             .forEach(s => {
                 var config: {[k: string]: any} = s.staffConfig;
-                Tls.for(config, (k, v) =>
-                    $(configCont).find('.holder.' + k).val(v));
+                Tls.for(config, (k, v) => $(configCont).find('.holder.' + k).val(v));
 
                 synthSwitch.consumeConfig((s.staffConfig.channelList || [])
                     .map(c => 1 && { preset: c.instrument || 0 }));

@@ -18,19 +18,27 @@ export default class Shmidusicator
         var timedChords: ITimedShChord[] = JSON.parse(JSON.stringify(source.chordList));
         var pausedChords: IShmidusicChord[] = [];
 
+        var firstChord: IShmidusicChord;
+        if (firstChord = timedChords[0]) {
+            if (Shmidusicator.isValidLength(firstChord.timeFraction)) {
+                let pause = {tune: 0, channel: 9, length: firstChord.timeFraction};
+                pausedChords.push({noteList: [pause]});
+            }
+        }
+
         for (var i = 0; i < timedChords.length; ++i) {
-            var chord = Adp.Chord(timedChords[i]);
+            let chord = Adp.Chord(timedChords[i]);
             pausedChords.push(chord.s); // note that we may mutate chord further
 
-            var next: ITimedShChord;
+            let next: ITimedShChord;
             if (next = timedChords[i + 1]) {
-                var requiredLength = next.timeFraction - chord.s.timeFraction;
-                var actualLength = chord.getLength();
+                let requiredLength = next.timeFraction - chord.s.timeFraction;
+                let actualLength = chord.getLength();
                 if (requiredLength > actualLength) {
                     let pauseLength = requiredLength - actualLength;
-                    var eps = 0.001;
+                    let eps = 0.001;
                     if (!Shmidusicator.isValidLength(actualLength) &&
-                        Shmidusicator.isValidLength(requiredLength)
+                        !Shmidusicator.isValidLength(pauseLength)
                     ) {
                         // watched/8_elfenLied.mid
                         // watched/8_Bakemonogatari - Sugar sweet nightmare-piano version-.mid
@@ -40,7 +48,7 @@ export default class Shmidusicator
                         // this is likely possible, the stoccato time is relative to note length in ticks... i believe
                         // just fixing it
                         chord.setLength(requiredLength);
-                    } else if (pauseLength > eps) {
+                    } else {
                         let pause = {tune: 0, channel: 9, length: pauseLength};
                         pausedChords.push({noteList: [pause]});
                     }
@@ -57,6 +65,8 @@ export default class Shmidusicator
                     tempo: source.config.tempo,
                     loopStart: source.config.loopStart,
                     loopTimes: source.config.loopTimes,
+                    tactSize: source.config.tactSize,
+                    keySignature: source.config.keySignature,
                     channelList: Tls.mapi(source.config.channels, (c, i) => 1 && {
                         instrument: c.preset,
                         channelNumber: i,
@@ -229,6 +239,8 @@ export default class Shmidusicator
                 channels: instrumentDict,
                 loopStart: staff.staffConfig.loopStart || 0,
                 loopTimes: staff.staffConfig.loopTimes || 0,
+                tactSize: staff.staffConfig.tactSize || 1,
+                keySignature: staff.staffConfig.keySignature || 0,
             },
             misc: {
                 noteCount: -100

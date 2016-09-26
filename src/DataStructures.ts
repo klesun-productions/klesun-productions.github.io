@@ -56,11 +56,7 @@ export interface IShmidusicStructure {
             * when -2: Ti and Mi are flat; when +2: Fa and Re are sharp and so on...
             */
             keySignature?: number;
-            /*
-            * tact size in legacy format (i used to store numbers in bytes ages ago...)
-            * if you divide it with, uh well, 8, you get the tact size
-            */
-            numerator?: number;
+            tactSize?: number;
             // loop start tact number
             loopStart: number,
             // count of times playback will be rewinded
@@ -92,10 +88,13 @@ export interface IGeneralStructure {
         tempo: number,
         loopStart: number,
         loopTimes: number,
+        tactSize: number,
+        keySignature: number,
         channels: {[ch: number]: IShChannel},
     },
     misc: {
-        noteCount?: number
+        noteCount?: number,
+        sourceSmf?: {},
     },
 }
 

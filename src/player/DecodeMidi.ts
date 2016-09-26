@@ -18,7 +18,7 @@ type velocity_t = number;
 // this function converts SMF midi events to a bit more structured representation
 // - there is only single noteOn with sounding duration
 // - all control messages are gathered in a single place
-export function ParseMidi(smfBuf: ArrayBuffer): IGeneralStructure
+export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
 {
     var smf = Ns.Libs.SMFreader(smfBuf);
 
@@ -29,8 +29,10 @@ export function ParseMidi(smfBuf: ArrayBuffer): IGeneralStructure
         preset: 0, volume: 127, pitchBendRange: 2,
     });
     var pitchBends: [number, number, number, number][] = [];
-    var loopStart: number = null;
-    var loopEnd: number = 0;
+    var loopStart = 0;
+    var loopEnd = 0;
+    var tactSize = 1;
+    var keySignature = 0;
 
     var unknownControlChanges: [number, number, number][] = [];
 
@@ -82,7 +84,6 @@ export function ParseMidi(smfBuf: ArrayBuffer): IGeneralStructure
         } else if (+event.midiEventType === 12) {
             // program change
             channels[event.midiChannel].preset = event.parameter1;
-
         } else if (+event.midiEventType === 11) {
             // control change
             var wasPitchBendRangeA = pitchBendRangeA;
@@ -141,8 +142,10 @@ export function ParseMidi(smfBuf: ArrayBuffer): IGeneralStructure
                 tempoByTime[time] = 60 * 1000000 / bytes.reduce((a,b) => (a << 8) + b);
             },
             84: (timeCodeType, h, m, s, f, ff) => {}, // SMPTEOffset, 8_bleach_never_meant_to_belong.mid
-            88: (num, den, midClocksPerMetrClick, thirtySecondsPer24Clocks) => {}, // TimeSignature, 8_elfenLied.mid
-            89: (fifths, mode) => {}, // KeySignature, 8_bleach_never_meant_to_belong.mid
+            88: (num, den, midClocksPerMetrClick, thirtySecondsPer24Clocks) => tactSize = num / Math.pow(2, den),
+            // TODO: i kinda can not detect when it is negative
+            // see: watched/7_Phoenix Wright Ace Attorney - Turnabout Sisters Theme.mid
+            89: (fifths, isMinor) => keySignature = fifths, // KeySignature, 8_bleach_never_meant_to_belong.mid
             127: (...bytes) => {}, // Sequencer Specific
         };
 
@@ -231,8 +234,12 @@ export function ParseMidi(smfBuf: ArrayBuffer): IGeneralStructure
             channels: channels,
             loopStart: ticksToAcademic(loopStart || 0),
             loopTimes: loopStart !== null ? 1 : 0,
+            tactSize: tactSize,
+            keySignature: keySignature,
         },
-        misc: {},
+        misc: {
+            sourceSmf: smf,
+        },
     };
 };
 
@@ -257,7 +264,7 @@ interface ISMFmidiEvent extends ISMFevent {
     type: 'MIDI',
 }
 
-export interface ISMFreaded {
+interface ISMFreaded {
     format: number, // 1
     numTracks: number, // 3
     // divide an event time by this to get time in seconds

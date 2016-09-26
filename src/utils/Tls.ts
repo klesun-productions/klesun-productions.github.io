@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import {IGeneralStructure} from "../DataStructures";
-import {ParseMidi} from "../player/ParseMidi";
+import {DecodeMidi} from "../player/DecodeMidi";
 import {Cls} from "../Cls";
 
 var Static: any = {};
@@ -159,11 +159,11 @@ export let Tls = Cls['Tls'] = {
 
     fetchMidi: (url: string, whenLoaded: { (midi: IGeneralStructure): void }) =>
         Tls.fetchBinaryFile(url, buf =>
-            whenLoaded(ParseMidi(buf))),
+            whenLoaded(DecodeMidi(buf))),
 
     openMidi: (whenLoaded: { (midi: IGeneralStructure): void }) =>
         Tls.selectFileFromDisc(db64 =>
-            whenLoaded(ParseMidi(_base64ToArrayBuffer(db64)))),
+            whenLoaded(DecodeMidi(_base64ToArrayBuffer(db64)))),
 
     getAudioBuffer: function(url: string, onOk: { (resp: AudioBuffer): void }): void
     {
