@@ -309,31 +309,12 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
                 width: (DX * 2) + 'px',
                 'margin-bottom': 4 * R + 'px',
             },
-            ' div.chordListCont > span.focused': {
-                'background-color': 'rgba(255,192,0,0.3)',
-            },
-            ' div.chordListCont > span.tactFinisher': {
-                'box-shadow': '1px 0 0 rgba(0,0,0,0.3)'
-            },
-            ' div.chordListCont > span.tactFinisher.doesNotFitIntoTact': {
-                'box-shadow': '1px 0 0 red'
-            },
             ' .tactNumberCont': {
                 position: 'absolute',
                 left: DX * 2 - R * 3 + 'px',
                 'font-size': R * 3 + 'px',
                 'font-weight': 'bold',
                 'color': 'rgb(0,128,0)',
-            },
-            ' .noteCanvas': {
-                position: 'absolute'
-            },
-            ' .noteCanvas.sounding': {
-                // 'background-color': 'rgba(0,0,255,0.4)', // likely unused
-                'background': 'linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(0,0,255,0.2) 10%)'
-            },
-            ' .noteCanvas.pointed': {
-                'background': 'linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(0,255,0,0.6) 10%)'
             },
         };
 

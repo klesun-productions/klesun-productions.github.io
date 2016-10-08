@@ -79,8 +79,11 @@ export default function ShapeProvider(ctx: CanvasRenderingContext2D, r: number, 
     {
         +channel === 9 && drawCross(r * 2);
 
-        ctx.fillStyle = 'rgba(' + Tls.channelColors[channel].join(',') + ',0.85)';
-        ctx.strokeStyle = 'rgba(' + Tls.channelColors[channel].join(',') + ',1)';
+        // base color for further CSS 3 magic
+        var color = [255,0,0];
+
+        ctx.fillStyle = 'rgb(' + color.join(',') + ')';
+        ctx.strokeStyle = 'rgb(' + color.join(',') + ')';
 
         var length = Fraction(lengthStr);
         if (length.den() % 3 === 0) {
