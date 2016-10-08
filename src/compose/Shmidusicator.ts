@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import * as Ds from "../DataStructures";
-import {Tls} from "../utils/Tls";
+import {Tls, IFraction} from "../utils/Tls";
 import {Fraction} from "../utils/Tls";
 import {IShChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
@@ -9,6 +9,30 @@ import {ITimedShChord} from "../DataStructures";
 import {Adp} from "../Adp";
 
 var roundNoteLength = (v: number) => +v.toFixed(8);
+
+var fr = (n:number,d:number) => Fraction(n,d);
+var lengthOptions = [
+    // all accepted variations of semibreve: clean | triplet| with dot | with two dots
+    fr(1, 1), fr(1, 3), fr(3, 2), fr(7, 4),
+    // half
+    fr(1, 2), fr(1, 6), fr(3, 4), fr(7, 8),
+    // quarter
+    fr(1, 4), fr(1, 12), fr(3, 8), fr(7, 16),
+    // 1/8 does not have triplet and two dots
+    fr(1, 8), fr(1, 24), fr(3, 16), // TODO: apparently needs triplet...
+    // 1/16 does not need triplet and dots
+    fr(1,16),
+    // so does 1/32
+    fr(1,32)
+].sort((a,b) => b.float() - a.float()); // greater first;
+
+var isValidLength = (length: number) => +length.toFixed(8) === 0 || lengthOptions.some(o => roundNoteLength(o.float()) === roundNoteLength(length));
+
+var findMinSuperPart = (subpart: number) =>
+    lengthOptions.filter(o => o.float() <= subpart).slice(-1)[0] || fr(2, 1);
+
+var findMaxSubPart = (superpart: number) =>
+    lengthOptions.filter(o => o.float() <= superpart)[0] || fr(0, 1);
 
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 export default class Shmidusicator
@@ -20,7 +44,7 @@ export default class Shmidusicator
 
         var firstChord: IShmidusicChord;
         if (firstChord = timedChords[0]) {
-            if (Shmidusicator.isValidLength(firstChord.timeFraction)) {
+            if (isValidLength(firstChord.timeFraction)) {
                 let pause = {tune: 0, channel: 9, length: firstChord.timeFraction};
                 pausedChords.push({noteList: [pause]});
             }
@@ -37,21 +61,21 @@ export default class Shmidusicator
                 if (requiredLength > actualLength) {
                     let pauseLength = requiredLength - actualLength;
                     let eps = 0.001;
-                    if (!Shmidusicator.isValidLength(actualLength) &&
-                        !Shmidusicator.isValidLength(pauseLength)
-                    ) {
-                        // watched/8_elfenLied.mid
-                        // watched/8_Bakemonogatari - Sugar sweet nightmare-piano version-.mid
-                        // maybe more, but since i fixed it i can't see them
-                        // sometimes MIDI noteOff events are fired shortly before they are supposed to, probably to prevent portamento
-                        // TODO: if this becomes relevant one day, fix the length of notes not affecting chor length too
-                        // this is likely possible, the stoccato time is relative to note length in ticks... i believe
-                        // just fixing it
-                        chord.setLength(requiredLength);
-                    } else {
+                    // if (!isValidLength(actualLength) &&
+                    //     !isValidLength(pauseLength)
+                    // ) {
+                    //     // watched/8_elfenLied.mid
+                    //     // watched/8_Bakemonogatari - Sugar sweet nightmare-piano version-.mid
+                    //     // maybe more, but since i fixed it i can't see them
+                    //     // sometimes MIDI noteOff events are fired shortly before they are supposed to, probably to prevent portamento
+                    //     // TODO: if this becomes relevant one day, fix the length of notes not affecting chor length too
+                    //     // this is likely possible, the stoccato time is relative to note length in ticks... i believe
+                    //     // just fixing it
+                    //     chord.setLength(requiredLength);
+                    // } else {
                         let pause = {tune: 0, channel: 9, length: pauseLength};
                         pausedChords.push({noteList: [pause]});
-                    }
+                    // }
                 } else if (requiredLength < actualLength) {
                     let pause = {tune: 0, channel: 9, length: requiredLength};
                     chord.s.noteList.push(pause);
@@ -83,7 +107,7 @@ export default class Shmidusicator
 
         var badLengthCount = pausedChords
             .map(Adp.Chord)
-            .filter(c => !Shmidusicator.isValidLength(c.getLength()))
+            .filter(c => !isValidLength(c.getLength()))
             .length;
 
         if (badLengthCount > 0) {
@@ -93,9 +117,70 @@ export default class Shmidusicator
                 return r;
             }, <{[l: number]: number}>{});
             console.log(occurrenceCountByLength);
+            Shmidusicator.fixChordLengths(pausedChords, source.config.tactSize);
         }
 
         return result;
+    };
+
+    /**
+     * touhou songs got some unexplainable mess:
+     * some notes start/end slightly earlier/later but their sum always have valid length
+     */
+    static fixChordLengths(chords: Ds.IShmidusicChord[], tactSize: number): void
+    {
+        var position = 0;
+        for (var i = 0; i < chords.length - 1; ++i) {
+            var curr = Adp.Chord(chords[i]);
+            var next = Adp.Chord(chords[i + 1]);
+
+            if (!isValidLength(curr.getLength()) && !isValidLength(next.getLength())) {
+                var sameTact = (position / tactSize | 0) === ((position + curr.getLength()) / tactSize | 0);
+                if (sameTact) {
+                    let totalLength = curr.getLength() + next.getLength();
+                    if (next.isPause()) {
+                        curr.setLength(totalLength);
+                        next.setLength(0);
+                    } else {
+                        var epsilon = 1/32;
+                        if (curr.getLength() < epsilon) {
+                            next.s.noteList = next.s.noteList.concat(curr.s.noteList.splice(0));
+                            next.setLength(totalLength);
+                            next.removeRedundantPauses();
+                            curr.setLength(0);
+                        } else {
+                            var subpart = findMaxSubPart(curr.getLength()).float();
+                            var superpart = findMinSuperPart(curr.getLength()).float();
+                            if (subpart > 0 && curr.getLength() - subpart < epsilon && isValidLength(totalLength - subpart)) {
+                                curr.setLength(subpart);
+                                next.setLength(totalLength - subpart);
+                            } else if (superpart < totalLength
+                                    && superpart > curr.getLength()
+                                    && superpart - curr.getLength() < epsilon
+                                    && isValidLength(totalLength - superpart)
+                            ) {
+                                curr.setLength(superpart);
+                                next.setLength(totalLength - superpart);
+                            }
+                        }
+                    }
+                    if (+curr.getLength().toFixed(8) === 0) {
+                        chords.splice(i, 1);
+                        --i;
+                        continue;
+                    }
+                    if (+next.getLength().toFixed(8) === 0) {
+                        chords.splice(i + 1, 1);
+                        --i;
+                        continue;
+                    }
+                }
+            }
+
+            position += curr.getLength();
+        }
+
+        // TODO: fix lengths in whole tact, not just in two note next to each other
     };
 
     /** @unused */
@@ -164,45 +249,25 @@ export default class Shmidusicator
         return chordList;
     }
 
-    static getLengthOptions(): Array<Fraction>
+    static getLengthOptions(): Array<IFraction>
     {
-        var fr = (n:number,d:number) => new Fraction(n,d);
-
-        return [
-            // all accepted variations of semibreve: clean | triplet| with dot | with two dots
-            fr(1, 1), fr(1, 3), fr(3, 2), fr(7, 4),
-            // half
-            fr(1, 2), fr(1, 6), fr(3, 4), fr(7, 8),
-            // quarter
-            fr(1, 4), fr(1, 12), fr(3, 8), fr(7, 16),
-            // 1/8 does not have triplet and two dots
-            fr(1, 8), fr(1, 24), fr(3, 16), // TODO: apparently needs triplet...
-            // 1/16 does not need triplet and dots
-            fr(1,16),
-            // so does 1/32
-            fr(1,32)
-        ].sort((a,b) => b.float() - a.float()); // greater first;
+        return lengthOptions;
     }
 
     /** @return - guessed fraction length of the note */
-    static guessLength(floatLength: number): Fraction
+    static guessLength(floatLength: number): IFraction
     {
-        var result = new Fraction(1, 1);
+        var lengthByDistance = lengthOptions.reduce((sum, len) => {
+            sum[Math.abs(floatLength - len.float())] = len;
+            return sum;
+        }, <{[d: number]: IFraction}>{});
 
-        Shmidusicator.getLengthOptions().forEach(function(e)
-        {
-            if (roundNoteLength(floatLength) <= roundNoteLength(e.float())) {
-                result = e;
-            }
-        });
-
-        return result;
+        return lengthByDistance[Object.keys(lengthByDistance).map(l => +l).sort((a,b) => a - b)[0]];
     }
 
     static isValidLength(length: number): boolean
     {
-        return Shmidusicator.getLengthOptions()
-            .some(o => roundNoteLength(o.float()) === roundNoteLength(length));
+        return isValidLength(length);
     }
 
     /** @param shmidusicJson - json in shmidusic project format */

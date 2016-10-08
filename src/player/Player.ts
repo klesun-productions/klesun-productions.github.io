@@ -108,6 +108,7 @@ export function Player(control: IPlaybackControl)
     var stop = () => {
         currentPlayback && currentPlayback.pause();
         stopSounding();
+        return currentPlayback && currentPlayback.getChordIndex();
     };
 
     // this class shouldn't be instanciated more than once, right?

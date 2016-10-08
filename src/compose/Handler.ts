@@ -24,7 +24,7 @@ const NOTE_ON = 0x09;
 // and channel number is
 // ????XXXX ???????? ????????
 
-// this function bounds some events: midi/mouse/keyboard to the
+// this function binds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
 
 const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorAll(s));
@@ -55,10 +55,14 @@ export var Handler = function(cont: HTMLDivElement)
     var lastChordOn = 0;
 
     var control = painter.getControl();
-    var playback = false; 
+    var playbackInfo = {
+        startIndex: -100,
+    };
+    playbackInfo = null;
     var playbackFinished = () => {
-        player.stop();
-        playback = false;
+        var stopIndex = player.stop();
+        control.setChordFocus(stopIndex);
+        playbackInfo = null;
     };
 
     player.addNoteHandler(synthSwitch);
@@ -88,7 +92,7 @@ export var Handler = function(cont: HTMLDivElement)
         };
 
         if (tabActive && enableMidiInputFlag.checked) {
-            if (!playback) {
+            if (!playbackInfo) {
                 if (receivedTime - lastChordOn < 100) {
                     painter.getControl().addNote(note, false);
                 } else {
@@ -121,13 +125,15 @@ export var Handler = function(cont: HTMLDivElement)
 
     var play = function(): void
     {
-        playback = true;
-
         var shmidusic = collectSong(painter.getChordList());
         var adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
         var index = Math.max(0, painter.getControl().getFocusIndex());
         player.playSheetMusic(adapted, playbackFinished, index);
+
+        playbackInfo = {
+            startIndex: index,
+        };
     };
 
     const copyToClipboard = function(): void
@@ -323,7 +329,7 @@ export var Handler = function(cont: HTMLDivElement)
 
             var handler: key_handler_d;
             if (handler = focusedHandlers[keyEvent.keyCode]) {
-                if (playback) {
+                if (playbackInfo) {
                     keyEvent.preventDefault();
                     playbackFinished();
                 } else {
@@ -337,7 +343,7 @@ export var Handler = function(cont: HTMLDivElement)
         {
             if (keyEvent.keyCode in globalHandlers) {
                 keyEvent.preventDefault();
-                if (playback) {
+                if (playbackInfo) {
                     playbackFinished();
                 } else {
                     globalHandlers[keyEvent.keyCode](keyEvent);

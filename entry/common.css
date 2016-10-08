@@ -18,3 +18,7 @@
 .channelColors [data-channel="15"] { color: rgb(255, 32, 0); }
 
 canvas#pianoCanvas { cursor: pointer; }
+
+.noteCanvas[data-tune="0"] {
+    opacity: 0.5;
+}

@@ -29,7 +29,7 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
         preset: 0, volume: 127, pitchBendRange: 2,
     });
     var pitchBends: [number, number, number, number][] = [];
-    var loopStart = 0;
+    var loopStart: number = null;
     var loopEnd = 0;
     var tactSize = 1;
     var keySignature = 0;

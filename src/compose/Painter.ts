@@ -45,6 +45,7 @@ export var SongAccess = {
     extractChord: (c: HTMLSpanElement) => 1 && {
         noteList: $(c).children('.noteCanvas').toArray()
             .map(extractNote)
+            .sort((n1, n2) => n2.tune - n1.tune),
     },
 };
 

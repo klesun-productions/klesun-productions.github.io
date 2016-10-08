@@ -301,12 +301,14 @@ export let Tls = Cls['Tls'] = {
         "Cymbal","Fret","122 Breath Noise","Seashore","Bird Tweet","Telephone Ring","Helicopter","Applause","Gunshot"],
 };
 
-export class Fraction {
-    constructor (
-        public num: number,
-        public den: number
-    ) {}
+export var Fraction = function(num: number, den: number): IFraction {
+    return {
+        float: () => num / den,
+        apacheStr: () => num + ' / ' + den,
+    };
+};
 
-    float = () => this.num / this.den;
-    apacheStr = () => this.num + ' / ' + this.den;
+export interface IFraction {
+    float: () => number,
+    apacheStr: () => string,
 }

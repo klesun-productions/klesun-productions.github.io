@@ -33,6 +33,43 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         }
     };
 
+    /** @unused */
+    var scheduledCallbacks: {(): void}[] = [];
+    var lastExecutedAt = window.performance.now();
+    var scheduleDelayed = function(cb: () => () => void)
+    {
+        const interval = 1000;
+        var cancelled = false;
+        var interrupt = () => {
+            cancelled = true;
+        };
+
+        var now = window.performance.now();
+        if (lastExecutedAt - now < -interval) {
+            lastExecutedAt = now;
+            return cb();
+        } else {
+            if (scheduledCallbacks.length === 0) {
+                setTimeout(
+                    () => scheduledCallbacks.splice(0).forEach(cb => cb()),
+                    interval - (now - lastExecutedAt)
+                );
+            }
+            scheduledCallbacks.push(() => {
+                if (!cancelled) {
+                    interrupt = cb();
+                }
+            });
+        }
+
+        return () => interrupt();
+    };
+
+    var isHighlyLoaded = function()
+    {
+        return $chordListCont[0].childNodes.length > 1000;
+    };
+
     /** @return the focused index after applying bounds */
     var setChordFocus = function(index: number): number
     {
@@ -51,15 +88,23 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 
     var setNoteFocus = function(sem: number, chan: number, velocity: number, chordIndex: number)
     {
-        var chord = $chordListCont.find(' > .chordSpan')[chordIndex];
-        chord && scrollToIfNeeded(chord);
+        var perform = function() {
+            var chord = $chordListCont.find(' > .chordSpan')[chordIndex];
+            chord && scrollToIfNeeded(chord);
 
-        setChordFocus(chordIndex);
+            setChordFocus(chordIndex);
 
-        var $note = $(chord).find('.noteCanvas[data-tune="' + sem + '"][data-channel="' + chan + '"]');
-        $note.addClass('sounding');
+            var $note = $(chord).find('.noteCanvas[data-tune="' + sem + '"][data-channel="' + chan + '"]');
+            $note.addClass('sounding');
 
-        return () => { /*$(chord).removeClass('focused'); */$note.removeClass('sounding'); };
+            return () => { /*$(chord).removeClass('focused'); */ $note.removeClass('sounding'); };
+        };
+
+        if (!isHighlyLoaded()) {
+            return perform();
+        } else {
+            return () => {};
+        }
     };
 
     /** @return array with the newly pointed note or empty array */
