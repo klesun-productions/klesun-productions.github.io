@@ -104,7 +104,6 @@ const determinePosition = function(semitone: number, keySignature: number): [num
 export function CanvasProvider(R: number): ICanvasProvider
 {
     var DX = R * 5; // half of chord span width
-    var Y_STEPS_PER_SYSTEM = 40;
     var NOTE_CANVAS_HEIGHT = R * 9;
     var keySignature = 0;
 
@@ -225,6 +224,8 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
     var Y_STEPS_PER_SYSTEM = 40;
 
     var $parentEl = $('#' + parentId);
+    $parentEl[0].style.setProperty('--b-radius', R + 'px');
+    $parentEl[0].style.setProperty('--y-steps-per-system', Y_STEPS_PER_SYSTEM + '');
 
     var enabled = false;
 
@@ -251,90 +252,6 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
     var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
         ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)
         : $chordListCont.find('.focused .noteCanvas').toArray().map(canvaser.extractNote);
-
-    var drawSystemHorizontalLines = function(ctx: CanvasRenderingContext2D)
-    {
-        var width = ctx.canvas.width;
-
-        ctx.strokeStyle = "#C0C0C0";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-
-        // greyed note high lines for way too high notes
-        for (var i = 1; i <= 3; ++i) { // 1 - Ti; 2 - Sol; 3 - Mi
-            ctx.moveTo(0, i * R * 2 - R + 0.5);
-            ctx.lineTo(width, i * R * 2 - R + 0.5);
-        }
-
-        var lineSkip = 6;
-
-        ctx.stroke();
-        ctx.strokeStyle = '#88F';
-        ctx.beginPath();
-
-        // normal note height linees
-        for (var i = 0; i < 11; ++i) { // 0 - top violin Fa; 11 - low bass Sol
-            if (i !== 5) { // the gap between violin and bass keys
-                ctx.moveTo(0, (lineSkip + i) * R * 2 - R + 0.5);
-                ctx.lineTo(width, (lineSkip + i) * R * 2 - R + 0.5);
-            }
-        }
-
-        ctx.stroke();
-    };
-
-    // sets the css corresponding to the constants
-    var applyStyles = function()
-    {
-        var partLinesBgCanvas = document.createElement('canvas');
-        partLinesBgCanvas.width = 640;
-        partLinesBgCanvas.height = R * Y_STEPS_PER_SYSTEM;
-        drawSystemHorizontalLines(partLinesBgCanvas.getContext('2d'));
-
-        var styles: { [selector: string]: { [property: string]: string } } = {
-            '': {
-                'background-image': 'url(/imgs/part_keys_40r.svg), ' +
-                'url(' + partLinesBgCanvas.toDataURL('image/png') + ')',
-                'background-repeat': 'repeat-y, ' +
-                'repeat',
-                'background-size': 'Auto ' + R * Y_STEPS_PER_SYSTEM + 'px,' +
-                'Auto Auto',
-                'background-attachment': 'local, ' +
-                'local',
-                'padding-left': DX * 3 + 'px',
-            },
-            ' div.chordListCont > span': {
-                display: 'inline-block',
-                height: ((Y_STEPS_PER_SYSTEM - 4) * R) + 'px',
-                width: (DX * 2) + 'px',
-                'margin-bottom': 4 * R + 'px',
-            },
-            ' .tactNumberCont': {
-                position: 'absolute',
-                left: DX * 2 - R * 3 + 'px',
-                'font-size': R * 3 + 'px',
-                'font-weight': 'bold',
-                'color': 'rgb(0,128,0)',
-            },
-        };
-
-        var css = document.createElement("style");
-        css.type = "text/css";
-
-        for (var selector in styles) {
-
-            var properties = Object.keys(styles[selector])
-                .map(k => '    ' + k + ': ' + styles[selector][k]);
-
-            var complete = '#' + parentId + selector;
-            css.innerHTML += complete + " {\n" + properties.join(";\n") + " \n}\n";
-        }
-
-
-        document.body.appendChild(css);
-    };
-
-    applyStyles();
 
     return {
         draw: draw,

@@ -123,6 +123,60 @@ canvas#pianoCanvas { cursor: pointer; }
 
 /** note score styling */
 
+.sheetMusicCont {
+    --b-radius: 3px;
+    --y-steps-per-system: 40;
+
+    --support-lines-color: rgba(192,192,192,1);
+    --main-lines-color: rgba(128, 128, 255, 1);
+}
+
+.sheetMusicCont {
+    background-image: url(/imgs/part_keys_40r.svg);
+    background-repeat: repeat-y;
+    background-size: Auto calc(var(--b-radius) * var(--y-steps-per-system)), Auto Auto;
+    background-attachment: local;
+    padding-left: calc(var(--b-radius) * 15);
+}
+
+.sheetMusicCont .tactNumberCont {
+    position: absolute;
+    left: calc(var(--b-radius) * 7);
+    font-size: calc(var(--b-radius) * 3);
+    font-weight: bold;
+    color: rgb(0,128,0);
+}
+
+div.chordListCont > span {
+    display: inline-block;
+    height: calc((var(--y-steps-per-system) - 4) * var(--b-radius));
+    margin-bottom: calc(var(--b-radius) * 4);
+
+    /* TODO: so many gradients is likely very bad for performance - use a single svg background */
+    /*noinspection CssInvalidFunction*/
+    background:
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 1), var(--support-lines-color) calc(var(--b-radius) * 1), rgba(0,0,0,0) calc(var(--b-radius) * 1 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 3), var(--support-lines-color) calc(var(--b-radius) * 3), rgba(0,0,0,0) calc(var(--b-radius) * 3 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 5), var(--support-lines-color) calc(var(--b-radius) * 5), rgba(0,0,0,0) calc(var(--b-radius) * 5 + 1px)),
+
+
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 11), var(--main-lines-color) calc(var(--b-radius) * 11), rgba(0,0,0,0) calc(var(--b-radius) * 11 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 13), var(--main-lines-color) calc(var(--b-radius) * 13), rgba(0,0,0,0) calc(var(--b-radius) * 13 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 15), var(--main-lines-color) calc(var(--b-radius) * 15), rgba(0,0,0,0) calc(var(--b-radius) * 15 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 17), var(--main-lines-color) calc(var(--b-radius) * 17), rgba(0,0,0,0) calc(var(--b-radius) * 17 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 19), var(--main-lines-color) calc(var(--b-radius) * 19), rgba(0,0,0,0) calc(var(--b-radius) * 19 + 1px)),
+
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 23), var(--main-lines-color) calc(var(--b-radius) * 23), rgba(0,0,0,0) calc(var(--b-radius) * 23 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 25), var(--main-lines-color) calc(var(--b-radius) * 25), rgba(0,0,0,0) calc(var(--b-radius) * 25 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 27), var(--main-lines-color) calc(var(--b-radius) * 27), rgba(0,0,0,0) calc(var(--b-radius) * 27 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 29), var(--main-lines-color) calc(var(--b-radius) * 29), rgba(0,0,0,0) calc(var(--b-radius) * 29 + 1px)),
+        linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 31), var(--main-lines-color) calc(var(--b-radius) * 31), rgba(0,0,0,0) calc(var(--b-radius) * 31 + 1px));
+}
+
+div.chordListCont > span.chordSpan {
+    width: calc(var(--b-radius) * 10);
+}
+
 .sheetMusicCont .noteCanvas[data-tune="0"] {
     opacity: 0.5;
 }
