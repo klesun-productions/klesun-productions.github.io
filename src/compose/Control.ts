@@ -6,8 +6,9 @@
 
 import * as Ds from "../DataStructures";
 import Shmidusicator from "./Shmidusicator";
-import {ICanvasProvider} from "./Painter";
+import {ICanvasProvider, determinePosition} from "./Painter";
 import {TactMeasurer} from "./Painter";
+import {IShNote} from "../DataStructures";
 
 export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, configCont: HTMLElement): IControl
 {
@@ -168,14 +169,43 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
                 recalcTacts();
             }, 1000);
         }
-    }
+    };
+
+    var addNoteToChord = function(note: IShNote, $chord: JQuery)
+    {
+        var selector = '.noteCanvas' +
+            '[data-tune="' + note.tune + '"]' +
+            '[data-channel="' + note.channel + '"]';
+
+        if ($chord.children(selector).length === 0) {
+            $chord.append(canvaser.makeNoteCanvas(note));
+
+            /** @debug */
+            var [ivoryIndex, sign] = determinePosition(note.tune, 0);
+            var noteDom = <HTMLCanvasElement>$('<div class="noteDom"></div>')
+                .attr('data-tune', note.tune)
+                .attr('data-channel', note.channel)
+                .attr('data-length', note.length)
+                [0]
+                ;
+            noteDom.style.setProperty('--ivory-index', ivoryIndex + '');
+
+            $chord.append(noteDom);
+
+            requestRecalcTacts();
+        }
+    };
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
     /** @unused */
     var addChord = function(chord: Ds.IShmidusicChord): number
     {
         var index = $chordListCont.find('.focused').index() + 1;
-        var $chord = canvaser.makeChordSpan(chord);
+
+        var $chord = $('<span class="chordSpan"></span>')
+            .append($('<span class="tactNumberCont"></span>'));
+
+        chord.noteList.forEach(n => addNoteToChord(n, $chord));
 
         if (index <= 0) {
             $chordListCont.prepend($chord);
@@ -184,8 +214,6 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         } else {
             $chordListCont.find(' > .chordSpan:eq(' + index + ')').before($chord);
         }
-
-        requestRecalcTacts();
 
         $chord.click(() => {
             $chordListCont.find('.focused').removeClass('focused');
@@ -199,16 +227,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
     var addNote = function(note: Ds.IShNote, inNewChord: boolean): void
     {
         if (!inNewChord || $chordListCont.find('.focused .pointed').length) {
-            var $chord = $chordListCont.find('.focused');
-
-            var selector = '.noteCanvas' +
-                '[data-tune="' + note.tune + '"]' +
-                '[data-channel="' + note.channel + '"]';
-
-            if ($chord.children(selector).length === 0) {
-                $chord.append(canvaser.makeNoteCanvas(note));
-                requestRecalcTacts();
-            }
+            addNoteToChord(note, $chordListCont.find('.focused'));
         } else {
             addChord({noteList: [note]});
         }
@@ -227,6 +246,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         requestRecalcTacts();
     };
 
+    /** @TODO: i believe it would be better to re-create note using addNoteToChord() to avoid multiple calls to makeNoteCanvas */
     var changeNote = function(note: HTMLCanvasElement, property: string, value: string): void
     {
         $(note).attr('data-' + property, value);

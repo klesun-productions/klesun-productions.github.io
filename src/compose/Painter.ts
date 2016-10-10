@@ -57,7 +57,7 @@ interface huj_t {
 }
 
 /** @return [ivoryIndex, sign] */
-const determinePosition = function(semitone: number, keySignature: number): [number, sign_e]
+export const determinePosition = function(semitone: number, keySignature: number): [number, sign_e]
 {
     var ebonySignMap: {[s: number]: number[]} = {
         [-7]: [-1, -1, -1, -1, -1, -1, -1],
@@ -154,21 +154,16 @@ export function CanvasProvider(R: number): ICanvasProvider
     {
         var [ivoryIndex, sign] = determinePosition(note.tune, keySignature);
 
-        var shift = 56 - ivoryIndex; // 56 - some number that divides by 7
-
-        if (+note.channel === 9) { // drum
-            shift = 35 + 2; // lowest note on my synth and 2 more steps downer
-        }
-
         var noteCanvas = <HTMLCanvasElement>$('<canvas class="noteCanvas"></canvas>')
             .attr('width', DX * 2)
             .attr('height', NOTE_CANVAS_HEIGHT + R)
-            .css('top', shift * R - NOTE_CANVAS_HEIGHT + 1 * R)
             .attr('data-tune', note.tune)
             .attr('data-channel', note.channel)
             .attr('data-length', note.length)
             [0]
             ;
+
+        noteCanvas.style.setProperty('--ivory-index', ivoryIndex + '');
 
         var ctx = noteCanvas.getContext('2d');
 
@@ -186,22 +181,9 @@ export function CanvasProvider(R: number): ICanvasProvider
         return noteCanvas;
     };
 
-    var makeChordSpan = function(chord: Ds.IShmidusicChord): JQuery
-    {
-        var $chordSpan = $('<span style="position: relative;" class="chordSpan"></span>')
-            .append($('<span class="tactNumberCont"></span>'));
-
-        chord.noteList
-            .map(makeNoteCanvas)
-            .forEach(el => $chordSpan.append(el));
-
-        return $chordSpan;
-    };
-
     return {
         getNoteImage: getNoteImage,
         makeNoteCanvas: makeNoteCanvas,
-        makeChordSpan: makeChordSpan,
         extractNote: extractNote,
         getChordWidth: () => DX * 2,
         setKeySignature: v => keySignature = v,
@@ -211,7 +193,6 @@ export function CanvasProvider(R: number): ICanvasProvider
 export interface ICanvasProvider {
     getNoteImage: (l: number, c: number) => HTMLCanvasElement,
     makeNoteCanvas: (n: Ds.IShNote) => HTMLCanvasElement,
-    makeChordSpan: (c: Ds.IShmidusicChord) => JQuery,
     extractNote: (c: HTMLCanvasElement) => Ds.IShNote,
     getChordWidth: () => number,
     setKeySignature: (v: number) => void,
