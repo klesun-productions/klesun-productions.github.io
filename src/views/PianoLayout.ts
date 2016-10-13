@@ -42,7 +42,7 @@ var CanvasAdapter = function(canvas: HTMLCanvasElement)
 };
 
 /** @param $canvas should have 490x30 size */
-export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
+export default function PianoLayout(canvas: HTMLCanvasElement)
 {
     var TUNE_COUNT = (+canvas.getAttribute('data-octaves') || 7) * 12;
     var IVORY_COUNT = TUNE_COUNT * 7/12;
@@ -170,12 +170,7 @@ export default function PianoLayout(canvas: HTMLCanvasElement): IPianoLayout
     paintBase();
 
     return {
-        playNote: highlight,
+        highlight: highlight,
         onClick: onClick,
     };
-};
-
-export interface IPianoLayout {
-    playNote: (sem: number, chan: number) => () => void,
-    onClick: (cb: {(semitone: number): {(): void}}) => void,
 };

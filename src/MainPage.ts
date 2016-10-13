@@ -51,14 +51,14 @@ export let MainPage = function (mainCont: HTMLDivElement)
     const synth = Switch(
         <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
         <HTMLDivElement>$(mainCont).find('#synthControl')[0],
-        PresetList(instrumentInfoBlock),
-        piano
+        PresetList(instrumentInfoBlock)
     );
     piano.onClick((semitone) => synth.playNote(semitone, 0, 127, -1));
 
     const control = PlaybackControl($playbackControlCont);
     const player = Player(control);
-    player.addNoteHandler(synth);
+    player.anotherNoteHandler = synth.playNote;
+    player.anotherNoteHandler = (sem, cha) => piano.highlight(sem, cha);
 
     var playRandom = () => alert("Please, wait till midi names load from ajax!");
     let linksBySongName: {[fileName: string]: ytlink_t[]} = {};

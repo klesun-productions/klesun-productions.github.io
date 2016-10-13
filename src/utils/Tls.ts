@@ -272,6 +272,20 @@ export let Tls = Cls['Tls'] = {
 
     xmlyJson: xmlyJson,
 
+    list: function<Tel>(elmts: Tel[])
+    {
+        var elmts: Tel[] = [];
+
+        return {
+            get elmts() {
+                return elmts;
+            },
+            set more(v: Tel) {
+                elmts.push(v);
+            },
+        };
+    },
+
     channelColors: range(0,16).map((ch): [number, number, number] => {
         let selector = '.channelColors [data-channel="' + ch + '"]';
         let colorStr = (cssReflection[selector] || {})['color'] || null;

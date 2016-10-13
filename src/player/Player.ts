@@ -22,7 +22,9 @@ var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 
 
 export function Player(control: IPlaybackControl)
 {
-    var noteHandlers: ISynth[] = [];
+    type handle_note_t = (sem: number, chan: number, volumeFactor: number, chordIndex: number) => () => void;
+
+    var noteHandlers: handle_note_t[] = [];
 
     var toFloat = (fractionString: string) => eval(fractionString);
 
@@ -56,7 +58,7 @@ export function Player(control: IPlaybackControl)
         notes.forEach(function(noteJs)
         {
             var length = toFloat(noteJs.length + '');
-            var offList = noteHandlers.map(h => h.playNote(
+            var offList = noteHandlers.map(h => h(
                 noteJs.tune, noteJs.channel, noteJs.velocity || 127, index
             ));
 
@@ -117,7 +119,9 @@ export function Player(control: IPlaybackControl)
 
     return {
         playSheetMusic: playSheetMusic,
-        addNoteHandler: (h: ISynth) => noteHandlers.push(h),
+        set anotherNoteHandler (h: handle_note_t) {
+            noteHandlers.push(h);
+        },
         stop: stop,
         playChord: playChord,
     };

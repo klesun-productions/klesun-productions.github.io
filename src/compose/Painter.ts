@@ -2,11 +2,8 @@
 
 import Shmidusicator from "./Shmidusicator";
 import * as Ds from "../DataStructures";
-import {IControl} from "./Control";
 import {Control} from "./Control";
 import ShapeProvider from "./ShapeProvider";
-import {Tls} from "../utils/Tls";
-import {ISynth} from "../synths/ISynth"; 
 
 export function TactMeasurer(tactSize: number)
 {
@@ -198,10 +195,10 @@ export interface ICanvasProvider {
     setKeySignature: (v: number) => void,
 };
 
-export function SheetMusicPainter(parentId: string, config: HTMLElement): IPainter
+/** TODO: get rid of this class, we i the stuff with clean CSS now */
+export function SheetMusicPainter(parentId: string, config: HTMLElement)
 {
     var R = 3; // semibreve note oval vertical radius
-    var DX = R * 5; // half of chord span width
     var Y_STEPS_PER_SYSTEM = 40;
 
     var $parentEl = $('#' + parentId);
@@ -214,63 +211,20 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement): IPaint
     $parentEl.append($chordListCont);
 
     var canvaser: ICanvasProvider = CanvasProvider(R);
-    var control: IControl = Control($chordListCont, canvaser, config);
+    var control = Control($chordListCont, canvaser, config);
 
-    var toFloat = (fractionString: string) => eval(fractionString);
     var interruptDrawing = () => {};
     var currentSong: Ds.IShmidusicStructure = null;
 
-    /** @param song - dict structure outputed by
-     * shmidusic program - github.com/klesun/shmidusic */
-    var draw = function(song: Ds.IShmidusicStructure)
-    {
-        // TODO: replace usage with "addChord()"
-    };
-
-    /** @TODO: move to Control.ts cuz come on */
-    var getChordList = () => $chordListCont.find(' > .chordSpan').toArray().map(SongAccess.extractChord);
-
-    var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
-        ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)
-        : $chordListCont.find('.focused .noteCanvas').toArray().map(canvaser.extractNote);
-
     return {
-        draw: draw,
-        playNote: control.setNoteFocus,
-        setEnabled: function(val: boolean)
-        {
-            if (enabled = val) {
-                if (currentSong !== null) {
-                    draw(currentSong);
-                }
-            } else {
-                interruptDrawing();
-                $chordListCont.empty();
-            }
-        },
-        getChordList: getChordList,
-        getFocusedNotes: getFocusedNotes,
+        setEnabled: (val: boolean) => {},
         getControl: () => control,
-        setKeySignature: v => {
+        setKeySignature: (v: number) => {
             canvaser.setKeySignature(v);
-            var chords = getChordList();
+            var chords = control.getChordList();
             // TODO: optimize!
             control.clear();
             chords.forEach(control.addChord);
         },
-
-        consumeConfig: () => {},
-        init: () => {},
-        analyse: () => {},
-        setPitchBend: (koef,chan) => {},
     };
-};
-
-export interface IPainter extends ISynth {
-    draw: (song: Ds.IShmidusicStructure) => void,
-    setEnabled: (v: boolean) => void,
-    getChordList: () => Ds.IShmidusicChord[],
-    getControl: () => IControl,
-    getFocusedNotes: () => Ds.IShNote[],
-    setKeySignature: (v: number) => void,
 };

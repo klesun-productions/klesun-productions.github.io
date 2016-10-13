@@ -35,13 +35,8 @@ export var Handler = function(cont: HTMLDivElement)
     var painter = gui.painter;
     var configCont = gui.configCont;
 
-    var piano = gui.piano,
-        channelListControl = gui.channelListControl,
+    var OxO = 0x0,
         synthSwitch = gui.synthSwitch,
-        inputChannelDropdown = gui.inputChannelDropdown,
-        enableMidiInputFlag = gui.enableMidiInputFlag,
-        enablePlayOnKeyDownFlag = gui.enablePlayOnKeyDownFlag,
-        enablePseudoPianoInputFlag = gui.enablePseudoPianoInputFlag,
         player = Player({
             setPlayback: () => {}, setFields: () => {},
             setFileInfo: () => {}, getTempoFactor: () => 1,
@@ -50,7 +45,7 @@ export var Handler = function(cont: HTMLDivElement)
 
     // pre-loading samples
     synthSwitch.analyzeActivePresets();
-    channelListControl.onChange(synthSwitch.analyzeActivePresets);
+    gui.channelListControl.onChange(synthSwitch.analyzeActivePresets);
 
     var lastChordOn = 0;
 
@@ -65,14 +60,22 @@ export var Handler = function(cont: HTMLDivElement)
         playbackInfo = null;
     };
 
-    player.addNoteHandler(synthSwitch);
-    player.addNoteHandler(painter);
+    player.anotherNoteHandler = (s,c,v,i) => {
+        var interrupts = Tls.list(<{(): void}[]>[]);
+        interrupts.more = synthSwitch.playNote(s,c,v,i);
+        if (gui.enableVisualizedPlaybackFlag.checked) {
+            interrupts.more = control.setNoteFocus(s,c,v,i);
+            interrupts.more = gui.piano.highlight(s, c);
+        }
+
+        return () => interrupts.elmts.forEach(i => i());
+    };
 
     var oneShotPlayer = Player({
         setPlayback: () => {}, setFields: () => {},
         setFileInfo: () => {}, getTempoFactor: () => -100,
     });
-    oneShotPlayer.addNoteHandler(synthSwitch);
+    oneShotPlayer.anotherNoteHandler = synthSwitch.playNote;
 
     var playNotes = (noteList: IShNote[]) => {
         oneShotPlayer.stop();
@@ -87,16 +90,16 @@ export var Handler = function(cont: HTMLDivElement)
     {
         var note = {
             tune: semitone,
-            channel: +$(inputChannelDropdown).val(),
+            channel: +$(gui.inputChannelDropdown).val(),
             length: 0.25
         };
 
-        if (tabActive && enableMidiInputFlag.checked) {
+        if (tabActive && gui.enableMidiInputFlag.checked) {
             if (!playbackInfo) {
                 if (receivedTime - lastChordOn < 100) {
-                    painter.getControl().addNote(note, false);
+                    control.addNote(note, false);
                 } else {
-                    painter.getControl().addNote(note, true);
+                    control.addNote(note, true);
                     lastChordOn = receivedTime;
                 }
             } else {
@@ -113,7 +116,7 @@ export var Handler = function(cont: HTMLDivElement)
         loopTimes: $(configCont).find('.holder.loopTimes').val(),
         keySignature: $(configCont).find('.holder.keySignature').val(),
         tactSize: $(configCont).find('.holder.tactSize').val(),
-        channelList: channelListControl.collectData(),
+        channelList: gui.channelListControl.collectData(),
     };
 
     var collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
@@ -125,10 +128,10 @@ export var Handler = function(cont: HTMLDivElement)
 
     var play = function(): void
     {
-        var shmidusic = collectSong(painter.getChordList());
+        var shmidusic = collectSong(control.getChordList());
         var adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
-        var index = Math.max(0, painter.getControl().getFocusIndex());
+        var index = Math.max(0, control.getFocusIndex());
         player.playSheetMusic(adapted, playbackFinished, index);
 
         playbackInfo = {
@@ -172,12 +175,12 @@ export var Handler = function(cont: HTMLDivElement)
     const pasteFromClipboard = function(text: string): void
     {
         var chords = ShReflect().validateChordList(text);
-        chords && chords.forEach(painter.getControl().addChord);
+        chords && chords.forEach(control.addChord);
     };
 
     var openSong = function(song: IShmidusicStructure): void
     {
-        painter.getControl().clear();
+        control.clear();
 
         song.staffList
             .forEach(s => {
@@ -189,10 +192,10 @@ export var Handler = function(cont: HTMLDivElement)
                 synthSwitch.analyse(s.chordList);
 
                 painter.setKeySignature(s.staffConfig.keySignature || 0);
-                s.chordList.forEach(painter.getControl().addChord);
+                s.chordList.forEach(control.addChord);
             });
 
-        painter.getControl().setChordFocus(0);
+        control.setChordFocus(0);
     };
 
     // TODO reset to default before opening. some legacy songs do not have loopTimes/Start
@@ -226,15 +229,15 @@ export var Handler = function(cont: HTMLDivElement)
         // "o"
         79: (e: KeyboardEvent) => e.ctrlKey && Tls.selectFileFromDisc(openSongFromBase64),
         // "s"
-        83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(Tls.xmlyJson(collectSong(painter.getChordList()))),
+        83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(Tls.xmlyJson(collectSong(control.getChordList()))),
         // "e" stands for "export midi"
-        69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(EncodeMidi(collectSong(painter.getChordList()))),
+        69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(EncodeMidi(collectSong(control.getChordList()))),
         // "i" stands for "import midi"
         73: (e: KeyboardEvent) => e.ctrlKey && Tls.openMidi(m => openSong(Shmidusicator.generalToShmidusic(m))),
         // F4
-        115: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
+        115: () => gui.enableMidiInputFlag.checked = !gui.enableMidiInputFlag.checked,
         // Insert
-        45: () => enableMidiInputFlag.checked = !enableMidiInputFlag.checked,
+        45: () => gui.enableMidiInputFlag.checked = !gui.enableMidiInputFlag.checked,
     };
 
     type key_handler_d = (e?: KeyboardEvent) => void;
@@ -250,22 +253,22 @@ export var Handler = function(cont: HTMLDivElement)
         // left arrow
         37: () => {
             control.moveChordFocus(-1);
-            playNotes(painter.getFocusedNotes());
+            playNotes(control.getFocusedNotes());
         },
         // right arrow
         39: () => {
             control.moveChordFocus(+1);
-            playNotes(painter.getFocusedNotes());
+            playNotes(control.getFocusedNotes());
         },
         // down arrow
         40: () => {
             control.moveChordFocusRow(+1);
-            playNotes(painter.getFocusedNotes());
+            playNotes(control.getFocusedNotes());
         },
         // up arrow
         38: () => {
             control.moveChordFocusRow(-1);
-            playNotes(painter.getFocusedNotes());
+            playNotes(control.getFocusedNotes());
         },
         // home
         36: () => control.setChordFocus(-1),
@@ -290,9 +293,9 @@ export var Handler = function(cont: HTMLDivElement)
         // num-pad slash
         111: () => control.multiplyLength(2/3),
         // enter
-        13: () => playNotes(painter.getFocusedNotes()),
+        13: () => playNotes(control.getFocusedNotes()),
         // pause
-        19: () => painter.getControl().addNote({tune: 0, channel: 9, length: 0.25}, true),
+        19: () => control.addNote({tune: 0, channel: 9, length: 0.25}, true),
         // delete
         46: () => control.deleteFocused(false),
         // backspace
@@ -312,10 +315,7 @@ export var Handler = function(cont: HTMLDivElement)
     var hangKeyboardHandlers = (el: HTMLElement) => {
         var semitoneByKey = PseudoPiano().semitoneByKey;
         el.onkeydown = function (keyEvent: KeyboardEvent) {
-
-            // TODO: remap SHIFT ro free it for Pseudo-Piano
-
-            if (enablePseudoPianoInputFlag.checked) {
+            if (gui.enablePseudoPianoInputFlag.checked) {
                 if (!keyEvent.ctrlKey && !keyEvent.altKey) {
                     var semitone: number;
                     if (semitone = semitoneByKey[(<any>keyEvent).code]) {
@@ -370,7 +370,7 @@ export var Handler = function(cont: HTMLDivElement)
             console.log('Note On:', tune, velocity / 127);
 
             var note = handleNoteOn(tune, message.receivedTime);
-            enablePlayOnKeyDownFlag.checked && playNotes([note]);
+            gui.enablePlayOnKeyDownFlag.checked && playNotes([note]);
         } else {
             midiEventType in typeHandlers
                 ? typeHandlers[midiEventType](message.data[1], message.data[2])
@@ -419,7 +419,7 @@ export var Handler = function(cont: HTMLDivElement)
 
         handleHashChange();
         hangMidiHandlers();
-        piano.onClick(semitone => {
+        gui.piano.onClick(semitone => {
             var note = handleNoteOn(semitone, window.performance.now());
             oneShotPlayer.playChord([note]);
             return () => {}; // () => handleNoteOff()

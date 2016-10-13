@@ -6,13 +6,14 @@
 
 import * as Ds from "../DataStructures";
 import Shmidusicator from "./Shmidusicator";
-import {ICanvasProvider, determinePosition} from "./Painter";
+import {ICanvasProvider, determinePosition, SongAccess} from "./Painter";
 import {TactMeasurer} from "./Painter";
 import {IShNote} from "../DataStructures";
 
-export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, configCont: HTMLElement): IControl
+export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, configCont: HTMLElement)
 {
     var $parentEl = $chordListCont.parent();
+    var chordListCont = $chordListCont[0];
 
     var scrollToIfNeeded = function(chordEl: HTMLElement)
     {
@@ -68,7 +69,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 
     var isHighlyLoaded = function()
     {
-        return $chordListCont[0].childNodes.length > 1000;
+        return chordListCont.childNodes.length > 1000;
     };
 
     /** @return the focused index after applying bounds */
@@ -298,6 +299,12 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 
     var chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;
 
+    var getChordList = () => $chordListCont.find(' > .chordSpan').toArray().map(SongAccess.extractChord);
+
+    var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
+        ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)
+        : $chordListCont.find('.focused .noteCanvas').toArray().map(canvaser.extractNote);
+
     configCont.onchange = requestRecalcTacts;
 
     return {
@@ -312,27 +319,16 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
             }
         },
         pointNextNote: pointNextNote,
+
         setChannel: setChannel,
         multiplyLength: multiplyLength,
         deleteFocused: deleteFocused,
         addChord: addChord,
         addNote: addNote,
         clear: () => $chordListCont.empty(),
+
         getFocusIndex: () => $chordListCont.find('.focused').index(),
+        getChordList: getChordList,
+        getFocusedNotes: getFocusedNotes,
     };
 };
-
-export interface IControl {
-    setNoteFocus: (sem: number, chan: number, velocity: number, chordIndex: number) => () => void,
-    setChordFocus: {(index: number): number},
-    moveChordFocus: {(sign: number): number},
-    moveChordFocusRow: {(sign: number): void},
-    pointNextNote: {(): Ds.IShNote[]},
-    setChannel: {(ch: number): void},
-    multiplyLength: {(factor: number): void},
-    deleteFocused: {(backspace: boolean): void},
-    addChord: {(chord: Ds.IShmidusicChord): number},
-    addNote: {(note: Ds.IShNote, inNewChord: boolean): void},
-    clear: {(): void},
-    getFocusIndex: {(): number},
-}

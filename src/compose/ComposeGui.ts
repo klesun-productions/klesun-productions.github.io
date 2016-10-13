@@ -53,12 +53,12 @@ export var ComposeGui = function(cont: HTMLDivElement)
         synthSwitch: Switch(
             <HTMLSelectElement>$$('#synthDropdown', cont)[0],
             <HTMLDivElement>$$('#synthControl', cont)[0],
-            channelListControl,
-            piano
+            channelListControl
         ),
         enableMidiInputFlag: <HTMLInputElement>$$('.enableMidiInputFlag')[0],
         enablePlayOnKeyDownFlag: <HTMLInputElement>$$('.enablePlayOnKeyDownFlag')[0],
         enablePseudoPianoInputFlag: enablePseudoPianoInputFlag,
+        enableVisualizedPlaybackFlag: <HTMLInputElement>$$('.enableVisualizedPlaybackFlag')[0],
         inputChannelDropdown: inputChannelDropdown,
         configCont: $$('#playbackConfigDiv', cont)[0],
         sheetMusictCont: sheetMusicCont,

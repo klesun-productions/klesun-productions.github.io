@@ -7,7 +7,6 @@ import {MidiDevice} from "./MidiDevice";
 import {Fluid} from "./Fluid";
 import {ISynth} from "./ISynth";
 import {Tls} from "../utils/Tls";
-import {IPianoLayout} from "../views/PianoLayout";
 import {IChannel, IShChannel, IShmidusicChord} from "../DataStructures";
 import {IPresetList} from "../views/PresetList";
 import {SoundFontAdapter} from "./SoundFontAdapter";
@@ -16,8 +15,7 @@ import {DenyaAdapter} from "./DenyaAdapter";
 export var Switch = function(
     dropdownEl: HTMLSelectElement,
     controlEl: HTMLDivElement,
-    presetListControl: IPresetList,
-    pianoLayout: IPianoLayout
+    presetListControl: IPresetList
 ): ISwitch
 {
     var channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
@@ -46,19 +44,10 @@ export var Switch = function(
 
     $(dropdownEl).val('FluidSynth3').change(_ => initSynth(synths[$(dropdownEl).val()])).trigger('change');
 
-    var playNote = function(sem: number, chan: number, volumeFactor: number, chordIndex: number)
-    {
-        if (presetListControl.enabledChannels().has(chan)) {
-            var noteOffs = [
-                pianoLayout.playNote(sem, chan),
-                synths[$(dropdownEl).val()].playNote(sem, chan, volumeFactor, chordIndex),
-            ];
-
-            return () => noteOffs.forEach((off: () => void) => off());
-        } else {
-            return () => {};
-        }
-    };
+    var playNote = (sem: number, chan: number, volumeFactor: number, chordIndex: number) =>
+        presetListControl.enabledChannels().has(chan)
+            ?  synths[$(dropdownEl).val()].playNote(sem, chan, volumeFactor, chordIndex)
+            : () => {};
 
     var analyse = (chords: IShmidusicChord[]) => synths[$(dropdownEl).val()].analyse(chords);
 

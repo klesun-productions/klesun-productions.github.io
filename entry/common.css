@@ -7,70 +7,70 @@
 }
 
 .channelColors [data-channel="0"] { color: rgb(0, 0, 0); }
-.noteCanvas[data-channel="0"] {
+.sheetMusicCont [data-channel="0"] {
     --cbfilter: hue-rotate(0deg) brightness(0);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="1"] { color: rgb(192, 0, 0); }
-.noteCanvas[data-channel="1"] {
+.sheetMusicCont [data-channel="1"] {
     --cbfilter: hue-rotate(0deg) brightness(0.75);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="2"] { color: rgb(0, 148, 0); }
-.noteCanvas[data-channel="2"] {
+.sheetMusicCont [data-channel="2"] {
     --cbfilter: hue-rotate(120deg) brightness(1.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="3"] { color: rgb(60, 60, 255); }
-.noteCanvas[data-channel="3"] {
+.sheetMusicCont [data-channel="3"] {
     --cbfilter: hue-rotate(240deg) brightness(2);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="4"] { color: rgb(152, 152, 0); }
-.noteCanvas[data-channel="4"] {
+.sheetMusicCont [data-channel="4"] {
     --cbfilter: hue-rotate(70deg) brightness(2.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="5"] { color: rgb(0, 192, 192); }
-.noteCanvas[data-channel="5"] {
+.sheetMusicCont [data-channel="5"] {
     --cbfilter: hue-rotate(180deg) brightness(2);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="6"] { color: rgb(192, 0, 192); }
-.noteCanvas[data-channel="6"] {
+.sheetMusicCont [data-channel="6"] {
     --cbfilter: hue-rotate(270deg) brightness(1.8);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="7"] { color: rgb(255, 128, 0); }
-.noteCanvas[data-channel="7"] {
+.sheetMusicCont [data-channel="7"] {
     --cbfilter: hue-rotate(30deg) brightness(7);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="8"] { color: rgb(91, 0, 255); }
-.noteCanvas[data-channel="8"] {
+.sheetMusicCont [data-channel="8"] {
     --cbfilter: hue-rotate(260deg) brightness(2);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="9"] { color: rgb(128, 128, 128); }
-.noteCanvas[data-channel="9"] {
+.sheetMusicCont [data-channel="9"] {
     --cbfilter: grayscale(100%) brightness(3);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
@@ -78,42 +78,42 @@
 
 /** TODO: define when needed */
 .channelColors [data-channel="10"] { color: rgb(127, 255, 0); }
-.noteCanvas[data-channel="10"] {
+.sheetMusicCont [data-channel="10"] {
     --cbfilter: hue-rotate(120deg) brightness(1.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="11"] { color: rgb(255, 0, 255); }
-.noteCanvas[data-channel="11"] {
+.sheetMusicCont [data-channel="11"] {
     --cbfilter: hue-rotate(120deg) brightness(1.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="12"] { color: rgb(64, 128, 255); }
-.noteCanvas[data-channel="12"] {
+.sheetMusicCont [data-channel="12"] {
     --cbfilter: hue-rotate(120deg) brightness(1.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="13"] { color: rgb(192, 128, 0); }
-.noteCanvas[data-channel="13"] {
+.sheetMusicCont [data-channel="13"] {
     --cbfilter: hue-rotate(120deg) brightness(1.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="14"] { color: rgb(130, 200, 0); }
-.noteCanvas[data-channel="14"] {
+.sheetMusicCont [data-channel="14"] {
     --cbfilter: hue-rotate(120deg) brightness(1.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
 }
 
 .channelColors [data-channel="15"] { color: rgb(255, 32, 0); }
-.noteCanvas[data-channel="15"] {
+.sheetMusicCont [data-channel="15"] {
     --cbfilter: hue-rotate(120deg) brightness(1.5);
     filter: var(--cbfilter);
     -webkit-filter: var(--cbfilter);
@@ -206,7 +206,7 @@ div.chordListCont > span.chordSpan {
     /* 56 - position of 0 note, 9 - size of note image, 1 - distance from bottom to the center of the note */
     top: calc((56 - var(--ivory-index) - 9 + 1) * var(--b-radius));
 }
-.sheetMusicCont .noteCanvas[data-channel="9"] {
+.sheetMusicCont [data-channel="9"] {
     /* constant position for drum notes cuz it does not mean actual pitch anyways */
     /* 32 - lowest DO on my synth, 2 - two places more down */
     top: calc((35 + 2 - 9 + 1) * var(--b-radius));
