@@ -6,7 +6,7 @@
 
 import * as Ds from "../DataStructures";
 import Shmidusicator from "./Shmidusicator";
-import {ICanvasProvider, determinePosition, SongAccess} from "./Painter";
+import {ICanvasProvider, determinePosition, SongAccess, extractNote} from "./Painter";
 import {TactMeasurer} from "./Painter";
 import {IShNote} from "../DataStructures";
 
@@ -248,13 +248,16 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
     };
 
     /** @TODO: i believe it would be better to re-create note using addNoteToChord() to avoid multiple calls to makeNoteCanvas */
-    var changeNote = function(note: HTMLCanvasElement, property: string, value: string): void
+    var changeNote = function(note: HTMLCanvasElement, property: string, value: string)
     {
         $(note).attr('data-' + property, value);
 
-        var newCanvas = canvaser.makeNoteCanvas(canvaser.extractNote(note));
+        var newNote = canvaser.extractNote(note);
+        var newCanvas = canvaser.makeNoteCanvas(newNote);
         note.getContext('2d').clearRect(0,0,999999,999999);
         note.getContext('2d').drawImage(newCanvas, 0, 0);
+
+        return newNote;
     };
 
     var multiplyNoteLength = (note: HTMLCanvasElement, factor: number) =>
@@ -280,7 +283,7 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
     };
 
     // TODO: make some sort of typed adapter to access note data attributes
-    var setChannel = function(ch: number): void
+    var setChannel = function(ch: number): IShNote[]
     {
         ch = Math.max(0, Math.min(15, ch));
 
@@ -290,11 +293,13 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         if (note = <HTMLCanvasElement>$chordListCont.find('.focused .pointed')[0]) {
             // change channel of the note
             if (!$chord.find('.noteCanvas[data-channel="' + ch + '"][data-tune="' + $(note).attr('data-tune') + '"]').length) {
-                changeNote(note, 'channel', ch + '');
+                return [changeNote(note, 'channel', ch + '')];
             }
         } else {
             // focus the ch-th note in chord
         }
+
+        return [];
     };
 
     var chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;

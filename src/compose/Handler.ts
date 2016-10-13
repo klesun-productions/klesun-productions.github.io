@@ -13,12 +13,9 @@ import {EncodeMidi} from "./EncodeMidi";
 import {PseudoPiano} from "./PseudoPiano";
 import {ComposeGui} from "./ComposeGui";
 
-// following constants represent the X in bits of midi message
+// represents the X in bits of midi message
 // XXXX???? ???????? ????????
 
-// TODO: move to some separate definitions class, since it is also used in MidiDevice.ts
-
-const NOTE_OFF = 0x08;
 const NOTE_ON = 0x09;
 
 // and channel number is
@@ -34,6 +31,7 @@ export var Handler = function(cont: HTMLDivElement)
     var gui = ComposeGui(cont);
     var painter = gui.painter;
     var configCont = gui.configCont;
+    var pianoCleans = Tls.cbList([]);
 
     var OxO = 0x0,
         synthSwitch = gui.synthSwitch,
@@ -61,14 +59,14 @@ export var Handler = function(cont: HTMLDivElement)
     };
 
     player.anotherNoteHandler = (s,c,v,i) => {
-        var interrupts = Tls.list(<{(): void}[]>[]);
+        var interrupts = Tls.cbList([]);
         interrupts.more = synthSwitch.playNote(s,c,v,i);
         if (gui.enableVisualizedPlaybackFlag.checked) {
             interrupts.more = control.setNoteFocus(s,c,v,i);
             interrupts.more = gui.piano.highlight(s, c);
         }
 
-        return () => interrupts.elmts.forEach(i => i());
+        return () => interrupts.clear().forEach(i => i());
     };
 
     var oneShotPlayer = Player({
@@ -77,9 +75,16 @@ export var Handler = function(cont: HTMLDivElement)
     });
     oneShotPlayer.anotherNoteHandler = synthSwitch.playNote;
 
-    var playNotes = (noteList: IShNote[]) => {
+    var highlightNotes = (notes: IShNote[]) => {
+        pianoCleans.clear().forEach(c => c());
+        Tls.list(notes).forEach = n =>
+            pianoCleans.more = gui.piano.highlight(n.tune, n.channel);
+    };
+
+    let playNotes = (notes: IShNote[]) => {
+        highlightNotes(notes);
         oneShotPlayer.stop();
-        oneShotPlayer.playChord(noteList);
+        oneShotPlayer.playChord(notes);
     };
 
     var tabActive = true;
@@ -128,6 +133,9 @@ export var Handler = function(cont: HTMLDivElement)
 
     var play = function(): void
     {
+        oneShotPlayer.stop();
+        pianoCleans.clear().forEach(c => c());
+
         var shmidusic = collectSong(control.getChordList());
         var adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
@@ -297,11 +305,15 @@ export var Handler = function(cont: HTMLDivElement)
         // pause
         19: () => control.addNote({tune: 0, channel: 9, length: 0.25}, true),
         // delete
-        46: () => control.deleteFocused(false),
+        46: () => {
+            control.deleteFocused(false);
+            playNotes(control.getFocusedNotes());
+        },
         // backspace
         8: (e: KeyboardEvent) => {
             e.preventDefault();
             control.deleteFocused(true);
+            playNotes(control.getFocusedNotes());
         },
         // "c"
         67: (e: KeyboardEvent) => e.ctrlKey && copyToClipboard(),
@@ -310,7 +322,7 @@ export var Handler = function(cont: HTMLDivElement)
     // 48 - zero, 96 - numpad zero
     Tls.range(0,10).forEach(i =>
         focusedHandlers[i + 48] = focusedHandlers[i + 96] = () =>
-            control.setChannel(i));
+            playNotes(control.setChannel(i)));
 
     var hangKeyboardHandlers = (el: HTMLElement) => {
         var semitoneByKey = PseudoPiano().semitoneByKey;
@@ -322,6 +334,7 @@ export var Handler = function(cont: HTMLDivElement)
                         keyEvent.preventDefault();
                         var note = handleNoteOn(semitone, window.performance.now());
                         oneShotPlayer.playChord([note]);
+                        highlightNotes(control.getFocusedNotes());
                         return;
                     }
                 }

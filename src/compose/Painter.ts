@@ -4,6 +4,7 @@ import Shmidusicator from "./Shmidusicator";
 import * as Ds from "../DataStructures";
 import {Control} from "./Control";
 import ShapeProvider from "./ShapeProvider";
+import {IShNote} from "../DataStructures";
 
 export function TactMeasurer(tactSize: number)
 {
@@ -32,7 +33,7 @@ export function TactMeasurer(tactSize: number)
     };
 };
 
-var extractNote = (n: HTMLCanvasElement) => 1 && {
+export var extractNote = (n: HTMLCanvasElement): IShNote => 1 && {
     tune: +$(n).attr('data-tune'),
     channel: +$(n).attr('data-channel'),
     length: +$(n).attr('data-length')

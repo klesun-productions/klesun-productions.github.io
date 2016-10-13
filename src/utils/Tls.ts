@@ -100,6 +100,26 @@ let xmlyJson = function($var: any, $margin?: string): string
         : JSON.stringify($var);
 };
 
+let list = function<Tel>(elmts: Tel[])
+{
+    return {
+        // get elmts() {
+        //     return elmts;
+        // },
+        clear: () => {
+            var tmp = elmts;
+            elmts = [];
+            return tmp;
+        },
+        set more(v: Tel) {
+            elmts.push(v);
+        },
+        set forEach(cb: (el: Tel) => void) {
+            elmts.forEach(cb);
+        },
+    };
+};
+
 export let Tls = Cls['Tls'] = {
 
     audioCtx: new AudioContext(),
@@ -272,18 +292,12 @@ export let Tls = Cls['Tls'] = {
 
     xmlyJson: xmlyJson,
 
-    list: function<Tel>(elmts: Tel[])
-    {
-        var elmts: Tel[] = [];
-
-        return {
-            get elmts() {
-                return elmts;
-            },
-            set more(v: Tel) {
-                elmts.push(v);
-            },
-        };
+    list: list,
+    cbList: (v: {(): void}[]) => list(v),
+    timeout: (seconds: number) => 1 && {
+        set set(cb: () => void) {
+            setTimeout(cb, seconds * 1000);
+        },
     },
 
     channelColors: range(0,16).map((ch): [number, number, number] => {
