@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="n0.25.svg">
+   sodipodi:docname="n0.50.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="135.92626"
-     inkscape:cy="168.09731"
+     inkscape:zoom="2.0000001"
+     inkscape:cx="91.641094"
+     inkscape:cy="117.08593"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -54,14 +54,11 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-782.36216)">
-    <ellipse
-       style="fill:#ff0000;fill-rule:evenodd;stroke:#000000;stroke-width:0.78803337px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0"
-       id="path3352"
-       ry="26.734999"
-       rx="42.888565"
-       cy="978.55536"
-       cx="-480.80014"
-       transform="matrix(0.87925604,-0.47634946,0.58517018,0.81091051,0,0)" />
+    <path
+       style="fill:#ff0000;fill-rule:evenodd;stroke:#000000;stroke-width:0.78477341px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0"
+       d="M 166.02734 210.42773 A 26.379039 43.108415 66.051566 0 0 134.23047 218.50781 A 26.379039 43.108415 66.051566 0 0 112.16406 260.61719 A 26.379039 43.108415 66.051566 0 0 165.51953 261.86719 A 26.379039 43.108415 66.051566 0 0 187.58594 219.75781 A 26.379039 43.108415 66.051566 0 0 166.02734 210.42773 z M 146.41992 219.22656 A 21.16217 17.626637 60.885558 0 1 165.30664 231.01758 A 21.16217 17.626637 60.885558 0 1 160.20312 258.08203 A 21.16217 17.626637 60.885558 0 1 134.50781 248.17188 A 21.16217 17.626637 60.885558 0 1 139.60938 221.10547 A 21.16217 17.626637 60.885558 0 1 146.41992 219.22656 z "
+       transform="translate(0,782.36216)"
+       id="path3352" />
     <rect
        style="fill:#ff0000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.06904769px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0"
        id="rect3360"

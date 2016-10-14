@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="n0.25.svg">
+   sodipodi:docname="n1.00.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4142136"
-     inkscape:cx="135.92626"
-     inkscape:cy="168.09731"
+     inkscape:cx="113.37579"
+     inkscape:cy="32.019261"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -45,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,21 +54,10 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-782.36216)">
-    <ellipse
-       style="fill:#ff0000;fill-rule:evenodd;stroke:#000000;stroke-width:0.78803337px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0"
-       id="path3352"
-       ry="26.734999"
-       rx="42.888565"
-       cy="978.55536"
-       cx="-480.80014"
-       transform="matrix(0.87925604,-0.47634946,0.58517018,0.81091051,0,0)" />
-    <rect
-       style="fill:#ff0000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.06904769px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0"
-       id="rect3360"
-       width="7.0738096"
-       height="230.80363"
-       x="183.55421"
-       y="-1013.3615"
-       transform="scale(1,-1)" />
+    <path
+       style="opacity:1;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
+       d="M 150 210 A 49.999996 29.999994 0 0 0 100 240 A 49.999996 29.999994 0 0 0 150 270 A 49.999996 29.999994 0 0 0 200 240 A 49.999996 29.999994 0 0 0 150 210 z M 142.66016 213.5 A 30.468501 24.306377 37.443194 0 1 176.43555 240.25 A 30.468501 24.306377 37.443194 0 1 154.83984 267 A 30.468501 24.306377 37.443194 0 1 121.06445 240.25 A 30.468501 24.306377 37.443194 0 1 142.66016 213.5 z "
+       transform="translate(0,782.36216)"
+       id="path4137" />
   </g>
 </svg>

@@ -197,8 +197,26 @@ div.chordListCont > span.chordSpan {
     background-image: url(/imgs/notes/null.svg);
     background-size: Auto calc(9 * var(--b-radius)), Auto Auto;
 }
+.sheetMusicCont .noteDom[data-length="2"] {
+    background-image: url(/imgs/notes/n2.00.svg);
+}
+.sheetMusicCont .noteDom[data-length="1"] {
+    background-image: url(/imgs/notes/n1.00.svg);
+}
+.sheetMusicCont .noteDom[data-length="0.5"] {
+    background-image: url(/imgs/notes/n0.50.svg);
+}
 .sheetMusicCont .noteDom[data-length="0.25"] {
     background-image: url(/imgs/notes/n0.25.svg);
+}
+.sheetMusicCont .noteDom[data-length="0.125"] {
+    background-image: url(/imgs/notes/n0.125.svg);
+}
+.sheetMusicCont .noteDom[data-length="0.0625"] {
+    background-image: url(/imgs/notes/n0.0625.svg);
+}
+.sheetMusicCont .noteDom[data-length="0.03125"] {
+    background-image: url(/imgs/notes/n0.03125.svg);
 }
 .sheetMusicCont .noteCanvas, .sheetMusicCont .noteDom {
     --ivory-index: 40; /* how many places should note be shifted. 40 is LA 440 Hz, 33 is LA 220 Hz, 35 is DO */
