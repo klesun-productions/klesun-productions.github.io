@@ -48,15 +48,19 @@ def fetch_info_from_login_token(token):
         return None
 
 
-# works only under linux
+# works only under linux and only in "python -m http.server --cgi 80" - does not work in Apache
 def read_post() -> dict:
+	post_text = sys.stdin.read()
+	if post_text != "":
+		return json.loads(post_text)
+	else:
+		return {}
+    #~ if not os.environ['CONTENT_LENGTH']:
+        #~ return {}
+    #~ post_length = int(os.environ['CONTENT_LENGTH']) - 1
 
-    if not os.environ['CONTENT_LENGTH']:
-        return {}
-    post_length = int(os.environ['CONTENT_LENGTH']) - 1
-
-    post_string = sys.stdin.buffer.read(post_length + 1).decode('utf-8')
-    return json.loads(post_string)
+    #~ post_string = sys.stdin.buffer.read(post_length + 1).decode('utf-8')
+    #~ return json.loads(post_string)
 
 def is_correct_password(entered_password: str) -> bool:
     local_config_path = 'unversioned/local.config.json'

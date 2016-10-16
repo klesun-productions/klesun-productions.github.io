@@ -1,9 +1,7 @@
 /// <reference path="../references.ts" />
 
-import Shmidusicator from "./Shmidusicator";
 import * as Ds from "../DataStructures";
 import {Control} from "./Control";
-import ShapeProvider from "./ShapeProvider";
 import {IShNote} from "../DataStructures";
 
 export function TactMeasurer(tactSize: number)
@@ -99,101 +97,16 @@ export const determinePosition = function(semitone: number, keySignature: number
 };
 
 /** @param R - semibreve note oval vertical radius */
-export function CanvasProvider(R: number): ICanvasProvider
+export function CanvasProvider(R: number)
 {
     var DX = R * 5; // half of chord span width
-    var NOTE_CANVAS_HEIGHT = R * 9;
     var keySignature = 0;
 
-    // tuple: 16 channels, ~14 lengths each (6 (1/32 .. 1/1) * 2 (triplets) * 2 (dots))
-    var noteCanvasCache: Array<{ [lenFra: string]: HTMLCanvasElement }> = [
-        {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
-    ];
-    var flatSign = <HTMLCanvasElement>$('<canvas></canvas>')
-        .attr('width', DX * 2)
-        .attr('height', NOTE_CANVAS_HEIGHT + R)
-        [0];
-
-    var sharpSign = <HTMLCanvasElement>$('<canvas></canvas>')
-        .attr('width', DX * 2)
-        .attr('height', NOTE_CANVAS_HEIGHT + R)
-        [0];
-
-    var naturalSign = <HTMLCanvasElement>$('<canvas></canvas>')
-        .attr('width', DX * 2)
-        .attr('height', NOTE_CANVAS_HEIGHT + R)
-        [0];
-
-    ShapeProvider(flatSign.getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawFlatSign();
-    ShapeProvider(sharpSign.getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawSharpSign();
-    ShapeProvider(naturalSign.getContext('2d'), R, DX - R * 4, NOTE_CANVAS_HEIGHT / R - 1).drawNaturalSign();
-
-    var getNoteImage = function(length: number, channel: number): HTMLCanvasElement
-    {
-        // well, hack, but...
-        var lengthStr = typeof length === 'number'
-            ? Shmidusicator.guessLength(length).apacheStr()
-            : length;
-
-        if (!noteCanvasCache[channel][lengthStr]) {
-            noteCanvasCache[channel][lengthStr] = <HTMLCanvasElement>$('<canvas></canvas>canvas>')
-                .attr('width', DX * 2)
-                .attr('height', NOTE_CANVAS_HEIGHT + R)
-                [0];
-
-            ShapeProvider(noteCanvasCache[channel][lengthStr].getContext('2d'), R, DX, NOTE_CANVAS_HEIGHT / R - 1)
-                .drawNote(channel, lengthStr + '');
-        }
-
-        return noteCanvasCache[channel][lengthStr];
-    };
-
-    var makeNoteCanvas = function(note: Ds.IShNote): HTMLCanvasElement
-    {
-        var [ivoryIndex, sign] = determinePosition(note.tune, keySignature);
-
-        var noteCanvas = <HTMLCanvasElement>$('<canvas class="noteCanvas"></canvas>')
-            .attr('width', DX * 2)
-            .attr('height', NOTE_CANVAS_HEIGHT + R)
-            .attr('data-tune', note.tune)
-            .attr('data-channel', note.channel)
-            .attr('data-length', note.length)
-            [0]
-            ;
-
-        noteCanvas.style.setProperty('--ivory-index', ivoryIndex + '');
-
-        var ctx = noteCanvas.getContext('2d');
-
-        ctx.drawImage(getNoteImage(note.length, note.channel), 0, 0);
-
-        if (note.channel === 9) {
-        } else  if (sign === 'flat') {
-            ctx.drawImage(flatSign, 0, 0);
-        } else if (sign === 'sharp') {
-            ctx.drawImage(sharpSign, 0, 0);
-        } else if (sign === 'natural') {
-            ctx.drawImage(naturalSign, 0, 0);
-        }
-
-        return noteCanvas;
-    };
-
     return {
-        getNoteImage: getNoteImage,
-        makeNoteCanvas: makeNoteCanvas,
         extractNote: extractNote,
         getChordWidth: () => DX * 2,
-        setKeySignature: v => keySignature = v,
+        setKeySignature: (v: number) => keySignature = v,
     };
-};
-
-export interface ICanvasProvider {
-    getNoteImage: (l: number, c: number) => HTMLCanvasElement,
-    makeNoteCanvas: (n: Ds.IShNote) => HTMLCanvasElement,
-    extractNote: (c: HTMLCanvasElement) => Ds.IShNote,
-    getChordWidth: () => number,
-    setKeySignature: (v: number) => void,
 };
 
 /** TODO: get rid of this class, we i the stuff with clean CSS now */
@@ -211,8 +124,8 @@ export function SheetMusicPainter(parentId: string, config: HTMLElement)
     var $chordListCont =  $('<div class="chordListCont"></div>');
     $parentEl.append($chordListCont);
 
-    var canvaser: ICanvasProvider = CanvasProvider(R);
-    var control = Control($chordListCont, canvaser, config);
+    var canvaser = CanvasProvider(R);
+    var control = Control($chordListCont, config);
 
     var interruptDrawing = () => {};
     var currentSong: Ds.IShmidusicStructure = null;

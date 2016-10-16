@@ -6,19 +6,20 @@
 
 import * as Ds from "../DataStructures";
 import Shmidusicator from "./Shmidusicator";
-import {ICanvasProvider, determinePosition, SongAccess, extractNote} from "./Painter";
+import {determinePosition, SongAccess, extractNote, CanvasProvider} from "./Painter";
 import {TactMeasurer} from "./Painter";
 import {IShNote} from "../DataStructures";
 
-export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, configCont: HTMLElement)
+export function Control($chordListCont: JQuery, configCont: HTMLElement)
 {
+    var canvaser = CanvasProvider(3);
+
     var $parentEl = $chordListCont.parent();
     var chordListCont = $chordListCont[0];
 
     var scrollToIfNeeded = function(chordEl: HTMLElement)
     {
-        /** @TODO: it does not take into account window scroll prostion
-         * scroll window heavily to the buttom and play, say, elfen lied */
+        /** @TODO: it does not work */
 
         var chordRect = chordEl.getBoundingClientRect();
         var scrollPaneRect = $parentEl[0].getBoundingClientRect(); 
@@ -33,38 +34,6 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
 
             $parentEl.scrollTop(top);
         }
-    };
-
-    /** @unused */
-    var scheduledCallbacks: {(): void}[] = [];
-    var lastExecutedAt = window.performance.now();
-    var scheduleDelayed = function(cb: () => () => void)
-    {
-        const interval = 1000;
-        var cancelled = false;
-        var interrupt = () => {
-            cancelled = true;
-        };
-
-        var now = window.performance.now();
-        if (lastExecutedAt - now < -interval) {
-            lastExecutedAt = now;
-            return cb();
-        } else {
-            if (scheduledCallbacks.length === 0) {
-                setTimeout(
-                    () => scheduledCallbacks.splice(0).forEach(cb => cb()),
-                    interval - (now - lastExecutedAt)
-                );
-            }
-            scheduledCallbacks.push(() => {
-                if (!cancelled) {
-                    interrupt = cb();
-                }
-            });
-        }
-
-        return () => interrupt();
     };
 
     var isHighlyLoaded = function()
@@ -172,18 +141,17 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         }
     };
 
-    var addNoteToChord = function(note: IShNote, $chord: JQuery)
+    var getDotCount = (numerator: number) => (<any>Math).log2(+numerator + 1) - 1;
+
+    var addNoteToChord = function(note: IShNote, $chord: JQuery): HTMLElement
     {
         var selector = '.noteCanvas' +
             '[data-tune="' + note.tune + '"]' +
             '[data-channel="' + note.channel + '"]';
 
         if ($chord.children(selector).length === 0) {
-            $chord.append(canvaser.makeNoteCanvas(note));
-
-            /** @debug */
             var [ivoryIndex, sign] = determinePosition(note.tune, 0);
-            var noteDom = <HTMLCanvasElement>$('<div class="noteDom"></div>')
+            var noteDom = <HTMLCanvasElement>$('<div class="noteDom noteCanvas"></div>')
                 .attr('data-tune', note.tune)
                 .attr('data-channel', note.channel)
                 .attr('data-length', note.length)
@@ -191,10 +159,53 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
                 ;
             noteDom.style.setProperty('--ivory-index', ivoryIndex + '');
 
+            var guessedLength = Shmidusicator.guessLength(note.length);
+            var [num, den] = [guessedLength.num(), guessedLength.den()];
+            if (den % 3 === 0) {
+                den /= 3;
+                var tupletDenominator = 3;
+            } else {
+                var tupletDenominator = 1;
+            }
+
+            var dots = getDotCount(num);
+
+            $(noteDom).append([
+                $('<div class="signHolder"/>')
+                    .attr('data-sign', sign),
+                $('<div class="tupletDenominatorHolder"/>')
+                    .attr('data-tuplet-denominator', tupletDenominator),
+                $('<div class="noteHolder"/>')
+                    .attr('data-clean-length', (1 + dots) / den)
+                    .append([
+                        $('<div class="dotsHolder"/>')
+                            .attr('data-dots', '.'.repeat(dots)),
+                    ]),
+            ]);
+
             $chord.append(noteDom);
 
             requestRecalcTacts();
+
+            return noteDom;
+        } else {
+            return null;
         }
+    };
+
+    var changeNote = function(note: HTMLCanvasElement, property: string, value: string)
+    {
+        var $chordEl = $(note).parent();
+        var wasPointed = $(note).hasClass('pointed');
+        var noteData = extractNote(note);
+        note.remove();
+        (<any>noteData)[property] = value;
+        var newNoteEl = addNoteToChord(noteData, $chordEl);
+        if (wasPointed) {
+            $(newNoteEl).addClass('pointed');
+        }
+
+        return noteData;
     };
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
@@ -247,19 +258,6 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         requestRecalcTacts();
     };
 
-    /** @TODO: i believe it would be better to re-create note using addNoteToChord() to avoid multiple calls to makeNoteCanvas */
-    var changeNote = function(note: HTMLCanvasElement, property: string, value: string)
-    {
-        $(note).attr('data-' + property, value);
-
-        var newNote = canvaser.extractNote(note);
-        var newCanvas = canvaser.makeNoteCanvas(newNote);
-        note.getContext('2d').clearRect(0,0,999999,999999);
-        note.getContext('2d').drawImage(newCanvas, 0, 0);
-
-        return newNote;
-    };
-
     var multiplyNoteLength = (note: HTMLCanvasElement, factor: number) =>
         changeNote(note, 'length', +$(note).attr('data-length') * factor + '');
 
@@ -282,7 +280,6 @@ export function Control($chordListCont: JQuery, canvaser: ICanvasProvider, confi
         requestRecalcTacts();
     };
 
-    // TODO: make some sort of typed adapter to access note data attributes
     var setChannel = function(ch: number): IShNote[]
     {
         ch = Math.max(0, Math.min(15, ch));

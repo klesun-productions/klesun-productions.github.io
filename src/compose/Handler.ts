@@ -284,6 +284,8 @@ export var Handler = function(cont: HTMLDivElement)
         35: () => control.setChordFocus(99999999999), // backoffice style!
         // backslash
         220: () => playNotes(control.pointNextNote()),
+        // num-pad dot
+        110: () => playNotes(control.pointNextNote()),
         // opening square bracket
         219: () => control.multiplyLength(0.5),
         // num-pad minus

@@ -121,7 +121,11 @@
 
 canvas#pianoCanvas { cursor: pointer; }
 
-/** note score styling */
+/**
+ * =============================
+ * note score styling follows
+ * ============================
+ */
 
 .sheetMusicCont {
     --b-radius: 3px;
@@ -132,18 +136,16 @@ canvas#pianoCanvas { cursor: pointer; }
 }
 
 .sheetMusicCont {
-    /** @TODO: lines are hardly seen cuz for some reason the svg is set in scale 10 times more than it is on practice. so, 1px line becomes 0.1px line */
     background-image: url(/imgs/part_keys_40r.svg), url(/imgs/score_lines.svg);
     background-repeat: repeat-y, repeat;
     background-size:
         Auto calc(var(--b-radius) * var(--y-steps-per-system)),
         Auto calc(var(--b-radius) * var(--y-steps-per-system));
-    /*background-attachment: local;*/
     padding-left: calc(var(--b-radius) * 15);
 }
 
 .sheetMusicCont .tactNumberCont {
-    position: absolute;
+    float: right;
     left: calc(var(--b-radius) * 7);
     font-size: calc(var(--b-radius) * 3);
     font-weight: bold;
@@ -154,32 +156,17 @@ div.chordListCont > span {
     display: inline-block;
     height: calc((var(--y-steps-per-system) - 4) * var(--b-radius));
     margin-bottom: calc(var(--b-radius) * 4);
-
-    /* TODO: so many gradients is likely very bad for performance - use a single svg background */
-    /*noinspection CssInvalidFunction*/
-    /*background:*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 1), var(--support-lines-color) calc(var(--b-radius) * 1), rgba(0,0,0,0) calc(var(--b-radius) * 1 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 3), var(--support-lines-color) calc(var(--b-radius) * 3), rgba(0,0,0,0) calc(var(--b-radius) * 3 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 5), var(--support-lines-color) calc(var(--b-radius) * 5), rgba(0,0,0,0) calc(var(--b-radius) * 5 + 1px)),*/
-
-
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 11), var(--main-lines-color) calc(var(--b-radius) * 11), rgba(0,0,0,0) calc(var(--b-radius) * 11 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 13), var(--main-lines-color) calc(var(--b-radius) * 13), rgba(0,0,0,0) calc(var(--b-radius) * 13 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 15), var(--main-lines-color) calc(var(--b-radius) * 15), rgba(0,0,0,0) calc(var(--b-radius) * 15 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 17), var(--main-lines-color) calc(var(--b-radius) * 17), rgba(0,0,0,0) calc(var(--b-radius) * 17 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 19), var(--main-lines-color) calc(var(--b-radius) * 19), rgba(0,0,0,0) calc(var(--b-radius) * 19 + 1px)),*/
-
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 23), var(--main-lines-color) calc(var(--b-radius) * 23), rgba(0,0,0,0) calc(var(--b-radius) * 23 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 25), var(--main-lines-color) calc(var(--b-radius) * 25), rgba(0,0,0,0) calc(var(--b-radius) * 25 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 27), var(--main-lines-color) calc(var(--b-radius) * 27), rgba(0,0,0,0) calc(var(--b-radius) * 27 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 29), var(--main-lines-color) calc(var(--b-radius) * 29), rgba(0,0,0,0) calc(var(--b-radius) * 29 + 1px)),*/
-        /*linear-gradient(180deg, rgba(0,0,0,0) calc(var(--b-radius) * 31), var(--main-lines-color) calc(var(--b-radius) * 31), rgba(0,0,0,0) calc(var(--b-radius) * 31 + 1px));*/
 }
 
 div.chordListCont > span.chordSpan {
-    width: calc(var(--b-radius) * 10);
+    width: calc(var(--b-radius) * 11);
     position: relative; /* to allow absolute positioning of children... likely */
 }
+
+div.chordListCont > span.chordSpan * {
+    vertical-align: top;
+}
+
 .sheetMusicCont div.chordListCont > span.focused {
     background-color: rgba(255,192,0,0.3)
 }
@@ -189,40 +176,13 @@ div.chordListCont > span.chordSpan {
 .sheetMusicCont div.chordListCont > span.tactFinisher.doesNotFitIntoTact {
     box-shadow: 1px 0 0 red
 }
-.sheetMusicCont .noteDom {
-    /* TODO: make opaque when replacement implementation is complete */
-    opacity: 0.50;
-    width: calc(10 * var(--b-radius));
-    height: calc(9 * var(--b-radius));
-    background-image: url(/imgs/notes/null.svg);
-    background-size: Auto calc(9 * var(--b-radius)), Auto Auto;
-}
-.sheetMusicCont .noteDom[data-length="2"] {
-    background-image: url(/imgs/notes/n2.00.svg);
-}
-.sheetMusicCont .noteDom[data-length="1"] {
-    background-image: url(/imgs/notes/n1.00.svg);
-}
-.sheetMusicCont .noteDom[data-length="0.5"] {
-    background-image: url(/imgs/notes/n0.50.svg);
-}
-.sheetMusicCont .noteDom[data-length="0.25"] {
-    background-image: url(/imgs/notes/n0.25.svg);
-}
-.sheetMusicCont .noteDom[data-length="0.125"] {
-    background-image: url(/imgs/notes/n0.125.svg);
-}
-.sheetMusicCont .noteDom[data-length="0.0625"] {
-    background-image: url(/imgs/notes/n0.0625.svg);
-}
-.sheetMusicCont .noteDom[data-length="0.03125"] {
-    background-image: url(/imgs/notes/n0.03125.svg);
-}
+
 .sheetMusicCont .noteCanvas, .sheetMusicCont .noteDom {
     --ivory-index: 40; /* how many places should note be shifted. 40 is LA 440 Hz, 33 is LA 220 Hz, 35 is DO */
     position: absolute;
     /* 56 - position of 0 note, 9 - size of note image, 1 - distance from bottom to the center of the note */
     top: calc((56 - var(--ivory-index) - 9 + 1) * var(--b-radius));
+    opacity: 0.75;
 }
 .sheetMusicCont [data-channel="9"] {
     /* constant position for drum notes cuz it does not mean actual pitch anyways */
@@ -233,8 +193,81 @@ div.chordListCont > span.chordSpan {
     opacity: 0.5;
 }
 .sheetMusicCont .noteCanvas.sounding {
-    background: linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(255,0,0,0.2) 10%)
+    background: linear-gradient(180deg, rgba(0,0,0,0) 80%, rgba(255,0,0,0.2) 10%)
 }
 .sheetMusicCont .noteCanvas.pointed {
-    background: linear-gradient(180deg, rgba(0,0,0,0) 90%, rgba(255,0,0,0.4) 10%)
+    background: linear-gradient(180deg, rgba(0,0,0,0) 80%, rgba(255,0,0,0.2) 10%)
+}
+
+.sheetMusicCont .noteDom .tupletDenominatorHolder {
+    display: inline-block;
+    color: red;
+    font-family: monospace;
+    width: var(--b-radius);
+    margin-top: calc(var(--b-radius) * 6);
+    font-size: calc(var(--b-radius) * 3);
+}
+.sheetMusicCont .noteDom .tupletDenominatorHolder::before {
+    content: attr(data-tuplet-denominator);
+}
+.sheetMusicCont .noteDom .tupletDenominatorHolder[data-tuplet-denominator="1"]::before {
+    content: "";
+}
+
+.sheetMusicCont .noteDom .signHolder {
+    display: inline-block;
+    width: calc(2 * var(--b-radius));
+    height: calc(11 * var(--b-radius));
+    background-size: Auto calc(11 * var(--b-radius));
+}
+.sheetMusicCont .noteDom .signHolder[data-sign="flat"] {
+    background-image: url(/imgs/notes/flat.svg);
+}
+.sheetMusicCont .noteDom .signHolder[data-sign="sharp"] {
+    background-image: url(/imgs/notes/sharp.svg);
+}
+.sheetMusicCont .noteDom .signHolder[data-sign="natural"] {
+    background-image: url(/imgs/notes/natural.svg);
+}
+
+.sheetMusicCont .noteDom .noteHolder {
+    display: inline-block;
+    width: calc(7 * var(--b-radius));
+    height: calc(9 * var(--b-radius));
+    background-image: url(/imgs/notes/null.svg);
+    background-size: Auto calc(9 * var(--b-radius)), Auto Auto;
+    text-align: right;
+}
+.sheetMusicCont .noteDom .noteHolder[data-clean-length="2"] {
+    background-image: url(/imgs/notes/n2.00.svg);
+}
+.sheetMusicCont .noteDom .noteHolder[data-clean-length="1"] {
+    background-image: url(/imgs/notes/n1.00.svg);
+}
+.sheetMusicCont .noteDom .noteHolder[data-clean-length="0.5"] {
+    background-image: url(/imgs/notes/n0.50.svg);
+}
+.sheetMusicCont .noteDom .noteHolder[data-clean-length="0.25"] {
+    background-image: url(/imgs/notes/n0.25.svg);
+}
+.sheetMusicCont .noteDom .noteHolder[data-clean-length="0.125"] {
+    background-image: url(/imgs/notes/n0.125.svg);
+}
+.sheetMusicCont .noteDom .noteHolder[data-clean-length="0.0625"] {
+    background-image: url(/imgs/notes/n0.0625.svg);
+}
+.sheetMusicCont .noteDom .noteHolder[data-clean-length="0.03125"] {
+    background-image: url(/imgs/notes/n0.03125.svg);
+}
+
+.sheetMusicCont .noteDom .dotsHolder {
+    display: inline-block;
+    font-family: monospace;
+    margin-top: calc(var(--b-radius) * 4);
+    font-size: calc(var(--b-radius) * 5);
+    letter-spacing: calc(-1 * var(--b-radius));
+    color: red;
+}
+.sheetMusicCont .noteDom .dotsHolder::before {
+    content: attr(data-dots);
 }

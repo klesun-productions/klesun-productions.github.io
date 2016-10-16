@@ -331,12 +331,16 @@ export let Tls = Cls['Tls'] = {
 
 export var Fraction = function(num: number, den: number): IFraction {
     return {
+        num: () => num,
+        den: () => den,
         float: () => num / den,
         apacheStr: () => num + ' / ' + den,
     };
 };
 
 export interface IFraction {
+    num: () => number,
+    den: () => number,
     float: () => number,
     apacheStr: () => string,
 }
