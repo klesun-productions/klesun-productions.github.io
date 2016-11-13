@@ -1,19 +1,36 @@
 
 import {ServApi} from "../utils/ServApi";
 import {YoutubeApi} from "../utils/YoutubeApi";
+import {Tls} from "../utils/Tls";
+import {ParseSoundFontFile} from "../synths/soundfont/ParseSf2";
 
-var $$ = (selector: string, el?: HTMLElement) =>
-    <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
+var Gui = function(mainControl: HTMLDivElement)
+{
+    var $$ = (selector: string, el?: HTMLElement) =>
+        <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
+
+    return {
+        updateLinksBtn: $$('#updateLinks', mainControl)[0],
+        decodeSoundFontBtn: $$('#decodeSoundFont', mainControl)[0],
+        collectLikedSongsBtn: $$('#collectLikedSongs', mainControl)[0],
+    };
+};
 
 /**
  * initializes the admin.html page controls
  */
 export let Admin = function(mainControl: HTMLDivElement)
 {
-    let updateLinksBtn = $$('#updateLinks', mainControl)[0],
-        O=0;
+    var gui = Gui(mainControl);
 
-    updateLinksBtn.onclick = () =>
+    gui.collectLikedSongsBtn.onclick = () =>
+        ServApi.collectLikedSongs(console.log);
+
+    gui.decodeSoundFontBtn.onclick = () =>
+        Tls.fetchBinaryFile('/unversioned/soundfonts/zunpet.sf2', byteBuffer =>
+            console.log(ParseSoundFontFile(byteBuffer)));
+
+    gui.updateLinksBtn.onclick = () =>
         ServApi.get_ichigos_midi_names((songs) =>
         ServApi.getYoutubeLinks((linksBySongName) =>
     {

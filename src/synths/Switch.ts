@@ -27,8 +27,9 @@ export var Switch = function(
         midiDevice: MidiDevice(),
         FluidSynth3: Fluid(SoundFontAdapter('/out/sf2parsed/fluid/')),
         Arachno: Fluid(SoundFontAdapter('/out/sf2parsed/arachno/')),
-        GeneralUser: Fluid(SoundFontAdapter('/out/sf2parsed/generaluser/')),
-        DenyaSynth: Fluid(DenyaAdapter()), 
+        GeneralUser: Fluid(SoundFontAdapter('/out/sf2parsed/zunpet/')),
+        ZUNPet: Fluid(SoundFontAdapter('/out/sf2parsed/generaluser/')),
+        DenyaSynth: Fluid(DenyaAdapter()),
     };
 
     var initSynth = function(choosen: ISynth)

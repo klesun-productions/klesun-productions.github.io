@@ -28,7 +28,7 @@ export function Playback(
     var chordIndex = 0;
     var loopsLeft = sheetMusic.config.loopTimes;
 
-    var findBTime = function(chordTime: number)
+    var findByTime = function(chordTime: number)
     {
         var sumFrac = 0;
         for (var i = 0; i < sheetMusic.chordList.length; ++i) {
@@ -36,7 +36,7 @@ export function Playback(
                 return i;
             } else {
                 sumFrac += sheetMusic.chordList[i].noteList
-                        .map(n => n.length).sort()[0] || 0;
+                    .map(n => n.length).sort()[0] || 0;
             }
         }
 
@@ -93,7 +93,7 @@ export function Playback(
                 : playNext();
         } else if (loopsLeft-- > 0) {
             startMillis += toMillis(chordEndFraction - sheetMusic.config.loopStart, tempo);
-            chordIndex = findBTime(sheetMusic.config.loopStart) - 1;
+            chordIndex = findByTime(sheetMusic.config.loopStart) - 1;
             timeSkip > 0
                 ? scheduleScrewable(timeSkip, playNext)
                 : playNext();

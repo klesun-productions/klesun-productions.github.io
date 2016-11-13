@@ -15,11 +15,10 @@ __pycache__
 /flying_pigs.jpg
 *-compiled.js
 *-compiled.js.map
+*.js.map
 /ignored
-/src/*/*.js
-/src/*/*.js.map
-/src/*.js
-/src/*.js.map
+/src/**/*.js
+/src/**/*.js.map
 .*
 /node_modules
 /tests/flow_compilled

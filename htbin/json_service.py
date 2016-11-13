@@ -105,6 +105,11 @@ method_dict = {
         headers=[],
         is_secure=False,
     ),
+    'collect_liked_songs': Fun(
+        closure=MidiFileProvider.collect_liked_songs,
+        headers=[],
+        is_secure=True,
+    ),
 }
 
 get_params = {k: v for k,v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}

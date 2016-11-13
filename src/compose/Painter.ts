@@ -112,7 +112,7 @@ export function CanvasProvider(R: number)
 /** TODO: get rid of this class, we i the stuff with clean CSS now */
 export function SheetMusicPainter(parentId: string, config: HTMLElement)
 {
-    var R = 3; // semibreve note oval vertical radius
+    var R = 3.5; // semibreve note oval vertical radius
     var Y_STEPS_PER_SYSTEM = 40;
 
     var $parentEl = $('#' + parentId);

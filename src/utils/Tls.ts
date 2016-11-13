@@ -154,10 +154,18 @@ export let Tls = Cls['Tls'] = {
         {
             var maxSize = 2 * 1024 * 1024; // 2 mebibytes
 
-            if (fileInfo.size < maxSize) {
+            if (fileInfo.size < maxSize ||
+                confirm('File is very large, ' + (fileInfo.size / 1024 / 1024).toFixed(2) + ' MiB . Are you sure?')
+            ) {
+                // TODO: chunk when file is 200+ MiB
+
                 var reader = new FileReader();
                 reader.readAsDataURL(fileInfo);
-                reader.onload = (e: any) => whenLoaded(e.target.result.split(',')[1]);
+                reader.onload = (e: any) => {
+                    /** @debug */
+                    console.log('lodaded base64 from file system: ', e.target.result.length);
+                    whenLoaded(e.target.result.split(',')[1]);
+                }
             } else {
                 alert('too big file, more than 2 MiB!');
             }
@@ -181,9 +189,13 @@ export let Tls = Cls['Tls'] = {
         Tls.fetchBinaryFile(url, buf =>
             whenLoaded(DecodeMidi(buf))),
 
-    openMidi: (whenLoaded: { (midi: IGeneralStructure): void }) =>
+    openByteBuffer: (whenLoaded: (byteBuffer: ArrayBuffer) => void) =>
         Tls.selectFileFromDisc(db64 =>
-            whenLoaded(DecodeMidi(_base64ToArrayBuffer(db64)))),
+            whenLoaded(_base64ToArrayBuffer(db64))),
+
+    openMidi: (whenLoaded: { (midi: IGeneralStructure): void }) =>
+        Tls.openByteBuffer(byteBuffer =>
+            whenLoaded(DecodeMidi(byteBuffer))),
 
     getAudioBuffer: function(url: string, onOk: { (resp: AudioBuffer): void }): void
     {

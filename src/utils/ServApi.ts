@@ -57,4 +57,7 @@ export let ServApi = {
 
     getYoutubeLinks: (cb: (links: {[fileName: string]: ytlink_t[]}) => void) =>
         ajax('get_youtube_links', 'GET', {}, cb),
+
+    collectLikedSongs: (cb: (response: any) => void) =>
+        contribute('collect_liked_songs', {}, cb),
 };

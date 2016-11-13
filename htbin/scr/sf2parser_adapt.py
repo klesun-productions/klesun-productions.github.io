@@ -191,9 +191,10 @@ def to_nested_drums(root: dict) -> dict:
 
 
 soundfont_dirs = [
-    '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/generaluser',
-    '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/fluid',
-    '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/arachno'
+#     '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/generaluser',
+#     '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/fluid',
+#     '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/arachno'
+#     '/home/klesun/big/p/shmidusic.lv/out/sf2parsed/zunpet',
 ];
 
 for soundfont_dir in soundfont_dirs:

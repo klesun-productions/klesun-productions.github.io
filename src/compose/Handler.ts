@@ -370,7 +370,6 @@ export var Handler = function(cont: HTMLDivElement)
     var handleMidiEvent = function (message: MIDIMessageEvent)
     {
         var typeHandlers: {[type: number]: (b1: number, b2: number) => void} = {
-            // TODO: with this
             14: (b1, b2) => console.log('Pitch Bend', ((b2 << 8) + b1 - (64 << 8)) / ((64 << 8))),
             9: (b1,b2) => console.log('Note Off', b1),
         };
@@ -385,7 +384,10 @@ export var Handler = function(cont: HTMLDivElement)
             console.log('Note On:', tune, velocity / 127);
 
             var note = handleNoteOn(tune, message.receivedTime);
-            gui.enablePlayOnKeyDownFlag.checked && playNotes([note]);
+            gui.enablePlayOnKeyDownFlag.checked && oneShotPlayer.playChord([note]);
+            /** @debug */
+            console.log('playing', note);
+            highlightNotes(control.getFocusedNotes());
         } else {
             midiEventType in typeHandlers
                 ? typeHandlers[midiEventType](message.data[1], message.data[2])

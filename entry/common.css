@@ -128,7 +128,7 @@ canvas#pianoCanvas { cursor: pointer; }
  */
 
 .sheetMusicCont {
-    --b-radius: 3px;
+    --b-radius: 3.5px;
     --y-steps-per-system: 40;
 
     --support-lines-color: rgba(192,192,192,1);
