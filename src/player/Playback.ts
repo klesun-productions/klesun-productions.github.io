@@ -8,6 +8,7 @@
 import {IGeneralStructure} from "../DataStructures";
 import {IShNote} from "../DataStructures";
 import {Tls} from "../utils/Tls";
+import {IPlaybackControl} from "../views/PlaybackControl";
 
 type millis_t = number;
 

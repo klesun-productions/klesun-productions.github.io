@@ -2,7 +2,7 @@
 import {ServApi} from "../utils/ServApi";
 import {YoutubeApi} from "../utils/YoutubeApi";
 import {Tls} from "../utils/Tls";
-import {ParseSoundFontFile} from "../synths/soundfont/ParseSf2";
+import {ParseSoundFontFile, TransformSf2Parse, flattenSamples} from "../synths/soundfont/ParseSf2";
 
 var Gui = function(mainControl: HTMLDivElement)
 {
@@ -10,9 +10,12 @@ var Gui = function(mainControl: HTMLDivElement)
         <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
 
     return {
-        updateLinksBtn: $$('#updateLinks', mainControl)[0],
-        decodeSoundFontBtn: $$('#decodeSoundFont', mainControl)[0],
-        collectLikedSongsBtn: $$('#collectLikedSongs', mainControl)[0],
+        btns: {
+            updateLinks: $$('#updateLinks', mainControl)[0],
+            decodeSoundFont: $$('#decodeSoundFont', mainControl)[0],
+            testDecodeSoundFont: $$('#testDecodeSoundFont', mainControl)[0],
+            collectLikedSongs: $$('#collectLikedSongs', mainControl)[0],
+        },
     };
 };
 
@@ -23,14 +26,28 @@ export let Admin = function(mainControl: HTMLDivElement)
 {
     var gui = Gui(mainControl);
 
-    gui.collectLikedSongsBtn.onclick = () =>
+    gui.btns.collectLikedSongs.onclick = () =>
         ServApi.collectLikedSongs(console.log);
 
-    gui.decodeSoundFontBtn.onclick = () =>
-        Tls.fetchBinaryFile('/unversioned/soundfonts/zunpet.sf2', byteBuffer =>
-            console.log(ParseSoundFontFile(byteBuffer)));
+    gui.btns.testDecodeSoundFont.onclick = () =>
+        Tls.fetchJson('/out/sf2parsed/zunpet/sf2parser.out.json', sf2parse =>
+            console.log(flattenSamples(TransformSf2Parse(<any>sf2parse))));
 
-    gui.updateLinksBtn.onclick = () =>
+    gui.btns.decodeSoundFont.onclick = () =>
+        Tls.fetchBinaryFile('/unversioned/soundfonts/zunpet.sf2', byteBuffer => {
+            var [soundFont, audioDataSamples] = ParseSoundFontFile(byteBuffer);
+            console.log(soundFont);
+            Tls.list(audioDataSamples).sequence = (d, i) =>
+                ServApi.save_sample_wav({
+                    sfname: 'zunpet',
+                    sampleNumber: i,
+                    sampleName: d[1].sampleName,
+                    sampleRate: d[1].sampleRate,
+                    samplingValues: d[0],
+                });
+        });
+
+    gui.btns.updateLinks.onclick = () =>
         ServApi.get_ichigos_midi_names((songs) =>
         ServApi.getYoutubeLinks((linksBySongName) =>
     {

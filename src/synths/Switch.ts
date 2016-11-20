@@ -12,27 +12,27 @@ import {IPresetList} from "../views/PresetList";
 import {SoundFontAdapter} from "./SoundFontAdapter";
 import {DenyaAdapter} from "./DenyaAdapter";
 
-export var Switch = function(
+export let Switch = function(
     dropdownEl: HTMLSelectElement,
     controlEl: HTMLDivElement,
     presetListControl: IPresetList
 ): ISwitch
 {
-    var channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
+    let channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
     
-    var pitchBendByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 0);
+    let pitchBendByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 0);
 
-    var synths: {[k: string]: ISynth} = {
+    let synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(Tls.audioCtx),
         midiDevice: MidiDevice(),
         FluidSynth3: Fluid(SoundFontAdapter('/out/sf2parsed/fluid/')),
         Arachno: Fluid(SoundFontAdapter('/out/sf2parsed/arachno/')),
-        GeneralUser: Fluid(SoundFontAdapter('/out/sf2parsed/zunpet/')),
-        ZUNPet: Fluid(SoundFontAdapter('/out/sf2parsed/generaluser/')),
+        GeneralUser: Fluid(SoundFontAdapter('/out/sf2parsed/generaluser/')),
+        ZUNPet: Fluid(SoundFontAdapter('/out/sf2parsed/zunpet/')),
         DenyaSynth: Fluid(DenyaAdapter()),
     };
 
-    var initSynth = function(choosen: ISynth)
+    let initSynth = function(choosen: ISynth)
     {
         choosen.init($(controlEl));
         choosen.consumeConfig(channels);
@@ -43,16 +43,20 @@ export var Switch = function(
     Object.keys(synths).forEach(s => $(dropdownEl)
         .append($('<option></option>').val(s).html(s)));
 
-    $(dropdownEl).val('FluidSynth3').change(_ => initSynth(synths[$(dropdownEl).val()])).trigger('change');
+    $(dropdownEl).val('FluidSynth3').change(_ => {
+        let newValue = $(dropdownEl).val();
+        $('body.withDenya').css('background-image', newValue === 'DenyaSynth' ? 'url(/imgs/denya_evil.png)' : 'url(/imgs/denya.png)');
+        initSynth(synths[newValue]);
+    }).trigger('change');
 
-    var playNote = (sem: number, chan: number, volumeFactor: number, chordIndex: number) =>
+    let playNote = (sem: number, chan: number, volumeFactor: number, chordIndex: number) =>
         presetListControl.enabledChannels().has(chan)
             ?  synths[$(dropdownEl).val()].playNote(sem, chan, volumeFactor, chordIndex)
             : () => {};
 
-    var analyse = (chords: IShmidusicChord[]) => synths[$(dropdownEl).val()].analyse(chords);
+    let analyse = (chords: IShmidusicChord[]) => synths[$(dropdownEl).val()].analyse(chords);
 
-    var init = function()
+    let init = function()
     {
         presetListControl.onChange(presByChan =>
             synths[$(dropdownEl).val()].consumeConfig(presByChan));

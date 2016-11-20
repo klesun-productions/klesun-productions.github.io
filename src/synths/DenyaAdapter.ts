@@ -7,10 +7,10 @@ import {Tls} from "../utils/Tls";
  */
 export var DenyaAdapter = function(): ISoundFontAdapter
 {
-    var fetchSample = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample =>
+    var fetchSample = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample[] =>
     {
         if (isDrum || +velocity === 0) {
-            return null;
+            return [];
         }
 
         var sampleSemitone = 59; // TI
@@ -30,10 +30,10 @@ export var DenyaAdapter = function(): ISoundFontAdapter
             audioNodes: [],
         });
 
-        return fetched;
+        return fetched ? [fetched] : [];
     };
 
     return {
-        fetchSample: fetchSample,
+        fetchSamples: fetchSample,
     };
 };

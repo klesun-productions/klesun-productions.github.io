@@ -14,52 +14,57 @@ interface INote { play: { (): { (): void } } }
 // to make sound and graphics more fitting to each other
 const DELAY_FOR_GRAPHICS = 10;
 
-export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
+export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 {
-    var audioCtx = Tls.audioCtx;
+    let audioCtx = Tls.audioCtx;
+    let pitchShiftInput = <HTMLInputElement>$('<input type="number" step="0.5" value="0"/>')[0];
 
-    var channelNodes = Tls.range(0,16).map(i => {
-        var node = audioCtx.createGain();
+    let channelNodes = Tls.range(0,16).map(i => {
+        let node = audioCtx.createGain();
         node.gain.value = 1;
         node.connect(audioCtx.destination);
         return node;
     });
 
-    var channels = Tls.range(0,16).map(i => 1 && {preset: 0});
+    let channels = Tls.range(0,16).map(i => 1 && {preset: 0});
 
-    var sounding: {[chan: number]: Array<AudioBufferSourceNode>} = [];
+    let sounding: {[chan: number]: Array<AudioBufferSourceNode>} = [];
 
-    var MAX_VOLUME = 0.3;
+    let MAX_VOLUME = 0.3;
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need time to load it
-    var fallbackOscillator = Oscillator(audioCtx);
+    let fallbackOscillator = Oscillator(audioCtx);
 
-    var playSample = function(fetchedSample: IFetchedSample, parentNode: AudioNode): () => void
+    let playSample = function(fetchedSample: IFetchedSample, parentNode: AudioNode): () => void
     {
-        var gainNode = audioCtx.createGain();
-        var gainValue = MAX_VOLUME * fetchedSample.volumeKoef;
+        // TODO: uno what i really hate? when two next-standing notes sound very different
+        // due to different samples being used. What you should do - blend them: say, you need
+        // to play fa, but you got only mi and sol samples - you play them both with 0.33 and 0.67 volumes respectively
+
+        let gainNode = audioCtx.createGain();
+        let gainValue = MAX_VOLUME * fetchedSample.volumeKoef;
         gainNode.gain.value = gainValue;
 
-        var audioNodes = fetchedSample.audioNodes.concat([gainNode]);
-        for (var node of audioNodes) {
+        let audioNodes = fetchedSample.audioNodes.concat([gainNode]);
+        for (let node of audioNodes) {
             node.connect(parentNode);
             parentNode = node;
         }
 
-        var sample = audioCtx.createBufferSource();
-        sample.playbackRate.value = fetchedSample.frequencyFactor;
+        let sample = audioCtx.createBufferSource();
+        sample.playbackRate.value = fetchedSample.frequencyFactor * Math.pow(2, +pitchShiftInput.value / 12);
         sample.loopStart = fetchedSample.loopStart;
         sample.loopEnd = fetchedSample.loopEnd;
         sample.loop = fetchedSample.isLooped;
         sample.buffer = fetchedSample.buffer;
 
         if (+fetchedSample.stereoPan === EStereoPan.LEFT) {
-            var splitter = audioCtx.createChannelSplitter(2);
+            let splitter = audioCtx.createChannelSplitter(2);
             sample.connect(splitter);
             splitter.connect(gainNode, 0);
         } else if (+fetchedSample.stereoPan === EStereoPan.RIGHT) {
-            var splitter = audioCtx.createChannelSplitter(2);
+            let splitter = audioCtx.createChannelSplitter(2);
             sample.connect(splitter);
             splitter.connect(gainNode, 1);
         } else {
@@ -69,8 +74,8 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         sample.start();
 
         return () => {
-            var iterations = 10;
-            var fade = (i: number) => {
+            let iterations = 10;
+            let fade = (i: number) => {
                 if (i >= 0) {
                     gainNode.gain.value = gainValue * (i / iterations);
                     setTimeout(() => fade(i - 1), fetchedSample.fadeMillis / iterations);
@@ -82,37 +87,38 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         };
     };
 
-    var playNote = function(semitone: number, channel: number, velocity: number)
+    let playNote = function(semitone: number, channel: number, velocity: number)
     {
-        var isDrum = +channel === 9;
+        let isDrum = +channel === 9;
 
-        var sample: IFetchedSample;
+        let samples = soundFont.fetchSamples(semitone, channels[channel].preset, isDrum, velocity);
 
-        if (sample = soundFont.fetchSample(semitone, channels[channel].preset, isDrum, velocity)) {
-            return playSample(sample, channelNodes[channel]);
+        if (samples.length > 0) {
+            let offs = samples.map(s => playSample(s, channelNodes[channel]));
+            return () => offs.forEach(off => off());
         } else {
             return +channel !== 9
-                ? fallbackOscillator.playNote(semitone, 0, velocity, -1)
+                ? fallbackOscillator.playNote(semitone + +pitchShiftInput.value, 0, velocity, -1)
                 : () => {};
         }
     };
 
-    var consumeConfig = (programs: { [id: number]: IShChannel; }) =>
+    let consumeConfig = (programs: { [id: number]: IShChannel; }) =>
         Tls.fori(programs, (k, v) => channels[k] = v);
 
-    var interruptLastAnalysis = () => {};
+    let interruptLastAnalysis = () => {};
 
     // starts a worker that runs through chords and loads samples for notes if required
-    var analyse = function(chords: IShmidusicChord[])
+    let analyse = function(chords: IShmidusicChord[])
     {
         interruptLastAnalysis();
-        var interrupted = false;
+        let interrupted = false;
         interruptLastAnalysis = () => interrupted = true;
 
-        var next = (i: number) => {
-            var c = chords[i];
+        let next = (i: number) => {
+            let c = chords[i];
             c.noteList.forEach((n,i) => {
-                soundFont.fetchSample(n.tune, channels[n.channel].preset, +n.channel === 9, 0);
+                soundFont.fetchSamples(n.tune, channels[n.channel].preset, +n.channel === 9, 0);
             });
 
             i + 1 < chords.length && !interrupted
@@ -122,10 +128,13 @@ export var Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         chords.length && next(0);
     };
 
-    var init = function($cont: JQuery): void
+    let init = function($cont: JQuery): void
     {
         $cont.empty();
-        $cont.append('This Synth plays Fluid soundfonts!');
+        $cont.append([
+            'Pitch Offset: ',
+            pitchShiftInput,
+        ]);
     };
 
     return {

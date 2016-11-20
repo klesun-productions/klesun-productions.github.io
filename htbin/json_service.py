@@ -8,6 +8,8 @@ import cgi
 import cgitb
 from collections import namedtuple
 
+import collections
+
 cgitb.enable()
 
 from classes.Contribution import Contribution
@@ -33,7 +35,6 @@ def print_response(response, headers: list):
     print('')
     print(json.dumps(response))
 
-
 class TimeoutException(Exception):
     pass
 
@@ -50,17 +51,11 @@ def fetch_info_from_login_token(token):
 
 # works only under linux and only in "python -m http.server --cgi 80" - does not work in Apache
 def read_post() -> dict:
-	post_text = sys.stdin.read()
-	if post_text != "":
-		return json.loads(post_text)
-	else:
-		return {}
-    #~ if not os.environ['CONTENT_LENGTH']:
-        #~ return {}
-    #~ post_length = int(os.environ['CONTENT_LENGTH']) - 1
-
-    #~ post_string = sys.stdin.buffer.read(post_length + 1).decode('utf-8')
-    #~ return json.loads(post_string)
+    post_text = sys.stdin.read()
+    if post_text != "":
+        return json.loads(post_text, object_pairs_hook=collections.OrderedDict)
+    else:
+        return {}
 
 def is_correct_password(entered_password: str) -> bool:
     local_config_path = 'unversioned/local.config.json'
@@ -107,6 +102,11 @@ method_dict = {
     ),
     'collect_liked_songs': Fun(
         closure=MidiFileProvider.collect_liked_songs,
+        headers=[],
+        is_secure=True,
+    ),
+    'save_sample_wav': Fun(
+        closure=MidiFileProvider.save_sample_wav,
         headers=[],
         is_secure=True,
     ),

@@ -117,6 +117,16 @@ let list = function<Tel>(elmts: Tel[])
         set forEach(cb: (el: Tel) => void) {
             elmts.forEach(cb);
         },
+        /** perform async operations on every element one by one */
+        set sequence(cb: (el: Tel, i: number) => {then: (r: any) => void}) {
+            let i = 0;
+            let next = () => {
+                if (i < elmts.length) {
+                    cb(elmts[i], i++).then = next;
+                }
+            };
+            next();
+        },
     };
 };
 
@@ -182,7 +192,7 @@ export let Tls = Cls['Tls'] = {
     fetchBinaryFile: (url: string, whenLoaded: (buf: ArrayBuffer) => void) =>
         fetchFile(url, 'arraybuffer', whenLoaded),
     
-    fetchJson: (url: string, whenLoaded: (buf: {[k: string]: any}) => void) =>
+    fetchJson: (url: string, whenLoaded: (parsedJson: {[k: string]: any}) => void) =>
         fetchFile(url, 'json', whenLoaded),
 
     fetchMidi: (url: string, whenLoaded: { (midi: IGeneralStructure): void }) =>

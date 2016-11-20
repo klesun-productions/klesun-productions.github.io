@@ -13,7 +13,7 @@ var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 
 
 export default function PlaybackControl($cont: JQuery): IPlaybackControl
 {
-    const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorAll(s));
+    const $$ = (s: string, root?: HTMLElement): HTMLElement[] => <any>Array.from((root || document).querySelectorAll(s));
 
     var $tempoFactorInput = $cont.find('.tempoFactorInput'),
         $secondsTotalHolder = $cont.find('.secondsTotal.holder'),

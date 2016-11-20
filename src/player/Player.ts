@@ -83,8 +83,13 @@ export function Player(control: IPlaybackControl)
 
         currentPlayback && currentPlayback.pause();
 
-        var playback = currentPlayback = Playback(sheetMusic, playChord,
-            whenFinished, control.getTempoFactor() || 1, stopSounding);
+        var playback = currentPlayback = Playback(
+            sheetMusic,
+            playChord,
+            whenFinished,
+            control.getTempoFactor() || 1,
+            stopSounding
+        );
 
         playback.pause();
 
