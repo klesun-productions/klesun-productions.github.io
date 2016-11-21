@@ -241,15 +241,3 @@
 
     button.rateGood {color: #0a0}
     button.rateBad {color: #a00}
-
-    div.modalDialog {
-        position: absolute;
-        left: 40%;
-        top: 40%;
-        width: 20%;
-        heigh: 20%;
-        background-color: lightgrey;
-        z-index: 1002;
-        padding: 6px;
-        box-shadow: 0px 0px 200px 200px rgba(0,0,0,0.85);
-    }

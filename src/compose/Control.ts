@@ -9,6 +9,7 @@ import Shmidusicator from "./Shmidusicator";
 import {determinePosition, SongAccess, extractNote, CanvasProvider} from "./Painter";
 import {TactMeasurer} from "./Painter";
 import {IShNote} from "../DataStructures";
+import {Tls} from "../utils/Tls";
 
 export function Control($chordListCont: JQuery, configCont: HTMLElement)
 {
@@ -215,7 +216,20 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         var index = $chordListCont.find('.focused').index() + 1;
 
         var $chord = $('<span class="chordSpan"></span>')
-            .append($('<span class="tactNumberCont"></span>'));
+            .append($('<span class="tactNumberCont"></span>'))
+            .append(Tls.digt(chord.startState || {}).s
+                .map((state, chan) => $('<div class="transitionState start"/>')
+                    .attr('data-channel', chan)
+                    .attr('data-pitch-bend', state.pitchBend)
+                    .attr('data-volume', state.volume)
+                ))
+            .append(Tls.digt(chord.finishState || {}).s
+                .map((state, chan) => $('<div class="transitionState finish"/>')
+                    .attr('data-channel', chan)
+                    .attr('data-pitch-bend', state.pitchBend)
+                    .attr('data-volume', state.volume)
+                ))
+            ;
 
         chord.noteList.forEach(n => addNoteToChord(n, $chord));
 

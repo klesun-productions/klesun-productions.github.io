@@ -10,14 +10,14 @@ var Static: any = {};
 
 class Optional<T>
 {
-    constructor(private isPresent: boolean, private value?: T) {}
+    constructor(private isPresent: boolean, private value?: T | null) {}
 
     static of<T>(value: T): Optional<T>
     {
         return new Optional(true, value);
     }
 
-    static no<T>(): Optional<T>
+    static no<T>(): Optional<T | null>
     {
         return new Optional(false, null);
     }
@@ -33,7 +33,7 @@ declare var saveAs: any;
 var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
 var awaiting: { [url: string]: Array<{ (resp: AudioBuffer): void }> } = {};
 
-const dict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
+const toDict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
     var result: {[k: string]: Tv} = {};
     pairs.forEach(p => result[p[0]] = p[1]);
     return result;
@@ -46,8 +46,8 @@ const range = (l: number, r: number): Array<number> =>
 var cssReflection: {[selector: string]: {[name: string]: string}};
 try {
     cssReflection =
-        <any>dict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
-            .map((r: any) => [r.selectorText, dict(Array.from(r.style)
+        <any>toDict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
+            .map((r: any) => [r.selectorText, toDict(Array.from(r.style)
                 .map((name: string) => <any>[name, r.style[name]]))]));
 } catch (e) {
     console.log('Failed to get CSS reflection', e);
@@ -127,7 +127,50 @@ let list = function<Tel>(elmts: Tel[])
             };
             next();
         },
+        get s() {
+            return elmts;
+        },
     };
+};
+
+let showDialog = function(msg: string, content?: HTMLElement)
+{
+    content = content || $('<div>Just a message</div>')[0];
+
+    var $dialog = $('<div class="modalDialog"></div>')
+        .append(msg).append('<br/>').append(content)
+        .append($('<button>Cancel</button>').click(() => { $dialog.remove(); }));
+
+    // TODO: escape - cancel
+    $('body').prepend($dialog);
+
+    return () => $dialog.remove();
+};
+
+let showMultiInputDialog = function<T>(msg: string, initialData: T)
+{
+    let result = {then: (changedData: T) => {}};
+    let inputs = Object.keys(initialData).map(k => 1 && {
+        key: k,
+        val: $('<input type="text"/>')
+            .val((<any>initialData)[k])[0]
+    });
+
+    let ok = () => {
+        Tls.list(inputs).forEach = pair =>
+            (<any>initialData)[pair.key] = $(pair.val).val();
+        result.then(initialData);
+    };
+
+    let close = showDialog(msg, $('<div class="key-values"/>')
+        .append(inputs.map(i => [i.key + ': ', i.val, '<br/>'])
+            .reduce((a,b) => a.concat(b))
+            .concat([$('<button>Ok</button>')
+                .click(() => { ok(); close(); })
+                [0]]))
+        [0]);
+
+    return result;
 };
 
 export let Tls = Cls['Tls'] = {
@@ -141,7 +184,28 @@ export let Tls = Cls['Tls'] = {
     range: range,
 
     /** transforms array of [key, value] tuples into a dict */
-    dict: dict,
+    toDict: toDict,
+    dict: function<Tv>(obj: {[key: string]: Tv}) {
+
+    },
+
+    /** transforms object keyed by number to a list */
+    digt: <Tv>(obj: {[key: number]: Tv}) => {
+        let result: Tv[] = [];
+        for (let k of Object.keys(obj)) {
+            result[+k] = obj[+k];
+        }
+        return list(result);
+    },
+
+    /** transforms key-value pair tuples to a dict */
+    ditu: <Tv>(pairs: {key: number, val: Tv}[]) => {
+        let result = [];
+        for (let pair of pairs) {
+            result[pair.key] = pair.val;
+        }
+        return result;
+    },
 
     map: <Tx, Ty>(val: Tx, f: (v: Tx) => Ty) => val && f(val),
 
@@ -260,22 +324,23 @@ export let Tls = Cls['Tls'] = {
         return interrupt;
     },
 
-    showDialog: function(msg: string, content?: HTMLElement)
+    showDialog: showDialog,
+    showMultiInputDialog: showMultiInputDialog,
+
+    showInputDialog: function<T>(msg: string, value?: T | null)
     {
-        var $dialog = $('<div class="modalDialog"></div>')
-            .append(msg).append('<br/>').append(content)
-            .append($('<button>Cancel</button>').click(() => { $dialog.remove(); }));
+        value = value === undefined ? null : value;
 
-        // TODO: escape - cancel
-        $('body').prepend($dialog);
-
-        return () => $dialog.remove();
+        let result = {then: (field: T | null) => {}};
+        showMultiInputDialog(msg, {value: value})
+            .then = (fields) => result.then(fields.value);
+        return result;
     },
 
     promptAssync: function(msg: string, cb: (txt: string) => void)
     {
         let $input = $('<input type="password"/>');
-        let closeDialog = Tls.showDialog(msg, $('<div></div>')
+        let closeDialog = showDialog(msg, $('<div></div>')
             .append($input)
             .append($('<button>Ok</button>').click(() => {
                 cb($input.val());
@@ -287,7 +352,7 @@ export let Tls = Cls['Tls'] = {
     },
 
     showError: (msg: string) => {
-        let closeDialog = Tls.showDialog(msg);
+        let closeDialog = showDialog(msg);
         setTimeout(closeDialog, 15000);
     },
 
@@ -359,6 +424,33 @@ export var Fraction = function(num: number, den: number): IFraction {
         apacheStr: () => num + ' / ' + den,
     };
 };
+
+export let Opt = function<T>(value: T)
+{
+    return {
+        map: <T2>(f: (arg: T) => T2): IOpt<T2> =>
+            value !== null &&
+            value !== undefined
+                ? Opt(f(value))
+                : Opt(null),
+
+        def: (def: T): T =>
+            value !== null &&
+            value !== undefined
+                ? value
+                : def,
+
+        has: () =>
+            value !== null &&
+            value !== undefined,
+    };
+};
+
+interface IOpt<T> {
+    map: <T2>(f: (arg: T) => T2) => IOpt<T2>,
+    def: (def: T) => T,
+    has: () => boolean,
+}
 
 export interface IFraction {
     num: () => number,

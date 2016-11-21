@@ -29,7 +29,7 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
         preset: 0, volume: 127, pitchBendRange: 2,
     });
     var pitchBends: [number, number, number, number][] = [];
-    var loopStart: number = null;
+    var loopStart = null;
     var loopEnd = 0;
     var tactSize = 1;
     var keySignature = 0;
@@ -79,7 +79,7 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
 
         if ([8,9].includes(event.midiEventType)) {
             // noteOn/Off
-            var velocity = event.midiEventType === 8 ? 0 : event.parameter2;
+            var velocity = event.midiEventType === 8 ? 0 : event.parameter2!;
             handleNote(event.parameter1, velocity);
         } else if (+event.midiEventType === 12) {
             // program change
@@ -90,9 +90,9 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
             var wasPitchBendRangeB = pitchBendRangeB;
 
             if (event.parameter1 in controlHandlers) {
-                controlHandlers[event.parameter1](event.parameter2);
+                controlHandlers[event.parameter1](event.parameter2!);
             } else {
-                unknownControlChanges.push([time, event.parameter1, event.parameter2]);
+                unknownControlChanges.push([time, event.parameter1, event.parameter2!]);
             }
 
             if (pitchBendRangeA === wasPitchBendRangeA &&
@@ -103,7 +103,7 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
 
         } else if (+event.midiEventType === 14) {
             // pitch bend
-            pitchBends.push([time, ch, event.parameter1, event.parameter2]);
+            pitchBends.push([time, ch, event.parameter1, event.parameter2!]);
         } else {
             // ???
             console.log('got unknown channel event: ', time, event);

@@ -7,7 +7,7 @@ import {IShmidusicChord} from "../DataStructures";
 import Shmidusicator from "./Shmidusicator";
 import {IShmidusicStructure} from "../DataStructures";
 import ShReflect from "../Reflect";
-import {Tls} from "../utils/Tls";
+import {Tls, Opt} from "../utils/Tls";
 import {Player} from "../player/Player";
 import {EncodeMidi} from "./EncodeMidi";
 import {PseudoPiano} from "./PseudoPiano";
@@ -26,14 +26,14 @@ const NOTE_ON = 0x09;
 
 const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorAll(s));
 
-export var Handler = function(cont: HTMLDivElement)
+export let Handler = function(cont: HTMLDivElement)
 {
-    var gui = ComposeGui(cont);
-    var painter = gui.painter;
-    var configCont = gui.configCont;
-    var pianoCleans = Tls.cbList([]);
+    let gui = ComposeGui(cont);
+    let painter = gui.painter;
+    let configCont = gui.configCont;
+    let pianoCleans = Tls.cbList([]);
 
-    var OxO = 0x0,
+    let OxO = 0x0,
         synthSwitch = gui.synthSwitch,
         player = Player({
             setPlayback: () => {}, setFields: () => {},
@@ -45,21 +45,21 @@ export var Handler = function(cont: HTMLDivElement)
     synthSwitch.analyzeActivePresets();
     gui.channelListControl.onChange(synthSwitch.analyzeActivePresets);
 
-    var lastChordOn = 0;
+    let lastChordOn = 0;
 
-    var control = painter.getControl();
-    var playbackInfo = {
+    let control = painter.getControl();
+    let playbackInfo = {
         startIndex: -100,
     };
     playbackInfo = null;
-    var playbackFinished = () => {
-        var stopIndex = player.stop();
+    let playbackFinished = () => {
+        let stopIndex = player.stop();
         control.setChordFocus(stopIndex);
         playbackInfo = null;
     };
 
     player.anotherNoteHandler = (s,c,v,i) => {
-        var interrupts = Tls.cbList([]);
+        let interrupts = Tls.cbList([]);
         interrupts.more = synthSwitch.playNote(s,c,v,i);
         if (gui.enableVisualizedPlaybackFlag.checked) {
             interrupts.more = control.setNoteFocus(s,c,v,i);
@@ -69,13 +69,13 @@ export var Handler = function(cont: HTMLDivElement)
         return () => interrupts.clear().forEach(i => i());
     };
 
-    var oneShotPlayer = Player({
+    let oneShotPlayer = Player({
         setPlayback: () => {}, setFields: () => {},
         setFileInfo: () => {}, getTempoFactor: () => -100,
     });
     oneShotPlayer.anotherNoteHandler = synthSwitch.playNote;
 
-    var highlightNotes = (notes: IShNote[]) => {
+    let highlightNotes = (notes: IShNote[]) => {
         pianoCleans.clear().forEach(c => c());
         Tls.list(notes).forEach = n =>
             pianoCleans.more = gui.piano.highlight(n.tune, n.channel);
@@ -87,13 +87,13 @@ export var Handler = function(cont: HTMLDivElement)
         oneShotPlayer.playChord(notes);
     };
 
-    var tabActive = true;
+    let tabActive = true;
     window.onfocus = () => tabActive = true;
     window.onblur = () => tabActive = false;
 
-    var handleNoteOn = function(semitone: number, receivedTime: number): IShNote
+    let handleNoteOn = function(semitone: number, receivedTime: number): IShNote
     {
-        var note = {
+        let note = {
             tune: semitone,
             channel: +$(gui.inputChannelDropdown).val(),
             length: 0.25
@@ -115,7 +115,7 @@ export var Handler = function(cont: HTMLDivElement)
         return note;
     };
 
-    var collectConfig = () => 1 && {
+    let collectConfig = () => 1 && {
         tempo: $(configCont).find('.holder.tempo').val(),
         loopStart: $(configCont).find('.holder.loopStart').val(),
         loopTimes: $(configCont).find('.holder.loopTimes').val(),
@@ -124,22 +124,22 @@ export var Handler = function(cont: HTMLDivElement)
         channelList: gui.channelListControl.collectData(),
     };
 
-    var collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
+    let collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
         staffList: [{
             staffConfig: collectConfig(),
             chordList: chords
         }]
     };
 
-    var play = function(): void
+    let play = function(): void
     {
         oneShotPlayer.stop();
         pianoCleans.clear().forEach(c => c());
 
-        var shmidusic = collectSong(control.getChordList());
-        var adapted = Shmidusicator.generalizeShmidusic(shmidusic);
+        let shmidusic = collectSong(control.getChordList());
+        let adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
-        var index = Math.max(0, control.getFocusIndex());
+        let index = Math.max(0, control.getFocusIndex());
         player.playSheetMusic(adapted, playbackFinished, index);
 
         playbackInfo = {
@@ -149,13 +149,13 @@ export var Handler = function(cont: HTMLDivElement)
 
     const copyToClipboard = function(): void
     {
-        var selection = window.getSelection();
-        var range = selection.getRangeAt(0);
-        var allWithinRangeParent = $(range.commonAncestorContainer).find('*').toArray();
+        let selection = window.getSelection();
+        let range = selection.getRangeAt(0);
+        let allWithinRangeParent = $(range.commonAncestorContainer).find('*').toArray();
 
-        var chordSpans: HTMLSpanElement[] = [];
-        var first = true;
-        for (var i = 0, el: Element; el = allWithinRangeParent[i]; i++) {
+        let chordSpans: HTMLSpanElement[] = [];
+        let first = true;
+        for (let i = 0, el: Element; el = allWithinRangeParent[i]; i++) {
             if (el.classList.contains('chordSpan') &&
                 selection.containsNode(el, first)
             ) {
@@ -164,14 +164,14 @@ export var Handler = function(cont: HTMLDivElement)
             }
         }
 
-        var textArea = document.createElement("textarea");
+        let textArea = document.createElement("textarea");
         textArea.value = Tls.xmlyJson(chordSpans.map(SongAccess.extractChord));
 
         document.body.appendChild(textArea);
 
         try {
             textArea.select();
-            var successful = document.execCommand('copy');
+            let successful = document.execCommand('copy');
             successful || alert('Oops, unable to copy');
         } catch (err) {
             alert('Oops, unable to copy');
@@ -182,17 +182,17 @@ export var Handler = function(cont: HTMLDivElement)
 
     const pasteFromClipboard = function(text: string): void
     {
-        var chords = ShReflect().validateChordList(text);
+        let chords = ShReflect().validateChordList(text);
         chords && chords.forEach(control.addChord);
     };
 
-    var openSong = function(song: IShmidusicStructure): void
+    let openSong = function(song: IShmidusicStructure): void
     {
         control.clear();
 
         song.staffList
             .forEach(s => {
-                var config: {[k: string]: any} = s.staffConfig;
+                let config: {[k: string]: any} = s.staffConfig;
                 Tls.for(config, (k, v) => $(configCont).find('.holder.' + k).val(v));
 
                 synthSwitch.consumeConfig((s.staffConfig.channelList || [])
@@ -207,9 +207,9 @@ export var Handler = function(cont: HTMLDivElement)
     };
 
     // TODO reset to default before opening. some legacy songs do not have loopTimes/Start
-    var openSongFromJson = function(parsed: {[k: string]: any}): void
+    let openSongFromJson = function(parsed: {[k: string]: any}): void
     {
-        var song: IShmidusicStructure;
+        let song: IShmidusicStructure;
         if (song = ShReflect().validateShmidusic(parsed)) {
             openSong(song);
         } else {
@@ -217,9 +217,9 @@ export var Handler = function(cont: HTMLDivElement)
         }
     };
 
-    var openSongFromBase64 = function(b64Song: string): void
+    let openSongFromBase64 = function(b64Song: string): void
     {
-        var jsonSong = atob(b64Song);
+        let jsonSong = atob(b64Song);
 
         try {
             var parsed = JSON.parse(jsonSong);
@@ -231,9 +231,42 @@ export var Handler = function(cont: HTMLDivElement)
         openSongFromJson(parsed);
     };
 
+    let showTransitionDialog = function()
+    {
+        let chordIndex = control.getFocusIndex();
+        let chord = control.getChordList()[chordIndex];
+        if (chord) {
+            Tls.showInputDialog('Select Channel', 0)
+                .then = (chan) => Tls.showMultiInputDialog(
+                    'Chord #' + chordIndex + ' channel #' + chan + ' transitions:',
+                    {
+                        startPitchBend: Opt(chord.startState).map(s => s[chan]).map(v => v.pitchBend).def(0),
+                        startVolume: Opt(chord.startState).map(s => s[chan]).map(v => v.volume).def(1),
+                        endPitchBend: Opt(chord.finishState).map(s => s[chan]).map(v => v.pitchBend).def(0),
+                        endVolume: Opt(chord.finishState).map(s => s[chan]).map(v => v.volume).def(1),
+                    }
+                )
+                .then = (changedValues) => {
+                    chord.startState = chord.startState || {};
+                    chord.finishState = chord.finishState || {};
+                    chord.startState[chan] = {
+                        pitchBend: changedValues.startPitchBend,
+                        volume: changedValues.startVolume,
+                    };
+                    chord.finishState[chan] = {
+                        pitchBend: changedValues.endPitchBend,
+                        volume: changedValues.endVolume,
+                    };
+
+                    control.deleteFocused(true);
+                    control.addChord(chord);
+                };
+        }
+    };
+
     // separating to focused and global to
     // prevent conflicts with inputs, etc...
-    var globalHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
+    let globalHandlers: { [code: number]: { (e?: KeyboardEvent): void } } = {
         // "o"
         79: (e: KeyboardEvent) => e.ctrlKey && Tls.selectFileFromDisc(openSongFromBase64),
         // "s"
@@ -252,7 +285,7 @@ export var Handler = function(cont: HTMLDivElement)
 
     // TODO: Key Code constants!
     // TODO: change to tuple list to allow multiple mappings per action
-    var focusedHandlers: { [code: number]: key_handler_d } = {
+    let focusedHandlers: { [code: number]: key_handler_d } = {
         // space
         32: e => {
             e.preventDefault();
@@ -319,6 +352,13 @@ export var Handler = function(cont: HTMLDivElement)
         },
         // "c"
         67: (e: KeyboardEvent) => e.ctrlKey && copyToClipboard(),
+        // "D" stands for "D"ialog to change chord
+        68: (e: KeyboardEvent) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                showTransitionDialog();
+            }
+        }
     };
 
     // 48 - zero, 96 - numpad zero
@@ -326,15 +366,15 @@ export var Handler = function(cont: HTMLDivElement)
         focusedHandlers[i + 48] = focusedHandlers[i + 96] = () =>
             playNotes(control.setChannel(i)));
 
-    var hangKeyboardHandlers = (el: HTMLElement) => {
-        var semitoneByKey = PseudoPiano().semitoneByKey;
+    let hangKeyboardHandlers = (el: HTMLElement) => {
+        let semitoneByKey = PseudoPiano().semitoneByKey;
         el.onkeydown = function (keyEvent: KeyboardEvent) {
             if (gui.enablePseudoPianoInputFlag.checked) {
                 if (!keyEvent.ctrlKey && !keyEvent.altKey) {
-                    var semitone: number;
+                    let semitone: number;
                     if (semitone = semitoneByKey[(<any>keyEvent).code]) {
                         keyEvent.preventDefault();
-                        var note = handleNoteOn(semitone, window.performance.now());
+                        let note = handleNoteOn(semitone, window.performance.now());
                         oneShotPlayer.playChord([note]);
                         highlightNotes(control.getFocusedNotes());
                         return;
@@ -342,7 +382,7 @@ export var Handler = function(cont: HTMLDivElement)
                 }
             }
 
-            var handler: key_handler_d;
+            let handler: key_handler_d;
             if (handler = focusedHandlers[keyEvent.keyCode]) {
                 if (playbackInfo) {
                     keyEvent.preventDefault();
@@ -367,23 +407,23 @@ export var Handler = function(cont: HTMLDivElement)
         };
     };
 
-    var handleMidiEvent = function (message: MIDIMessageEvent)
+    let handleMidiEvent = function (message: MIDIMessageEvent)
     {
-        var typeHandlers: {[type: number]: (b1: number, b2: number) => void} = {
+        let typeHandlers: {[type: number]: (b1: number, b2: number) => void} = {
             14: (b1, b2) => console.log('Pitch Bend', ((b2 << 8) + b1 - (64 << 8)) / ((64 << 8))),
             9: (b1,b2) => console.log('Note Off', b1),
         };
         
-        var midiEventType = message.data[0] >> 4;
-        var channel = message.data[0] & 0x0F;
+        let midiEventType = message.data[0] >> 4;
+        let channel = message.data[0] & 0x0F;
 
         if (midiEventType === NOTE_ON && message.data[2] > 0) {
-            var tune = message.data[1];
-            var velocity = message.data[2];
+            let tune = message.data[1];
+            let velocity = message.data[2];
 
             console.log('Note On:', tune, velocity / 127);
 
-            var note = handleNoteOn(tune, message.receivedTime);
+            let note = handleNoteOn(tune, message.receivedTime);
             gui.enablePlayOnKeyDownFlag.checked && oneShotPlayer.playChord([note]);
             /** @debug */
             console.log('playing', note);
@@ -395,14 +435,14 @@ export var Handler = function(cont: HTMLDivElement)
         }
     };
 
-    var hangMidiHandlers = function(): void
+    let hangMidiHandlers = function(): void
     {
-        var gotMidi = function (midiInfo: WebMidi.MIDIAccess)
+        let gotMidi = function (midiInfo: WebMidi.MIDIAccess)
         {
             console.log("Midi Access Success!", midiInfo);
 
-            var inputs = midiInfo.inputs.values();
-            for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
+            let inputs = midiInfo.inputs.values();
+            for (let input = inputs.next(); input && !input.done; input = inputs.next()) {
                 input.value.onmidimessage = handleMidiEvent;
             }
         };
@@ -416,9 +456,9 @@ export var Handler = function(cont: HTMLDivElement)
         }
     };
     
-    var handleHashChange = function()
+    let handleHashChange = function()
     {
-        var hash = new Map(location.hash.substr(1)
+        let hash = new Map(location.hash.substr(1)
             .split('&')
             .map(p => <[string, string]>p.split('=')));
 
@@ -430,14 +470,14 @@ export var Handler = function(cont: HTMLDivElement)
         }
     };
 
-    var init = function()
+    let init = function()
     {
         window.onhashchange = handleHashChange;
 
         handleHashChange();
         hangMidiHandlers();
         gui.piano.onClick(semitone => {
-            var note = handleNoteOn(semitone, window.performance.now());
+            let note = handleNoteOn(semitone, window.performance.now());
             oneShotPlayer.playChord([note]);
             return () => {}; // () => handleNoteOff()
         });

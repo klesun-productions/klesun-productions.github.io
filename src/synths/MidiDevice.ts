@@ -79,7 +79,7 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
                         ma.outputs.forEach(o => midiOutputList.push(o));
                         enabledOutputs = new Set(Tls.range(0, midiOutputList.length));
                         midiAccessGranted = true;
-                        whenAccessGranted = whenAccessGranted.filter(cb => cb() && false);
+                        whenAccessGranted.splice(0).forEach(cb => cb());
                         initControl($controlEl);
                     },
                     e => console.log("Failed To Access Midi, Even Though Your Browser Has The Method...", e)

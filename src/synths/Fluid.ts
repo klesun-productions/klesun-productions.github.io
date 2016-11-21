@@ -118,7 +118,7 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         let next = (i: number) => {
             let c = chords[i];
             c.noteList.forEach((n,i) => {
-                soundFont.fetchSamples(n.tune, channels[n.channel].preset, +n.channel === 9, 0);
+                soundFont.fetchSamples(n.tune, channels[n.channel].preset, +n.channel === 9, 127);
             });
 
             i + 1 < chords.length && !interrupted

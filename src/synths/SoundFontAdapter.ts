@@ -3,7 +3,7 @@
 
 import {seconds_t} from "../DataStructures";
 import {Cls} from "../Cls";
-import {Tls} from "../utils/Tls";
+import {Tls, Opt} from "../utils/Tls";
 import {
     IInstrumentSample, IPresetInstrument, TransformSf2Parse,
     flattenSamples
@@ -14,77 +14,41 @@ import {
 // takes (semitone and preset) and
 // returns (AudioBuffer, frequencyFactor, loopStart, loopEnd)
 
-var Opt = function<T>(value?: T)
+type TFlatPreset = Array<{
+    sampleNumber: number,
+    sampleInfo: ISampleInfo,
+    generators: IGenerator[],
+}>;
+
+export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl: string): ISoundFontAdapter
 {
-    var isPresent = value !== null && value !== undefined;
+    let sampleDirUrl = soundfontDirUrl + '/samples/';
 
-    return {
-        map: <T2>(f: (arg: T) => T2): IOpt<T2> => isPresent
-            ? Opt(f(value))
-            : Opt(null),
-
-        or: (def: T) => isPresent
-            ? value
-            : def,
-
-        is: () => isPresent,
-    };
-};
-
-interface IOpt<T> {
-    map: <T2>(f: (arg: T) => T2) => IOpt<T2>,
-    or: (def: T) => T,
-    is: () => boolean,
-}
-
-export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl: string): ISoundFontAdapter
-{
-    var sampleDirUrl = soundfontDirUrl + '/samples/';
-
-    var drumPreset: Array<{
-        sampleNumber: number,
-        sampleInfo: ISampleInfo,
-        generators: IGenerator[],
-    }>;
-    var presets: {[preset: number]: Array<{
-        sampleNumber: number,
-        sampleInfo: ISampleInfo,
-        generators: IGenerator[],
-    }>};
-    var whenLoaded: Array<() => void> = [];
+    let drumPreset: TFlatPreset;
+    let presets: {[preset: number]: TFlatPreset};
+    let whenLoaded: Array<() => void> = [];
     $.getJSON(soundfontDirUrl + '/sf2parser.out.json', (result) => {
-        var transformed = flattenSamples(TransformSf2Parse(result));
+        let transformed = flattenSamples(TransformSf2Parse(result));
         presets = transformed[0];
-        var drumPresets = transformed[128];
+        let drumPresets = transformed[128];
         drumPreset = drumPresets[+Object.keys(drumPresets)[0]];
         whenLoaded.forEach(c => c());
     });
 
-    var determineCorrectionCents = function(delta: number, generator: IGenerator): number
-    {
-        var result = delta * 100;
-
-        if ('fineTune' in generator) {
-            result += generator.fineTune;
-        }
-
-        if ('coarseTune' in generator) {
-            result += generator.coarseTune * 100;
-        }
-
-        return result;
-    };
+    let determineCorrectionCents = (delta: number, generator: IGenerator) =>
+        delta * 100 + Opt(generator.fineTune).def(0)
+                    + Opt(generator.coarseTune).map(n => n * 100).def(0);
 
     // overwrites global keys with local if any
-    var updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
+    let updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
     {
         return $.extend({}, global, local);
     };
 
     // adds the tuning semi-tones and cents; multiplies whatever needs to be multiplied
-    var combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
+    let combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
     {
-        var result: IGenerator = $.extend({}, local);
+        let result: IGenerator = $.extend({}, local);
 
         result.fineTune = (+result.fineTune || 0) + (+global.fineTune || 0);
         result.coarseTune = (+result.coarseTune || 0) + (+global.coarseTune || 0);
@@ -94,19 +58,21 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
     };
 
     /** @param db - soundfont decibel value */
-    var dBtoKoef = (db: number) => Math.pow(10, db/50); // yes, it is 50, not 10 and not 20 - see /tests/attenToPercents.txt
+    let dBtoKoef = (db: number) => Math.pow(10, db/50); // yes, it is 50, not 10 and not 20 - see /tests/attenToPercents.txt
 
     /** @return value or starts fetching so next time you call it it was ready
      * @nullable */
     let fetchSample = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample[] =>
     {
         isDrum = isDrum || false;
+        velocity = Opt(velocity).def(127);
 
         if (!presets || !drumPreset) {
             whenLoaded.push(() => fetchSample(semitone, preset, isDrum, velocity));
             return [];
         }
 
+        /** @TODO: use different presets for drums too */
         let samples = !isDrum ? presets[preset] : drumPreset;
 
         // TODO: measure performance. it seems to me this guy eats lots of performance
@@ -122,27 +88,31 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
             ;
 
         if (matchingSamples.length === 0) {
-            // matchingSamples = findClosest(semitone, samples);
-            console.log('no sample!', semitone, preset);
+            console.log('no sample!', semitone, preset, isDrum, velocity, {
+                trace: Opt(new Error())
+                    .map(e => (<any>e).stack)
+                    .map(t => t.split('\n'))
+                    .def(['Trace Not Available!'])
+            });
             return [];
         }
 
         return matchingSamples.map(tuple => {
-            var [sam, gen, sampleNumber] = tuple;
-            let sampleSemitone = Opt(gen.overridingRootKey).or(sam.originalPitch);
+            let [sam, gen, sampleNumber] = tuple;
+            let sampleSemitone = Opt(gen.overridingRootKey).def(sam.originalPitch);
 
             let correctionCents = determineCorrectionCents(semitone - sampleSemitone, gen);
             let freqFactor = Math.pow(2, correctionCents / 1200);
 
             // TODO: index rest soundfont samples
-            let indexed = /zunpet/.test(soundfontDirUrl);
+            let indexed = /zunpet/.test(soundfontDirUrl) || /fluid/.test(soundfontDirUrl);
 
-            var sampleUrl = sampleDirUrl + '/' + (indexed ? sampleNumber + '_' : '') + sam.sampleName.replace('#', '%23') + '.ogg';
+            let sampleUrl = sampleDirUrl + '/' + (indexed ? sampleNumber + '_' : '') + sam.sampleName.replace('#', '%23') + '.ogg';
 
             let audioNodes: AudioNode[] = [];
-            if (Opt(gen.initialFilterFc).is()) {
+            if (Opt(gen.initialFilterFc).has()) {
                 // // taking twice CPU time... should cache it somehow
-                // var biquadFilter = Tls.audioCtx.createBiquadFilter();
+                // let biquadFilter = Tls.audioCtx.createBiquadFilter();
                 // biquadFilter.type = 'lowpass';
                 // // don't ask why "0.122322364", i just found two cases that match the equation in polyphone
                 // biquadFilter.frequency.value = (2 ** (generator.initialFilterFc / 1200)) / 0.122322364;
@@ -150,15 +120,15 @@ export var SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
                 // audioNodes.push(biquadFilter);
             }
 
-            let fetched: IFetchedSample = null;
+            let fetched: IFetchedSample = null!;
             Tls.getAudioBuffer(sampleUrl, (resp) => fetched = {
                 buffer: resp,
                 frequencyFactor: freqFactor,
-                isLooped: Opt(gen.sampleModes).map(m => m === 1).or(false),
+                isLooped: Opt(gen.sampleModes).map(m => m === 1).def(false),
                 loopStart: (sam.startLoop + (gen.startloopAddrsOffset || 0)) / sam.sampleRate,
                 loopEnd: (sam.endLoop + (gen.endloopAddrsOffset || 0)) / sam.sampleRate,
                 stereoPan: sam.sampleType,
-                volumeKoef: Opt(gen.initialAttenuation).map(a => dBtoKoef(-a / 10)).or(1) * (velocity / 127),
+                volumeKoef: Opt(gen.initialAttenuation).map(a => dBtoKoef(-a / 10)).def(1) * (velocity / 127),
                 fadeMillis: isDrum ? 10000 : 100, // TODO: update the drum sample format to include generators for instrument and presets
                 audioNodes: audioNodes,
             });

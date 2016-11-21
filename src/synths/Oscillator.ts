@@ -111,7 +111,7 @@ export function Oscillator(audioCtx: AudioContext): ISynth
     {
         /** @TODO: these presets that are generated from oscillator (not from samples), like
          * "Synth Bass", "Stuff from 80 to 100", "Synth Strings" should be played properly here */
-        instrumentDict = Tls.dict(Tls.mapi(instrByChan, (ch, chn): [string, number] => [''+chn, ch.preset]));
+        instrumentDict = Tls.toDict(Tls.mapi(instrByChan, (ch, chn): [string, number] => [''+chn, ch.preset]));
     };
 
     return {

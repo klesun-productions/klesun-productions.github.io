@@ -15,8 +15,17 @@ export interface IShNote {
     velocity?: number;
 }
 
+type IChordState = {
+    [channel: number]: {
+        pitchBend: number, // float, in semitones
+        volume: number, // 1 means max volume, 0 means muted
+    };
+}
+
 export interface IShmidusicChord {
     noteList: Array<IShNote>;
+    startState?: IChordState,
+    finishState?: IChordState,
     // represents float absolute chord start time
     // in note lengths: (1/2, 10/4, 15/3, ...)
     timeFraction?: number;

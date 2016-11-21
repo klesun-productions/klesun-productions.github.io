@@ -34,12 +34,12 @@ export let Admin = function(mainControl: HTMLDivElement)
             console.log(flattenSamples(TransformSf2Parse(<any>sf2parse))));
 
     gui.btns.decodeSoundFont.onclick = () =>
-        Tls.fetchBinaryFile('/unversioned/soundfonts/zunpet.sf2', byteBuffer => {
+        Tls.fetchBinaryFile('/unversioned/soundfonts/fluid.sf2', byteBuffer => {
             var [soundFont, audioDataSamples] = ParseSoundFontFile(byteBuffer);
-            console.log(soundFont);
+            console.log('Decoded Soundfont: ', soundFont);
             Tls.list(audioDataSamples).sequence = (d, i) =>
                 ServApi.save_sample_wav({
-                    sfname: 'zunpet',
+                    sfname: 'fluid',
                     sampleNumber: i,
                     sampleName: d[1].sampleName,
                     sampleRate: d[1].sampleRate,

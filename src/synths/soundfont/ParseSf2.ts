@@ -1,18 +1,18 @@
 
 import {IPreset, IInstrument, EStereoPan, ISampleInfo, IGenerator} from "../SoundFontAdapter";
-import {Tls} from "../../utils/Tls";
+import {Tls, Opt} from "../../utils/Tls";
 
 // overwrites global keys with local if any
-var updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
+let updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
 {
     return $.extend({}, global, local);
 };
 
 // adds the tuning semi-tones and cents; multiplies whatever needs to be multiplied
-var combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
+let combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
 {
-    var result: IGenerator = $.extend({}, local);
-    var dkr = {lo: 0, hi: 127};
+    let result: IGenerator = $.extend({}, local);
+    let dkr = {lo: 0, hi: 127};
 
     result.keyRange = {
         lo: Math.max(
@@ -43,11 +43,48 @@ var combineGenerators = function(global: IGenerator, local: IGenerator): IGenera
     return result;
 };
 
-export var TransformSf2Parse = function(root: ISf2Parser)
+/**
+ * takes a bunch of generators and extends
+ * lowest and highest key ranges to 0 and 127
+ * @mutates
+ */
+let fillBorders = function(generators: IGenerator[])
 {
-    var itemsToGenerator = (items: IItem[]): IGenerator => {
-        var result: {[k: string]: any} = {};
-        for (var item of items) {
+    if (generators.filter(g => !Opt(g.keyRange).has()).length > 0) {
+        // there are generators that are not limited by key range
+        return;
+    }
+
+    let lo = 127;
+    let loGens = Tls.list([]);
+    let hi = 0;
+    let hiGens = Tls.list([]);
+
+    for (let gen of generators) {
+        if (lo > gen.keyRange.lo) {
+            lo = gen.keyRange.lo;
+            loGens = Tls.list([gen]);
+        } else if (gen.keyRange.lo === lo) {
+            loGens.more = gen;
+        }
+
+        if (hi < gen.keyRange.hi) {
+            hi = gen.keyRange.hi;
+            hiGens = Tls.list([gen]);
+        } else if (gen.keyRange.hi === hi) {
+            hiGens.more = gen;
+        }
+    }
+
+    loGens.forEach = g => g.keyRange.lo = 0;
+    hiGens.forEach = g => g.keyRange.hi = 127;
+};
+
+export let TransformSf2Parse = function(root: ISf2Parser)
+{
+    let itemsToGenerator = (items: IItem[]): IGenerator => {
+        let result: {[k: string]: any} = {};
+        for (let item of items) {
             result[item.type] = item.value.amount !== undefined
                 ? item.value.amount
                 : item.value;
@@ -55,34 +92,34 @@ export var TransformSf2Parse = function(root: ISf2Parser)
         return result;
     };
 
-    var getInstrumentInfo = function(instr_idx: number): IInstrument
+    let getInstrumentInfo = function(instr_idx: number): IInstrument
     {
-        var instrumentName = root.instrument[instr_idx].instrumentName;
-        var zone_start_idx = root.instrument[instr_idx].instrumentBagIndex;
+        let instrumentName = root.instrument[instr_idx].instrumentName;
+        let zone_start_idx = root.instrument[instr_idx].instrumentBagIndex;
 
-        var zone_end_idx = instr_idx + 1 < root.instrument.length
+        let zone_end_idx = instr_idx + 1 < root.instrument.length
             ? root.instrument[instr_idx + 1].instrumentBagIndex
             : root.instrumentZone.length;
 
-        var propertyBundles = Tls.range(zone_start_idx, zone_end_idx)
+        let propertyBundles = Tls.range(zone_start_idx, zone_end_idx)
             .map(zone_idx => {
-                var gen_start_idx = root.instrumentZone[zone_idx].instrumentGeneratorIndex;
-                var gen_end_idx = zone_idx + 1 < root['instrumentZone'].length
+                let gen_start_idx = root.instrumentZone[zone_idx].instrumentGeneratorIndex;
+                let gen_end_idx = zone_idx + 1 < root['instrumentZone'].length
                     ? root.instrumentZone[zone_idx + 1].instrumentGeneratorIndex
                     : root.instrumentZoneGenerator.length;
 
-                var items = Tls.range(gen_start_idx, gen_end_idx)
+                let items = Tls.range(gen_start_idx, gen_end_idx)
                     .map(idx => root.instrumentZoneGenerator[idx]);
 
                 return itemsToGenerator(items);
             });
 
-        var generatorApplyToAll = !propertyBundles[0].sampleID
+        let generatorApplyToAll = !propertyBundles[0].sampleID
             ? propertyBundles.shift()
             : null;
 
-        var links: IInstrumentSample[] = [];
-        for (var props of propertyBundles) {
+        let links: IInstrumentSample[] = [];
+        for (let props of propertyBundles) {
             links[props.sampleID] = links[props.sampleID] || {
                 sampleNumber: props.sampleID,
                 info: root.sampleHeader[+props.sampleID],
@@ -91,6 +128,7 @@ export var TransformSf2Parse = function(root: ISf2Parser)
             links[props.sampleID].generators.push(props);
         }
         links = links.filter(a => true); // reset array indexes
+        fillBorders(links.map(l => l.generators).reduce((a,b) => a.concat(b), []));
 
         return {
             instrumentName: instrumentName,
@@ -99,36 +137,36 @@ export var TransformSf2Parse = function(root: ISf2Parser)
         };
     };
 
-    var getSoundFont = function()
+    let getSoundFont = function()
     {
-        var soundfont: soundfont_t = {};
+        let soundfont: soundfont_t = {};
 
-        for (var pres_idx = 0; pres_idx < root.presetHeader.length; ++pres_idx) {
-            var pres = root.presetHeader[pres_idx];
-            var pzone_start_idx = pres.presetBagIndex;
-            var pzone_end_idx = pres_idx + 1 < root.presetHeader.length
+        for (let pres_idx = 0; pres_idx < root.presetHeader.length; ++pres_idx) {
+            let pres = root.presetHeader[pres_idx];
+            let pzone_start_idx = pres.presetBagIndex;
+            let pzone_end_idx = pres_idx + 1 < root.presetHeader.length
                 ? root.presetHeader[pres_idx + 1].presetBagIndex
                 : root.presetZone.length; // -1 ?
 
-            var propertyBundles = Tls.range(pzone_start_idx, pzone_end_idx)
+            let propertyBundles = Tls.range(pzone_start_idx, pzone_end_idx)
                 .map(pzone_idx => {
-                    var gen_start_idx = root.presetZone[pzone_idx].presetGeneratorIndex;
-                    var gen_end_idx = pzone_idx + 1 < root.presetZone.length
+                    let gen_start_idx = root.presetZone[pzone_idx].presetGeneratorIndex;
+                    let gen_end_idx = pzone_idx + 1 < root.presetZone.length
                         ? root.presetZone[pzone_idx + 1].presetGeneratorIndex
                         : root.presetZoneGenerator.length;
 
-                    var items = Tls.range(gen_start_idx, gen_end_idx)
+                    let items = Tls.range(gen_start_idx, gen_end_idx)
                         .map(idx => root.presetZoneGenerator[idx]);
 
                     return itemsToGenerator(items);
                 });
 
-            var generatorApplyToAll = !propertyBundles[0].instrument
+            let generatorApplyToAll = !propertyBundles[0].instrument
                 ? propertyBundles.shift()
                 : null;
 
-            var links: IPresetInstrument[] = [];
-            for (var props of propertyBundles) {
+            let links: IPresetInstrument[] = [];
+            for (let props of propertyBundles) {
                 links[props.instrument] = links[props.instrument] || {
                     info: getInstrumentInfo(+props.instrument),
                     generators: [],
@@ -136,6 +174,7 @@ export var TransformSf2Parse = function(root: ISf2Parser)
                 links[props.instrument].generators.push(props);
             }
             links = links.filter(a => true); // reset array indexes
+            fillBorders(links.map(l => l.generators).reduce((a,b) => a.concat(b), []));
 
             soundfont[pres.bank] = soundfont[pres.bank] || {};
             soundfont[pres.bank][pres.preset] = {
@@ -152,38 +191,37 @@ export var TransformSf2Parse = function(root: ISf2Parser)
 };
 
 // Sf2-Parser lefts null characters when name length is less than 20
-var cleanText = function(rawText: string): string
+let cleanText = function(rawText: string): string
 {
     rawText = rawText + '\u0000';
-    var endIdx = rawText.indexOf('\u0000');
+    let endIdx = rawText.indexOf('\u0000');
     return rawText.substr(0, endIdx);
 };
 
 /**
  * get rid of instruments and presets - keep just single generator - the sample generator
  */
-export var flattenSamples = function(soundFont: soundfont_t): IFlatSoundFont
+export let flattenSamples = function(soundFont: soundfont_t): IFlatSoundFont
 {
-    var flatFont: IFlatSoundFont = {};
+    let flatFont: IFlatSoundFont = {};
 
-    for (var bankN in soundFont) {
+    for (let bankN in soundFont) {
         flatFont[bankN] = {};
-        var presets = soundFont[bankN];
-        for (var presetN in presets) {
+        let presets = soundFont[bankN];
+        for (let presetN in presets) {
             flatFont[bankN][presetN] = [];
-            var preset = presets[presetN];
-            for (var presetInstrument of preset.instruments) {
-                var sampleByName: {[name: string]: IInstrumentSample} = {};
-                for (var instrumentSample of presetInstrument.info.samples) {
-                    instrumentSample.info.sampleName = cleanText(instrumentSample.info.sampleName);
-                    var name = instrumentSample.info.sampleName;
+            let preset = presets[presetN];
+            for (let presetInstrument of preset.instruments) {
+                let sampleByName: {[name: string]: IInstrumentSample} = {};
+                for (let instrumentSample of presetInstrument.info.samples) {
+                    let name = instrumentSample.info.sampleName;
                     sampleByName[name] = sampleByName[name] || {
                         sampleNumber: instrumentSample.sampleNumber,
                         info: instrumentSample.info,
                         generators: [],
                     };
-                    for (var iGen of presetInstrument.generators) {
-                        for (var sGen of instrumentSample.generators) {
+                    for (let iGen of presetInstrument.generators) {
+                        for (let sGen of instrumentSample.generators) {
                             sampleByName[name].generators.push(combineGenerators(
                                 updateGenerator(preset.generatorApplyToAll || {}, iGen),
                                 updateGenerator(presetInstrument.info.generatorApplyToAll, sGen)
@@ -192,7 +230,7 @@ export var flattenSamples = function(soundFont: soundfont_t): IFlatSoundFont
                     }
                 }
 
-                for (var name in sampleByName) {
+                for (let name in sampleByName) {
                     flatFont[bankN][presetN].push({
                         sampleNumber: sampleByName[name].sampleNumber,
                         sampleInfo: sampleByName[name].info,
@@ -213,18 +251,22 @@ export var flattenSamples = function(soundFont: soundfont_t): IFlatSoundFont
  *
  * @param sf2Buf - bytes of an .sf2 file
  */
-export var ParseSoundFontFile = function(sf2Buf: ArrayBuffer): [IFlatSoundFont, [Int16Array, ISampleInfo][]]
+export let ParseSoundFontFile = function(sf2Buf: ArrayBuffer): [IFlatSoundFont, [Int16Array, ISampleInfo][]]
 {
-    var view = new Uint8Array(sf2Buf);
+    let view = new Uint8Array(sf2Buf);
 
-    var parser = new sf2.Parser(view);
+    let parser = new sf2.Parser(view);
     parser.parse();
+
+    for (let sampleHeader of parser.sampleHeader) {
+        sampleHeader.sampleName = cleanText(sampleHeader.sampleName);
+    }
 
     /** @debug */
     console.log(parser);
 
-    var sampleBuffers = parser.sample.map((d,i) => [d, parser.sampleHeader[i]]);
-    delete (<any>parser).sample; // wav files, i usually extract them with a separate soft
+    let sampleBuffers = parser.sample.map((d,i) => [d, parser.sampleHeader[i]]);
+    // delete (<any>parser).sample;
 
     return <any>[flattenSamples(TransformSf2Parse(parser)), sampleBuffers];
 };
@@ -308,7 +350,7 @@ interface ISf2Parser {
 }
 
 // lib required
-declare var sf2: {
+declare let sf2: {
     Parser: {
         prototype: ISf2Parser,
         new (sf2Data: Uint8Array): ISf2Parser,
