@@ -34,5 +34,6 @@ export interface ISynth
      * setPitchBend(1.75, 0) will highen pitch 2 * 1.75 = 3.5 semitones for zeroth channel
      * setPitchBend(-1.01, 4) will lower pitch 2 * 1.01 = 2.02 semitones for fourth channel */
     setPitchBend: (koef: number, channel: number) => void,
+    setVolume: (koef: number, channel: number) => void,
 }
 

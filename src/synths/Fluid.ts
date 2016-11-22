@@ -18,6 +18,7 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 {
     let audioCtx = Tls.audioCtx;
     let pitchShiftInput = <HTMLInputElement>$('<input type="number" step="0.5" value="0"/>')[0];
+    let soundings: Set<AudioBufferSourceNode> = new Set([]);
 
     let channelNodes = Tls.range(0,16).map(i => {
         let node = audioCtx.createGain();
@@ -27,6 +28,7 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
     });
 
     let channels = Tls.range(0,16).map(i => 1 && {preset: 0});
+    let pitchBendByChannel = Tls.range(0,16).map(i => 0);
 
     let sounding: {[chan: number]: Array<AudioBufferSourceNode>} = [];
 
@@ -36,12 +38,15 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
     // when new note is about to be played we need time to load it
     let fallbackOscillator = Oscillator(audioCtx);
 
-    let playSample = function(fetchedSample: IFetchedSample, parentNode: AudioNode): () => void
+    let semitoneToFactor = (s: number) => Math.pow(2, s / 12)
+
+    let playSample = function(fetchedSample: IFetchedSample, channel: number): () => void
     {
         // TODO: uno what i really hate? when two next-standing notes sound very different
         // due to different samples being used. What you should do - blend them: say, you need
         // to play fa, but you got only mi and sol samples - you play them both with 0.33 and 0.67 volumes respectively
 
+        let parentNode: AudioNode = channelNodes[channel];
         let gainNode = audioCtx.createGain();
         let gainValue = MAX_VOLUME * fetchedSample.volumeKoef;
         gainNode.gain.value = gainValue;
@@ -52,26 +57,30 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
             parentNode = node;
         }
 
-        let sample = audioCtx.createBufferSource();
-        sample.playbackRate.value = fetchedSample.frequencyFactor * Math.pow(2, +pitchShiftInput.value / 12);
-        sample.loopStart = fetchedSample.loopStart;
-        sample.loopEnd = fetchedSample.loopEnd;
-        sample.loop = fetchedSample.isLooped;
-        sample.buffer = fetchedSample.buffer;
+        let audioSource = audioCtx.createBufferSource();
+        audioSource.playbackRate.value = fetchedSample.frequencyFactor
+            * semitoneToFactor(pitchBendByChannel[channel])
+            * Math.pow(2, +pitchShiftInput.value / 12);
+
+        audioSource.loopStart = fetchedSample.loopStart;
+        audioSource.loopEnd = fetchedSample.loopEnd;
+        audioSource.loop = fetchedSample.isLooped;
+        audioSource.buffer = fetchedSample.buffer;
 
         if (+fetchedSample.stereoPan === EStereoPan.LEFT) {
             let splitter = audioCtx.createChannelSplitter(2);
-            sample.connect(splitter);
+            audioSource.connect(splitter);
             splitter.connect(gainNode, 0);
         } else if (+fetchedSample.stereoPan === EStereoPan.RIGHT) {
             let splitter = audioCtx.createChannelSplitter(2);
-            sample.connect(splitter);
+            audioSource.connect(splitter);
             splitter.connect(gainNode, 1);
         } else {
-            sample.connect(gainNode);
+            audioSource.connect(gainNode);
         }
 
-        sample.start();
+        audioSource.start();
+        soundings.add(audioSource);
 
         return () => {
             let iterations = 10;
@@ -80,7 +89,8 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
                     gainNode.gain.value = gainValue * (i / iterations);
                     setTimeout(() => fade(i - 1), fetchedSample.fadeMillis / iterations);
                 } else {
-                    sample.stop();
+                    soundings.delete(audioSource);
+                    audioSource.stop();
                 }
             };
             fade(iterations - 1);
@@ -94,7 +104,7 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         let samples = soundFont.fetchSamples(semitone, channels[channel].preset, isDrum, velocity);
 
         if (samples.length > 0) {
-            let offs = samples.map(s => playSample(s, channelNodes[channel]));
+            let offs = samples.map(s => playSample(s, channel));
             return () => offs.forEach(off => off());
         } else {
             return +channel !== 9
@@ -128,6 +138,17 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         chords.length && next(0);
     };
 
+    let setPitchBend = function(semitones: number, chan: number)
+    {
+        let was = pitchBendByChannel[chan];
+        pitchBendByChannel[chan] = semitones;
+
+        // console.log('Pitch Bend!', semitones, chan);
+
+        let factor = semitoneToFactor(semitones - was);
+        Tls.list(soundings).forEach = s => s.playbackRate.value *= factor;
+    };
+
     let init = function($cont: JQuery): void
     {
         $cont.empty();
@@ -142,6 +163,8 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         consumeConfig: consumeConfig,
         analyse: analyse,
         init : init,
-        setPitchBend: (koef, chan) => {}, // TODO: implement
+        // TODO: implement
+        setPitchBend: setPitchBend,
+        setVolume: (koef,chan) => {}, // TODO: implement
     };
 };

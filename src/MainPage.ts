@@ -57,7 +57,7 @@ export let MainPage = function (mainCont: HTMLDivElement)
 
     const control = PlaybackControl($playbackControlCont);
     const player = Player(control);
-    player.anotherNoteHandler = synth.playNote;
+    player.anotherSynth = synth;
     player.anotherNoteHandler = (sem, cha) => piano.highlight(sem, cha);
 
     var playRandom = () => alert("Please, wait till midi names load from ajax!");

@@ -15,11 +15,13 @@ export interface IShNote {
     velocity?: number;
 }
 
-type IChordState = {
-    [channel: number]: {
-        pitchBend: number, // float, in semitones
-        volume: number, // 1 means max volume, 0 means muted
-    };
+export interface IStateChannel {
+    pitchBend: number, // float, in semitones
+    volume: number, // 1 means max volume, 0 means muted
+}
+
+export type IChordState = {
+    [channel: number]: IStateChannel;
 }
 
 export interface IShmidusicChord {

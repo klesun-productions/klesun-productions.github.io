@@ -120,5 +120,6 @@ export function Oscillator(audioCtx: AudioContext): ISynth
         consumeConfig: consumeConfig,
         analyse: chords => {},
         setPitchBend: (koef,chan) => {}, // TODO: implement
+        setVolume: (koef,chan) => {}, // TODO: implement
     };
 };

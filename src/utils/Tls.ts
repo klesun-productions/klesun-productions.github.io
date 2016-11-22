@@ -100,8 +100,9 @@ let xmlyJson = function($var: any, $margin?: string): string
         : JSON.stringify($var);
 };
 
-let list = function<Tel>(elmts: Tel[])
+let list = function<Tel>(iter: Iterable<Tel>)
 {
+    let elmts = [...iter];
     return {
         // get elmts() {
         //     return elmts;
@@ -111,10 +112,13 @@ let list = function<Tel>(elmts: Tel[])
             elmts = [];
             return tmp;
         },
+        map: <Tel2>(f: (v: Tel, i: number) => Tel2) =>
+            list(elmts.map(f)),
+
         set more(v: Tel) {
             elmts.push(v);
         },
-        set forEach(cb: (el: Tel) => void) {
+        set forEach(cb: (el: Tel, i?: number) => void) {
             elmts.forEach(cb);
         },
         /** perform async operations on every element one by one */
@@ -425,24 +429,29 @@ export var Fraction = function(num: number, den: number): IFraction {
     };
 };
 
-export let Opt = function<T>(value: T)
+export let Opt = function<T>(value: T): IOpt<T>
 {
+    let has = () => value !== null &&
+                    value !== undefined;
+    // let exc = (err: Error): any => { throw err; };
+    // exc(new Error('next time check has() before accessing the value'))
+
     return {
-        map: <T2>(f: (arg: T) => T2): IOpt<T2> =>
-            value !== null &&
-            value !== undefined
-                ? Opt(f(value))
-                : Opt(null),
+        map: <T2>(f: (arg: T) => T2): IOpt<T2> => has()
+            ? Opt(f(value))
+            : Opt(null),
 
-        def: (def: T): T =>
-            value !== null &&
-            value !== undefined
-                ? value
-                : def,
+        def: (def: T): T => has()
+            ? value
+            : def,
 
-        has: () =>
-            value !== null &&
-            value !== undefined,
+        has: has,
+
+        set get (cb: (value: T) => void) {
+            if (has()) {
+                cb(value);
+            }
+        },
     };
 };
 
@@ -450,6 +459,7 @@ interface IOpt<T> {
     map: <T2>(f: (arg: T) => T2) => IOpt<T2>,
     def: (def: T) => T,
     has: () => boolean,
+    get: (value: T) => void,
 }
 
 export interface IFraction {

@@ -161,6 +161,7 @@ export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
         analyse: chords => {},
         sendCustom: send,
         setPitchBend: setPitchBend,
+        setVolume: (koef,chan) => {}, // TODO: implement
     };
 };
 

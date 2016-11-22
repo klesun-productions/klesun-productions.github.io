@@ -87,8 +87,8 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
             .reduce((a,b) => a.concat(b))
             ;
 
-        if (matchingSamples.length === 0) {
-            console.log('no sample!', semitone, preset, isDrum, velocity, {
+        if (!isDrum && matchingSamples.length === 0) {
+            console.log('no sample!', semitone, preset, velocity, {
                 trace: Opt(new Error())
                     .map(e => (<any>e).stack)
                     .map(t => t.split('\n'))

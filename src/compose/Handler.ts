@@ -58,9 +58,9 @@ export let Handler = function(cont: HTMLDivElement)
         playbackInfo = null;
     };
 
+    player.anotherSynth = synthSwitch;
     player.anotherNoteHandler = (s,c,v,i) => {
         let interrupts = Tls.cbList([]);
-        interrupts.more = synthSwitch.playNote(s,c,v,i);
         if (gui.enableVisualizedPlaybackFlag.checked) {
             interrupts.more = control.setNoteFocus(s,c,v,i);
             interrupts.more = gui.piano.highlight(s, c);
@@ -73,7 +73,7 @@ export let Handler = function(cont: HTMLDivElement)
         setPlayback: () => {}, setFields: () => {},
         setFileInfo: () => {}, getTempoFactor: () => -100,
     });
-    oneShotPlayer.anotherNoteHandler = synthSwitch.playNote;
+    oneShotPlayer.anotherSynth = synthSwitch;
 
     let highlightNotes = (notes: IShNote[]) => {
         pianoCleans.clear().forEach(c => c());
@@ -140,6 +140,7 @@ export let Handler = function(cont: HTMLDivElement)
         let adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
         let index = Math.max(0, control.getFocusIndex());
+
         player.playSheetMusic(adapted, playbackFinished, index);
 
         playbackInfo = {

@@ -10,6 +10,7 @@ import {Playback} from "./Playback";
 import PlaybackControl from "../views/PlaybackControl";
 import {ISynth} from "../synths/ISynth";
 import {IPlaybackControl} from "../views/PlaybackControl";
+import {Tls} from "../utils/Tls";
 
 type millis_t = number;
 
@@ -18,25 +19,25 @@ interface IConfigConsumer {
 }
 
 /** @param length - float: quarter will be 0.25, semibreve will be 1.0*/
-var toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
+let toMillis = (length: number, tempo: number) => 1000 * length * 60 / (tempo / 4);  // because 1 / 4 = 1000 ms when tempo is 60
 
 export function Player(control: IPlaybackControl)
 {
     type handle_note_t = (sem: number, chan: number, volumeFactor: number, chordIndex: number) => () => void;
 
-    var noteHandlers: handle_note_t[] = [];
+    let synths: ISynth[] = [];
 
-    var toFloat = (fractionString: string) => eval(fractionString);
+    let toFloat = (fractionString: string) => eval(fractionString);
 
     // list of lambdas
-    var toBeInterrupted: {(): void}[] = [];
+    let toBeInterrupted: {(): void}[] = [];
 
     /** @param dontExecute - if not true, the scheduled callback will be called even
      * if interrupted pre#devremenno */
-    var scheduleInterruptable = function(millis: millis_t, taskList: {(): void}[])
+    let scheduleInterruptable = function(millis: millis_t, taskList: {(): void}[])
     {
-        var interrupted = false;
-        var interruptLambda = function() {
+        let interrupted = false;
+        let interruptLambda = function() {
             interrupted = true;
             taskList.forEach(t => t());
         };
@@ -44,36 +45,35 @@ export function Player(control: IPlaybackControl)
         setTimeout(function() {
             if (!interrupted) {
                 taskList.forEach(t => t());
-                var index = toBeInterrupted.indexOf(interruptLambda);
+                let index = toBeInterrupted.indexOf(interruptLambda);
                 toBeInterrupted.splice(index, 1);
             }
         }, millis);
     };
 
-    var playChord = function(notes: IShNote[], tempo?: number, index?: number)
+    let playChord = function(notes: IShNote[], tempo?: number, index?: number)
     {
         tempo = tempo || 120;
         index = index || -1;
 
-        notes.forEach(function(noteJs)
-        {
-            var length = toFloat(noteJs.length + '');
-            var offList = noteHandlers.map(h => h(
+        Tls.list(notes).forEach = (noteJs) => {
+            let length = toFloat(noteJs.length + '');
+            let offList = synths.map(s => s.playNote(
                 noteJs.tune, noteJs.channel, noteJs.velocity || 127, index
             ));
 
             scheduleInterruptable(toMillis(length, tempo), [() => offList.forEach(c => c())]);
-        });
+        };
     };
 
-    var tabSwitched: {(e: any): void} = null;
-    var currentPlayback: IPlayback = null;
-    var stopSounding = function() {
+    let tabSwitched: {(e: any): void} = null;
+    let currentPlayback: IPlayback = null;
+    let stopSounding = function() {
         toBeInterrupted.forEach(c => c());
         toBeInterrupted.length = 0;
     };
 
-    var playSheetMusic = function (
+    let playSheetMusic = function (
         sheetMusic: IGeneralStructure,
         whenFinished?: () => void,
         startAt?: number)
@@ -83,9 +83,10 @@ export function Player(control: IPlaybackControl)
 
         currentPlayback && currentPlayback.pause();
 
-        var playback = currentPlayback = Playback(
+        let playback = currentPlayback = Playback(
             sheetMusic,
             playChord,
+            synths,
             whenFinished,
             control.getTempoFactor() || 1,
             stopSounding
@@ -95,7 +96,7 @@ export function Player(control: IPlaybackControl)
 
         control.setPlayback(playback);
 
-        startAt && playback.slideTo(startAt);
+        playback.slideTo(startAt);
 
         // time-outing to give it time to pre-load the first chord
         // samples. at least on my pc it will be in time =P
@@ -112,10 +113,19 @@ export function Player(control: IPlaybackControl)
         window.onbeforeunload = playback.pause;
     };
     
-    var stop = () => {
+    let stop = () => {
         currentPlayback && currentPlayback.pause();
         stopSounding();
         return currentPlayback && currentPlayback.getChordIndex();
+    };
+
+    let dullSynth = (h: handle_note_t): ISynth => 1 && {
+        playNote: h,
+        init: ($cont) => {},
+        setPitchBend: () => {},
+        setVolume: () => {},
+        consumeConfig: (programs) => {},
+        analyse: (chords) => {},
     };
 
     // this class shouldn't be instanciated more than once, right?
@@ -125,7 +135,10 @@ export function Player(control: IPlaybackControl)
     return {
         playSheetMusic: playSheetMusic,
         set anotherNoteHandler (h: handle_note_t) {
-            noteHandlers.push(h);
+            synths.push(dullSynth(h));
+        },
+        set anotherSynth (h: ISynth) {
+            synths.push(h);
         },
         stop: stop,
         playChord: playChord,

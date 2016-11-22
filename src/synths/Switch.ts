@@ -21,6 +21,7 @@ export let Switch = function(
     let channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
     
     let pitchBendByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 0);
+    let volumeByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 0);
 
     let synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(Tls.audioCtx),
@@ -38,6 +39,7 @@ export let Switch = function(
         choosen.consumeConfig(channels);
 
         Tls.fori(pitchBendByChannel, (chan, koef) => choosen.setPitchBend(koef, chan));
+        Tls.fori(volumeByChannel, (chan, koef) => choosen.setVolume(koef, chan));
     };
 
     Object.keys(synths).forEach(s => $(dropdownEl)
@@ -51,7 +53,7 @@ export let Switch = function(
 
     let playNote = (sem: number, chan: number, volumeFactor: number, chordIndex: number) =>
         presetListControl.enabledChannels().has(chan)
-            ?  synths[$(dropdownEl).val()].playNote(sem, chan, volumeFactor, chordIndex)
+            ? synths[$(dropdownEl).val()].playNote(sem, chan, volumeFactor, chordIndex)
             : () => {};
 
     let analyse = (chords: IShmidusicChord[]) => synths[$(dropdownEl).val()].analyse(chords);
@@ -77,6 +79,10 @@ export let Switch = function(
         setPitchBend: (koef, chan) => {
             pitchBendByChannel[chan] = koef;
             synths[$(dropdownEl).val()].setPitchBend(koef, chan);
+        },
+        setVolume: (koef, chan) => {
+            volumeByChannel[chan] = koef;
+            synths[$(dropdownEl).val()].setVolume(koef, chan);
         },
         init: () => {},
         analyse: analyse,

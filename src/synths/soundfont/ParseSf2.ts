@@ -92,7 +92,7 @@ export let TransformSf2Parse = function(root: ISf2Parser)
         return result;
     };
 
-    let getInstrumentInfo = function(instr_idx: number): IInstrument
+    let getInstrumentInfo = function(instr_idx: number, extendKeyRanges: boolean): IInstrument
     {
         let instrumentName = root.instrument[instr_idx].instrumentName;
         let zone_start_idx = root.instrument[instr_idx].instrumentBagIndex;
@@ -128,7 +128,7 @@ export let TransformSf2Parse = function(root: ISf2Parser)
             links[props.sampleID].generators.push(props);
         }
         links = links.filter(a => true); // reset array indexes
-        fillBorders(links.map(l => l.generators).reduce((a,b) => a.concat(b), []));
+        extendKeyRanges && fillBorders(links.map(l => l.generators).reduce((a,b) => a.concat(b), []));
 
         return {
             instrumentName: instrumentName,
@@ -147,6 +147,7 @@ export let TransformSf2Parse = function(root: ISf2Parser)
             let pzone_end_idx = pres_idx + 1 < root.presetHeader.length
                 ? root.presetHeader[pres_idx + 1].presetBagIndex
                 : root.presetZone.length; // -1 ?
+            let extendKeyRanges = pres.bank === 0; // no for drums, since they are not pitchable
 
             let propertyBundles = Tls.range(pzone_start_idx, pzone_end_idx)
                 .map(pzone_idx => {
@@ -168,13 +169,13 @@ export let TransformSf2Parse = function(root: ISf2Parser)
             let links: IPresetInstrument[] = [];
             for (let props of propertyBundles) {
                 links[props.instrument] = links[props.instrument] || {
-                    info: getInstrumentInfo(+props.instrument),
+                    info: getInstrumentInfo(+props.instrument, extendKeyRanges),
                     generators: [],
                 };
                 links[props.instrument].generators.push(props);
             }
             links = links.filter(a => true); // reset array indexes
-            fillBorders(links.map(l => l.generators).reduce((a,b) => a.concat(b), []));
+            extendKeyRanges && fillBorders(links.map(l => l.generators).reduce((a,b) => a.concat(b), []));
 
             soundfont[pres.bank] = soundfont[pres.bank] || {};
             soundfont[pres.bank][pres.preset] = {
