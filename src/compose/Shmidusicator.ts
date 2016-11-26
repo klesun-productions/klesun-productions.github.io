@@ -1,7 +1,7 @@
 /// <reference path="../references.ts" />
 
 import * as Ds from "../DataStructures";
-import {Tls, IFraction} from "../utils/Tls";
+import {Tls, IFraction, Opt, IOpt} from "../utils/Tls";
 import {Fraction} from "../utils/Tls";
 import {IShChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
@@ -20,14 +20,17 @@ var lengthOptions = [
     // quarter
     fr(1, 4), fr(1, 12), fr(3, 8), fr(7, 16),
     // 1/8 does not have triplet and two dots
-    fr(1, 8), fr(1, 24), fr(3, 16), // TODO: apparently needs triplet...
+    fr(1, 8), fr(1, 24), fr(3, 16),
     // 1/16 does not need triplet and dots
     fr(1,16),
     // so does 1/32
     fr(1,32)
 ].sort((a,b) => b.float() - a.float()); // greater first;
 
-var isValidLength = (length: number) => +length.toFixed(8) === 0 || lengthOptions.some(o => roundNoteLength(o.float()) === roundNoteLength(length));
+let findLength = (length: number): IOpt<IFraction> =>
+    Opt(lengthOptions.filter(o => roundNoteLength(o.float()) === roundNoteLength(length))[0]);
+
+var isValidLength = (length: number) => +length.toFixed(8) == 0 || findLength(length).has();
 
 var findMinSuperPart = (subpart: number) =>
     lengthOptions.filter(o => o.float() <= subpart).slice(-1)[0] || fr(2, 1);
@@ -36,9 +39,12 @@ var findMaxSubPart = (superpart: number) =>
     lengthOptions.filter(o => o.float() <= superpart)[0] || fr(0, 1);
 
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
-export default class Shmidusicator
-{
-    static generalToShmidusic(source: Ds.IGeneralStructure): Ds.IShmidusicStructure
+export let Shmidusicator = {
+
+    getLengthOptions: () => lengthOptions,
+    findLength: findLength,
+
+    generalToShmidusic: function(source: Ds.IGeneralStructure): Ds.IShmidusicStructure
     {
         var timedChords: ITimedShChord[] = JSON.parse(JSON.stringify(source.chordList));
         var pausedChords: IShmidusicChord[] = [];
@@ -122,13 +128,13 @@ export default class Shmidusicator
         }
 
         return result;
-    };
+    },
 
     /**
      * touhou songs got some unexplainable mess:
      * some notes start/end slightly earlier/later but their sum always have valid length
      */
-    static fixChordLengths(chords: Ds.IShmidusicChord[], tactSize: number): void
+    fixChordLengths: function(chords: Ds.IShmidusicChord[], tactSize: number): void
     {
         var position = 0;
         for (var i = 0; i < chords.length - 1; ++i) {
@@ -182,10 +188,10 @@ export default class Shmidusicator
         }
 
         // TODO: fix lengths in whole tact, not just in two note next to each other
-    };
+    },
 
     /** @unused */
-    static putPauses(notes: Array<Ds.IMidJsNote>, division: number): Array<Ds.IShmidusicChord>
+    putPauses: function(notes: Array<Ds.IMidJsNote>, division: number): Array<Ds.IShmidusicChord>
     {
         if (notes.length < 1) {
             return [];
@@ -248,15 +254,10 @@ export default class Shmidusicator
         });
 
         return chordList;
-    }
-
-    static getLengthOptions(): Array<IFraction>
-    {
-        return lengthOptions;
-    }
+    },
 
     /** @return - guessed fraction length of the note */
-    static guessLength(floatLength: number): IFraction
+    guessLength: function(floatLength: number): IFraction
     {
         var lengthByDistance = lengthOptions.reduce((sum, len) => {
             sum[Math.abs(floatLength - len.float())] = len;
@@ -264,15 +265,15 @@ export default class Shmidusicator
         }, <{[d: number]: IFraction}>{});
 
         return lengthByDistance[Object.keys(lengthByDistance).map(l => +l).sort((a,b) => a - b)[0]];
-    }
+    },
 
-    static isValidLength(length: number): boolean
+    isValidLength: function(length: number): boolean
     {
         return isValidLength(length);
-    }
+    },
 
     /** @param shmidusicJson - json in shmidusic project format */
-    static generalizeShmidusic = function (shmidusicJson: Ds.IShmidusicStructure): Ds.IGeneralStructure
+    generalizeShmidusic: function (shmidusicJson: Ds.IShmidusicStructure): Ds.IGeneralStructure
     {
         var staff = shmidusicJson['staffList'][0];
         
@@ -312,5 +313,5 @@ export default class Shmidusicator
                 noteCount: -100
             }
         };
-    };
+    },
 };

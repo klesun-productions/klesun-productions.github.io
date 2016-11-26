@@ -33,7 +33,7 @@ export function TactMeasurer(tactSize: number)
     };
 };
 
-export let extractNote = (n: HTMLCanvasElement): IShNote => 1 && {
+export let extractNote = (n: HTMLElement): IShNote => 1 && {
     tune: +$(n).attr('data-tune'),
     channel: +$(n).attr('data-channel'),
     length: +$(n).attr('data-length')

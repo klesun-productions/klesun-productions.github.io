@@ -4,8 +4,8 @@ import MIDIMessageEvent = WebMidi.MIDIMessageEvent;
 import {SongAccess} from "./Painter";
 import {IShNote} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
-import Shmidusicator from "./Shmidusicator";
 import {IShmidusicStructure} from "../DataStructures";
+import {Shmidusicator} from "./Shmidusicator";
 import ShReflect from "../Reflect";
 import {Tls, Opt} from "../utils/Tls";
 import {Player} from "../player/Player";
@@ -412,7 +412,7 @@ export let Handler = function(cont: HTMLDivElement)
     {
         let typeHandlers: {[type: number]: (b1: number, b2: number) => void} = {
             14: (b1, b2) => console.log('Pitch Bend', ((b2 << 8) + b1 - (64 << 8)) / ((64 << 8))),
-            9: (b1,b2) => console.log('Note Off', b1),
+            9: (b1,b2) => {}, // console.log('Note Off', b1),
         };
         
         let midiEventType = message.data[0] >> 4;
@@ -422,12 +422,9 @@ export let Handler = function(cont: HTMLDivElement)
             let tune = message.data[1];
             let velocity = message.data[2];
 
-            console.log('Note On:', tune, velocity / 127);
-
             let note = handleNoteOn(tune, message.receivedTime);
             gui.enablePlayOnKeyDownFlag.checked && oneShotPlayer.playChord([note]);
-            /** @debug */
-            console.log('playing', note);
+
             highlightNotes(control.getFocusedNotes());
         } else {
             midiEventType in typeHandlers

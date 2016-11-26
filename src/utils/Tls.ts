@@ -452,14 +452,36 @@ export let Opt = function<T>(value: T): IOpt<T>
                 cb(value);
             }
         },
+
+        uni: <T2>(some: (v: T) => T2, none: () => T2) => has()
+            ? some(value)
+            : none(),
+
+        err: (none) => {
+            if (has()) {
+                return {
+                    set els (some: (value: T) => void) {some(value);},
+                };
+            } else {
+                none();
+                return {
+                    set els (some: (value: T) => void) {},
+                };
+            }
+        },
     };
 };
 
-interface IOpt<T> {
+export interface IOpt<T> {
     map: <T2>(f: (arg: T) => T2) => IOpt<T2>,
     def: (def: T) => T,
     has: () => boolean,
     get: (value: T) => void,
+    uni: <T2>(
+        some: (v: T) => T2,
+        none: () => T2
+    ) => T2,
+    err: (none: () => void) => {els: (value: T) => void},
 }
 
 export interface IFraction {

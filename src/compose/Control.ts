@@ -5,31 +5,34 @@
 // to edit content of Painter.ts
 
 import * as Ds from "../DataStructures";
-import Shmidusicator from "./Shmidusicator";
+import {Shmidusicator} from "./Shmidusicator";
 import {determinePosition, SongAccess, extractNote, CanvasProvider} from "./Painter";
 import {TactMeasurer} from "./Painter";
 import {IShNote} from "../DataStructures";
-import {Tls} from "../utils/Tls";
+import {Tls, IOpt, Opt, IFraction} from "../utils/Tls";
+import {Adp} from "../Adp";
 
 export function Control($chordListCont: JQuery, configCont: HTMLElement)
 {
-    var canvaser = CanvasProvider(3);
+    let canvaser = CanvasProvider(3);
 
-    var $parentEl = $chordListCont.parent();
-    var chordListCont = $chordListCont[0];
+    let $parentEl = $chordListCont.parent();
+    let chordListCont = $chordListCont[0];
 
-    var scrollToIfNeeded = function(chordEl: HTMLElement)
+    let log = (msg: string, data: any) => console.log('# Score control message: ', msg, data);
+
+    let scrollToIfNeeded = function(chordEl: HTMLElement)
     {
         /** @TODO: it does not work */
 
-        var chordRect = chordEl.getBoundingClientRect();
-        var scrollPaneRect = $parentEl[0].getBoundingClientRect(); 
+        let chordRect = chordEl.getBoundingClientRect();
+        let scrollPaneRect = $parentEl[0].getBoundingClientRect();
 
-        var isVisible = chordRect.top >= scrollPaneRect.top &&
+        let isVisible = chordRect.top >= scrollPaneRect.top &&
             chordRect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
 
         if (!isVisible) {
-            var top = $(chordEl).offset().top -
+            let top = $(chordEl).offset().top -
                 $parentEl.offset().top +
                 $parentEl.scrollTop();
 
@@ -37,18 +40,18 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         }
     };
 
-    var isHighlyLoaded = function()
+    let isHighlyLoaded = function()
     {
         return chordListCont.childNodes.length > 1000;
     };
 
     /** @return the focused index after applying bounds */
-    var setChordFocus = function(index: number): number
+    let setChordFocus = function(index: number): number
     {
-        var $chords = $chordListCont.find(' > .chordSpan');
+        let $chords = $chordListCont.find(' > .chordSpan');
         index = Math.min($chords.length - 1, Math.max(-1, index));
 
-        var chord = $chords[index];
+        let chord = $chords[index];
         chord && scrollToIfNeeded(chord);
 
         $chordListCont.find('.focused .pointed').removeClass('pointed');
@@ -58,15 +61,15 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         return index;
     };
 
-    var setNoteFocus = function(sem: number, chan: number, velocity: number, chordIndex: number)
+    let setNoteFocus = function(sem: number, chan: number, velocity: number, chordIndex: number)
     {
-        var perform = function() {
-            var chord = $chordListCont.find(' > .chordSpan')[chordIndex];
+        let perform = function() {
+            let chord = $chordListCont.find(' > .chordSpan')[chordIndex];
             chord && scrollToIfNeeded(chord);
 
             setChordFocus(chordIndex);
 
-            var $note = $(chord).find('.noteCanvas[data-tune="' + sem + '"][data-channel="' + chan + '"]');
+            let $note = $(chord).find('.noteCanvas[data-tune="' + sem + '"][data-channel="' + chan + '"]');
             $note.addClass('sounding');
 
             return () => { /*$(chord).removeClass('focused'); */ $note.removeClass('sounding'); };
@@ -80,17 +83,17 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
     };
 
     /** @return array with the newly pointed note or empty array */
-    var pointNextNote = function(): Ds.IShNote[]
+    let pointNextNote = function(): Ds.IShNote[]
     {
-        var getOrder = (note: any) =>
+        let getOrder = (note: any) =>
             + +$(note).attr('data-tune') * 16
             + +$(note).attr('data-channel');
 
-        var notes = $chordListCont.find('.focused .noteCanvas').toArray()
+        let notes = $chordListCont.find('.focused .noteCanvas').toArray()
             .sort((a,b) => getOrder(a) - getOrder(b));
 
-        var pointed = $chordListCont.find('.focused .pointed')[0];
-        var index = pointed ? notes.indexOf(pointed) + 1 : 0;
+        let pointed = $chordListCont.find('.focused .pointed')[0];
+        let index = pointed ? notes.indexOf(pointed) + 1 : 0;
 
         $chordListCont.find('.pointed').removeClass('pointed');
         if (index < notes.length) {
@@ -101,9 +104,9 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         return [];
     };
 
-    var recalcTacts = function()
+    let recalcTacts = function()
     {
-        var tactSize = $(configCont).find('.holder.tactSize').val() || 1.0;
+        let tactSize = $(configCont).find('.holder.tactSize').val() || 1.0;
 
         $chordListCont.find('.tactNumberCont').html('&nbsp;');
         $chordListCont.find(' > .chordSpan')
@@ -111,12 +114,12 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
             .removeClass('doesNotFitIntoTact')
             .removeAttr('data-rest');
 
-        var tacter = TactMeasurer(tactSize);
-        var $chords = $chordListCont.find(' > .chordSpan').toArray().map(c => $(c));
+        let tacter = TactMeasurer(tactSize);
+        let $chords = $chordListCont.find(' > .chordSpan').toArray().map(c => $(c));
 
         $chords.forEach(($span: JQuery) =>
         {
-            var chordLength = $span.find('.noteCanvas').toArray()
+            let chordLength = $span.find('.noteCanvas').toArray()
                 .map(n => $(n).attr('data-length')).sort()
                 [0] || 0;
 
@@ -131,8 +134,8 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         });
     };
 
-    var tactRecalcRequested = false;
-    var requestRecalcTacts = () => {
+    let tactRecalcRequested = false;
+    let requestRecalcTacts = () => {
         if (!tactRecalcRequested) {
             tactRecalcRequested = true;
             setTimeout(() => {
@@ -142,17 +145,51 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         }
     };
 
-    var getDotCount = (numerator: number) => (<any>Math).log2(+numerator + 1) - 1;
-
-    var addNoteToChord = function(note: IShNote, $chord: JQuery): HTMLElement
+    let getCleanLength = function(num: number, den: number)
     {
-        var selector = '.noteCanvas' +
+        // num and den ar supposedly the smallest possible numbers to
+        // describe fraction, for example they can not be 4/2 or 2/6
+        den = den % 3 === 0 ? den / 3 : den;
+        let stepsOverSemibreve = Math.log2(num);
+        if (stepsOverSemibreve % 1 === 0 &&
+            stepsOverSemibreve > 0
+        ) {
+            return num / den;
+        } else {
+            return (1 + num) / den / 2;
+        }
+    };
+
+    let reduce2 = function(num: number) {
+        while (num && num % 2 === 0) {
+            num /= 2;
+        }
+        return num;
+    };
+
+    let getDotCount = (numerator: number) =>
+        Math.log2(reduce2(+numerator) + 1) - 1;
+
+    let setDotCount = function(num: number, den: number, dots: number): number
+    {
+        let cleanLength = getCleanLength(num, den);
+        let result = 0;
+        for (let i = 0; i < dots + 1; ++i) {
+            result += cleanLength;
+            cleanLength /= 2;
+        }
+        return result;
+    };
+
+    let addNoteToChord = function(note: IShNote, $chord: JQuery): HTMLElement
+    {
+        let selector = '.noteCanvas' +
             '[data-tune="' + note.tune + '"]' +
             '[data-channel="' + note.channel + '"]';
 
         if ($chord.children(selector).length === 0) {
-            var [ivoryIndex, sign] = determinePosition(note.tune, 0);
-            var noteDom = <HTMLCanvasElement>$('<div class="noteDom noteCanvas"></div>')
+            let [ivoryIndex, sign] = determinePosition(note.tune, 0);
+            let noteDom = <HTMLCanvasElement>$('<div class="noteDom noteCanvas"></div>')
                 .attr('data-tune', note.tune)
                 .attr('data-channel', note.channel)
                 .attr('data-length', note.length)
@@ -160,24 +197,18 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
                 ;
             noteDom.style.setProperty('--ivory-index', ivoryIndex + '');
 
-            var guessedLength = Shmidusicator.guessLength(note.length);
-            var [num, den] = [guessedLength.num(), guessedLength.den()];
-            if (den % 3 === 0) {
-                den /= 3;
-                var tupletDenominator = 3;
-            } else {
-                var tupletDenominator = 1;
-            }
+            let guessedLength = Shmidusicator.guessLength(note.length);
+            let [num, den] = [guessedLength.num(), guessedLength.den()];
 
-            var dots = getDotCount(num);
+            let dots = getDotCount(num);
 
             $(noteDom).append([
                 $('<div class="signHolder"/>')
                     .attr('data-sign', sign),
                 $('<div class="tupletDenominatorHolder"/>')
-                    .attr('data-tuplet-denominator', tupletDenominator),
+                    .attr('data-tuplet-denominator', den % 3 === 0 ? 3 : 1),
                 $('<div class="noteHolder"/>')
-                    .attr('data-clean-length', (1 + dots) / den)
+                    .attr('data-clean-length', getCleanLength(num, den))
                     .append([
                         $('<div class="dotsHolder"/>')
                             .attr('data-dots', '.'.repeat(dots)),
@@ -194,14 +225,14 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         }
     };
 
-    var changeNote = function(note: HTMLCanvasElement, property: string, value: string)
+    let changeNote = function(note: HTMLElement, property: string, value: string)
     {
-        var $chordEl = $(note).parent();
-        var wasPointed = $(note).hasClass('pointed');
-        var noteData = extractNote(note);
+        let $chordEl = $(note).parent();
+        let wasPointed = $(note).hasClass('pointed');
+        let noteData = extractNote(note);
         note.remove();
         (<any>noteData)[property] = value;
-        var newNoteEl = addNoteToChord(noteData, $chordEl);
+        let newNoteEl = addNoteToChord(noteData, $chordEl);
         if (wasPointed) {
             $(newNoteEl).addClass('pointed');
         }
@@ -211,11 +242,11 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
     /** @unused */
-    var addChord = function(chord: Ds.IShmidusicChord): number
+    let addChord = function(chord: Ds.IShmidusicChord): number
     {
-        var index = $chordListCont.find('.focused').index() + 1;
+        let index = $chordListCont.find('.focused').index() + 1;
 
-        var $chord = $('<span class="chordSpan"></span>')
+        let $chord = $('<span class="chordSpan"></span>')
             .append($('<span class="tactNumberCont"></span>'))
             .append(Tls.digt(chord.startState || {}).s
                 .map((state, chan) => $('<div class="transitionState start"/>')
@@ -250,7 +281,7 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
     };
 
     /** adds a note to the chord element _at_ the index. or to the end, if index not provided */
-    var addNote = function(note: Ds.IShNote, inNewChord: boolean): void
+    let addNote = function(note: Ds.IShNote, inNewChord: boolean): void
     {
         if (!inNewChord || $chordListCont.find('.focused .pointed').length) {
             addNoteToChord(note, $chordListCont.find('.focused'));
@@ -260,10 +291,10 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
     };
 
     /** @return the focused index after applying bounds */
-    var deleteFocused = function(backspace: boolean): void
+    let deleteFocused = function(backspace: boolean): void
     {
         if (!$chordListCont.find('.focused .pointed').remove().length) {
-            var chordIndex = $chordListCont.find('.focused').index();
+            let chordIndex = $chordListCont.find('.focused').index();
             $chordListCont.find('.focused').remove();
 
             backspace && --chordIndex;
@@ -272,34 +303,53 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         requestRecalcTacts();
     };
 
-    var multiplyNoteLength = (note: HTMLCanvasElement, factor: number) =>
-        changeNote(note, 'length', +$(note).attr('data-length') * factor + '');
+    let flattenOpts = <T>(opts: IOpt<T>[]): IOpt<T[]> =>
+        opts.every(o => o.has())
+            ? Opt(opts.map(o => o.def(null)))
+            : Opt(null);
 
-    var multiplyLength = function(factor: number)
-    {
-        var okLength = (n: HTMLCanvasElement) => Shmidusicator.isValidLength(+$(n).attr('data-length') * factor);
-
-        var $chord = $chordListCont.find('.focused'),
-            note: HTMLCanvasElement;
-
-        if (note = <HTMLCanvasElement>$chord.find('.pointed')[0]) {
-            okLength(note) &&
-            multiplyNoteLength(note, factor);
+    // i'm sorry
+    let mult = (num: number, den: number, factor: number) => {
+        let dots = getDotCount(num);
+        if (dots > 0 && (factor === 2/3 || factor === 1.5)) {
+            dots += factor === 1.5 ? 1 : -1;
+            return setDotCount(num, den, dots);
         } else {
-            var notes = $chord.children('.noteCanvas').toArray();
-            notes.every(okLength) &&
-            notes.forEach(n => multiplyNoteLength(n, factor));
+            return num * factor / den;
         }
-
-        requestRecalcTacts();
     };
 
-    var setChannel = function(ch: number): IShNote[]
+    let multiplyLength = function(factor: number)
+    {
+        let $chord = $chordListCont.find('.focused');
+        let noteDom = $chord.find('.pointed')[0];
+        let noteDoms = noteDom ? [noteDom] : $chord.children('.noteDom').toArray();
+
+        let noteMaybes = noteDoms
+            .map(extractNote)
+            .map(Adp.Note);
+
+        flattenOpts(noteMaybes)
+            .err(() => log('some of notes have invalid length', noteMaybes))
+            .els = notes => {
+                let foreseen = notes.map(n => mult(n.num(), n.den(), factor));
+                if (foreseen.every(Shmidusicator.isValidLength)) {
+                    Tls.list(notes).forEach = (n, i) =>
+                        changeNote(noteDoms[i], 'length', mult(n.num(), n.den(), factor) + '');
+
+                    requestRecalcTacts();
+                } else {
+                    log('one of notes will surpass bounds if multiplied', foreseen);
+                }
+            };
+    };
+
+    let setChannel = function(ch: number): IShNote[]
     {
         ch = Math.max(0, Math.min(15, ch));
 
-        var $chord = $chordListCont.find('.focused'),
-            note: HTMLCanvasElement;
+        let $chord = $chordListCont.find('.focused'),
+            note: HTMLElement;
 
         if (note = <HTMLCanvasElement>$chordListCont.find('.focused .pointed')[0]) {
             // change channel of the note
@@ -313,11 +363,11 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         return [];
     };
 
-    var chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;
+    let chordsPerRow = () => ($chordListCont.width() / canvaser.getChordWidth()) | 0;
 
-    var getChordList = () => $chordListCont.find(' > .chordSpan').toArray().map(SongAccess.extractChord);
+    let getChordList = () => $chordListCont.find(' > .chordSpan').toArray().map(SongAccess.extractChord);
 
-    var getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
+    let getFocusedNotes = () => $chordListCont.find('.focused .pointed').length
         ? $chordListCont.find('.focused .pointed').toArray().map(canvaser.extractNote)
         : $chordListCont.find('.focused .noteCanvas').toArray().map(canvaser.extractNote);
 
@@ -329,7 +379,7 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         moveChordFocus: (sign: number) =>
             setChordFocus($chordListCont.find('.focused').index() + sign),
         moveChordFocusRow: (sign: number) => {
-            var index = $chordListCont.find('.focused').index() + sign * chordsPerRow();
+            let index = $chordListCont.find('.focused').index() + sign * chordsPerRow();
             if (index > -1 && index < $chordListCont.find(' > .chordSpan').length) {
                 setChordFocus(index);
             }

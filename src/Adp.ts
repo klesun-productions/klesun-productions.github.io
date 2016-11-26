@@ -1,5 +1,7 @@
 
 import {IShmidusicChord, IShNote} from "./DataStructures";
+import {IOpt} from "./utils/Tls";
+import {Shmidusicator} from "./compose/Shmidusicator";
 
 /**
  * "Adp" stands for "Adapters"
@@ -51,4 +53,12 @@ export var Adp = {
             setLength: setLength,
         };
     },
+
+    /** matches only note with valid academic length: 1/4, 1/6, 1/16, 3/4... */
+    Note: (n: IShNote) => Shmidusicator.findLength(n.length)
+        .map(frac => 1 && {
+            n: n,
+            num: frac.num,
+            den: frac.den,
+        }),
 };
