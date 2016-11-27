@@ -26,7 +26,12 @@ const str2ab = function(str: string) {
 var getLength = (c: IShmidusicChord) => Math.min.apply(null, c.noteList.map(n => n.length));
 
 var toTicks = (academic: number) =>
-    academic * TICKS_PER_BEAT * 4; // likely correct
+    Math.round(academic * TICKS_PER_BEAT * 4); // likely correct
+
+interface IEvent {
+    eventType: 'noteOn' | 'noteOff',
+    addEvent: (t: number) => void,
+}
 
 export function EncodeMidi(song: IShmidusicStructure): ArrayBuffer // sequence of bytes
 {
@@ -35,38 +40,52 @@ export function EncodeMidi(song: IShmidusicStructure): ArrayBuffer // sequence o
     song.staffList[0].staffConfig.channelList.forEach(chan =>
         configTrack.setInstrument(chan.channelNumber, chan.instrument));
 
-    var eventsByTime: {[t: number]: {(deltaTicks: number): void}[]} = [];
+    var eventsByTime: {[t: number]: IEvent[]} = [];
 
     var noteTrack = new Midi.Track();
     var time = 0;
     song.staffList[0].chordList.forEach(chord => {
         chord.noteList.forEach(note => {
-            eventsByTime[time] = time in eventsByTime ? eventsByTime[time] : [];
-            eventsByTime[time].push(ticks =>
-                noteTrack.addNoteOn(note.channel, note.tune, ticks, note.velocity || 127));
+            let keyTime = toTicks(time);
+            eventsByTime[keyTime] = keyTime in eventsByTime ? eventsByTime[keyTime] : [];
+            eventsByTime[keyTime].push({
+                eventType: 'noteOn',
+                addEvent: ticks => noteTrack.addNoteOn(note.channel, note.tune, ticks, note.velocity || 127),
+            });
 
             var offTime = time + note.length;
+            let keyOffTime = toTicks(offTime);
 
-            eventsByTime[offTime] = offTime in eventsByTime ? eventsByTime[offTime] : [];
-            eventsByTime[offTime].push(ticks =>
-                noteTrack.addNoteOff(note.channel, note.tune, ticks));
+            eventsByTime[keyOffTime] = keyOffTime in eventsByTime ? eventsByTime[keyOffTime] : [];
+            eventsByTime[keyOffTime].push({
+                eventType: 'noteOff',
+                addEvent: ticks => noteTrack.addNoteOff(note.channel, note.tune, ticks),
+            });
         });
         time += getLength(chord);
     });
 
-    // ebanij majkrosoft tupli ne inferiruet
-    var sorted: [number, {(deltaTicks: number): void}[]][] = <any>Object
+    var sorted: {key: number, val: {(deltaTicks: number): void}[]}[] = Object
         .keys(eventsByTime)
         .map(k => +k)
         .sort((a,b) => a - b)
-        .map(k => [k, eventsByTime[k]]);
+        .map(k => 1 && {
+            key: k,
+            val: eventsByTime[k]
+                .sort((a, b) => (
+                    (a.eventType === 'noteOn' && b.eventType === 'noteOff') ? +1 :
+                    (a.eventType === 'noteOff' && b.eventType === 'noteOn') ? -1 :
+                    0
+                ))
+                .map(e => e.addEvent)
+        });
 
     var curTime = 0;
     sorted.forEach(tuple => {
-        let [t,events] = tuple;
+        let {key: t, val: events} = tuple;
 
-        events.splice(0,1).forEach(e => e(toTicks(t - curTime)));
-        events.forEach(e => e(toTicks(0)));
+        events.splice(0,1).forEach(e => e(t - curTime));
+        events.forEach(e => e(0));
         curTime = t;
     });
 
