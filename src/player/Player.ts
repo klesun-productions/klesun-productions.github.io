@@ -11,6 +11,7 @@ import PlaybackControl from "../views/PlaybackControl";
 import {ISynth} from "../synths/ISynth";
 import {IPlaybackControl} from "../views/PlaybackControl";
 import {Tls} from "../utils/Tls";
+import {SpeedLog} from "../utils/SpeedLog";
 
 type millis_t = number;
 
@@ -57,12 +58,11 @@ export function Player(control: IPlaybackControl)
         index = index || -1;
 
         Tls.list(notes).forEach = (noteJs) => {
-            let length = toFloat(noteJs.length + '');
             let offList = synths.map(s => s.playNote(
                 noteJs.tune, noteJs.channel, noteJs.velocity || 127, index
             ));
 
-            scheduleInterruptable(toMillis(length, tempo), [() => offList.forEach(c => c())]);
+            scheduleInterruptable(toMillis(noteJs.length, tempo), [() => offList.forEach(c => c())]);
         };
     };
 

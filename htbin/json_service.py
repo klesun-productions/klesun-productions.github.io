@@ -3,37 +3,38 @@
 
 # this should be the only script we call from ajax
 # it will contain the actionName -> method mapping
-import cgi
 
-import cgitb
-from collections import namedtuple
 
 import collections
+from collections import namedtuple
 
+import misc
+
+import cgitb
 cgitb.enable()
 
 from classes.Contribution import Contribution
 
 import json
-import signal
 import os, sys
-import time
-import http.server
+
 import time
 
 from classes.MidiFileProvider import MidiFileProvider
 #from classes.TransLinker import TransLinker
-from contextlib import contextmanager
 from oauth2client import client, crypt
 
 
 def print_response(response, headers: list):
-    print("Content-Type: text/json")  # can be either html (in case of exceptions) or json
+
+    payload = json.dumps(response)
+
+    print("Content-Type: text/json")
     for header in headers:
         print(header)
 
     print('')
-    print(json.dumps(response))
+    print(payload)
 
 class TimeoutException(Exception):
     pass
@@ -107,6 +108,13 @@ method_dict = {
     ),
     'save_sample_wav': Fun(
         closure=MidiFileProvider.save_sample_wav,
+        headers=[],
+        is_secure=True,
+    ),
+    # use this if you have an urge to pass some data through
+    # XHR to be stored to reuse it after page reload
+    'store_random_page_data': Fun(
+        closure=misc.store_random_page_data,
         headers=[],
         is_secure=True,
     ),

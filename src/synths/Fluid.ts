@@ -6,6 +6,7 @@ import {Oscillator} from "./Oscillator";
 import {Tls} from "../utils/Tls";
 import {ISynth} from "./ISynth";
 import {Cls} from "../Cls";
+import {SpeedLog} from "../utils/SpeedLog";
 
 // we play sample audio files on "playNote()"
 
@@ -14,11 +15,18 @@ interface INote { play: { (): { (): void } } }
 // to make sound and graphics more fitting to each other
 const DELAY_FOR_GRAPHICS = 10;
 
+interface iSounding {
+    gain: GainNode,
+    src: AudioBufferSourceNode,
+    baseVolume: number,
+    baseFrequency: number,
+};
+
 export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 {
     let audioCtx = Tls.audioCtx;
     let pitchShiftInput = <HTMLInputElement>$('<input type="number" step="0.5" value="0"/>')[0];
-    let soundings: Set<AudioBufferSourceNode> = new Set([]);
+    let soundingsByChannel: Set<iSounding>[] = Tls.range(0,16).map(i => new Set([]));
 
     let channelNodes = Tls.range(0,16).map(i => {
         let node = audioCtx.createGain();
@@ -29,27 +37,22 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 
     let channels = Tls.range(0,16).map(i => 1 && {preset: 0});
     let pitchBendByChannel = Tls.range(0,16).map(i => 0);
+    let volumeByChannel = Tls.range(0,16).map(i => 1);
 
-    let sounding: {[chan: number]: Array<AudioBufferSourceNode>} = [];
-
-    let MAX_VOLUME = 0.3;
+    let MAX_VOLUME = 0.15;
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need time to load it
     let fallbackOscillator = Oscillator(audioCtx);
 
-    let semitoneToFactor = (s: number) => Math.pow(2, s / 12)
+    let semitoneToFactor = (s: number) => Math.pow(2, s / 12);
 
     let playSample = function(fetchedSample: IFetchedSample, channel: number): () => void
     {
-        // TODO: uno what i really hate? when two next-standing notes sound very different
-        // due to different samples being used. What you should do - blend them: say, you need
-        // to play fa, but you got only mi and sol samples - you play them both with 0.33 and 0.67 volumes respectively
-
         let parentNode: AudioNode = channelNodes[channel];
         let gainNode = audioCtx.createGain();
-        let gainValue = MAX_VOLUME * fetchedSample.volumeKoef;
-        gainNode.gain.value = gainValue;
+        let baseVolume = MAX_VOLUME * fetchedSample.volumeKoef;
+        gainNode.gain.value = baseVolume * volumeByChannel[channel];
 
         let audioNodes = fetchedSample.audioNodes.concat([gainNode]);
         for (let node of audioNodes) {
@@ -58,38 +61,28 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         }
 
         let audioSource = audioCtx.createBufferSource();
-        audioSource.playbackRate.value = fetchedSample.frequencyFactor
-            * semitoneToFactor(pitchBendByChannel[channel])
-            * Math.pow(2, +pitchShiftInput.value / 12);
+        let baseFrequency = fetchedSample.frequencyFactor * Math.pow(2, +pitchShiftInput.value / 12);
+        audioSource.playbackRate.value = baseFrequency * Math.max(semitoneToFactor(pitchBendByChannel[channel]), 0.0001);
 
         audioSource.loopStart = fetchedSample.loopStart;
         audioSource.loopEnd = fetchedSample.loopEnd;
         audioSource.loop = fetchedSample.isLooped;
         audioSource.buffer = fetchedSample.buffer;
 
-        if (+fetchedSample.stereoPan === EStereoPan.LEFT) {
-            let splitter = audioCtx.createChannelSplitter(2);
-            audioSource.connect(splitter);
-            splitter.connect(gainNode, 0);
-        } else if (+fetchedSample.stereoPan === EStereoPan.RIGHT) {
-            let splitter = audioCtx.createChannelSplitter(2);
-            audioSource.connect(splitter);
-            splitter.connect(gainNode, 1);
-        } else {
-            audioSource.connect(gainNode);
-        }
-
+        audioSource.connect(gainNode);
         audioSource.start();
-        soundings.add(audioSource);
+
+        let sounding = {gain: gainNode, src: audioSource, baseVolume: baseVolume, baseFrequency: baseFrequency};
+        soundingsByChannel[channel].add(sounding);
 
         return () => {
             let iterations = 10;
             let fade = (i: number) => {
                 if (i >= 0) {
-                    gainNode.gain.value = gainValue * (i / iterations);
+                    gainNode.gain.value = Math.max(baseVolume * (i / iterations) * volumeByChannel[channel], 0.0001);
                     setTimeout(() => fade(i - 1), fetchedSample.fadeMillis / iterations);
                 } else {
-                    soundings.delete(audioSource);
+                    soundingsByChannel[channel].delete(sounding);
                     audioSource.stop();
                 }
             };
@@ -138,15 +131,16 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         chords.length && next(0);
     };
 
-    let setPitchBend = function(semitones: number, chan: number)
-    {
-        let was = pitchBendByChannel[chan];
+    let setPitchBend = (semitones: number, chan: number) => {
         pitchBendByChannel[chan] = semitones;
+        Tls.list(soundingsByChannel[chan]).forEach = s =>
+            s.src.playbackRate.value = s.baseFrequency * semitoneToFactor(semitones);
+    };
 
-        // console.log('Pitch Bend!', semitones, chan);
-
-        let factor = semitoneToFactor(semitones - was);
-        Tls.list(soundings).forEach = s => s.playbackRate.value *= factor;
+    let setVolume = (factor: number, chan: number) => {
+        volumeByChannel[chan] = factor;
+        Tls.list(soundingsByChannel[chan]).forEach = s =>
+            s.gain.gain.value = s.baseVolume * Math.max(factor, 0.0001);
     };
 
     let init = function($cont: JQuery): void
@@ -163,8 +157,7 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
         consumeConfig: consumeConfig,
         analyse: analyse,
         init : init,
-        // TODO: implement
         setPitchBend: setPitchBend,
-        setVolume: (koef,chan) => {}, // TODO: implement
+        setVolume: setVolume,
     };
 };

@@ -263,9 +263,6 @@ export let ParseSoundFontFile = function(sf2Buf: ArrayBuffer): [IFlatSoundFont, 
         sampleHeader.sampleName = cleanText(sampleHeader.sampleName);
     }
 
-    /** @debug */
-    console.log(parser);
-
     let sampleBuffers = parser.sample.map((d,i) => [d, parser.sampleHeader[i]]);
     // delete (<any>parser).sample;
 

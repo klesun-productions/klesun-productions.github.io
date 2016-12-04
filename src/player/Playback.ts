@@ -6,19 +6,20 @@
 // to avoid passing 4 arguments to the playAt() method when we need
 // only one - index
 
-import {IGeneralStructure, IStateChannel} from "../DataStructures";
+import {IGeneralStructure, IStateChannel, IChordState} from "../DataStructures";
 import {IShNote} from "../DataStructures";
 import {Tls, Opt} from "../utils/Tls";
 import {IPlaybackControl} from "../views/PlaybackControl";
 import {ISynth} from "../synths/ISynth";
 import {Adp} from "../Adp";
+import {SpeedLog} from "../utils/SpeedLog";
 
 type millis_t = number;
 
 interface IDynamicInstruction {
     getFromChord: (s: IStateChannel) => number,
     sendToSynth: (value: number, channel: number) => void,
-    nextAtByChan: Array<{fromValue: number, toIndex: number}>,
+    nextAtByChan: Array<{fromValue: number, toIndex: number, stop: () => void}>,
 };
 
 /** @param length - float: quarter will be 0.25, semibreve will be 1.0*/
@@ -44,11 +45,11 @@ export function Playback(
         {
             getFromChord: (s) => s.pitchBend,
             sendToSynth: (v,c) => Tls.list(synths).forEach = s => s.setPitchBend(v, c),
-            nextAtByChan: Tls.range(0, 16).map(i => 1 && {fromValue: 0, toIndex: -1}),
+            nextAtByChan: Tls.range(0, 16).map(i => 1 && {fromValue: 0, toIndex: -1, stop: () => {}}),
         }, {
             getFromChord: (s) => s.volume,
             sendToSynth: (v,c) => Tls.list(synths).forEach = s => s.setVolume(v, c),
-            nextAtByChan: Tls.range(0, 16).map(i => 1 && {fromValue: 1, toIndex: -1}),
+            nextAtByChan: Tls.range(0, 16).map(i => 1 && {fromValue: 1, toIndex: -1, stop: () => {}}),
         },
     ];
 
@@ -105,6 +106,11 @@ export function Playback(
     /** request to perform some operation over time */
     let performOverTime = function(time: number, from: number, to: number, cb: (n: number) => void)
     {
+        if (time <= 0) {
+            cb(to);
+            return () => {};
+        }
+
         let steps = 40;
         let period = toMillis(time, tempo) / steps;
         let chunk = (to - from) / steps;
@@ -116,65 +122,84 @@ export function Playback(
             }
         };
         next();
-        onStops.add(() => i = steps);
+        let stop = () => i = steps;
+        onStops.add(stop);
+        return stop;
     };
 
-    let scheduleDynamics = function(chordIndex: number) {
-        let startChord = sheetMusic.chordList[chordIndex];
-        if (!chordIndex) {
+    let scheduleDynamics = function(chordIndex: number)
+    {
+        // couple seconds delay on heavy songs
+        let disabled = true;
+        if (disabled) {
             return;
         }
 
-        Tls.list(dynamicInstructions).forEach = d =>
-            Tls.digt(startChord.startState || {}).forEach = (state, chan) => {
-                let value = d.getFromChord(state);
-                d.sendToSynth(value, chan);
-                d.nextAtByChan[chan] = {fromValue: value, toIndex: chordIndex};
+        let startChord = sheetMusic.chordList[chordIndex];
+        if (!startChord) {
+            return;
+        }
+
+        Tls.list(dynamicInstructions).forEach
+            = (d) => Tls.digt(startChord.startState || {}).forEach
+            = (state, chan) => Opt(d.getFromChord(state)).get
+            = (value) =>
+        {
+            d.sendToSynth(value, chan);
+            Opt(d.nextAtByChan[chan]).get = proc => proc.stop();
+            d.nextAtByChan[chan] = {fromValue: value, toIndex: chordIndex, stop: () => {}};
+        };
+
+
+        let expiredsByChan = Tls.list(dynamicInstructions.map(
+            ion => ion.nextAtByChan
+                .filter(t => t.toIndex <= chordIndex)
+                .map((t,c) => 1 && {ion: ion, fromValue: t.fromValue, chan: c}))
+            .reduce((a,b) => a.concat(b)))
+            .groupBy(e => e.chan);
+
+        let expiredLeft = Object.keys(expiredsByChan)
+            .map(k => expiredsByChan[+k].length)
+            .reduce((a, b) => a + b, 0);
+
+        let time = 0;
+        for (let i = chordIndex; i < sheetMusic.chordList.length; ++i) {
+            let chord = Adp.Chord(sheetMusic.chordList[i]);
+            let nextTime = time + chord.getLength();
+
+            let processState
+                = (s: IChordState) => Tls.digt(s).forEach
+                = (cs, chan) => Opt(expiredsByChan[chan]).get
+                = (keyFrames) => Tls.list(keyFrames).forEach
+                = (keyFrame, j) => Opt(keyFrame.ion.getFromChord(cs)).get
+                = (statedValue) =>
+            {
+                let stop = performOverTime(
+                    time, keyFrame.fromValue, statedValue,
+                    (v) => keyFrame.ion.sendToSynth(v, chan)
+                );
+                Opt(keyFrame.ion.nextAtByChan[chan]).get = proc => proc.stop();
+                keyFrame.ion.nextAtByChan[chan] = {fromValue: statedValue, toIndex: i, stop: stop};
+                keyFrames.splice(j, 1);
+                --expiredLeft;
+                // found = true;
             };
 
-        for (let ion of dynamicInstructions) {
-            let expired = ion.nextAtByChan
-                .filter(t => t.toIndex <= chordIndex)
-                .map((t,c) => 1 && {fromValue: t.fromValue, chan: c});
+            // TODO: make sure instructions of same kind are not applied twice here (see the "found" flag)
 
-            let time = 0;
-            // TODO: swap this and outer for so we iterated through songs just once
-            for (let i = chordIndex; i < sheetMusic.chordList.length; ++i) {
-                let chord = Adp.Chord(sheetMusic.chordList[i]);
-                let nextTime = time + chord.getLength();
-                for (let j = expired.length - 1; j >= 0; --j) {
-                    let {fromValue, chan} = expired[j];
+            Opt(chord.s.startState).map(v => i > chordIndex ? v : null).get = processState;
+            Opt(chord.s.finishState).get = processState;
 
-                    let found = false;
-                    Opt(chord.s.startState).map(s => s[+chan]).map(ion.getFromChord).map(v => i > chordIndex ? v : null)
-                        .get = statedValue => {
-                            performOverTime(time, fromValue, statedValue, (v) => ion.sendToSynth(v, chan));
-                            ion.nextAtByChan[chan].fromValue = statedValue;
-                            ion.nextAtByChan[chan].toIndex = i;
-                            expired.splice(j, 1);
-                            found = true;
-                        };
-                    Opt(chord.s.finishState).map(s => s[+chan]).map(ion.getFromChord).map(v => !found ? v : null)
-                        .get = statedValue => {
-                            performOverTime(nextTime, fromValue, statedValue, (v) => ion.sendToSynth(v, chan));
-                            ion.nextAtByChan[chan].fromValue = statedValue;
-                            ion.nextAtByChan[chan].toIndex = i;
-                            expired.splice(j, 1);
-                        };
-                }
-
-                if (expired.length === 0 &&
-                    expired.length === 0
-                ) {
-                    break;
-                } else if (i === sheetMusic.chordList.length - 1) {
-                    // remove tasks that left even when we reached end so
-                    // we did not have to re-iterate whole song each time
-                    Tls.list(expired).forEach = e =>
-                        ion.nextAtByChan[e.chan].toIndex = i + 1;
-                }
-                time = nextTime;
+            if (expiredLeft === 0) {
+                break;
+            } else if (i === sheetMusic.chordList.length - 1) {
+                // remove tasks that left even when we reached end so
+                // we did not have to re-iterate whole song each time
+                Tls.digt(expiredsByChan).forEach
+                    = (keyFrames, chan) => Tls.list(keyFrames).forEach
+                    = (kf) => kf.ion.nextAtByChan[chan].toIndex = sheetMusic.chordList.length;
             }
+            time = nextTime;
         }
     };
 

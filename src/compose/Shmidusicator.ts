@@ -10,7 +10,7 @@ import {Adp} from "../Adp";
 
 var roundNoteLength = (v: number) => +v.toFixed(8);
 
-var fr = (n:number,d:number) => Fraction(n,d);
+var fr = (n:number, d:number) => Fraction(n,d);
 var lengthOptions = [
     fr(2, 1), fr(2, 3), fr(3, 1), fr(7, 2),
     // all accepted variations of semibreve: clean | triplet| with dot | with two dots
@@ -106,11 +106,6 @@ export let Shmidusicator = {
                 chordList: pausedChords,
             }],
         };
-
-        /** @debug */
-        console.log('General to Shmidusic conversion');
-        console.log('Input: ', source);
-        console.log('Output: ', result);
 
         var badLengthCount = pausedChords
             .map(Adp.Chord)
@@ -287,7 +282,7 @@ export let Shmidusicator = {
 
         Tls.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {preset: 0}));
 
-        var chordList: ITimedShChord[] = JSON.parse(JSON.stringify(staff.chordList));
+        var chordList: ITimedShChord[] = <ITimedShChord[]>staff.chordList;
 
         var timeFraction = 0;
 

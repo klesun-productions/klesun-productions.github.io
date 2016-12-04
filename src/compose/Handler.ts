@@ -137,6 +137,7 @@ export let Handler = function(cont: HTMLDivElement)
         pianoCleans.clear().forEach(c => c());
 
         let shmidusic = collectSong(control.getChordList());
+
         let adapted = Shmidusicator.generalizeShmidusic(shmidusic);
 
         let index = Math.max(0, control.getFocusIndex());
@@ -241,10 +242,10 @@ export let Handler = function(cont: HTMLDivElement)
                 .then = (chan) => Tls.showMultiInputDialog(
                     'Chord #' + chordIndex + ' channel #' + chan + ' transitions:',
                     {
-                        startPitchBend: Opt(chord.startState).map(s => s[chan]).map(v => v.pitchBend).def(0),
-                        startVolume: Opt(chord.startState).map(s => s[chan]).map(v => v.volume).def(1),
-                        endPitchBend: Opt(chord.finishState).map(s => s[chan]).map(v => v.pitchBend).def(0),
-                        endVolume: Opt(chord.finishState).map(s => s[chan]).map(v => v.volume).def(1),
+                        startPitchBend: Opt(chord.startState).map(s => s[chan]).map(v => v.pitchBend).def(null),
+                        startVolume: Opt(chord.startState).map(s => s[chan]).map(v => v.volume).def(null),
+                        endPitchBend: Opt(chord.finishState).map(s => s[chan]).map(v => v.pitchBend).def(null),
+                        endVolume: Opt(chord.finishState).map(s => s[chan]).map(v => v.volume).def(null),
                     }
                 )
                 .then = (changedValues) => {

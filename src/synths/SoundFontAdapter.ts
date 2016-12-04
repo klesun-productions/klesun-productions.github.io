@@ -8,6 +8,7 @@ import {
     IInstrumentSample, IPresetInstrument, TransformSf2Parse,
     flattenSamples
 } from "./soundfont/ParseSf2";
+import {S} from "../utils/S";
 
 // this object provides access to soundfont info
 // particularly it has a method that
@@ -27,8 +28,14 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
     let drumPreset: TFlatPreset;
     let presets: {[preset: number]: TFlatPreset};
     let whenLoaded: Array<() => void> = [];
+    let performance = {
+        forceMono: true,
+        disableBiQuadFilter: true,
+    };
+
     $.getJSON(soundfontDirUrl + '/sf2parser.out.json', (result) => {
         let transformed = flattenSamples(TransformSf2Parse(result));
+        console.log('loaded soundfont', transformed);
         presets = transformed[0];
         let drumPresets = transformed[128];
         drumPreset = drumPresets[+Object.keys(drumPresets)[0]];
@@ -72,7 +79,6 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
             return [];
         }
 
-        /** @TODO: use different presets for drums too */
         let samples = !isDrum ? presets[preset] : drumPreset;
 
         // TODO: measure performance. it seems to me this guy eats lots of performance
@@ -97,6 +103,7 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
             return [];
         }
 
+        let stereoPairById = new Map();
         return matchingSamples.map(tuple => {
             let [sam, gen, sampleNumber] = tuple;
             let sampleSemitone = Opt(gen.overridingRootKey).def(sam.originalPitch);
@@ -104,33 +111,50 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
             let correctionCents = determineCorrectionCents(semitone - sampleSemitone, gen);
             let freqFactor = Math.pow(2, correctionCents / 1200);
 
-            // TODO: index rest soundfont samples
-            let indexed = /zunpet/.test(soundfontDirUrl) || /fluid/.test(soundfontDirUrl);
-
-            let sampleUrl = sampleDirUrl + '/' + (indexed ? sampleNumber + '_' : '') + sam.sampleName.replace('#', '%23') + '.ogg';
+            let sampleUrl = sampleDirUrl + '/' + sampleNumber + '_' + sam.sampleName.replace('#', '%23') + '.ogg';
 
             let audioNodes: AudioNode[] = [];
-            if (Opt(gen.initialFilterFc).has()) {
-                // // taking twice CPU time... should cache it somehow
-                // let biquadFilter = Tls.audioCtx.createBiquadFilter();
-                // biquadFilter.type = 'lowpass';
-                // // don't ask why "0.122322364", i just found two cases that match the equation in polyphone
-                // biquadFilter.frequency.value = (2 ** (generator.initialFilterFc / 1200)) / 0.122322364;
-                // biquadFilter.Q.value = 'initialFilterQ' in generator ? generator.initialFilterQ / 10 : 1.0;
-                // audioNodes.push(biquadFilter);
-            }
+
+            Opt(gen.initialFilterFc).get
+            = filterFc => S.If(!performance.disableBiQuadFilter).then
+            = () => {
+                // taking twice CPU time...
+                let biquadFilter = Tls.audioCtx.createBiquadFilter();
+                biquadFilter.type = 'lowpass';
+                // don't ask why "0.122322364", i just found two cases that match the equation in polyphone
+                biquadFilter.frequency.value = (2 ** (gen.initialFilterFc / 1200)) / 0.122322364;
+                biquadFilter.Q.value = 'initialFilterQ' in gen ? gen.initialFilterQ / 10 : 1.0;
+                audioNodes.push(biquadFilter);
+            };
 
             let fetched: IFetchedSample = null!;
-            Tls.getAudioBuffer(sampleUrl, (resp) => fetched = {
-                buffer: resp,
-                frequencyFactor: freqFactor,
-                isLooped: Opt(gen.sampleModes).map(m => m === 1).def(false),
-                loopStart: (sam.startLoop + (gen.startloopAddrsOffset || 0)) / sam.sampleRate,
-                loopEnd: (sam.endLoop + (gen.endloopAddrsOffset || 0)) / sam.sampleRate,
-                stereoPan: sam.sampleType,
-                volumeKoef: Opt(gen.initialAttenuation).map(a => dBtoKoef(-a / 10)).def(1) * (velocity / 127),
-                fadeMillis: isDrum ? 10000 : 100, // TODO: update the drum sample format to include generators for instrument and presets
-                audioNodes: audioNodes,
+
+            Tls.getAudioBuffer(sampleUrl, (resp) => {
+                fetched = {
+                    buffer: resp,
+                    frequencyFactor: freqFactor,
+                    isLooped: Opt(gen.sampleModes).map(m => m === 1).def(false),
+                    loopStart: (sam.startLoop + (gen.startloopAddrsOffset || 0)) / sam.sampleRate,
+                    loopEnd: (sam.endLoop + (gen.endloopAddrsOffset || 0)) / sam.sampleRate,
+                    stereoPan: sam.sampleType,
+                    volumeKoef: Opt(gen.initialAttenuation).map(a => dBtoKoef(-a / 10)).def(1) * (velocity / 127),
+                    fadeMillis: isDrum ? 10000 : 100, // TODO: update the drum sample format to include generators for instrument and presets
+                    audioNodes: audioNodes,
+                };
+
+                if (performance.forceMono) {
+                    if (stereoPairById.has(sampleNumber)) {
+                        stereoPairById.get(sampleNumber).volumeKoef *= 2;
+                        return null;
+                    }
+                    Opt(sam.sampleLink || null).get = id => stereoPairById.set(id, fetched);
+                } else {
+                    Opt(gen.pan).map(p => p / 500 || null).get = pan => {
+                        let panNode = Tls.audioCtx.createStereoPanner();
+                        panNode.pan.value = pan;
+                        fetched.audioNodes.push(panNode);
+                    };
+                }
             });
 
             return fetched;
@@ -176,13 +200,14 @@ export interface IGenerator {
     initialFilterQ?: number, // BiquadFilterNode::Q * 10
     initialFilterFc?: number, // 2 ^ (it / 1200) = BiquadFilterNode::frequency * 0.122322364
     sampleModes?: number,
+    pan?: number, // from -500 (full left) to +500 (full right)
 
     // shall be removed after collecting to hierarchy
     instrument?: number,
     sampleID?: number,
 }
  
-export enum EStereoPan {LEFT, MONO, RIGHT, LINK}
+export enum EStereoPan {NONE = 0, MONO = 1, LEFT = 2, LINK = 3, RIGHT = 4}
 
 export interface ISampleInfo {
     sampleName: string,

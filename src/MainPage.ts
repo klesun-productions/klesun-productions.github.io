@@ -15,6 +15,7 @@ import {Switch} from "./synths/Switch";
 import {PresetList} from "./views/PresetList";
 import PlaybackControl from "./views/PlaybackControl";
 import {ServApi} from "./utils/ServApi";
+import {LongestRepeatedSubstring} from "./utils/LongestRepeatedSubstring";
 
 export interface ytlink_t {
     youtubeId: string,
@@ -81,8 +82,7 @@ export let MainPage = function (mainCont: HTMLDivElement)
         let badWords = ['acapella', 'piano', 'cover', 'synthesia', 'remix'];
 
         youtubeEmbededVideosCont.innerHTML = '';
-        urls
-            // .sort((a,b) => b.viewCount - a.viewCount)
+        urls// .sort((a,b) => b.viewCount - a.viewCount)
             .forEach(record => {
                 youtubeEmbededVideosCont.appendChild($('<div style="float: left"></div>')
                     .append($('<div></div>')
@@ -101,10 +101,6 @@ export let MainPage = function (mainCont: HTMLDivElement)
 
     const playStandardMidiFile = function(fileInfo: ISmfFile)
     {
-        /** @debug */
-        console.log(' ');
-        console.log('gonna play', fileInfo.fileName);
-
         player.stop();
         setTimeout(() => Tls.fetchMidi(songDirUrl + '/' + fileInfo.fileName, (song: IGeneralStructure) =>
         {
@@ -117,11 +113,11 @@ export let MainPage = function (mainCont: HTMLDivElement)
         })); // timeout for youtube embeded videos to load so it did not lag
 
         embedYoutubeVideos(linksBySongName[fileInfo.fileName] || []);
-        (<any>$$('source', preCompiledOggControl)[0]).src = preCompiledOggRoot + '/' + fileInfo.fileName + '.ogg';
-        // to trigger audio reload. HTMLMediaElement.load() is not an option, it does synchronous http request
-        let par = preCompiledOggControl.parentElement;
-        par.innerHTML = par.innerHTML;
-        preCompiledOggControl = <HTMLAudioElement>$$('audio', par)[0];
+        // (<any>$$('source', preCompiledOggControl)[0]).src = preCompiledOggRoot + '/' + fileInfo.fileName + '.ogg';
+        // // to trigger audio reload. HTMLMediaElement.load() is not an option, it does synchronous http request
+        // let par = preCompiledOggControl.parentElement;
+        // par.innerHTML = par.innerHTML;
+        // preCompiledOggControl = <HTMLAudioElement>$$('audio', par)[0];
     };
 
     const makeFileName = function(path: string, row: {rawFileName: string}): HTMLAnchorElement

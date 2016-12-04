@@ -21,14 +21,12 @@ export let Switch = function(
     let channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
     
     let pitchBendByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 0);
-    let volumeByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 0);
+    let volumeByChannel: {[c: number]: number} = Tls.range(0,16).map(i => 1);
 
     let synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(Tls.audioCtx),
         midiDevice: MidiDevice(),
         FluidSynth3: Fluid(SoundFontAdapter('/out/sf2parsed/fluid/')),
-        Arachno: Fluid(SoundFontAdapter('/out/sf2parsed/arachno/')),
-        GeneralUser: Fluid(SoundFontAdapter('/out/sf2parsed/generaluser/')),
         ZUNPet: Fluid(SoundFontAdapter('/out/sf2parsed/zunpet/')),
         DenyaSynth: Fluid(DenyaAdapter()),
     };

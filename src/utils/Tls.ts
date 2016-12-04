@@ -88,6 +88,12 @@ let _base64ToArrayBuffer = function(base64: string): ArrayBuffer
 /** json-encodes "data" in such indent format that attributes are not line-broken */
 let xmlyJson = function($var: any, $margin?: string): string
 {
+    // slows performance twice
+    let builtIn = JSON.stringify($var);
+    if (builtIn.length < 20) {
+        return builtIn;
+    }
+
     var ind = '    ';
     $margin = $margin || '';
 
@@ -98,6 +104,14 @@ let xmlyJson = function($var: any, $margin?: string): string
             + Object.keys($var).map(k => JSON.stringify(k) + ': ' + xmlyJson($var[k], $margin)).join(', ')
             + '}'
         : JSON.stringify($var);
+};
+
+let ditu = <Tv>(pairs: {key: number, val: Tv}[]) => {
+    let result: {[k: number]: Tv} = {};
+    for (let pair of pairs) {
+        result[pair.key] = pair.val;
+    }
+    return result;
 };
 
 let list = function<Tel>(iter: Iterable<Tel>)
@@ -114,6 +128,16 @@ let list = function<Tel>(iter: Iterable<Tel>)
         },
         map: <Tel2>(f: (v: Tel, i: number) => Tel2) =>
             list(elmts.map(f)),
+
+        groupBy: (f: (el: Tel) => number): {[k: number]: Tel[]} => {
+            let result: {[k: number]: Tel[]} = {};
+            for (let el of elmts) {
+                let k = f(el);
+                result[k] = result[k] || [];
+                result[k].push(el);
+            }
+            return result;
+        },
 
         set more(v: Tel) {
             elmts.push(v);
@@ -162,12 +186,22 @@ let showMultiInputDialog = function<T>(msg: string, initialData: T)
 
     let ok = () => {
         Tls.list(inputs).forEach = pair =>
-            (<any>initialData)[pair.key] = $(pair.val).val();
+            (<any>initialData)[pair.key] = !$(pair.val).prop('disabled')
+                ? $(pair.val).val()
+                : null;
         result.then(initialData);
     };
 
     let close = showDialog(msg, $('<div class="key-values"/>')
-        .append(inputs.map(i => [i.key + ': ', i.val, '<br/>'])
+        .append(inputs.map(i => [
+            i.key + ': ', i.val,
+            'null: ', $('<input type="checkbox"/>')
+                .attr('checked', $(i.val).val() === '')
+                .change((e: Event) => $(i.val)
+                    .prop('disabled', $(e.target).prop('checked')))
+                .trigger('change'),
+            '<br/>',
+        ])
             .reduce((a,b) => a.concat(b))
             .concat([$('<button>Ok</button>')
                 .click(() => { ok(); close(); })
@@ -195,21 +229,18 @@ export let Tls = Cls['Tls'] = {
 
     /** transforms object keyed by number to a list */
     digt: <Tv>(obj: {[key: number]: Tv}) => {
-        let result: Tv[] = [];
-        for (let k of Object.keys(obj)) {
-            result[+k] = obj[+k];
-        }
-        return list(result);
+        return {
+            toList: <T2>(f: (v: Tv, k: number) => T2) =>
+                list(Object.keys(obj).map((k) => f(obj[+k], +k))),
+            set forEach (f: (v: Tv, k: number) => void) {
+                Object.keys(obj).forEach((k) => f(obj[+k], +k))
+            },
+            s: obj,
+        };
     },
 
     /** transforms key-value pair tuples to a dict */
-    ditu: <Tv>(pairs: {key: number, val: Tv}[]) => {
-        let result = [];
-        for (let pair of pairs) {
-            result[pair.key] = pair.val;
-        }
-        return result;
-    },
+    ditu: ditu,
 
     map: <Tx, Ty>(val: Tx, f: (v: Tx) => Ty) => val && f(val),
 
@@ -240,8 +271,6 @@ export let Tls = Cls['Tls'] = {
                 var reader = new FileReader();
                 reader.readAsDataURL(fileInfo);
                 reader.onload = (e: any) => {
-                    /** @debug */
-                    console.log('lodaded base64 from file system: ', e.target.result.length);
                     whenLoaded(e.target.result.split(',')[1]);
                 }
             } else {
@@ -429,14 +458,15 @@ export var Fraction = function(num: number, den: number): IFraction {
     };
 };
 
-export let Opt = function<T>(value: T): IOpt<T>
+export let Opt = Cls['Opt'] = function<T>(value: T): IOpt<T>
 {
     let has = () => value !== null &&
                     value !== undefined;
     // let exc = (err: Error): any => { throw err; };
     // exc(new Error('next time check has() before accessing the value'))
 
-    return {
+    let self: IOpt<T>;
+    return self = {
         map: <T2>(f: (arg: T) => T2): IOpt<T2> => has()
             ? Opt(f(value))
             : Opt(null),

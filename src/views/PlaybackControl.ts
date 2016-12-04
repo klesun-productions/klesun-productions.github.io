@@ -16,6 +16,7 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
     const $$ = (s: string, root?: HTMLElement): HTMLElement[] => <any>Array.from((root || document).querySelectorAll(s));
 
     var $tempoFactorInput = $cont.find('.tempoFactorInput'),
+        secondsHolder = $cont.find('.seconds.holder')[0],
         $secondsTotalHolder = $cont.find('.secondsTotal.holder'),
         $timeSlider = $cont.find('.timeSlider'),
         tempoHolder = $cont.find('.tempoInput'),
@@ -25,6 +26,7 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
         rateGoodBtn = $$('button.rateGood')[0],
         rateBadBtn = $$('button.rateBad')[0],
         rateUndoBtn = $$('button.rateUndo')[0],
+        chordIndexHolder = $cont.find('.chordIndex.holder')[0],
         O_O = 0-0;
 
     var setFields = function(sheetMusic: IGeneralStructure)
@@ -45,12 +47,9 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
     {
         var updateState = function()
         {
-            $cont.find('.chordIndex.holder').html(playback.getChordIndex() + '');
+            chordIndexHolder.innerHTML = playback.getChordIndex();
             $timeSlider.val(playback.getChordIndex());
-
-            var seconds = Math.floor(playback.getTime() / 10) / 100;
-            $cont.find('.seconds.holder').html(seconds + '');
-            var secondsTotal = $secondsTotalHolder.html();
+            secondsHolder.innerHTML = Math.floor(playback.getTime() / 10) / 100;
         };
         updateState();
 

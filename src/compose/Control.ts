@@ -248,18 +248,18 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
 
         let $chord = $('<span class="chordSpan"></span>')
             .append($('<span class="tactNumberCont"></span>'))
-            .append(Tls.digt(chord.startState || {}).s
-                .map((state, chan) => $('<div class="transitionState start"/>')
+            .append(Tls.digt(chord.startState || {})
+                .toList((state, chan) => $('<div class="transitionState start"/>')
                     .attr('data-channel', chan)
                     .attr('data-pitch-bend', state.pitchBend)
                     .attr('data-volume', state.volume)
-                ))
-            .append(Tls.digt(chord.finishState || {}).s
-                .map((state, chan) => $('<div class="transitionState finish"/>')
+                ).s)
+            .append(Tls.digt(chord.finishState || {})
+                .toList((state, chan) => $('<div class="transitionState finish"/>')
                     .attr('data-channel', chan)
                     .attr('data-pitch-bend', state.pitchBend)
                     .attr('data-volume', state.volume)
-                ))
+                ).s)
             ;
 
         chord.noteList.forEach(n => addNoteToChord(n, $chord));

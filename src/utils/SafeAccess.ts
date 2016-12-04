@@ -9,7 +9,7 @@ export var SafeAccess = function<Tout>(subj: any, rule: (acc: ISafeAccess) => To
     const isList = function<Tel>(elementRule: (acc: ISafeAccess) => Tel): Tel[]
     {
         if (!Array.isArray(subj)) {
-            console.log(subj);
+            // console.log(subj);
             throw new Error('Must be an array, but got something else');
         } else {
             return (<Array<any>>subj).map((el,i) => {
@@ -44,8 +44,6 @@ export var SafeAccess = function<Tout>(subj: any, rule: (acc: ISafeAccess) => To
             if (!error) {
                 return valid;
             } else {
-                /** @debug */
-                console.log(subj, key);
                 error.message = '[' + key + ']' + error.message;
                 throw error;
             }

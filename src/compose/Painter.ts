@@ -4,7 +4,7 @@ import * as Ds from "../DataStructures";
 import {Control} from "./Control";
 import {IShNote} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
-import {Tls} from "../utils/Tls";
+import {Tls, Opt} from "../utils/Tls";
 
 export function TactMeasurer(tactSize: number)
 {
@@ -42,8 +42,8 @@ export let extractNote = (n: HTMLElement): IShNote => 1 && {
 let extractChannelTransition = (div: HTMLElement) => 1 && {
     key: +div.getAttribute('data-channel'),
     val: {
-        pitchBend: +div.getAttribute('data-pitch-bend'),
-        volume: +div.getAttribute('data-volume'),
+        pitchBend: Opt(div.getAttribute('data-pitch-bend')).map(n => +n).def(null),
+        volume: Opt(div.getAttribute('data-volume')).map(n => +n).def(null),
     }
 };
 

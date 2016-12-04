@@ -26,6 +26,7 @@ __pycache__
 /imgs/big/
 /out/*
 /unversioned/*
+/entry/unversioned/*
 
 /scripts/out.js
 /scripts/soundfonts_info2.js

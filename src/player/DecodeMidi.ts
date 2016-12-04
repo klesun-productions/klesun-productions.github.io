@@ -211,8 +211,6 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
 
     fillChordsAndMetas(smf);
 
-    /** @debug */
-    console.log('decoded SMF: ', smf);
     unknownControlChanges.length && console.log('got unknown control changes', unknownControlChanges);
     pitchBends.length && console.log('got pitch bends', pitchBends);
 

@@ -46,7 +46,7 @@ class MidiFileProvider(object):
 
     @classmethod
     @db_session
-    def collect_liked_songs(cls, params: dict) -> tuple:
+    def collect_liked_songs(cls, params: dict):
         root = cls.content_folder + '/midiCollection/'
         destination_root = '/unversioned/midiCollectionLiked/'
 
