@@ -47,9 +47,9 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
     {
         var updateState = function()
         {
-            chordIndexHolder.innerHTML = playback.getChordIndex();
+            chordIndexHolder.innerHTML = ''+playback.getChordIndex();
             $timeSlider.val(playback.getChordIndex());
-            secondsHolder.innerHTML = Math.floor(playback.getTime() / 10) / 100;
+            secondsHolder.innerHTML = ''+Math.floor(playback.getTime() / 10) / 100;
         };
         updateState();
 

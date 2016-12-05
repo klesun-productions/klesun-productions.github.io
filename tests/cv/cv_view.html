@@ -1,0 +1,62 @@
+
+<head>
+	<meta charset="utf-8"/>
+	<script src="/libs/misc/marked.js"></script>
+</head>
+
+<body>
+
+<main>
+	<div class="rendered-html-cont"></div>
+	<div class="raw-markdown-cont-holder">
+		<code data-lang="markdown" class="raw-markdown-cont"></code>
+	</div>
+</main>
+
+<script>
+
+let $$ = (s, parent) => (parent || document).querySelectorAll(s);
+
+let requestHttp = function (url, restMethod, params) {
+	let result = {then: (resp) => console.log(resp)};
+	
+    let oReq = new XMLHttpRequest();
+    oReq.open(restMethod, url, true);
+    oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
+    oReq.onload = () => result.then(oReq.response);
+    oReq.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+    
+    return result;
+};
+
+let main = function()
+{
+	
+	requestHttp('cv_eng_artur_klesun.md', 'GET', {})
+		.then  = (rawMarkdown) =>  {
+			$$('code.raw-markdown-cont')[0].innerHTML = rawMarkdown;
+			$$('div.rendered-html-cont')[0].innerHTML = marked(rawMarkdown);
+		};
+};
+
+main();
+
+</script>
+
+<style>
+
+	div.rendered-html-cont {
+		padding-left: 3%;
+		padding-right: 20%;
+	}
+	code.raw-markdown-cont {
+		white-space: pre-wrap;
+	}
+	div.raw-markdown-cont-holder {
+		display: none;
+		background-color: #cfffcf;
+	}
+
+</style>
+
+</body>
