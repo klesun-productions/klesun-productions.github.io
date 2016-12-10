@@ -257,19 +257,15 @@ export function Playback(
         }
     };
 
-    let slideTo = function(n: number)
+    let slideTo = function(n: number, withPlayback = true)
     {
-        // we don't wanna mark this song
-        // as "listened" on server
-        whenFinished = () => {};
-
         stopSounding();
 
         startMillis = window.performance.now() -
             toMillis(sheetMusic.chordList[n].timeFraction, tempo);
         chordIndex = n;
 
-        (n in sheetMusic.chordList) &&
+        withPlayback && (n in sheetMusic.chordList) &&
             onChord(sheetMusic.chordList[n].noteList, tempo, n);
     };
 
@@ -291,7 +287,7 @@ export function Playback(
 };
 
 export interface IPlayback {
-    slideTo: (n: number) => void,
+    slideTo: (n: number, withPlayback?: boolean) => void,
     getTempo: () => number,
     setTempo: (n: number) => void,
     getChordIndex: () => number,

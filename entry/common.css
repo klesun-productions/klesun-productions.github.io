@@ -159,7 +159,7 @@ div.chordListCont > span {
 }
 
 div.chordListCont > span.chordSpan {
-    width: calc(var(--b-radius) * 11);
+    width: calc(var(--b-radius) * 10);
     position: relative; /* to allow absolute positioning of children... likely */
 }
 

@@ -109,14 +109,13 @@ export const determinePosition = function(semitone: number, keySignature: number
 };
 
 /** @param R - semibreve note oval vertical radius */
-export function CanvasProvider(R: number)
+export function CanvasProvider(getNoteRadius: () => number)
 {
-    let DX = R * 5; // half of chord span width
     let keySignature = 0;
 
     return {
         extractNote: extractNote,
-        getChordWidth: () => DX * 2,
+        getChordWidth: () => getNoteRadius() * 10,
         setKeySignature: (v: number) => keySignature = v,
     };
 };
@@ -124,19 +123,13 @@ export function CanvasProvider(R: number)
 /** TODO: get rid of this class, we i the stuff with clean CSS now */
 export function SheetMusicPainter(parentId: string, config: HTMLElement)
 {
-    let R = 3.5; // semibreve note oval vertical radius
-    let Y_STEPS_PER_SYSTEM = 40;
-
     let $parentEl = $('#' + parentId);
-    $parentEl[0].style.setProperty('--b-radius', R + 'px');
-    $parentEl[0].style.setProperty('--y-steps-per-system', Y_STEPS_PER_SYSTEM + '');
-
-    let enabled = false;
+    let getNoteRadius = () => +getComputedStyle($parentEl[0]).getPropertyValue('--b-radius').slice(0, -2); // cutting "px" at the end
 
     let $chordListCont =  $('<div class="chordListCont"></div>');
     $parentEl.append($chordListCont);
 
-    let canvaser = CanvasProvider(R);
+    let canvaser = CanvasProvider(getNoteRadius);
     let control = Control($chordListCont, config);
 
     let interruptDrawing = () => {};

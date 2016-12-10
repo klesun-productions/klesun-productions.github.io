@@ -76,8 +76,9 @@ export function Player(control: IPlaybackControl)
     let playSheetMusic = function (
         sheetMusic: IGeneralStructure,
         whenFinished?: () => void,
-        startAt?: number)
-    {
+        startAt?: number,
+        delay = 300 // for first chords to pre-load
+    ) {
         startAt = startAt || 0;
         whenFinished = whenFinished || (() => {});
 
@@ -92,15 +93,15 @@ export function Player(control: IPlaybackControl)
             stopSounding
         );
 
-        playback.pause();
-
         control.setPlayback(playback);
 
-        playback.slideTo(startAt);
+        playback.slideTo(startAt, false);
 
-        // time-outing to give it time to pre-load the first chord
-        // samples. at least on my pc it will be in time =P
-        setTimeout(playback.resume, 300);
+        if (delay > 0) {
+            setTimeout(playback.resume, 300);
+        } else {
+            playback.resume();
+        }
 
         document.removeEventListener('visibilitychange', tabSwitched);
         tabSwitched = function(e)

@@ -142,7 +142,7 @@ export let Handler = function(cont: HTMLDivElement)
 
         let index = Math.max(0, control.getFocusIndex());
 
-        player.playSheetMusic(adapted, playbackFinished, index);
+        player.playSheetMusic(adapted, playbackFinished, index, 0);
 
         playbackInfo = {
             startIndex: index,

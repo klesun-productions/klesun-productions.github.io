@@ -37,7 +37,7 @@ Incomplete bachelor: RTU: [Programming](http://www.rtu.lv/lv/universitate/strukt
 ### My programming skills
   
 <b>PHP</b>: I know every single sad detail of it because I wrote in it for almost three years in my present job.  
-My superior frequently asks me tech questions like in what order does built-in function take arguments or does language allows doing this and that in such context or how was function that does this was called or when `\Exception`-s are thrown, but when `\Error`-s...
+My superior frequently asks me tech questions like in what order does built-in function take arguments or does language allows doing this and that in such context or how was function that does this was called, etc...
 
 <b>Javascript</b>: this is my personal favourite language forever. I love the conception of functions being pure variables and absence of Java-like classes. I developed and adapted from colleagues a lot of techniques that are possible only here (if you take me, I promise, I'll show some of them to you). This is the main language of a big open source [music generation app](https://github.com/klesun/shmidusic.lv) developed by me. Most of [my _reputation_](http://stackoverflow.com/users/2750743/artur-klesun) on Stack Overflow is gained by Javascript-related answers.
 

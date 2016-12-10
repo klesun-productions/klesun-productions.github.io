@@ -14,7 +14,7 @@ import {Adp} from "../Adp";
 
 export function Control($chordListCont: JQuery, configCont: HTMLElement)
 {
-    let canvaser = CanvasProvider(3);
+    let canvaser = CanvasProvider(() => +getComputedStyle($chordListCont[0]).getPropertyValue('--b-radius').slice(0, -2));
 
     let $parentEl = $chordListCont.parent();
     let chordListCont = $chordListCont[0];
