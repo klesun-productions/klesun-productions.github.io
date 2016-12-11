@@ -2,6 +2,7 @@
 import {ISmfFile} from "../DataStructures";
 import {Tls} from "./Tls";
 import {ytlink_t} from "../MainPage";
+import {Dom} from "./Dom";
 
 var verySecurePassword = '';
 
@@ -14,7 +15,7 @@ let askForPassword = function(cb: (pwd: string) => void)
     } else {
         awaitingPassword.push(cb);
         if (awaitingPassword.length < 2) {
-            Tls.promptAssync('Password?', (pwd) => {
+            Dom.showPasswordDialog((pwd) => {
                 verySecurePassword = pwd;
                 awaitingPassword.splice(0).forEach(c => c(pwd));
             });
@@ -33,7 +34,7 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: s
         if (!error) {
             whenLoaded(result);
         } else {
-            Tls.showError('failed to ajax [' + funcName + ']: ' + error);
+            Dom.showError('failed to ajax [' + funcName + ']: ' + error);
             verySecurePassword = error !== 'wrongPassword' && verySecurePassword;
         }
     };

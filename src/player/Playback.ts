@@ -13,6 +13,7 @@ import {IPlaybackControl} from "../views/PlaybackControl";
 import {ISynth} from "../synths/ISynth";
 import {Adp} from "../Adp";
 import {SpeedLog} from "../utils/SpeedLog";
+import {S} from "../utils/S";
 
 type millis_t = number;
 
@@ -44,11 +45,11 @@ export function Playback(
     let dynamicInstructions: IDynamicInstruction[] = [
         {
             getFromChord: (s) => s.pitchBend,
-            sendToSynth: (v,c) => Tls.list(synths).forEach = s => s.setPitchBend(v, c),
+            sendToSynth: (v,c) => S.list(synths).forEach = s => s.setPitchBend(v, c),
             nextAtByChan: Tls.range(0, 16).map(i => 1 && {fromValue: 0, toIndex: -1, stop: () => {}}),
         }, {
             getFromChord: (s) => s.volume,
-            sendToSynth: (v,c) => Tls.list(synths).forEach = s => s.setVolume(v, c),
+            sendToSynth: (v,c) => S.list(synths).forEach = s => s.setVolume(v, c),
             nextAtByChan: Tls.range(0, 16).map(i => 1 && {fromValue: 1, toIndex: -1, stop: () => {}}),
         },
     ];
@@ -87,9 +88,9 @@ export function Playback(
 
     let resetSynth = function(synth: ISynth)
     {
-        Tls.list(Tls.range(0,16)).forEach = chan =>
+        S.list(Tls.range(0,16)).forEach = chan =>
             synth.setPitchBend(0, chan);
-        Tls.list(Tls.range(0,16)).forEach = chan =>
+        S.list(Tls.range(0,16)).forEach = chan =>
             synth.setVolume(1, chan);
     };
 
@@ -99,8 +100,8 @@ export function Playback(
         scheduled.forEach(c => c());
         scheduled.length = 0;
         pauseHandler();
-        Tls.list(onStops).clear().forEach(cb => cb());
-        Tls.list(synths).forEach = resetSynth;
+        S.list(onStops).clear().forEach(cb => cb());
+        S.list(synths).forEach = resetSynth;
     };
 
     /** request to perform some operation over time */
@@ -140,7 +141,7 @@ export function Playback(
             return;
         }
 
-        Tls.list(dynamicInstructions).forEach
+        S.list(dynamicInstructions).forEach
             = (d) => Tls.digt(startChord.startState || {}).forEach
             = (state, chan) => Opt(d.getFromChord(state)).get
             = (value) =>
@@ -151,7 +152,7 @@ export function Playback(
         };
 
 
-        let expiredsByChan = Tls.list(dynamicInstructions.map(
+        let expiredsByChan = S.list(dynamicInstructions.map(
             ion => ion.nextAtByChan
                 .filter(t => t.toIndex <= chordIndex)
                 .map((t,c) => 1 && {ion: ion, fromValue: t.fromValue, chan: c}))
@@ -170,7 +171,7 @@ export function Playback(
             let processState
                 = (s: IChordState) => Tls.digt(s).forEach
                 = (cs, chan) => Opt(expiredsByChan[chan]).get
-                = (keyFrames) => Tls.list(keyFrames).forEach
+                = (keyFrames) => S.list(keyFrames).forEach
                 = (keyFrame, j) => Opt(keyFrame.ion.getFromChord(cs)).get
                 = (statedValue) =>
             {
@@ -196,7 +197,7 @@ export function Playback(
                 // remove tasks that left even when we reached end so
                 // we did not have to re-iterate whole song each time
                 Tls.digt(expiredsByChan).forEach
-                    = (keyFrames, chan) => Tls.list(keyFrames).forEach
+                    = (keyFrames, chan) => S.list(keyFrames).forEach
                     = (kf) => kf.ion.nextAtByChan[chan].toIndex = sheetMusic.chordList.length;
             }
             time = nextTime;

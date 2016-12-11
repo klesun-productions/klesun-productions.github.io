@@ -3,6 +3,8 @@
 import {IGeneralStructure} from "../DataStructures";
 import {DecodeMidi} from "../player/DecodeMidi";
 import {Cls} from "../Cls";
+import {S} from "./S";
+import {Dom} from "./Dom";
 
 var Static: any = {};
 
@@ -114,103 +116,6 @@ let ditu = <Tv>(pairs: {key: number, val: Tv}[]) => {
     return result;
 };
 
-let list = function<Tel>(iter: Iterable<Tel>)
-{
-    let elmts = [...iter];
-    return {
-        // get elmts() {
-        //     return elmts;
-        // },
-        clear: () => {
-            var tmp = elmts;
-            elmts = [];
-            return tmp;
-        },
-        map: <Tel2>(f: (v: Tel, i: number) => Tel2) =>
-            list(elmts.map(f)),
-
-        groupBy: (f: (el: Tel) => number): {[k: number]: Tel[]} => {
-            let result: {[k: number]: Tel[]} = {};
-            for (let el of elmts) {
-                let k = f(el);
-                result[k] = result[k] || [];
-                result[k].push(el);
-            }
-            return result;
-        },
-
-        set more(v: Tel) {
-            elmts.push(v);
-        },
-        set forEach(cb: (el: Tel, i?: number) => void) {
-            elmts.forEach(cb);
-        },
-        /** perform async operations on every element one by one */
-        set sequence(cb: (el: Tel, i: number) => {then: (r: any) => void}) {
-            let i = 0;
-            let next = () => {
-                if (i < elmts.length) {
-                    cb(elmts[i], i++).then = next;
-                }
-            };
-            next();
-        },
-        get s() {
-            return elmts;
-        },
-    };
-};
-
-let showDialog = function(msg: string, content?: HTMLElement)
-{
-    content = content || $('<div>Just a message</div>')[0];
-
-    var $dialog = $('<div class="modalDialog"></div>')
-        .append(msg).append('<br/>').append(content)
-        .append($('<button>Cancel</button>').click(() => { $dialog.remove(); }));
-
-    // TODO: escape - cancel
-    $('body').prepend($dialog);
-
-    return () => $dialog.remove();
-};
-
-let showMultiInputDialog = function<T>(msg: string, initialData: T)
-{
-    let result = {then: (changedData: T) => {}};
-    let inputs = Object.keys(initialData).map(k => 1 && {
-        key: k,
-        val: $('<input type="text"/>')
-            .val((<any>initialData)[k])[0]
-    });
-
-    let ok = () => {
-        Tls.list(inputs).forEach = pair =>
-            (<any>initialData)[pair.key] = !$(pair.val).prop('disabled')
-                ? $(pair.val).val()
-                : null;
-        result.then(initialData);
-    };
-
-    let close = showDialog(msg, $('<div class="key-values"/>')
-        .append(inputs.map(i => [
-            i.key + ': ', i.val,
-            'null: ', $('<input type="checkbox"/>')
-                .attr('checked', $(i.val).val() === '')
-                .change((e: Event) => $(i.val)
-                    .prop('disabled', $(e.target).prop('checked')))
-                .trigger('change'),
-            '<br/>',
-        ])
-            .reduce((a,b) => a.concat(b))
-            .concat([$('<button>Ok</button>')
-                .click(() => { ok(); close(); })
-                [0]]))
-        [0]);
-
-    return result;
-};
-
 export let Tls = Cls['Tls'] = {
 
     audioCtx: new AudioContext(),
@@ -224,14 +129,13 @@ export let Tls = Cls['Tls'] = {
     /** transforms array of [key, value] tuples into a dict */
     toDict: toDict,
     dict: function<Tv>(obj: {[key: string]: Tv}) {
-
     },
 
     /** transforms object keyed by number to a list */
     digt: <Tv>(obj: {[key: number]: Tv}) => {
         return {
             toList: <T2>(f: (v: Tv, k: number) => T2) =>
-                list(Object.keys(obj).map((k) => f(obj[+k], +k))),
+                S.list(Object.keys(obj).map((k) => f(obj[+k], +k))),
             set forEach (f: (v: Tv, k: number) => void) {
                 Object.keys(obj).forEach((k) => f(obj[+k], +k))
             },
@@ -357,63 +261,9 @@ export let Tls = Cls['Tls'] = {
         return interrupt;
     },
 
-    showDialog: showDialog,
-    showMultiInputDialog: showMultiInputDialog,
-
-    showInputDialog: function<T>(msg: string, value?: T | null)
-    {
-        value = value === undefined ? null : value;
-
-        let result = {then: (field: T | null) => {}};
-        showMultiInputDialog(msg, {value: value})
-            .then = (fields) => result.then(fields.value);
-        return result;
-    },
-
-    promptAssync: function(msg: string, cb: (txt: string) => void)
-    {
-        let $input = $('<input type="password"/>');
-        let closeDialog = showDialog(msg, $('<div></div>')
-            .append($input)
-            .append($('<button>Ok</button>').click(() => {
-                cb($input.val());
-                closeDialog();
-            }))[0]);
-
-        // TODO: enter from input - submit
-        // TODO: initial focus
-    },
-
-    showError: (msg: string) => {
-        let closeDialog = showDialog(msg);
-        setTimeout(closeDialog, 15000);
-    },
-
-    promptSelect: function(options: {[k: string]: {(): void}}, message?: string): void
-    {
-        message = message || 'It*s Time To Choose!';
-
-        var $select = $('<select></select>')
-            .attr('multiple', 'multiple');
-        Tls.for(options, (n, _) =>
-            $select.append($('<option></option>').val(n).html(n)));
-
-        var $dialog = $('<div class="modalDialog"></div>')
-            .append(message).append('<br/>')
-            .append($select.change(() => {
-                $select.val() in options
-                    ? options[$select.val()]()
-                    : alert('System Failure, Unknown Option Selected: ' + $select.val())
-                $dialog.remove();
-            }));
-
-        $('body').prepend($dialog);
-    },
-
     xmlyJson: xmlyJson,
 
-    list: list,
-    cbList: (v: {(): void}[]) => list(v),
+    cbList: (v: {(): void}[]) => S.list(v),
     timeout: (seconds: number) => 1 && {
         set set(cb: () => void) {
             setTimeout(cb, seconds * 1000);

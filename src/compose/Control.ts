@@ -11,6 +11,7 @@ import {TactMeasurer} from "./Painter";
 import {IShNote} from "../DataStructures";
 import {Tls, IOpt, Opt, IFraction} from "../utils/Tls";
 import {Adp} from "../Adp";
+import {S} from "../utils/S";
 
 export function Control($chordListCont: JQuery, configCont: HTMLElement)
 {
@@ -334,7 +335,7 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
             .els = notes => {
                 let foreseen = notes.map(n => mult(n.num(), n.den(), factor));
                 if (foreseen.every(Shmidusicator.isValidLength)) {
-                    Tls.list(notes).forEach = (n, i) =>
+                    S.list(notes).forEach = (n, i) =>
                         changeNote(noteDoms[i], 'length', mult(n.num(), n.den(), factor) + '');
 
                     requestRecalcTacts();

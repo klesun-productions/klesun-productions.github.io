@@ -12,6 +12,7 @@ import {ISynth} from "../synths/ISynth";
 import {IPlaybackControl} from "../views/PlaybackControl";
 import {Tls} from "../utils/Tls";
 import {SpeedLog} from "../utils/SpeedLog";
+import {S} from "../utils/S";
 
 type millis_t = number;
 
@@ -57,7 +58,7 @@ export function Player(control: IPlaybackControl)
         tempo = tempo || 120;
         index = index || -1;
 
-        Tls.list(notes).forEach = (noteJs) => {
+        S.list(notes).forEach = (noteJs) => {
             let offList = synths.map(s => s.playNote(
                 noteJs.tune, noteJs.channel, noteJs.velocity || 127, index
             ));
@@ -113,7 +114,7 @@ export function Player(control: IPlaybackControl)
 
         window.onbeforeunload = playback.pause;
     };
-    
+
     let stop = () => {
         currentPlayback && currentPlayback.pause();
         stopSounding();

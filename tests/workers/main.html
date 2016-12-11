@@ -1,0 +1,38 @@
+
+<head>
+    <meta charset="utf8"/>
+</head>
+
+<body>
+
+<main>
+    <h2>This file does some stuff to demonstrate how workers work</h2>
+    <button class="startWorkers">Start Workers!</button>
+</main>
+
+<script>
+    let $$ = s => document.querySelectorAll(s);
+    let workerA = new Worker('worker.js');
+    let workerB = new Worker('worker.js');
+    $$('button.startWorkers')[0].onclick = function(e)
+    {
+        workerA.postMessage({f: 'loadCpuCore'});
+        workerB.postMessage({f: 'loadCpuCore'});
+
+        console.log('workers started');
+
+        workerA.onmessage = e => console.log('message from workerA', e.data);
+        workerB.onmessage = e => console.log('message from workerB', e.data);
+    };
+
+</script>
+
+<style>
+    main {
+        padding-top: 10px;
+        padding-left: 3%;
+        padding-right: 5%;
+    }
+</style>
+
+</body>

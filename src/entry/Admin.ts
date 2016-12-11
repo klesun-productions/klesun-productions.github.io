@@ -3,6 +3,7 @@ import {ServApi} from "../utils/ServApi";
 import {YoutubeApi} from "../utils/YoutubeApi";
 import {Tls} from "../utils/Tls";
 import {ParseSoundFontFile, TransformSf2Parse, flattenSamples} from "../synths/soundfont/ParseSf2";
+import {S} from "../utils/S";
 
 var Gui = function(mainControl: HTMLDivElement)
 {
@@ -37,7 +38,7 @@ export let Admin = function(mainControl: HTMLDivElement)
         Tls.fetchBinaryFile('/unversioned/soundfonts/fluid.sf2', byteBuffer => {
             var [soundFont, audioDataSamples] = ParseSoundFontFile(byteBuffer);
             console.log('Decoded Soundfont: ', soundFont);
-            Tls.list(audioDataSamples).sequence = (d, i) =>
+            S.list(audioDataSamples).sequence = (d, i) =>
                 ServApi.save_sample_wav({
                     sfname: 'fluid',
                     sampleNumber: i,

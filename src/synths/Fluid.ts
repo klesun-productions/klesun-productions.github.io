@@ -7,6 +7,7 @@ import {Tls} from "../utils/Tls";
 import {ISynth} from "./ISynth";
 import {Cls} from "../Cls";
 import {SpeedLog} from "../utils/SpeedLog";
+import {S} from "../utils/S";
 
 // we play sample audio files on "playNote()"
 
@@ -133,13 +134,13 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 
     let setPitchBend = (semitones: number, chan: number) => {
         pitchBendByChannel[chan] = semitones;
-        Tls.list(soundingsByChannel[chan]).forEach = s =>
+        S.list(soundingsByChannel[chan]).forEach = s =>
             s.src.playbackRate.value = s.baseFrequency * semitoneToFactor(semitones);
     };
 
     let setVolume = (factor: number, chan: number) => {
         volumeByChannel[chan] = factor;
-        Tls.list(soundingsByChannel[chan]).forEach = s =>
+        S.list(soundingsByChannel[chan]).forEach = s =>
             s.gain.gain.value = s.baseVolume * Math.max(factor, 0.0001);
     };
 

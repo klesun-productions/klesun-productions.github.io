@@ -21,7 +21,7 @@ type TFlatPreset = Array<{
     generators: IGenerator[],
 }>;
 
-export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl: string): ISoundFontAdapter
+export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl: string)
 {
     let sampleDirUrl = soundfontDirUrl + '/samples/';
 
@@ -206,7 +206,7 @@ export interface IGenerator {
     instrument?: number,
     sampleID?: number,
 }
- 
+
 export enum EStereoPan {NONE = 0, MONO = 1, LEFT = 2, LINK = 3, RIGHT = 4}
 
 export interface ISampleInfo {

@@ -1,6 +1,7 @@
 
 import {IPreset, IInstrument, EStereoPan, ISampleInfo, IGenerator} from "../SoundFontAdapter";
 import {Tls, Opt} from "../../utils/Tls";
+import {S} from "../../utils/S";
 
 // overwrites global keys with local if any
 let updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
@@ -56,21 +57,21 @@ let fillBorders = function(generators: IGenerator[])
     }
 
     let lo = 127;
-    let loGens = Tls.list([]);
+    let loGens = S.list([]);
     let hi = 0;
-    let hiGens = Tls.list([]);
+    let hiGens = S.list([]);
 
     for (let gen of generators) {
         if (lo > gen.keyRange.lo) {
             lo = gen.keyRange.lo;
-            loGens = Tls.list([gen]);
+            loGens = S.list([gen]);
         } else if (gen.keyRange.lo === lo) {
             loGens.more = gen;
         }
 
         if (hi < gen.keyRange.hi) {
             hi = gen.keyRange.hi;
-            hiGens = Tls.list([gen]);
+            hiGens = S.list([gen]);
         } else if (gen.keyRange.hi === hi) {
             hiGens.more = gen;
         }

@@ -12,6 +12,8 @@ import {Player} from "../player/Player";
 import {EncodeMidi} from "./EncodeMidi";
 import {PseudoPiano} from "./PseudoPiano";
 import {ComposeGui} from "./ComposeGui";
+import {S} from "../utils/S";
+import {Dom} from "../utils/Dom";
 
 // represents the X in bits of midi message
 // XXXX???? ???????? ????????
@@ -77,7 +79,7 @@ export let Handler = function(cont: HTMLDivElement)
 
     let highlightNotes = (notes: IShNote[]) => {
         pianoCleans.clear().forEach(c => c());
-        Tls.list(notes).forEach = n =>
+        S.list(notes).forEach = n =>
             pianoCleans.more = gui.piano.highlight(n.tune, n.channel);
     };
 
@@ -238,8 +240,8 @@ export let Handler = function(cont: HTMLDivElement)
         let chordIndex = control.getFocusIndex();
         let chord = control.getChordList()[chordIndex];
         if (chord) {
-            Tls.showInputDialog('Select Channel', 0)
-                .then = (chan) => Tls.showMultiInputDialog(
+            Dom.showInputDialog('Select Channel', 0)
+                .then = (chan) => Dom.showMultiInputDialog(
                     'Chord #' + chordIndex + ' channel #' + chan + ' transitions:',
                     {
                         startPitchBend: Opt(chord.startState).map(s => s[chan]).map(v => v.pitchBend).def(null),
