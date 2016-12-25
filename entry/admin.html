@@ -1,6 +1,7 @@
 <head>
     <meta charset="utf-8"/>
     <script data-main="/entry/admin" src="/libs/require.js"></script>
+    <link rel="stylesheet" type="text/css" href="/entry/common.css">
 </head>
 
 <body>
@@ -24,6 +25,69 @@
     <button id="decodeSoundFont" onclick="alert('TODO: implement');" title="output in console">Decode Sound Font</button>
     <button id="testDecodeSoundFont" onclick="alert('TODO: implement');">Test Decode SoundFont</button>
     <button id="collectLikedSongs" onclick="alert('TODO: implement');">Collect Liked Songs</button>
+
+    <br/>
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>id</th>
+                <th>subject</th>
+                <th>noun</th>
+                <th>title</th>
+                <th>food weight</th>
+                <th>actions</th>
+            </tr>
+            </thead>
+            <tbody class="food-articles">
+            <!-- clear with code before populating -->
+            <tr>
+                <td>123</td>
+                <td>asd</td>
+                <td>Wait</td>
+                <td>Please</td>
+                <td>-100.00</td>
+                <td><button disabled="1">Edible</button><button disabled="1">Not Edible</button></td>
+            </tr>
+            <tr>
+                <td>456</td>
+                <td>qwe</td>
+                <td>Loading</td>
+                <td>Data</td>
+                <td>-200.00</td>
+                <td><button disabled="1">Edible</button><button disabled="1">Not Edible</button></td>
+            </tr>
+            <tr>
+                <td>789</td>
+                <td>dsa</td>
+                <td>Kiritsugu</td>
+                <td>Evil</td>
+                <td>-150.00</td>
+                <td><button disabled="1">Edible</button><button disabled="1">Not Edible</button></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<style>
+    tbody.food-articles td.article-title {
+        max-width: 300px;
+        overflow: hidden;
+        word-break: keep-all;
+    }
+    tbody.food-articles td select.sending-opinion {
+        border: solid blue 2px;
+    }
+    tbody.food-articles td select.done-sending-opinion {
+        border: solid lightgreen 2px;
+    }
+    tbody.food-articles td select.error-sending-opinion {
+        border: solid red 2px;
+    }
+    tbody.food-articles tr:hover {
+        background-color: #e8fbff;;
+    }
+</style>
 
 </body>

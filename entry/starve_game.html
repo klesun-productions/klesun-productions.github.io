@@ -1,0 +1,296 @@
+<head>
+    <meta charset="utf-8"/>
+</head>
+
+<body>
+<h3>Это игра о голодании</h3>
+<div class="game-main">
+    <div class="nyasha-layer">
+        <div class="hide-when-dict-loaded">
+            <b>Please wait, loading dictionary...</b>
+        </div>
+        <div class="show-when-dict-loaded">
+            <div class="show-when-game-started">
+                <form class="type-word-starting-with">
+                    <label>Дайте ребёнку еды на букву <span class="food-letter-holder">К</span>:</label>
+                    <input type="text" class="food-name"/>
+                    <button type="submit">Готово</button>
+                    <br/>
+                    <i>Именительный падеж, единственное число если возможно</i>
+                </form>
+                <label>Time: </label><progress class="time-left" value="0.60" max="1"></progress>
+                <label>Seconds: </label><span class="seconds-left-holder">20</span>
+                <label>Lives: </label><span class="lives-left-holder">20</span>
+                <button class="skip">skip</button>
+            </div>
+            <div class="hide-when-game-started">
+                <button class="start-game">Start!</button>
+            </div>
+        </div>
+        <div class="high-scores-cont">
+            <h3>High Scores</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Score</th>
+                        <th>Words</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0</td>
+                        <td>Вася</td>
+                        <td>5</td>
+                        <td>абрикос, сельдерей, чипсы, картофель, варенье</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>Дёня</td>
+                        <td>4</td>
+                        <td>ликёр, коньяк, виски, ром</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Лена</td>
+                        <td>3</td>
+                        <td>булочка, коржик, бублик, баранка</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <audio class="game-play-bgm" src="/unversioned/imagesFromWeb/phoenix_wright_cross_examination.mp3" loop="1" controls="1"></audio>
+    <script>document.querySelector('audio.game-play-bgm').volume = 0.15</script>
+
+    <br clear="all"/>
+
+    <audio class="game-over-bgm" src="/unversioned/imagesFromWeb/phoenix_wright_jailer_elegy.mp3" loop="1" controls="1"></audio>
+    <script>document.querySelector('audio.game-over-bgm').volume = 0.15</script>
+
+</div>
+
+<script>
+
+let ajax = function (url, restMethod, params) {
+    let result = {then: (data) => {}};
+    var http = new XMLHttpRequest();
+    http.open(restMethod, url, true);
+    http.responseType = 'json';
+    http.setRequestHeader('Content-Type', 'application/json;UTF-8');
+    http.onload = () => result.then(http.response);
+    http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+    return result;
+};
+
+let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
+
+let dictLoaded = function(easyWordSet, rareWordSet)
+{
+    let usedWords = [];
+    let roundSeconds = 30;
+    let sourceWord = null;
+    let counterStartedAt = null;
+    let livesLeft = 3;
+
+    let updateNumbers = function()
+    {
+        let secondsLeft = roundSeconds - (window.performance.now() - counterStartedAt) / 1000;
+        $$('.food-letter-holder').forEach(h => h.innerHTML = sourceWord[0].toUpperCase());
+        $$('.seconds-left-holder').forEach(h => h.innerHTML = secondsLeft | 0);
+        $$('.lives-left-holder').forEach(h => h.innerHTML = livesLeft);
+        $$('progress.time-left').forEach(p => p.value = secondsLeft / roundSeconds);
+        return secondsLeft;
+    };
+
+    let resetCounter = function()
+    {
+        let optionList = [...easyWordSet];
+        let rnd = Math.random() * optionList.length | 0;
+        sourceWord = optionList[rnd];
+        counterStartedAt = window.performance.now();
+        updateNumbers();
+        $$('input.food-name').forEach(i => {
+            i.setAttribute('placeholder', sourceWord[0].toUpperCase() + '...');
+            i.value = '';
+        });
+    };
+
+    let loseLife = function()
+    {
+        alert(sourceWord);
+        usedWords.push(sourceWord);
+        easyWordSet.delete(sourceWord);
+        rareWordSet.delete(sourceWord);
+        --livesLeft;
+        if (livesLeft > 0) {
+            resetCounter();
+        } else {
+            $$('audio.game-play-bgm').forEach(bgm => bgm.pause());
+            $$('audio.game-over-bgm').forEach(bgm => bgm.play());
+            $$('body')[0].className += ' game-over';
+            let playerName = prompt('Game Over. Congrats, you guessed ' + usedWords.length + ' words. Enter your nick-name for high-scores: ', 'anonymous');
+            if (playerName !== null) {
+                ajax('/htbin/json_service.py?f=submit_starve_game_score', 'POST', {params: {playerName: playerName, guessedWords: usedWords}});
+            }
+        }
+    };
+
+    let onFrame = function()
+    {
+        if (livesLeft < 1) return;
+
+        let secondsLeft = updateNumbers();
+        if (secondsLeft < 0) {
+            loseLife();
+        }
+    };
+
+    let validateWord = function(typedWord)
+    {
+        if (livesLeft < 1) return;
+
+        let index = usedWords.indexOf(typedWord);
+        if (typedWord.slice(0,1) !== sourceWord[0]) {
+            alert('Wrong letter, your word must start with "' + sourceWord[0] + '"');
+        } else if (index > 0) {
+            alert('You already used this word in ' + index + '-th round!');
+        } else if (!easyWordSet.has(typedWord) && !rareWordSet.has(typedWord)) {
+            alert('I don\'t know such food: "' + typedWord + '"');
+            /** @debug */
+            console.log(easyWordSet, rareWordSet);
+        } else {
+            usedWords.push(typedWord);
+            easyWordSet.delete(typedWord);
+            rareWordSet.delete(typedWord);
+            resetCounter();
+        }
+    };
+
+    $$('form.type-word-starting-with').forEach(f => f.onsubmit = e => {
+        e.preventDefault();
+        // TODO: map latin characters to russian instantly, cuz it's really annoying to switch layout
+        validateWord($$('input.food-name', f)[0].value.toLowerCase());
+    });
+
+    $$('button.skip').forEach(btn => btn.onclick = loseLife);
+
+    $$('button.start-game').forEach(btn => btn.onclick = () => {
+        $$('body')[0].className += ' game-started';
+        $$('form.type-word-starting-with input.food-name').forEach(input => input.focus());
+        setInterval(onFrame, 40);
+        $$('audio.game-play-bgm').forEach(bgm => bgm.play());
+        resetCounter();
+    });
+
+    $$('body')[0].className += ' dict-loaded';
+};
+
+window.onload = () => {
+    ajax('/tests/grabs/dict_food_rus_eng.json', 'GET', {}).then = dict =>
+    ajax('/tests/grabs/vkusnaya_i_zdorovaya_verified.json', 'GET', {}).then = recipeBook =>
+    ajax('/tests/grabs/food_names.json', 'GET', {}).then = synonymBundles => {
+        let rareWords = new Set();
+        let easyWords = new Set(Object.keys(dict).filter(w => w.length > 1));
+        for (let words of synonymBundles) {
+            for (let word of words) {
+                easyWords.add(word.toLowerCase());
+            }
+        }
+        for (let wordRec of recipeBook) {
+            // TODO: treat as synonyms instead of as separate words
+            for (let word of (wordRec.synonyms || []).concat([wordRec.key])) {
+                if (/^[а-яА-Я]]/.test(word) && !wordRec.isRareWord) {
+                    easyWords.add(word.toLowerCase());
+                } else {
+                    rareWords.add(word.toLowerCase());
+                }
+            }
+        }
+        dictLoaded(easyWords, rareWords);
+    };
+
+    ajax('/htbin/json_service.py?f=get_starve_game_high_scores', 'GET', {}).then = console.log; // TODO: draw rows
+};
+
+</script>
+
+<style>
+    :not(.game-over) div.nyasha-layer {
+        background-image: url("/imgs/paintings/nyasha_hungry.svg");
+        background-repeat: no-repeat;
+        width: 100%;
+        height: 100%;
+    }
+    .game-over div.nyasha-layer {
+        background-image: url("/imgs/paintings/nyasha_portrait.png");
+        background-repeat: no-repeat;
+        background-position-y: 50%;
+        background-position-x: 40px;
+    }
+    div.game-main {
+        background-image: url("/imgs/fromWeb/kitchen.png");
+        background-repeat: no-repeat;
+        background-position:50% 50%;
+        background-size: 100%;
+        width: 1000px;
+        height: 600px;
+    }
+    .food-letter-holder,
+    .lives-left-holder,
+    .seconds-left-holder
+    {
+        font-weight: bold;
+    }
+    .hide-when-dict-loaded,
+    .hide-when-game-started,
+    .dict-loaded .show-when-dict-loaded,
+    .game-started .show-when-game-started {
+        display: block;
+    }
+    .show-when-dict-loaded,
+    .show-when-game-started,
+    .game-started .hide-when-game-started,
+    .dict-loaded .hide-when-dict-loaded {
+        display: none;
+    }
+    form {
+        margin: 2px;
+    }
+    .nyasha-layer {
+        position: relative;
+    }
+    .nyasha-layer > * {
+        background-color: rgba(255,255,255,0.95);
+    }
+    .high-scores-cont {
+        position: absolute;
+        right: 0px;
+        bottom: 0px;
+    }
+    audio.game-play-bgm, audio.game-over-bgm {
+        float: right;
+    }
+    button.start-game {
+        font-size: 36px;
+        margin-left: 50%;
+
+        animation-duration: 1s;
+        animation-name: glowingstartbutton;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+    }
+
+    @keyframes glowingstartbutton {
+        from {
+            color: #c65700;
+        }
+
+        to {
+            color: #a2dd00;
+        }
+    }
+</style>
+</body>

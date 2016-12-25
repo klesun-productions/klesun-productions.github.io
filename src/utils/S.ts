@@ -14,6 +14,12 @@ export let S = (function()
             map: <Tel2>(f: (v: Tel, i: number) => Tel2) =>
                 list(elmts.map(f)),
 
+            slice: (from: number, to: number) =>
+                list(elmts.slice(from, to)),
+
+            sort: (f: (v: Tel) => string|number) =>
+                list(elmts.sort((a,b) => f(a) > f(b) ? +1 : f(a) < f(b) ? -1 : 0)),
+
             groupBy: (f: (el: Tel) => number): {[k: number]: Tel[]} => {
                 let result: {[k: number]: Tel[]} = {};
                 for (let el of elmts) {
@@ -42,6 +48,50 @@ export let S = (function()
             },
             get s() {
                 return elmts;
+            },
+        };
+    };
+
+    let opt = function<T>(value: T): IOpts<T>
+    {
+        let has = () => value !== null &&
+        value !== undefined;
+        // let exc = (err: Error): any => { throw err; };
+        // exc(new Error('next time check has() before accessing the value'))
+
+        let self: IOpts<T>;
+        return self = {
+            map: <T2>(f: (arg: T) => T2): IOpts<T2> => has()
+                ? opt(f(value))
+                : opt(null),
+
+            def: (def: T): T => has()
+                ? value
+                : def,
+
+            has: has,
+
+            set get (cb: (value: T) => void) {
+                if (has()) {
+                    cb(value);
+                }
+            },
+
+            uni: <T2>(some: (v: T) => T2, none: () => T2) => has()
+                ? some(value)
+                : none(),
+
+            err: (none) => {
+                if (has()) {
+                    return {
+                        set els (some: (value: T) => void) {some(value);},
+                    };
+                } else {
+                    none();
+                    return {
+                        set els (some: (value: T) => void) {},
+                    };
+                }
             },
         };
     };
@@ -75,7 +125,34 @@ export let S = (function()
                 },
             };
         },
+        range: (l: number, r: number): Array<number> =>
+            Array.apply(null, Array(r - l)).map((nop: void, i: number) => l + i),
+
+        /** wraps object keyed by number to an iterable thing */
+        digt: <Tv>(obj: {[key: number]: Tv}) => {
+            return {
+                toList: <T2>(f: (v: Tv, k: number) => T2) =>
+                    S.list(Object.keys(obj).map((k) => f(obj[+k], +k))),
+                set forEach (f: (v: Tv, k: number) => void) {
+                    Object.keys(obj).forEach((k) => f(obj[+k], +k))
+                },
+                s: obj,
+            };
+        },
 
         list: list,
+        opt: opt,
     };
 })();
+
+export interface IOpts<T> {
+    map: <T2>(f: (arg: T) => T2) => IOpts<T2>,
+    def: (def: T) => T,
+    has: () => boolean,
+    get: (value: T) => void,
+    uni: <T2>(
+        some: (v: T) => T2,
+        none: () => T2
+    ) => T2,
+    err: (none: () => void) => {els: (value: T) => void},
+}

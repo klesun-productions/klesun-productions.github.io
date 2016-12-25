@@ -7,19 +7,23 @@ import {Dom} from "./Dom";
 var verySecurePassword = '';
 
 let awaitingPassword: Array<(password: string) => void> = [];
+// TODO: set it to false when user presses "cancel" to prevent inconsistent state of UX
+let askingForPassword = false;
 
 let askForPassword = function(cb: (pwd: string) => void)
 {
     if (verySecurePassword) {
         cb(verySecurePassword);
     } else {
-        awaitingPassword.push(cb);
-        if (awaitingPassword.length < 2) {
+        if (askingForPassword === false) {
+            askingForPassword = true;
             Dom.showPasswordDialog((pwd) => {
+                askingForPassword = false;
                 verySecurePassword = pwd;
                 awaitingPassword.splice(0).forEach(c => c(pwd));
             });
         }
+        awaitingPassword.push(cb);
     }
 };
 
@@ -30,6 +34,10 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: s
     oReq.responseType = 'json';
     oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
     oReq.onload = () => {
+        if (oReq.response === null) {
+            console.error('server error, see network log');
+            return;
+        }
         var [result, error] = oReq.response;
         if (!error) {
             whenLoaded(result);
@@ -80,4 +88,30 @@ export let ServApi = {
         sampleRate: number,
         samplingValues: Int16Array,
     }) => contribute('save_sample_wav', params),
+
+    set get_assorted_food_articles(cb: (artciles: article_row_t[]) => void) {
+        ajax('get_assorted_food_articles', 'GET', {}, cb);
+    },
+
+    set_food_article_opinion: (params: article_opinion_t) =>
+        contribute('set_food_article_opinion', params),
+
+    set get_recipe_book(cb: (book: {[word: string]: number}) => void) {
+        ajax('get_recipe_book', 'GET', {}, cb);
+    },
+};
+
+interface article_row_t {
+    wiki_id: number,
+    wiki_title: string,
+    aticle_type: string,
+    food_weight: number,
+    definition_noun: string,
+};
+
+interface article_opinion_t {
+    wiki_id: number,
+    food_relevance_score: number,
+    food_relevance_message: string,
+    definition_noun: string,
 };

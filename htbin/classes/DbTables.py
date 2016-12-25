@@ -22,6 +22,13 @@ class SongRating(db.Entity):
     rating = Optional(str, default='')
 
 
+class StarveGameScore(db.Entity):
+    rowid = Optional(int)
+    playerName = Required(str)
+    score = Required(int)
+    guessedWords = Optional(str)
+
+
 class SongYoutubeLink(db.Entity):
     fileName = Required(str)
     youtubeId = Required(str, 11)

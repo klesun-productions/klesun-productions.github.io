@@ -5,18 +5,19 @@
 # it will contain the actionName -> method mapping
 
 
+import cgitb
+cgitb.enable()
+import sys
+
+from classes.Contribution import Contribution
+
+
 import collections
 from collections import namedtuple
 
 import misc
-
-import cgitb
-cgitb.enable()
-
-from classes.Contribution import Contribution
-
 import json
-import os, sys
+import os
 
 import time
 
@@ -117,6 +118,31 @@ method_dict = {
         closure=misc.store_random_page_data,
         headers=[],
         is_secure=True,
+    ),
+    'get_assorted_food_articles': Fun(
+        closure=misc.get_assorted_food_articles,
+        headers=[],
+        is_secure=False,
+    ),
+    'set_food_article_opinion': Fun(
+        closure=misc.set_food_article_opinion,
+        headers=[],
+        is_secure=True,
+    ),
+    'get_recipe_book': Fun(
+        closure=misc.get_recipe_book,
+        headers=[],
+        is_secure=False,
+    ),
+    'submit_starve_game_score': Fun(
+        closure=Contribution.submit_starve_game_score,
+        headers=[],
+        is_secure=False,
+    ),
+    'get_starve_game_high_scores': Fun(
+        closure=Contribution.get_starve_game_high_scores,
+        headers=[],
+        is_secure=False,
     ),
 }
 

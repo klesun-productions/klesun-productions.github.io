@@ -3,33 +3,13 @@
 import {IGeneralStructure} from "../DataStructures";
 import {DecodeMidi} from "../player/DecodeMidi";
 import {Cls} from "../Cls";
-import {S} from "./S";
+import {S, IOpts} from "./S";
 import {Dom} from "./Dom";
-
-var Static: any = {};
-
-// some useful shorthand methods
-
-class Optional<T>
-{
-    constructor(private isPresent: boolean, private value?: T | null) {}
-
-    static of<T>(value: T): Optional<T>
-    {
-        return new Optional(true, value);
-    }
-
-    static no<T>(): Optional<T | null>
-    {
-        return new Optional(false, null);
-    }
-
-    get = () => this.value;
-    has = () => this.isPresent;
-}
 
 // defined in /libs/FileSaver.js
 declare var saveAs: any;
+
+var Static: any = {};
 
 // for asynchronous buffer retrieval
 var cachedSampleBuffers: { [url: string]: AudioBuffer; } = {};
@@ -41,20 +21,7 @@ const toDict = <Tv>(pairs: [string,Tv][]): {[k: string]: Tv} => {
     return result;
 };
 
-const range = (l: number, r: number): Array<number> =>
-    Array.apply(null, Array(r - l)).map((nop: void, i: number) => l + i);
-
-// firefox fails - TODO: investigate
-var cssReflection: {[selector: string]: {[name: string]: string}};
-try {
-    cssReflection =
-        <any>toDict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
-            .map((r: any) => [r.selectorText, toDict(Array.from(r.style)
-                .map((name: string) => <any>[name, r.style[name]]))]));
-} catch (e) {
-    console.log('Failed to get CSS reflection', e);
-    cssReflection = {};
-}
+const range = S.range;
 
 const parseRgbCss = function(rgbCss: string): [number, number, number]
 {
@@ -116,10 +83,10 @@ let ditu = <Tv>(pairs: {key: number, val: Tv}[]) => {
     return result;
 };
 
-export let Tls = Cls['Tls'] = {
+export let Tls = {
 
     audioCtx: new AudioContext(),
-    
+
     for: <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
         Object.keys(dict).forEach(k => callback(k, dict[k])),
 
@@ -131,17 +98,7 @@ export let Tls = Cls['Tls'] = {
     dict: function<Tv>(obj: {[key: string]: Tv}) {
     },
 
-    /** transforms object keyed by number to a list */
-    digt: <Tv>(obj: {[key: number]: Tv}) => {
-        return {
-            toList: <T2>(f: (v: Tv, k: number) => T2) =>
-                S.list(Object.keys(obj).map((k) => f(obj[+k], +k))),
-            set forEach (f: (v: Tv, k: number) => void) {
-                Object.keys(obj).forEach((k) => f(obj[+k], +k))
-            },
-            s: obj,
-        };
-    },
+    digt: S.digt,
 
     /** transforms key-value pair tuples to a dict */
     ditu: ditu,
@@ -185,6 +142,7 @@ export let Tls = Cls['Tls'] = {
         var input = Static.FILE_INPUT = Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
         input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
         input.onclick = (inputEvent: Event) => { input.value = null; };
+        console.log(input);
         $(input).click();
     },
 
@@ -192,7 +150,7 @@ export let Tls = Cls['Tls'] = {
 
     fetchBinaryFile: (url: string, whenLoaded: (buf: ArrayBuffer) => void) =>
         fetchFile(url, 'arraybuffer', whenLoaded),
-    
+
     fetchJson: (url: string, whenLoaded: (parsedJson: {[k: string]: any}) => void) =>
         fetchFile(url, 'json', whenLoaded),
 
@@ -270,11 +228,25 @@ export let Tls = Cls['Tls'] = {
         },
     },
 
-    channelColors: range(0,16).map((ch): [number, number, number] => {
-        let selector = '.channelColors [data-channel="' + ch + '"]';
-        let colorStr = (cssReflection[selector] || {})['color'] || null;
-        return colorStr ? parseRgbCss(colorStr) : <any>range(0,3).map(_ => Math.random() * 256 | 0);
-    }),
+    get channelColors() {
+        // firefox fails - TODO: investigate
+        var cssReflection: {[selector: string]: {[name: string]: string}};
+        try {
+            cssReflection =
+                <any>toDict(<any>[].concat.apply([], Array.from(document.styleSheets).map(css => Array.from(css.rules)))
+                    .map((r: any) => [r.selectorText, toDict(Array.from(r.style)
+                        .map((name: string) => <any>[name, r.style[name]]))]));
+        } catch (e) {
+            console.log('Failed to get CSS reflection', e);
+            cssReflection = {};
+        }
+
+        return range(0,16).map((ch): [number, number, number] => {
+            let selector = '.channelColors [data-channel="' + ch + '"]';
+            let colorStr = (cssReflection[selector] || {})['color'] || null;
+            return colorStr ? parseRgbCss(colorStr) : <any>range(0,3).map(_ => Math.random() * 256 | 0);
+        })
+    },
 
     // here is exactly 128 preset names in correct order
     instrumentNames: ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",
@@ -308,61 +280,10 @@ export var Fraction = function(num: number, den: number): IFraction {
     };
 };
 
-export let Opt = Cls['Opt'] = function<T>(value: T): IOpt<T>
-{
-    let has = () => value !== null &&
-                    value !== undefined;
-    // let exc = (err: Error): any => { throw err; };
-    // exc(new Error('next time check has() before accessing the value'))
+export let Opt = S.opt;
 
-    let self: IOpt<T>;
-    return self = {
-        map: <T2>(f: (arg: T) => T2): IOpt<T2> => has()
-            ? Opt(f(value))
-            : Opt(null),
-
-        def: (def: T): T => has()
-            ? value
-            : def,
-
-        has: has,
-
-        set get (cb: (value: T) => void) {
-            if (has()) {
-                cb(value);
-            }
-        },
-
-        uni: <T2>(some: (v: T) => T2, none: () => T2) => has()
-            ? some(value)
-            : none(),
-
-        err: (none) => {
-            if (has()) {
-                return {
-                    set els (some: (value: T) => void) {some(value);},
-                };
-            } else {
-                none();
-                return {
-                    set els (some: (value: T) => void) {},
-                };
-            }
-        },
-    };
-};
-
-export interface IOpt<T> {
-    map: <T2>(f: (arg: T) => T2) => IOpt<T2>,
-    def: (def: T) => T,
-    has: () => boolean,
-    get: (value: T) => void,
-    uni: <T2>(
-        some: (v: T) => T2,
-        none: () => T2
-    ) => T2,
-    err: (none: () => void) => {els: (value: T) => void},
-}
+// TODO: use IOpts everywhere!
+export type IOpt<T> = IOpts<T>;
 
 export interface IFraction {
     num: () => number,

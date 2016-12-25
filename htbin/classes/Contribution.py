@@ -5,7 +5,7 @@ import os
 import sys
 from pony.orm import select, db_session
 import classes
-from classes.DbTables import Listened, SongRating, SongYoutubeLink
+from classes.DbTables import Listened, SongRating, SongYoutubeLink, StarveGameScore
 from collections import defaultdict
 
 
@@ -71,3 +71,21 @@ class Contribution(object):
     def log_finished(file_name: str, gmai_lLogin: str):
         hit = Listened(fileName=file_name, gmailLogin=gmai_lLogin)
         classes.DbTables.commit()
+
+    @staticmethod
+    @db_session
+    def submit_starve_game_score(params: dict):
+        row = StarveGameScore(
+            playerName=params['playerName'],
+            score=len(params['guessedWords']),
+            guessedWords=','.join(params['guessedWords'])
+        )
+
+        classes.DbTables.commit()
+
+        return row.rowid
+
+    @staticmethod
+    @db_session
+    def get_starve_game_high_scores(params: dict) -> defaultdict:
+        return list(rec.to_dict() for rec in select(rec for rec in StarveGameScore))
