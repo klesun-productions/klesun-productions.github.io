@@ -1,8 +1,5 @@
 
 # This class provides some functions to write to db input from users
-import json
-import os
-import sys
 from pony.orm import select, db_session
 import classes
 from classes.DbTables import Listened, SongRating, SongYoutubeLink, StarveGameScore

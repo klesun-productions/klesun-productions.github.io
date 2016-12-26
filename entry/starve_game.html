@@ -1,5 +1,6 @@
 <head>
     <meta charset="utf-8"/>
+    <script src="/libs/require.js"></script>
 </head>
 
 <body>
@@ -10,9 +11,9 @@
             <b>Please wait, loading dictionary...</b>
         </div>
         <div class="show-when-dict-loaded">
-            <div class="show-when-game-started">
+            <div class="game-play-cont">
                 <form class="type-word-starting-with">
-                    <label>Дайте ребёнку еды на букву <span class="food-letter-holder">К</span>:</label>
+                    <label>Дайте ей еды на букву <span class="food-letter-holder">К</span>:</label>
                     <input type="text" class="food-name"/>
                     <button type="submit">Готово</button>
                     <br/>
@@ -23,8 +24,17 @@
                 <label>Lives: </label><span class="lives-left-holder">20</span>
                 <button class="skip">skip</button>
             </div>
-            <div class="hide-when-game-started">
-                <button class="start-game">Start!</button>
+            <div class="main-menu">
+                <button class="start-game glowing">Start!</button>
+            </div>
+            <div class="game-over-board">
+                <label>Вы подобрали <span class="word-count-holder">{вставить сюда}</span> слов</label>
+                <br/>
+                <label>Ваши слова: <span class="guessed-words-holder">{вставить сюда}</span></label>
+                <br/>
+                <label>Ваша позиция в таблице рекордов: <span class="record-place-holder">{вставить сюда}</span></label>
+                <br/>
+                <button class="glowing" onclick="window.location.reload()">Try Again</button>
             </div>
         </div>
         <div class="high-scores-cont">
@@ -70,159 +80,35 @@
     <audio class="game-over-bgm" src="/unversioned/imagesFromWeb/phoenix_wright_jailer_elegy.mp3" loop="1" controls="1"></audio>
     <script>document.querySelector('audio.game-over-bgm').volume = 0.15</script>
 
+    <div class="dull-cont-for-preloading">You should not see this container</div>
 </div>
 
 <script>
 
-let ajax = function (url, restMethod, params) {
-    let result = {then: (data) => {}};
-    var http = new XMLHttpRequest();
-    http.open(restMethod, url, true);
-    http.responseType = 'json';
-    http.setRequestHeader('Content-Type', 'application/json;UTF-8');
-    http.onload = () => result.then(http.response);
-    http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
-    return result;
-};
-
 let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
 
-let dictLoaded = function(easyWordSet, rareWordSet)
-{
-    let usedWords = [];
-    let roundSeconds = 30;
-    let sourceWord = null;
-    let counterStartedAt = null;
-    let livesLeft = 3;
-
-    let updateNumbers = function()
-    {
-        let secondsLeft = roundSeconds - (window.performance.now() - counterStartedAt) / 1000;
-        $$('.food-letter-holder').forEach(h => h.innerHTML = sourceWord[0].toUpperCase());
-        $$('.seconds-left-holder').forEach(h => h.innerHTML = secondsLeft | 0);
-        $$('.lives-left-holder').forEach(h => h.innerHTML = livesLeft);
-        $$('progress.time-left').forEach(p => p.value = secondsLeft / roundSeconds);
-        return secondsLeft;
-    };
-
-    let resetCounter = function()
-    {
-        let optionList = [...easyWordSet];
-        let rnd = Math.random() * optionList.length | 0;
-        sourceWord = optionList[rnd];
-        counterStartedAt = window.performance.now();
-        updateNumbers();
-        $$('input.food-name').forEach(i => {
-            i.setAttribute('placeholder', sourceWord[0].toUpperCase() + '...');
-            i.value = '';
-        });
-    };
-
-    let loseLife = function()
-    {
-        alert(sourceWord);
-        usedWords.push(sourceWord);
-        easyWordSet.delete(sourceWord);
-        rareWordSet.delete(sourceWord);
-        --livesLeft;
-        if (livesLeft > 0) {
-            resetCounter();
-        } else {
-            $$('audio.game-play-bgm').forEach(bgm => bgm.pause());
-            $$('audio.game-over-bgm').forEach(bgm => bgm.play());
-            $$('body')[0].className += ' game-over';
-            let playerName = prompt('Game Over. Congrats, you guessed ' + usedWords.length + ' words. Enter your nick-name for high-scores: ', 'anonymous');
-            if (playerName !== null) {
-                ajax('/htbin/json_service.py?f=submit_starve_game_score', 'POST', {params: {playerName: playerName, guessedWords: usedWords}});
-            }
-        }
-    };
-
-    let onFrame = function()
-    {
-        if (livesLeft < 1) return;
-
-        let secondsLeft = updateNumbers();
-        if (secondsLeft < 0) {
-            loseLife();
-        }
-    };
-
-    let validateWord = function(typedWord)
-    {
-        if (livesLeft < 1) return;
-
-        let index = usedWords.indexOf(typedWord);
-        if (typedWord.slice(0,1) !== sourceWord[0]) {
-            alert('Wrong letter, your word must start with "' + sourceWord[0] + '"');
-        } else if (index > 0) {
-            alert('You already used this word in ' + index + '-th round!');
-        } else if (!easyWordSet.has(typedWord) && !rareWordSet.has(typedWord)) {
-            alert('I don\'t know such food: "' + typedWord + '"');
-            /** @debug */
-            console.log(easyWordSet, rareWordSet);
-        } else {
-            usedWords.push(typedWord);
-            easyWordSet.delete(typedWord);
-            rareWordSet.delete(typedWord);
-            resetCounter();
-        }
-    };
-
-    $$('form.type-word-starting-with').forEach(f => f.onsubmit = e => {
-        e.preventDefault();
-        // TODO: map latin characters to russian instantly, cuz it's really annoying to switch layout
-        validateWord($$('input.food-name', f)[0].value.toLowerCase());
-    });
-
-    $$('button.skip').forEach(btn => btn.onclick = loseLife);
-
-    $$('button.start-game').forEach(btn => btn.onclick = () => {
-        $$('body')[0].className += ' game-started';
-        $$('form.type-word-starting-with input.food-name').forEach(input => input.focus());
-        setInterval(onFrame, 40);
-        $$('audio.game-play-bgm').forEach(bgm => bgm.play());
-        resetCounter();
-    });
-
-    $$('body')[0].className += ' dict-loaded';
-};
-
-window.onload = () => {
-    ajax('/tests/grabs/dict_food_rus_eng.json', 'GET', {}).then = dict =>
-    ajax('/tests/grabs/vkusnaya_i_zdorovaya_verified.json', 'GET', {}).then = recipeBook =>
-    ajax('/tests/grabs/food_names.json', 'GET', {}).then = synonymBundles => {
-        let rareWords = new Set();
-        let easyWords = new Set(Object.keys(dict).filter(w => w.length > 1));
-        for (let words of synonymBundles) {
-            for (let word of words) {
-                easyWords.add(word.toLowerCase());
-            }
-        }
-        for (let wordRec of recipeBook) {
-            // TODO: treat as synonyms instead of as separate words
-            for (let word of (wordRec.synonyms || []).concat([wordRec.key])) {
-                if (/^[а-яА-Я]]/.test(word) && !wordRec.isRareWord) {
-                    easyWords.add(word.toLowerCase());
-                } else {
-                    rareWords.add(word.toLowerCase());
-                }
-            }
-        }
-        dictLoaded(easyWords, rareWords);
-    };
-
-    ajax('/htbin/json_service.py?f=get_starve_game_high_scores', 'GET', {}).then = console.log; // TODO: draw rows
-};
+window.onload =
+    () => requirejs(['/src/starve/StarveGame.js'],
+    (StGaNs) => StGaNs.StarveGame($$('.game-main')[0]));
 
 </script>
 
 <style>
-    :not(.game-over) div.nyasha-layer {
+    div.nyasha-layer {
         background-image: url("/imgs/paintings/nyasha_hungry.svg");
         background-repeat: no-repeat;
         width: 100%;
         height: 100%;
+    }
+    /* pre-loading images */
+    .dull-cont-for-preloading {
+        background-image:
+            url("/imgs/paintings/nyasha_portrait.png"),
+            url("/imgs/paintings/nyasha_last_life.svg");
+        display: none;
+    }
+    .last-life div.nyasha-layer {
+        background-image: url("/imgs/paintings/nyasha_last_life.svg");
     }
     .game-over div.nyasha-layer {
         background-image: url("/imgs/paintings/nyasha_portrait.png");
@@ -245,15 +131,18 @@ window.onload = () => {
         font-weight: bold;
     }
     .hide-when-dict-loaded,
-    .hide-when-game-started,
+    .main-menu,
     .dict-loaded .show-when-dict-loaded,
-    .game-started .show-when-game-started {
+    .game-started .game-play-cont,
+    .game-over .game-over-board {
         display: block;
     }
     .show-when-dict-loaded,
-    .show-when-game-started,
-    .game-started .hide-when-game-started,
-    .dict-loaded .hide-when-dict-loaded {
+    .game-play-cont,
+    .game-over .game-play-cont,
+    .game-started .main-menu,
+    .dict-loaded .hide-when-dict-loaded,
+    .game-main:not(.game-over) .game-over-board {
         display: none;
     }
     form {
@@ -269,11 +158,22 @@ window.onload = () => {
         position: absolute;
         right: 0px;
         bottom: 0px;
+        opacity: 0.5;
+        width: 300px;
+    }
+    .high-scores-cont:hover {
+        opacity: 1;
+    }
+
+    .high-scores-cont td.guessed-words {
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: auto;
     }
     audio.game-play-bgm, audio.game-over-bgm {
         float: right;
     }
-    button.start-game {
+    button.glowing {
         font-size: 36px;
         margin-left: 50%;
 

@@ -35,14 +35,14 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: s
     oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
     oReq.onload = () => {
         if (oReq.response === null) {
-            console.error('server error, see network log');
+            console.error('server error, see network log of ' + funcName);
             return;
         }
         var [result, error] = oReq.response;
         if (!error) {
             whenLoaded(result);
         } else {
-            Dom.showError('failed to ajax [' + funcName + ']: ' + error);
+            console.log('failed to ajax [' + funcName + ']: ' + error);
             verySecurePassword = error !== 'wrongPassword' && verySecurePassword;
         }
     };
@@ -99,6 +99,13 @@ export let ServApi = {
     set get_recipe_book(cb: (book: {[word: string]: number}) => void) {
         ajax('get_recipe_book', 'GET', {}, cb);
     },
+
+    submit_starve_game_score: (params: {playerName: string, guessedWords: string[]}) =>
+        ajax('submit_starve_game_score', 'POST', {params: params, verySecurePassword: null}, (resp) => {}),
+
+    set get_starve_game_high_scores(cb: (highScore: high_score_t[]) => void) {
+        ajax('get_starve_game_high_scores', 'GET', {}, cb);
+    },
 };
 
 interface article_row_t {
@@ -114,4 +121,10 @@ interface article_opinion_t {
     food_relevance_score: number,
     food_relevance_message: string,
     definition_noun: string,
+};
+
+interface high_score_t {
+    playerName: string,
+    score: number,
+    guessedWords: string, // separated by coma
 };

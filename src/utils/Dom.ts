@@ -14,6 +14,11 @@ interface IDomParams {
     children?: IWrappedDom<HTMLElement>[],
     innerHTML?: string,
     onclick?: (e: Event) => void,
+    style?: {[prop: string]: string},
+}
+
+interface IFormParams extends IDomParams {
+    onsubmit?: (e: Event) => void,
 }
 
 interface IInputParams extends IDomParams {
@@ -37,6 +42,10 @@ interface IOptionParams extends IDomParams {
     selected?: boolean,
 }
 
+interface IButtonParams extends IDomParams {
+    type?: 'submit' | 'button',
+}
+
 /** contains shortcut method to operate with DOM */
 export let Dom = (function()
 {
@@ -47,6 +56,7 @@ export let Dom = (function()
         Opt(params.className).get = v => dom.className = v;
         Opt(params.innerHTML).get = v => dom.innerHTML = v;
         Opt(params.onclick).get = v => dom.onclick = v;
+        Opt(params.style).get = v => S.list(Object.keys(v)).forEach = k => dom.style[k] = v[k];
 
         S.list(params.children || []).forEach = c => dom.appendChild(c.s);
 
@@ -68,10 +78,18 @@ export let Dom = (function()
     let mk = {
         div: (params?: IDomParams) => wrap(<HTMLDivElement>document.createElement('div'), params || {}),
         br: (params?: IDomParams) => wrap(<HTMLBRElement>document.createElement('br'), params || {}),
-        button: (params?: IDomParams) => wrap(<HTMLButtonElement>document.createElement('button'), params || {}),
+        button: (params?: IButtonParams) =>
+            wrap(<HTMLButtonElement>document.createElement('button'), params || {})
+                .with(dom => Opt(params.type).get = v => dom.type = v),
         tr: (params?: IDomParams) => wrap(<HTMLTableRowElement>document.createElement('tr'), params || {}),
         td: (params?: IDomParams) => wrap(<HTMLTableCellElement>document.createElement('td'), params || {}),
         label: (params?: IDomParams) => wrap(<HTMLLabelElement>document.createElement('label'), params || {}),
+        form: (params?: IFormParams) =>
+            wrap(<HTMLFormElement>document.createElement('form'), params || {})
+                .with(dom => dom.onsubmit = e => {
+                    e.preventDefault();
+                    Opt(params.onsubmit).get = v => v(e);
+                }),
         input: (params: IInputParams = {}) =>
             wrap(<HTMLInputElement>document.createElement('input'), params)
                 .with(dom => {
@@ -101,25 +119,28 @@ export let Dom = (function()
                 }),
     };
 
-    let showDialog = function(msg: string, content?: HTMLElement)
+    let showDialog = function(content: HTMLElement)
     {
         let dialog = mk.div({
-            className: 'modalDialog',
-            innerHTML: msg,
-            children: [
-                mk.br(),
-                content ? wrap(content, {}) : mk.div({innerHTML: 'Just a message'}),
-                mk.button({
-                    innerHTML: 'Cancel',
-                    onclick: () => { dialog.s.remove(); },
-                }),
-            ],
+            className: 'modal-dialog',
+            children: [wrap(content, {})],
+            style: {
+                'position': 'absolute',
+                'left': '50%',
+                'top': '50%',
+                'transform': 'translate(-50%, -50%)',
+                'background-color': 'lightgrey',
+                'z-index': '1002',
+                'padding': '6px',
+                'box-shadow': 'rgba(30, 121, 151, 20.701961) 0px 0px 180px 80px',
+                'min-width': '20%',
+            },
         });
 
         // TODO: escape - cancel
         $$('body')[0].appendChild(dialog.s);
 
-        return () => dialog.s.remove();
+        return () => { dialog.s.remove(); };
     };
 
     let showMultiInputDialog = function<T>(msg: string, initialData: T)
@@ -129,6 +150,7 @@ export let Dom = (function()
             key: k,
             val: mk.input({type: 'text', value: (<any>initialData)[k]}),
         });
+        let okNutton = null;
 
         let ok = () => {
             S.list(inputs).forEach = pair =>
@@ -138,26 +160,32 @@ export let Dom = (function()
             result.then(initialData);
         };
 
-        let close = showDialog(msg, mk.div({
-            className: 'key-values',
-            children: inputs
-                .map(i => [
-                    mk.label({innerHTML: i.key + ': '}),
-                    i.val,
-                    mk.label({innerHTML: 'null: '}),
-                    mk.flag({
-                        checked: i.val.s.value === '',
-                        onchange: e => i.val.s.disabled = e.target.checked,
-                    }).trigger('change'),
-                    mk.br(),
-                ])
-                .reduce((a,b) => a.concat(b))
-                .map(el => <IWrappedDom<HTMLElement>>el) // damn microsoft
-                .concat([mk.button({
-                    innerHTML: 'Ok',
-                    onclick: () => { ok(); close(); },
-                })])
+        let close = showDialog(mk.form({
+            children: [
+                mk.label({innerHTML: msg}),
+                mk.div({style: {'text-align': 'right'}, children: inputs
+                    .map(i => [
+                        mk.label({innerHTML: i.key + ': '}),
+                        i.val,
+                        mk.label({innerHTML: 'null: '}),
+                        mk.flag({
+                            checked: i.val.s.value === '',
+                            onchange: e => i.val.s.disabled = e.target.checked,
+                        }).trigger('change'),
+                        mk.br(),
+                    ])
+                    .reduce((a,b) => a.concat(b))
+                }),
+                okNutton = mk.button({innerHTML: 'Ok', style: {float: 'right'}}),
+                mk.button({
+                    innerHTML: 'Cancel',
+                    type: 'button',
+                    onclick: () => { close(); }, style: {float: 'right'},
+                }),
+            ],
+            onsubmit: () => { ok(); close(); },
         }).s);
+        okNutton.s.focus();
 
         return result;
     };
@@ -172,19 +200,38 @@ export let Dom = (function()
         return result;
     };
 
+    let showMessageDialog = function(msg: string)
+    {
+        let result = {then: () => {}};
+        let button;
+        let closeDialog = showDialog(mk.form({
+            children: [
+                mk.label({innerHTML: msg, style: {'background-color': 'white'}}),
+                button = mk.button({innerHTML: 'Ok', style: {float: 'right'}}),
+            ],
+            onsubmit: () => { closeDialog(); result.then(); },
+        }).with(dom => {
+            dom.onblur = console.log;
+        }).s);
+        button.s.focus();
+        return result;
+    };
+
     let showPasswordDialog = function(cb: (txt: string) => void)
     {
         let inp = mk.input({type: 'password'});
-        let closeDialog = showDialog('Password?', mk.div({children: [
-            inp,
-            mk.button({
-                innerHTML: 'Ok',
-                onclick: () => {
-                    cb(inp.s.value);
+        let closeDialog = showDialog(mk.form({
+            children: [
+                mk.label({innerHTML: 'Password: '}),
+                inp,
+                mk.button({innerHTML: 'Ok', style: {float: 'right'}}),
+                mk.button({innerHTML: 'Cancel', type: 'button', style: {float: 'right'}, onclick: () => {
+                    cb(null);
                     closeDialog();
-                },
-            }),
-        ]}).s);
+                }}),
+            ],
+            onsubmit: () => { cb(inp.s.value); closeDialog(); },
+        }).s);
 
         // TODO: enter from input - submit
         // TODO: initial focus
@@ -194,30 +241,28 @@ export let Dom = (function()
         options: {[k: string]: () => void},
         message = 'It*s Time To Choose!'
     ) => {
-        let closeDialog = showDialog(message, mk.div({
-            children: [
-                mk.label({innerHTML: message}),
-                mk.br(),
-                mk.select({
-                    multiple: true, // .attr('multiple', 'multiple');
-                    children: Object.keys(options).map(k =>
-                        mk.option({value: k, innerHTML: k})),
-                    onchange: e => {
-                        options[e.target.value]();
-                        closeDialog();
-                    },
-                }),
-            ],
-        }).s);
+        let closeDialog = showDialog(mk.div({children: [
+            mk.label({innerHTML: message}),
+            mk.br(),
+            mk.select({
+                multiple: true, // .attr('multiple', 'multiple');
+                children: Object.keys(options).map(k =>
+                    mk.option({value: k, innerHTML: k})),
+                onchange: e => {
+                    options[e.target.value]();
+                    closeDialog();
+                },
+            }),
+            mk.button({innerHTML: 'Cancel', onclick: () => { closeDialog(); }}),
+        ]}).s);
     };
 
     return {
-        showDialog: showDialog,
+        showMessageDialog: showMessageDialog,
         showMultiInputDialog: showMultiInputDialog,
         showInputDialog: showInputDialog,
         showPasswordDialog: showPasswordDialog,
         promptSelect: promptSelect,
-        showError: (msg: string) => setTimeout(Dom.showDialog(msg), 15000),
         mk: mk,
     };
 })();
