@@ -106,9 +106,15 @@ export let ServApi = {
     set get_starve_game_high_scores(cb: (highScore: high_score_t[]) => void) {
         ajax('get_starve_game_high_scores', 'GET', {}, cb);
     },
+    set get_food_article_opinions(cb: (articleOpinions: article_opinion_t[]) => void) {
+        ajax('get_food_article_opinions', 'GET', {}, cb);
+    },
+    set get_wiki_article_redirects(cb: (mainWordBySynonim: {[k: string]: string}) => void) {
+        ajax('get_wiki_article_redirects', 'GET', {}, cb);
+    },
 };
 
-interface article_row_t {
+export interface article_row_t {
     wiki_id: number,
     wiki_title: string,
     aticle_type: string,
@@ -121,6 +127,7 @@ interface article_opinion_t {
     food_relevance_score: number,
     food_relevance_message: string,
     definition_noun: string,
+    title: string,
 };
 
 interface high_score_t {

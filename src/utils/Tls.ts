@@ -248,6 +248,29 @@ export let Tls = {
         })
     },
 
+    removeParentheses: function(title: string): [string, string]
+    {
+        let letters = [];
+        let parenthesesLetters = [];
+        let level = 0;
+
+        for (let char of title) {
+            if (level > 0) {
+                if (char === ')') {
+                    --level;
+                } else {
+                    parenthesesLetters.push(char);
+                }
+            } else if (char === '(') {
+                ++level;
+            } else {
+                letters.push(char);
+            }
+        }
+
+        return [letters.join('').trim(), parenthesesLetters.join('').trim()];
+    },
+
     // here is exactly 128 preset names in correct order
     instrumentNames: ["Acoustic Grand Piano","Bright Acoustic Piano","Electric Grand Piano",
         "Honky-tonk Piano","Electric Piano","6 Electric Piano 2","Harpsichord","Clavinet","Celesta",

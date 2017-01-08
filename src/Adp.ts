@@ -1,6 +1,5 @@
 
 import {IShmidusicChord, IShNote} from "./DataStructures";
-import {IOpt} from "./utils/Tls";
 import {Shmidusicator} from "./compose/Shmidusicator";
 
 /**

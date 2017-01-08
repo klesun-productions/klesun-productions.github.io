@@ -1,12 +1,13 @@
 /// <reference path="../references.ts" />
 
 import * as Ds from "../DataStructures";
-import {Tls, IFraction, Opt, IOpt} from "../utils/Tls";
+import {IFraction} from "../utils/Tls";
 import {Fraction} from "../utils/Tls";
 import {IShChannel} from "../DataStructures";
 import {IShmidusicChord} from "../DataStructures";
 import {ITimedShChord} from "../DataStructures";
 import {Adp} from "../Adp";
+import {S, IOpts} from "../utils/S";
 
 var roundNoteLength = (v: number) => +v.toFixed(8);
 
@@ -27,8 +28,8 @@ var lengthOptions = [
     fr(1,32)
 ].sort((a,b) => b.float() - a.float()); // greater first;
 
-let findLength = (length: number): IOpt<IFraction> =>
-    Opt(lengthOptions.filter(o => roundNoteLength(o.float()) === roundNoteLength(length))[0]);
+let findLength = (length: number): IOpts<IFraction> =>
+    S.opt(lengthOptions.filter(o => roundNoteLength(o.float()) === roundNoteLength(length))[0]);
 
 var isValidLength = (length: number) => +length.toFixed(8) == 0 || findLength(length).has();
 
@@ -68,21 +69,8 @@ export let Shmidusicator = {
                 if (requiredLength > actualLength) {
                     let pauseLength = requiredLength - actualLength;
                     let eps = 0.001;
-                    // if (!isValidLength(actualLength) &&
-                    //     !isValidLength(pauseLength)
-                    // ) {
-                    //     // watched/8_elfenLied.mid
-                    //     // watched/8_Bakemonogatari - Sugar sweet nightmare-piano version-.mid
-                    //     // maybe more, but since i fixed it i can't see them
-                    //     // sometimes MIDI noteOff events are fired shortly before they are supposed to, probably to prevent portamento
-                    //     // TODO: if this becomes relevant one day, fix the length of notes not affecting chor length too
-                    //     // this is likely possible, the stoccato time is relative to note length in ticks... i believe
-                    //     // just fixing it
-                    //     chord.setLength(requiredLength);
-                    // } else {
-                        let pause = {tune: 0, channel: 9, length: pauseLength};
-                        pausedChords.push({noteList: [pause]});
-                    // }
+                    let pause = {tune: 0, channel: 9, length: pauseLength};
+                    pausedChords.push({noteList: [pause]});
                 } else if (requiredLength < actualLength) {
                     let pause = {tune: 0, channel: 9, length: requiredLength};
                     chord.s.noteList.push(pause);
@@ -98,10 +86,10 @@ export let Shmidusicator = {
                     loopTimes: source.config.loopTimes,
                     tactSize: source.config.tactSize,
                     keySignature: source.config.keySignature,
-                    channelList: Tls.mapi(source.config.channels, (c, i) => 1 && {
+                    channelList: S.digt(source.config.channels).toList((c, i) => 1 && {
                         instrument: c.preset,
                         channelNumber: i,
-                    }),
+                    }).s,
                 },
                 chordList: pausedChords,
             }],
@@ -119,7 +107,7 @@ export let Shmidusicator = {
                 return r;
             }, <{[l: number]: number}>{});
             console.log(occurrenceCountByLength);
-            Shmidusicator.fixChordLengths(pausedChords, source.config.tactSize);
+            // Shmidusicator.fixChordLengths(pausedChords, source.config.tactSize);
         }
 
         return result;
@@ -271,7 +259,7 @@ export let Shmidusicator = {
     generalizeShmidusic: function (shmidusicJson: Ds.IShmidusicStructure): Ds.IGeneralStructure
     {
         var staff = shmidusicJson['staffList'][0];
-        
+
         var instrumentDict: {[ch: number]: IShChannel} = {};
 
         (staff.staffConfig.channelList || [])
@@ -280,7 +268,7 @@ export let Shmidusicator = {
                 preset: e.instrument,
             }));
 
-        Tls.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {preset: 0}));
+        S.range(0, 16).forEach((i: number) => (instrumentDict[i] = instrumentDict[i] || {preset: 0}));
 
         var chordList: ITimedShChord[] = <ITimedShChord[]>staff.chordList;
 

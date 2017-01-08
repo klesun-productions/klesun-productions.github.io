@@ -10,7 +10,6 @@ import {Playback} from "./Playback";
 import PlaybackControl from "../views/PlaybackControl";
 import {ISynth} from "../synths/ISynth";
 import {IPlaybackControl} from "../views/PlaybackControl";
-import {Tls} from "../utils/Tls";
 import {SpeedLog} from "../utils/SpeedLog";
 import {S} from "../utils/S";
 

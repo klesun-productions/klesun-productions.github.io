@@ -1,10 +1,129 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
+    <meta charset="utf-8"/>
+    <script src="/libs/require.js"></script>
+
+    <script src="/libs/jquery-2.1.4.js"></script>
+    <script src="/libs/SMFreader.js"></script>
 </head>
+
 <body>
-$END$
+
+<main>
+    <h2>Testing how i could safe performance by generating single long buffer source instead of spawning dozens of them every second</h2>
+    <button title="Wait for Wave Form buffer" class="play-again">Play Again!</button>
+    <audio src="zhopa" controls="controls">Audio</audio>
+    <audio src="/out/sf2parsed/fluid/samples/112_Soprano A5(R).ogg" controls="controls">
+        Your browser does not support the <code>audio</code> element.
+    </audio>
+</main>
+
+<script>
+
+let main = function()
+{
+    let sampleCount = 44100 * 5;
+    let fadeLength = 44100 * 0.2;
+    let range = (l,r) => new Array(r - l).fill().map((_,i) => i);
+    let $$ = s => [...document.querySelectorAll(s)];
+
+    // beautiful glass harmonic
+//    let makeSamples = () => range(0, sampleCount).map(i => {
+//        let frequenceFactor = 0.1 + Math.sin(i) / 10000;
+//        let sinused = Math.sin(i * frequenceFactor);
+//
+//        if (i > sampleCount - fadeLength) {
+//            sinused *= Math.pow((fadeLength - (i - sampleCount + fadeLength)) / fadeLength, 1/2);
+//        }
+//
+//        return sinused;
+//    });
+
+    // alien harmonic
+//    let makeSamples = () => range(0, sampleCount).map(i => {
+//        let frequenceFactor = 0.1 + Math.sin(i) / 1000;
+//        let sinused = Math.sin(i * frequenceFactor);
+//
+//        if (i > sampleCount - fadeLength) {
+//            sinused *= Math.pow((fadeLength - (i - sampleCount + fadeLength)) / fadeLength, 1/2);
+//        }145x55x60
+//
+//        return sinused;
+//    });
+
+//    let sampleBundles = [
+//        range(0, sampleCount).map(i => {
+//            let frequenceFactor = 0.1;
+//            let sinused = Math.sin(i * frequenceFactor);
+//            return sinused;
+//        }),
+//        range(0, sampleCount).map(i => {
+//            let frequenceFactor = 0.12;
+//            let sinused = Math.sin(i * frequenceFactor);
+//            return sinused;
+//        }),
+//    ];
+
+
+
+    window.onload = () =>
+    requirejs(['/src/player/BuildWaveForm.js', '/src/utils/Tls.js', '/src/compose/Shmidusicator.js'], (...args) => {
+        let [BuildWaveForm, Tls, Shmidusicator] = args;
+
+        let myAudio = $$('audio')[0];
+        let makeControl = function(audioBuffer) {
+            let offset = 0;
+            let play = function() {
+                let node = Tls.Tls.audioCtx.createBufferSource();
+                node.buffer = buffer;
+                node.connect(Tls.Tls.audioCtx.destination);
+                node.start(0, offset);
+            };
+        };
+
+        Tls.Tls.openMidi(song => {
+            song = Shmidusicator.Shmidusicator.generalToShmidusic(song);
+            console.log(song);
+            BuildWaveForm.BuildWaveForm(song);
+
+            // giving it time to load files
+            setTimeout(() => {
+                let buffer = BuildWaveForm.BuildWaveForm(song);
+                console.log('&& Waveform', buffer);
+                let playAgain = function() {
+//                    var binaryData = [buffer];
+//
+//                    myAudio.src = URL.createObjectURL(new Blob(binaryData, {type: "application/zip"}));
+                    // myAudio.onload = () => URL.revokeObjectURL(myAudio.src);
+
+                    let node = Tls.Tls.audioCtx.createBufferSource(myAudio);
+                    node.buffer = buffer;
+                    node.connect(Tls.Tls.audioCtx.destination);
+                    node.start(0);
+                };
+//                $$('.play-again')[0].onclick = playAgain;
+
+                // (<any>$$('source', preCompiledOggControl)[0]).src = preCompiledOggRoot + '/' + fileInfo.fileName + '.ogg';
+                // // to trigger audio reload. HTMLMediaElement.load() is not an option, it does synchronous http request
+                // let par = preCompiledOggControl.parentElement;
+                // par.innerHTML = par.innerHTML;
+                // preCompiledOggControl = <HTMLAudioElement>$$('audio', par)[0];
+
+                playAgain();
+            }, 20000);
+        });
+    });
+};
+
+main();
+
+</script>
+
+<style>
+    main {
+        padding-top: 10px;
+        padding-left: 3%;
+        padding-right: 5%;
+    }
+</style>
+
 </body>
-</html>

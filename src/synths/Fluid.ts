@@ -27,18 +27,18 @@ export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
 {
     let audioCtx = Tls.audioCtx;
     let pitchShiftInput = <HTMLInputElement>$('<input type="number" step="0.5" value="0"/>')[0];
-    let soundingsByChannel: Set<iSounding>[] = Tls.range(0,16).map(i => new Set([]));
+    let soundingsByChannel: Set<iSounding>[] = S.range(0,16).map(i => new Set([]));
 
-    let channelNodes = Tls.range(0,16).map(i => {
+    let channelNodes = S.range(0,16).map(i => {
         let node = audioCtx.createGain();
         node.gain.value = 1;
         node.connect(audioCtx.destination);
         return node;
     });
 
-    let channels = Tls.range(0,16).map(i => 1 && {preset: 0});
-    let pitchBendByChannel = Tls.range(0,16).map(i => 0);
-    let volumeByChannel = Tls.range(0,16).map(i => 1);
+    let channels = S.range(0,16).map(i => 1 && {preset: 0});
+    let pitchBendByChannel = S.range(0,16).map(i => 0);
+    let volumeByChannel = S.range(0,16).map(i => 1);
 
     let MAX_VOLUME = 0.15;
 

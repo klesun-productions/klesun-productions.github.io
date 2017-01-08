@@ -206,7 +206,10 @@ export let Dom = (function()
         let button;
         let closeDialog = showDialog(mk.form({
             children: [
-                mk.label({innerHTML: msg, style: {'background-color': 'white'}}),
+                mk.div({
+                   children: [mk.label({innerHTML: msg, })],
+                    style: {'background-color': 'white'}
+                }),
                 button = mk.button({innerHTML: 'Ok', style: {float: 'right'}}),
             ],
             onsubmit: () => { closeDialog(); result.then(); },

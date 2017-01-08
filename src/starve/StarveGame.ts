@@ -36,13 +36,29 @@ export let StarveGame = function(mainCont: HTMLElement)
         (b) => brokenGlassSfx = b
     );
 
-    let dictLoaded = function(easyWordSet: Set<string>, rareWordSet: Set<string>)
+    let shuffle = function<T>(elmts: T[])
     {
+        for (let i = 0; i < elmts.length; ++i) {
+            let rnd = Math.random() * elmts.length | 0;
+            [elmts[i], elmts[rnd]] = [elmts[rnd], elmts[i]];
+        }
+        return elmts;
+    };
+
+    let dictLoaded = function(
+        easyWordSet: Set<string>,
+        rareWordSet: Set<string>,
+        synonymMap: Map<string, string>
+    ) {
         let usedWords: string[] = [];
-        let roundSeconds = 30;
+        let roundSeconds = 20;
         let sourceWord: string = null;
         let counterStartedAt: number = null;
         let livesLeft = 3;
+        let happinessLevel = 0;
+
+        let easyWordsByLetter = S.list(easyWordSet).groupByS(w => w[0]);
+        let rareWordsByLetter = S.list(rareWordSet).groupByS(w => w[0]);
 
         let playSfx = function(sfx: AudioBuffer, pitchFactor: number)
         {
@@ -67,6 +83,11 @@ export let StarveGame = function(mainCont: HTMLElement)
             gui.secondsLeftHolder.innerHTML = (secondsLeft | 0) + '';
             gui.livesLeftHolder.innerHTML = livesLeft + '';
             gui.timeLeftProgress.value = secondsLeft / roundSeconds;
+            if (happinessLevel > 0) {
+                gui.main.classList.add('happy');
+            } else {
+                gui.main.classList.remove('happy');
+            }
             return secondsLeft;
         };
 
@@ -92,7 +113,11 @@ export let StarveGame = function(mainCont: HTMLElement)
             rareWordSet.delete(sourceWord);
             --livesLeft;
             counterStartedAt = null;
-            Dom.showMessageDialog(sourceWord).then = () => {
+            let msg = sourceWord
+                + '<br/>' + shuffle(easyWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ')
+                + '<br/>' + shuffle(rareWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ');
+
+            Dom.showMessageDialog(msg).then = () => {
                 if (livesLeft > 0) {
                     resetCounter();
                     if (livesLeft === 1) {
@@ -123,28 +148,35 @@ export let StarveGame = function(mainCont: HTMLElement)
         {
             if (livesLeft < 1) return;
 
-            let index = usedWords.indexOf(typedWord);
             if (typedWord.slice(0,1) !== sourceWord[0]) {
-                Dom.showMessageDialog('Wrong letter, your word must start with "' + sourceWord[0] + '"')
-                    .then = () => gui.foodNameInput.focus();
-            } else if (index > 0) {
-                Dom.showMessageDialog('You already used this word in ' + index + '-th round!')
-                    .then = () => gui.foodNameInput.focus();
-            } else if (!easyWordSet.has(typedWord) && !rareWordSet.has(typedWord)) {
-                Dom.showMessageDialog('I don\'t know such food: "' + typedWord + '"')
+                Dom.showMessageDialog('Wrong letter, your word must start with "' + sourceWord[0] + '", but you typed "' + typedWord + '"')
                     .then = () => gui.foodNameInput.focus();
             } else {
-                usedWords.push(typedWord);
-                easyWordSet.delete(typedWord);
-                rareWordSet.delete(typedWord);
-                resetCounter();
-                playEatingSfx();
+                if (synonymMap.has(typedWord)) {
+                    typedWord = synonymMap.get(typedWord);
+                }
+                let index = usedWords.indexOf(typedWord);
+
+                if (index > 0) {
+                    Dom.showMessageDialog('You already used word ' + typedWord +' in ' + index + '-th round!')
+                        .then = () => gui.foodNameInput.focus();
+                } else if (!easyWordSet.has(typedWord) && !rareWordSet.has(typedWord)) {
+                    Dom.showMessageDialog('I don\'t know such food: "' + typedWord + '"')
+                        .then = () => gui.foodNameInput.focus();
+                } else {
+                    usedWords.push(typedWord);
+                    easyWordSet.delete(typedWord);
+                    rareWordSet.delete(typedWord);
+                    resetCounter();
+                    playEatingSfx();
+                    ++happinessLevel;
+                    Tls.timeout(2.0).set = () => --happinessLevel;
+                }
             }
         };
 
         gui.foodNameForm.onsubmit = e => {
             e.preventDefault();
-            // TODO: map latin characters to russian instantly, cuz it's really annoying to switch layout
             validateWord(gui.foodNameInput.value.toLowerCase());
         };
 
@@ -162,11 +194,17 @@ export let StarveGame = function(mainCont: HTMLElement)
 
     let main = function()
     {
+        ServApi.get_food_article_opinions = food_article_opinions =>
+        ServApi.get_wiki_article_redirects = wiki_redirects =>
         ajax('/tests/grabs/dict_food_rus_eng.json', 'GET', {}).then = dict =>
         ajax('/tests/grabs/vkusnaya_i_zdorovaya_verified.json', 'GET', {}).then = recipeBook =>
         ajax('/tests/grabs/food_names.json', 'GET', {}).then = synonymBundles => {
             let rareWords = new Set([]);
             let easyWords = new Set(Object.keys(dict).filter(w => w.length > 1));
+            let synonymMap: Map<string, string> = new Map();
+
+            let norm = (s: string) => Tls.removeParentheses(s)[0].toLowerCase();
+
             for (let words of synonymBundles) {
                 for (let word of words) {
                     easyWords.add(word.toLowerCase());
@@ -174,17 +212,31 @@ export let StarveGame = function(mainCont: HTMLElement)
             }
 
             for (let wordRec of recipeBook) {
-                // TODO: treat as synonyms instead of as separate words
-                for (let word of (wordRec.synonyms || []).concat([wordRec.key])) {
-                    if (/^[а-яА-Я]/.test(word) && !wordRec.isRareWord) {
-                        easyWords.add(word.toLowerCase());
-                    } else {
-                        rareWords.add(word.toLowerCase());
-                    }
+                if (/^[а-яА-Я]/.test(wordRec.key) && !wordRec.isRareWord) {
+                    easyWords.add(norm((wordRec.key)));
+                } else {
+                    rareWords.add(norm(wordRec.key));
+                }
+
+                for (let synonym of wordRec.synonyms || []) {
+                    synonymMap.set(norm(synonym), norm(wordRec.key));
                 }
             }
 
-            dictLoaded(easyWords, rareWords);
+            for (let opinion of food_article_opinions) {
+                if (opinion.food_relevance_score >= 7) {
+                    easyWords.add(norm(opinion.title));
+                } else if (opinion.food_relevance_score >= 4) {
+                    rareWords.add(norm(opinion.title));
+                }
+            }
+
+            for (let synonym in wiki_redirects) {
+                let mainTitle = wiki_redirects[synonym];
+                synonymMap.set(norm(synonym), norm(mainTitle));
+            }
+
+            dictLoaded(easyWords, rareWords, synonymMap);
         };
 
         ServApi.get_starve_game_high_scores = highScores => {

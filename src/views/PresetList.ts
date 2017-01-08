@@ -41,8 +41,8 @@ export function PresetList(cont: HTMLDivElement): IPresetList
 
         var colorize = (channel: number) => $('<div></div>')
             .append(channel + '')
-            .css('font-weight', 'bold')
-            .css('color', 'rgba(' + Tls.channelColors[channel].join(',') + ',1)');
+            .attr('data-channel', channel)
+            .css('font-weight', 'bold');
 
         const makeMuteFlag = (channel: number) => $('<input type="checkbox" checked="checked"/>')
             .click((e: any) => {
@@ -73,7 +73,7 @@ export function PresetList(cont: HTMLDivElement): IPresetList
 
         var $table = TableGenerator().generateTable(colModel, rows);
 
-        $(cont).append($table);
+        $(cont).addClass('channelColors').append($table);
     };
 
     const update = (instrByChannel: {[c: number]: IShChannel}) =>

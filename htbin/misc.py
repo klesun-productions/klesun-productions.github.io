@@ -36,25 +36,33 @@ def get_assorted_food_articles(params: dict) -> list:
     db = sqlite3.connect(wiki_dump_db_path)
     db.row_factory = lambda c,row: {col[0]: row[i] for i,col in enumerate(c.description)}
     db_cursor = db.cursor()
-    exec = lambda article_type: db_cursor.execute('\n'.join([
-        'SELECT p.*',
-        'FROM page p',
-        'LEFT JOIN article_opinion ao ON p.wiki_id = ao.wiki_id',
-        'WHERE',
-        '  p.aticle_type IS NULL' if article_type is None else '  p.aticle_type = ?',
-        '  AND ao.rowid IS NULL',
-        'ORDER BY p.food_weight DESC LIMIT 1000',
-    ]), () if article_type is None else (article_type,))
+
+    def exec(article_type):
+        sql = '\n'.join([
+            'SELECT p.*, ao.food_relevance_score',
+            'FROM page p',
+            'JOIN article_opinion ao ON p.wiki_id = ao.wiki_id',
+            'WHERE 1',
+            '  AND ' + ('p.aticle_type IS NULL' if article_type is None else '  p.aticle_type = ?'),
+            '  AND ao.definition_noun = "масло"',
+            '  AND ao.food_relevance_score IN (4,5)',
+            # '  AND ao.rowid IS NULL',
+            # '  AND p.food_weight > 10',
+            # 'ORDER BY p.food_weight DESC LIMIT 3000',
+        ])
+
+        return db_cursor.execute(sql, () if article_type is None else (article_type,))
+        # return [row for row in db_cursor.execute(sql, ()) if row['food_relevance_score'] in [4,5]]
 
     return sorted([]
-        # stupid OR performance in SQL queries
+        # damn OR performance in SQL queries
         + list(exec('taxon'))
         + list(exec(None))
     , key=lambda r: r['food_weight'], reverse=True)
 
 
 def set_food_article_opinion(params: dict) -> list:
-    db = sqlite3.connect(wiki_dump_db_path)
+    db = sqlite3.connect(wiki_dump_db_path, timeout=20)
     db_cursor = db.cursor()
     sql = '\n'.join([
         'INSERT OR REPLACE INTO article_opinion',
@@ -65,6 +73,37 @@ def set_food_article_opinion(params: dict) -> list:
     db.commit()
 
     return 'stored OK'
+
+
+def get_food_article_opinions(params: dict) -> list:
+    db = sqlite3.connect(wiki_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    sql = '\n'.join([
+        'SELECT ao.*, p.wiki_title as title',
+        'FROM article_opinion ao',
+        'JOIN page p ON p.wiki_id = ao.wiki_id',
+        'WHERE food_relevance_score > 1',
+        '  AND food_relevance_score != 3',
+    ])
+    return list(db_cursor.execute(sql))
+
+
+def get_wiki_article_redirects(params: dict) -> list:
+    db = sqlite3.connect(wiki_dump_db_path)
+    db_cursor = db.cursor()
+    return {
+        title: main_title
+        for title, main_title
+        in db_cursor.execute('\n'.join([
+            'SELECT s.title, s.main_title',
+            'FROM synonyms s',
+            'JOIN page p ON p.wiki_title = s.main_title',
+            'JOIN article_opinion ao ON ao.wiki_id = p.wiki_id',
+            'WHERE ao.food_relevance_score > 1',
+            '  AND ao.food_relevance_score != 3',
+        ]))
+    }
 
 
 def get_recipe_book(params: dict) -> list:

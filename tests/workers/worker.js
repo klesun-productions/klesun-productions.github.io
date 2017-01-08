@@ -1,18 +1,18 @@
 
 // worker for tests
 
-importScripts('/libs/require.js');
-
-let wanted = ['/src/entry/Worker.js'];
-requirejs(wanted, function(Worker) {
-    let io = {
-        postMessage: (data) => postMessage(data),
-        onmessage: (data) => {}, // override me please!
-    };
-    onmessage = (e) => io.onmessage(e.data);
-
-    return Worker.Worker(io);
-});
+// importScripts('/libs/require.js');
+//
+// let wanted = ['/src/entry/Worker.js'];
+// requirejs(wanted, function(Worker) {
+//     let io = {
+//         postMessage: (data) => postMessage(data),
+//         onmessage: (data) => {}, // override me please!
+//     };
+//     onmessage = (e) => io.onmessage(e.data);
+//
+//     return Worker.Worker(io);
+// });
 
 
 
@@ -42,14 +42,13 @@ requirejs(wanted, function(Worker) {
 //         }
 //     },
 // };
-//
-// io.onmessage = function(e) {
-//     let postParams = e.data;
-//     let functionName = postParams.f;
-//     if (functionName in functions) {
-//         let result = functions[f]();
-//         io.postMessage({result: result});
-//     } else {
-//         io.postMessage({error: 'unknown function name: ' + postParams.f});
-//     }
-// };
+
+let ctx = new AudioContext();
+
+let io = {
+    postMessage: (data) => postMessage(data),
+    onmessage: (data) => {}, // override me please!
+};
+onmessage = (e) => io.onmessage(e.data);
+
+io.onmessage = data => io.postMessage(['you called me with', data]);

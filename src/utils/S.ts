@@ -30,6 +30,16 @@ export let S = (function()
                 return result;
             },
 
+            groupByS: (f: (el: Tel) => string): {[k: string]: Tel[]} => {
+                let result: {[k: string]: Tel[]} = {};
+                for (let el of elmts) {
+                    let k = f(el);
+                    result[k] = result[k] || [];
+                    result[k].push(el);
+                }
+                return result;
+            },
+
             set more(v: Tel) {
                 elmts.push(v);
             },

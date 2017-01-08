@@ -82,69 +82,44 @@ method_dict = {
         headers=['Cache-Control: max-age=86400'],
         is_secure=False,
     ),
-    'add_song_rating': Fun(
-        closure=Contribution.add_song_rating,
-        headers=[],
-        is_secure=True,
-    ),
-    'undo_song_rating': Fun(
-        closure=Contribution.undo_song_rating,
-        headers=[],
-        is_secure=True,
-    ),
-    'link_youtube_links': Fun(
-        closure=Contribution.link_youtube_links,
-        headers=[],
-        is_secure=True,
-    ),
-    'get_dull_heavy_data': Fun(
-        closure=get_dull_heavy_data,
-        headers=[],
-        is_secure=False,
-    ),
-    'collect_liked_songs': Fun(
-        closure=MidiFileProvider.collect_liked_songs,
-        headers=[],
-        is_secure=True,
-    ),
-    'save_sample_wav': Fun(
-        closure=MidiFileProvider.save_sample_wav,
-        headers=[],
-        is_secure=True,
-    ),
+}
+
+insecure_method_dict = {
+    'get_assorted_food_articles': misc.get_assorted_food_articles,
+    'get_recipe_book': misc.get_recipe_book,
+    'submit_starve_game_score': Contribution.submit_starve_game_score,
+    'get_starve_game_high_scores': Contribution.get_starve_game_high_scores,
+    'get_food_article_opinions': misc.get_food_article_opinions,
+    'get_wiki_article_redirects': misc.get_wiki_article_redirects,
+}
+
+secure_method_dict = {
+    'collect_liked_songs': MidiFileProvider.collect_liked_songs,
+    'save_sample_wav': MidiFileProvider.save_sample_wav,
+    'set_food_article_opinion': misc.set_food_article_opinion,
+    'add_song_rating': Contribution.add_song_rating,
+    'undo_song_rating': Contribution.undo_song_rating,
+    'link_youtube_links': Contribution.link_youtube_links,
+    'get_dull_heavy_data': get_dull_heavy_data,
+
     # use this if you have an urge to pass some data through
     # XHR to be stored to reuse it after page reload
-    'store_random_page_data': Fun(
-        closure=misc.store_random_page_data,
-        headers=[],
-        is_secure=True,
-    ),
-    'get_assorted_food_articles': Fun(
-        closure=misc.get_assorted_food_articles,
-        headers=[],
-        is_secure=False,
-    ),
-    'set_food_article_opinion': Fun(
-        closure=misc.set_food_article_opinion,
-        headers=[],
-        is_secure=True,
-    ),
-    'get_recipe_book': Fun(
-        closure=misc.get_recipe_book,
-        headers=[],
-        is_secure=False,
-    ),
-    'submit_starve_game_score': Fun(
-        closure=Contribution.submit_starve_game_score,
-        headers=[],
-        is_secure=False,
-    ),
-    'get_starve_game_high_scores': Fun(
-        closure=Contribution.get_starve_game_high_scores,
-        headers=[],
-        is_secure=False,
-    ),
+    'store_random_page_data': misc.store_random_page_data,
 }
+
+for name,function in secure_method_dict.items():
+    method_dict[name] = Fun(
+        closure=function,
+        headers=[],
+        is_secure=True,
+    )
+
+for name,function in insecure_method_dict.items():
+    method_dict[name] = Fun(
+        closure=function,
+        headers=[],
+        is_secure=False,
+    )
 
 get_params = {k: v for k,v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}
 method = get_params['f']
