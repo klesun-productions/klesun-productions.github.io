@@ -194,8 +194,8 @@ export let StarveGame = function(mainCont: HTMLElement)
 
     let main = function()
     {
-        ServApi.get_food_article_opinions = food_article_opinions =>
-        ServApi.get_wiki_article_redirects = wiki_redirects =>
+        ajax('/tests/grabs/wiki_food_articles.json', 'GET', {}).then = food_article_opinions =>
+        ajax('/tests/grabs/wiki_food_synonims.json', 'GET', {}).then = wiki_redirects =>
         ajax('/tests/grabs/dict_food_rus_eng.json', 'GET', {}).then = dict =>
         ajax('/tests/grabs/vkusnaya_i_zdorovaya_verified.json', 'GET', {}).then = recipeBook =>
         ajax('/tests/grabs/food_names.json', 'GET', {}).then = synonymBundles => {
