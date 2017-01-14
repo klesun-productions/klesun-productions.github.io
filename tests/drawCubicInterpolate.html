@@ -1,0 +1,188 @@
+<head>
+
+</head>
+
+<body>
+
+<p>Cubic Interpolation</p>
+<p>You can drag them!</p>
+
+
+<canvas width="720" height="576" style="border: solid red 2px"></canvas>
+
+<script>
+
+let range = (l,r) => new Array(r - l).fill().map((_,k) => k + l);
+let deepCopy = v => JSON.parse(JSON.stringify(v));
+let sqr = a => a * a;
+
+// using Gauss method
+let solveEquationSystem = function(equations/*: number[][]*/)/*: number[]*/
+{
+    equations = deepCopy(equations); // deep copy
+
+    let len = equations.length;
+
+    for (let varN = 0; varN < len - 1; ++varN) {
+        for (let eqN = 0; eqN < len; ++eqN) {
+            let coef = equations[eqN][varN];
+            if (coef !== 0) {
+                equations[eqN] = equations[eqN].map(v => v / coef);
+            }
+        }
+
+        let usedEq = equations[len - varN - 1];
+        for (let eqN = 0; eqN < len - varN - 1; ++eqN) {
+            equations[eqN] = equations[eqN].map((v,varN) => v - usedEq[varN]);
+        }
+    }
+
+    let answer = new Array(len).fill(0);
+
+    for (let eqN = 0; eqN < len; ++eqN) {
+        let leftScalarValue = 0;
+        for (let varN = 0; varN < eqN; ++varN) {
+            leftScalarValue += answer[len - 1 - varN] * equations[eqN][len - 1 - varN];
+        }
+        answer[len - 1 - eqN] = (equations[eqN][len] - leftScalarValue) / equations[eqN][len - 1 - eqN];
+    }
+
+    return answer;
+};
+
+let makeEquationsFromPoints = function(points)
+{
+    let equations = [];
+    for (let i = 0; i < points.length; ++i) {
+        equations[i] = [];
+        for (let j = 0; j < points.length; ++j) {
+            equations[i][j] = Math.pow(points[i].x, j);
+        }
+        equations[i][points.length] = points[i].y;
+    }
+    return equations;
+};
+
+let CubicInterpolationGraph = function(points)
+{
+    let equations = makeEquationsFromPoints(points);
+    let solved = solveEquationSystem(equations);
+
+    return {
+        getY: function(x) {
+            let y = 0;
+            for (let i = 0; i < solved.length; ++i) {
+                y += Math.pow(x, i) * solved[i];
+            }
+            return y;
+        },
+    };
+};
+
+let Painter = function(canvas, scale)
+{
+    let context = canvas.getContext("2d");
+
+    var drawLine = function (x0, y0, x1, y1, color) {
+        color = color || [0, 0, 0];
+        context.beginPath();
+        context.moveTo(x0 * scale, canvas.height - y0 * scale);
+        context.lineTo(x1 * scale, canvas.height - y1 * scale);
+        context.strokeStyle = "rgba(" + color.join(',') + ", 1)";
+        context.stroke();
+    };
+
+    return {
+        repaint: function(points, dragged) {
+            let dotsPerCurve = 100;
+            let graph = CubicInterpolationGraph(points);
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < points.length - 2; ++i) {
+                let [p0, p1] = points.slice(i);
+                drawLine(p1.x, p1.y, p1.x, p1.y, [255,0,0]);
+
+                let lastDot = p0;
+                for (let i = 0; i <= dotsPerCurve; ++i) {
+                    let progress = i / dotsPerCurve;
+                    let x = p0.x + (p1.x - p0.x) * progress;
+                    let y = graph.getY(x);
+
+                    drawLine(lastDot.x, lastDot.y, x, y, [0,255,0]);
+                    lastDot = {x: x, y: y};
+                }
+
+                // cross
+                for (let p of i === 0 ? [p0, p1] : [p1]) {
+                    let r = 0.25;
+                    let color = p === points[dragged]
+                            ? [255,0,0]
+                            : [0,0,255];
+                    drawLine(p.x - r, p.y, p.x + r, p.y, color);
+                    drawLine(p.x, p.y - r, p.x, p.y + r, color);
+                }
+            }
+        },
+    };
+};
+
+let main = function()
+{
+    let canvas = document.querySelectorAll('canvas')[0];
+    let scale = 40;
+    let painter = Painter(canvas, scale);
+
+    let points = [
+        //{x: 1, y: 1},
+        {x: 1, y: 1},
+        {x: 3, y: 4},
+        {x: 6, y: 2},
+        {x: 8, y: 1.5},
+        {x: 11, y: 8},
+        {x: 13, y: 9},
+        {x: 14, y: 6},
+        {x: 17, y: 13},
+        //{x: 17, y: 13},
+    ];
+    let dragged = -1;
+
+    let repaint = () => painter.repaint(points, dragged);
+    repaint();
+
+    canvas.onmousedown = function(e) {
+        let x = e.offsetX / scale;
+        let y = (canvas.height - e.offsetY) / scale;
+        let distance = p => Math.sqrt(sqr(p.x - x) + sqr(p.y - y));
+        let closest = 0;
+        for (let i = 1; i < points.length; ++i) {
+            if (distance(points[i]) < distance(points[closest])) {
+                closest = i;
+            }
+        }
+        dragged = closest;
+
+        repaint();
+    };
+
+    let releaseDrag = () => {
+        dragged = -1;
+        repaint();
+    };
+    canvas.onmouseup = releaseDrag;
+    canvas.onmouseout = releaseDrag;
+
+    canvas.onmousemove = function(e) {
+        let dx = e.movementX / scale;
+        let dy = -e.movementY / scale;
+        if (dragged > -1) {
+            points[dragged].x += dx;
+            points[dragged].y += dy;
+            repaint();
+        }
+    };
+};
+
+main();
+
+</script>
+
+</body>
