@@ -91,6 +91,8 @@ insecure_method_dict = {
     'get_starve_game_high_scores': Contribution.get_starve_game_high_scores,
     'get_food_article_opinions': misc.get_food_article_opinions,
     'get_wiki_article_redirects': misc.get_wiki_article_redirects,
+    'get_animes': misc.get_animes,
+    'get_mal_logins': misc.get_mal_logins,
 }
 
 secure_method_dict = {
@@ -98,6 +100,9 @@ secure_method_dict = {
     'save_sample_wav': MidiFileProvider.save_sample_wav,
     'set_food_article_opinion': misc.set_food_article_opinion,
     'add_song_rating': Contribution.add_song_rating,
+    'add_animes': misc.add_animes,
+    'add_recent_users': misc.add_recent_users,
+    'add_user_animes': misc.add_user_animes,
     'undo_song_rating': Contribution.undo_song_rating,
     'link_youtube_links': Contribution.link_youtube_links,
     'get_dull_heavy_data': get_dull_heavy_data,

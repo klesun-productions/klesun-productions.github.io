@@ -8,81 +8,48 @@ import {
     IInstrumentSample, IPresetInstrument, TransformSf2Parse,
     flattenSamples
 } from "./soundfont/ParseSf2";
-import {S} from "../utils/S";
+import {S, IPromise} from "../utils/S";
 
 // this object provides access to soundfont info
 // particularly it has a method that
 // takes (semitone and preset) and
 // returns (AudioBuffer, frequencyFactor, loopStart, loopEnd)
-
-type TFlatPreset = Array<{
-    sampleNumber: number,
-    sampleInfo: ISampleInfo,
-    generators: IGenerator[],
-}>;
-
 export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl: string)
 {
     let sampleDirUrl = soundfontDirUrl + '/samples/';
 
-    let drumPreset: TFlatPreset;
-    let presets: {[preset: number]: TFlatPreset};
-    let whenLoaded: Array<() => void> = [];
+    let soundfont = Tls.http(soundfontDirUrl + '/sf2parser.out.json', 'GET', {})
+        .map(JSON.parse)
+        .map(TransformSf2Parse)
+        .map(flattenSamples);
+
+    let tunePresets = soundfont.map(sf => sf[0]);
+    let drumPreset = soundfont.map(sf => sf[128][+Object.keys(sf[128])[0]]);
     let performance = {
         forceMono: true,
         disableBiQuadFilter: true,
     };
 
-    $.getJSON(soundfontDirUrl + '/sf2parser.out.json', (result) => {
-        let transformed = flattenSamples(TransformSf2Parse(result));
-        console.log('loaded soundfont', transformed);
-        presets = transformed[0];
-        let drumPresets = transformed[128];
-        drumPreset = drumPresets[+Object.keys(drumPresets)[0]];
-        whenLoaded.forEach(c => c());
-    });
-
     let determineCorrectionCents = (delta: number, generator: IGenerator) =>
         delta * 100 + Opt(generator.fineTune).def(0)
                     + Opt(generator.coarseTune).map(n => n * 100).def(0);
 
-    // overwrites global keys with local if any
-    let updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
-    {
-        return $.extend({}, global, local);
-    };
-
-    // adds the tuning semi-tones and cents; multiplies whatever needs to be multiplied
-    let combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
-    {
-        let result: IGenerator = $.extend({}, local);
-
-        result.fineTune = (+result.fineTune || 0) + (+global.fineTune || 0);
-        result.coarseTune = (+result.coarseTune || 0) + (+global.coarseTune || 0);
-        result.initialAttenuation = (+result.initialAttenuation || 0) + (+global.initialAttenuation || 0);
-
-        return result;
-    };
-
     /** @param db - soundfont decibel value */
     let dBtoKoef = (db: number) => Math.pow(10, db/50); // yes, it is 50, not 10 and not 20 - see /tests/attenToPercents.txt
 
-    /** @return value or starts fetching so next time you call it it was ready
-     * @nullable */
-    let fetchSample = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample[] =>
+    let fetchSamplesAsync = (
+        semitone: number, preset: number, isDrum: boolean, velocity: number
+    ): IPromise<IFetchedSample[]> => S.promise(
+        delayedReturn =>
+        tunePresets.then = presets =>
+        drumPreset.then = drumPreset =>
     {
+        let fetchedSamples: IFetchedSample[] = [];
+
         isDrum = isDrum || false;
         velocity = Opt(velocity).def(127);
 
-        if (!presets || !drumPreset) {
-            whenLoaded.push(() => fetchSample(semitone, preset, isDrum, velocity));
-            return [];
-        }
-
-        let samples = !isDrum ? presets[preset] : drumPreset;
-
-        // TODO: measure performance. it seems to me this guy eats lots of performance
-        let matchingSamples: [ISampleInfo, IGenerator, number][] = samples
+        let sampleHeaders = (!isDrum ? presets[preset] : drumPreset)
             .map(s => s.generators
                 .filter(g =>
                     g.keyRange.lo <= semitone &&
@@ -90,29 +57,19 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
                     g.velRange.lo <= velocity &&
                     g.velRange.hi >= velocity)
                 .map(g => <[ISampleInfo, IGenerator, number]>[s.sampleInfo, g, s.sampleNumber]))
-            .reduce((a,b) => a.concat(b))
-            ;
+            .reduce((a,b) => a.concat(b));
 
-        if (!isDrum && matchingSamples.length === 0) {
-            console.log('no sample!', semitone, preset, velocity, {
-                trace: Opt(new Error())
-                    .map(e => (<any>e).stack)
-                    .map(t => t.split('\n'))
-                    .def(['Trace Not Available!'])
-            });
-            return [];
+        if (!isDrum && sampleHeaders.length === 0) {
+            console.log('no sample!', semitone, preset, velocity);
+            delayedReturn([]);
+            return;
         }
 
-        let stereoPairById = new Map();
-        return matchingSamples.map(tuple => {
-            let [sam, gen, sampleNumber] = tuple;
+        for (let [sam, gen, sampleNumber] of sampleHeaders) {
             let sampleSemitone = Opt(gen.overridingRootKey).def(sam.originalPitch);
-
             let correctionCents = determineCorrectionCents(semitone - sampleSemitone, gen);
             let freqFactor = Math.pow(2, correctionCents / 1200);
-
             let sampleUrl = sampleDirUrl + '/' + sampleNumber + '_' + sam.sampleName.replace('#', '%23') + '.ogg';
-
             let audioNodes: AudioNode[] = [];
 
             Opt(gen.initialFilterFc).get
@@ -142,33 +99,32 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
                     audioNodes: audioNodes,
                 };
 
-                if (performance.forceMono) {
-                    if (stereoPairById.has(sampleNumber)) {
-                        stereoPairById.get(sampleNumber).volumeKoef *= 2;
-                        return null;
-                    }
-                    Opt(sam.sampleLink || null).get = id => stereoPairById.set(id, fetched);
-                } else {
-                    Opt(gen.pan).map(p => p / 500 || null).get = pan => {
-                        let panNode = Tls.audioCtx.createStereoPanner();
-                        panNode.pan.value = pan;
-                        fetched.audioNodes.push(panNode);
-                    };
+                fetchedSamples.push(fetched);
+                if (fetchedSamples.length === sampleHeaders.length) {
+                    delayedReturn(fetchedSamples);
                 }
             });
+        }
+    });
 
-            return fetched;
-        }).filter(s => s !== null);
+    /** @return value or starts fetching so next time you call it it was ready
+     * @nullable */
+    let fetchSamples = (semitone: number, preset: number, isDrum: boolean, velocity: number): IFetchedSample[] =>
+    {
+        let result: IFetchedSample[] = [];
+        fetchSamplesAsync(semitone, preset, isDrum, velocity).then = samples => result = samples;
+        return result;
     };
 
     return {
-        fetchSamples: fetchSample,
+        fetchSamples: fetchSamples,
+        fetchSamplesAsync: fetchSamplesAsync,
     };
 };
 
 export interface ISoundFontAdapter {
     fetchSamples: (semitone: number, preset: number, isDrum: boolean, velocity: number) => IFetchedSample[],
-};
+}
 
 export interface IFetchedSample {
     buffer: AudioBuffer,
@@ -237,11 +193,4 @@ export interface IPreset {
     instruments: IPresetInstrument[],
     // combined with specific instrument values if any
     generatorApplyToAll: IGenerator,
-}
-
-export interface IDrumPreset {
-    stateProperties: Array<{
-        instrument: IInstrument,
-        samples: Array<ISampleInfo>,
-    }>,
 }

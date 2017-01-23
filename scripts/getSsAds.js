@@ -51,7 +51,7 @@ ajax('store_random_page_data', 'POST', {
         page_data: {
             timestamp: new Date().toISOString(),
             pageUrl: window.location.href,
-            adList: getSsAdList(),
+            adList: getSsAdList(),jm
         },
     },
     verySecurePassword: getPassword(),

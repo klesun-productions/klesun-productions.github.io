@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <script src="/libs/require.js"></script>
+</head>
+<body>
+
+<main>
+    <h3>Script to fetch all users anime lists from <a>myanimelist.com</a></h3>
+    <p>
+        You see, MAL has a shitty way of determining average score.
+        There are people (or children) that put 10-s to everything.
+        To deal with each person's individual score system, one must use not
+        his absolute anime score, but the difference between this score and
+        the average of all this person's scores.
+    </p>
+    <p>
+        I have few more idea-s and desire to research the stuff.
+        For all these purposes i need the data from MAL.
+        That's what this script is for.
+    </p>
+    <label>Max workers: <input type="number" value="0" id="maxWorkers"/></label>
+    <br/>
+    <textarea id="outputContainer">Please wait...</textarea>
+</main>
+
+<script>
+
+    let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
+
+    window.onload =
+        () => requirejs(['/src/entry/GrabMalDb.js', '/libs/FileSaver.js'],
+        (GrMaNs) => GrMaNs.GrabMalDb($$('main')[0]));
+
+</script>
+
+<style>
+    textarea#outputContainer {
+        min-width: 600px;
+        min-height: 400px;
+    }
+
+    main {
+        padding-left: 40px;
+        padding-right: 60px;
+    }
+</style>
+
+</body>
+</html>

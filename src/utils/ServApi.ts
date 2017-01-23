@@ -96,12 +96,31 @@ export let ServApi = {
     set_food_article_opinion: (params: article_opinion_t) =>
         contribute('set_food_article_opinion', params),
 
+    add_animes: (params: {rows: anime_t[]}) =>
+        contribute('add_animes', params),
+
+    add_recent_users: (params: {rows: recent_user_t[]}) =>
+        contribute('add_recent_users', params),
+
+    add_user_animes: (params: {rows: user_anime_t[]}) =>
+        contribute('add_user_animes', params),
+
+    set get_animes(cb: (animes: anime_t[]) => void) {
+        ajax('get_animes', 'GET', {}, cb);
+    },
+
+    set get_mal_logins(cb: (logins: string[]) => void) {
+        ajax('get_mal_logins', 'GET', {}, cb);
+    },
+
     set get_recipe_book(cb: (book: {[word: string]: number}) => void) {
         ajax('get_recipe_book', 'GET', {}, cb);
     },
 
     submit_starve_game_score: (params: {playerName: string, guessedWords: string[]}) =>
         ajax('submit_starve_game_score', 'POST', {params: params, verySecurePassword: null}, (resp) => {}),
+    store_random_page_data: (params: {file_name: string, page_data: any,}) =>
+        contribute('store_random_page_data', params),
 
     set get_starve_game_high_scores(cb: (highScore: high_score_t[]) => void) {
         ajax('get_starve_game_high_scores', 'GET', {}, cb);
@@ -120,7 +139,7 @@ export interface article_row_t {
     aticle_type: string,
     food_weight: number,
     definition_noun: string,
-};
+}
 
 interface article_opinion_t {
     wiki_id: number,
@@ -128,10 +147,38 @@ interface article_opinion_t {
     food_relevance_message: string,
     definition_noun: string,
     title: string,
-};
+}
 
 interface high_score_t {
     playerName: string,
     score: number,
     guessedWords: string, // separated by coma
-};
+}
+
+export interface anime_t {
+    malId: number,
+    snakeCaseTitle: string,
+    title: string,
+    mbrCnt: number,
+    epsCnt?: number,
+    score: number,
+    format: string,
+    briefing: string,
+    imgUrl: string,
+}
+
+export interface recent_user_t {
+    malId?: number,
+    login: string,
+    score: number,
+    status: string,
+    epsSeen: number,
+    recency: string,
+    imgUrl: string,
+}
+export interface user_anime_t {
+    login: string,
+    malId: number,
+    score: number,
+    epsSeen: number,
+}

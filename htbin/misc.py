@@ -12,6 +12,7 @@ import pymorphy2
 page_data_dir = os.path.dirname(__file__) + '/../out/random_page_data'
 # this is single-time-use functionality, so that's okay
 wiki_dump_db_path = '/home/klesun/big/deleteMe/wikipedia_dump/ruwiki.db'
+mal_dump_db_path = '/home/klesun/big/p/shmidusic.lv/out/mal_dump.db'
 recipe_book_path = '/home/klesun/big/p/shmidusic.lv/unversioned/misc/kniga_o_vkusnoj_i_zdorovoj_pische.txt'
 
 
@@ -75,6 +76,60 @@ def set_food_article_opinion(params: dict) -> list:
     return 'stored OK'
 
 
+def add_animes(params: dict) -> list:
+    rows = params['rows']
+    if len(rows) < 1:
+        return 'nothing to store'
+
+    db = sqlite3.connect(mal_dump_db_path, timeout=20)
+    db_cursor = db.cursor()
+    sql = '\n'.join([
+        'INSERT OR REPLACE INTO anime',
+        '(' + ','.join(rows[0].keys()) + ') VALUES',
+        '(' + ','.join([':' + k for k in rows[0].keys()]) + ')',
+    ])
+    db_cursor.executemany(sql, rows)
+    db.commit()
+
+    return 'stored OK'
+
+
+def add_recent_users(params: dict) -> list:
+    rows = params['rows']
+    if len(rows) < 1:
+        return 'nothing to store'
+
+    db = sqlite3.connect(mal_dump_db_path, timeout=20)
+    db_cursor = db.cursor()
+    sql = '\n'.join([
+        'INSERT OR IGNORE INTO recentUser',
+        '(' + ','.join(rows[0].keys()) + ') VALUES',
+        '(' + ','.join([':' + k for k in rows[0].keys()]) + ')',
+    ])
+    db_cursor.executemany(sql, rows)
+    db.commit()
+
+    return 'stored OK'
+
+
+def add_user_animes(params: dict) -> list:
+    rows = params['rows']
+    if len(rows) < 1:
+        return 'nothing to store'
+
+    db = sqlite3.connect(mal_dump_db_path, timeout=20)
+    db_cursor = db.cursor()
+    sql = '\n'.join([
+        'INSERT OR IGNORE INTO userAnime',
+        '(' + ','.join(rows[0].keys()) + ') VALUES',
+        '(' + ','.join([':' + k for k in rows[0].keys()]) + ')',
+    ])
+    db_cursor.executemany(sql, rows)
+    db.commit()
+
+    return 'stored OK'
+
+
 def get_food_article_opinions(params: dict) -> list:
     db = sqlite3.connect(wiki_dump_db_path)
     db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
@@ -87,6 +142,27 @@ def get_food_article_opinions(params: dict) -> list:
         '  AND food_relevance_score != 3',
     ])
     return list(db_cursor.execute(sql))
+
+
+def get_animes(params: dict) -> list:
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    return list(db_cursor.execute(
+        'SELECT a.* FROM anime a ' +
+        'LEFT JOIN recentUser ru ON ru.malId = a.malId ' +
+        'WHERE ru.rowid IS NULL ' +
+        'ORDER BY RANDOM() '
+    ))
+
+
+def get_mal_logins(params: dict) -> list:
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    return [row['login'] for row in db_cursor.execute(
+        'SELECT DISTINCT login FROM recentUser ORDER BY RANDOM()'
+    )]
 
 
 def get_wiki_article_redirects(params: dict) -> list:

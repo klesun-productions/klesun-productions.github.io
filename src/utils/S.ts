@@ -106,6 +106,32 @@ export let S = (function()
         };
     };
 
+    let promise = function<T>(giveMemento: (delayedReturn: (result: T) => void) => void): IPromise<T>
+    {
+        let done = false;
+        let result: T;
+        let thens: Array<(r: T) => void> = [];
+        giveMemento(r => {
+            done = true;
+            result = r;
+            thens.forEach((cb) => cb(result));
+        });
+        let self = {
+            set then(receive: (result: T) => void) {
+                if (done) {
+                    receive(result);
+                } else {
+                    thens.push(receive);
+                }
+            },
+            map: <T2>(f: (r: T) => T2) => promise(
+                delayedReturn => self.then =
+                (r: T) => delayedReturn(f(r))
+            ),
+        };
+        return self;
+    };
+
     return {
         /** stands for Tuple of 2 elements */
         T2: <T1, T2>(a: T1, b: T2): [T1, T2] => [a, b],
@@ -152,6 +178,7 @@ export let S = (function()
 
         list: list,
         opt: opt,
+        promise: promise,
     };
 })();
 
@@ -165,4 +192,9 @@ export interface IOpts<T> {
         none: () => T2
     ) => T2,
     err: (none: () => void) => {els: (value: T) => void},
+}
+
+export interface IPromise<T> {
+    then: (result: T) => void,
+    map: <T2>(f: (result: T) => T2) => IPromise<T2>,
 }

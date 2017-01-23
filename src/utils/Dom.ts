@@ -22,7 +22,7 @@ interface IFormParams extends IDomParams {
 }
 
 interface IInputParams extends IDomParams {
-    type?: 'string' | 'text' | 'button' | 'checkbox' | 'password',
+    type?: 'string' | 'text' | 'button' | 'checkbox' | 'password' | 'file',
     value?: string,
     onchange?: (e: Event) => void,
 }
@@ -260,6 +260,19 @@ export let Dom = (function()
         ]}).s);
     };
 
+    let get = function(root?: HTMLElement) {
+        let match = function(tagName: string, selector?: string) {
+            selector = selector || tagName;
+            return [...(root || document).querySelectorAll(selector)]
+                .filter(dom => dom.tagName.toLowerCase() === tagName.toLowerCase());
+        };
+        return {
+            a: (selector?: string) => <HTMLAnchorElement[]>match('a', selector),
+            input: (selector?: string) => <HTMLInputElement[]>match('input', selector),
+            img: (selector?: string) => <HTMLImageElement[]>match('img', selector),
+        };
+    };
+
     return {
         showMessageDialog: showMessageDialog,
         showMultiInputDialog: showMultiInputDialog,
@@ -267,5 +280,6 @@ export let Dom = (function()
         showPasswordDialog: showPasswordDialog,
         promptSelect: promptSelect,
         mk: mk,
+        get: get,
     };
 })();

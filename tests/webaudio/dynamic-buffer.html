@@ -11,7 +11,6 @@
 <main>
     <h2>Testing how i could safe performance by generating single long buffer source instead of spawning dozens of them every second</h2>
     <button title="Wait for Wave Form buffer" class="play-again">Play Again!</button>
-    <audio src="zhopa" controls="controls">Audio</audio>
     <audio src="/out/sf2parsed/fluid/samples/112_Soprano A5(R).ogg" controls="controls">
         Your browser does not support the <code>audio</code> element.
     </audio>
@@ -80,6 +79,7 @@ let main = function()
             };
         };
 
+        setTimeout(() => Tls.Tls.openMidi(song => {}), 2000);
         Tls.Tls.openMidi(song => {
             song = Shmidusicator.Shmidusicator.generalToShmidusic(song);
             console.log(song);

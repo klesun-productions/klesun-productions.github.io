@@ -1,0 +1,31 @@
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+
+<p>
+There is such tool on internets - <a>hide.me</a>, it allows grabbing websites like MAL without being banned by ip.
+But for some reason i can't send POST requests from it (it is always empty on server).
+_But_, even though i can not _send_ data, i can <code>window.open()</code> and send the data from there after passing it using <code>frame.postMessage()</code>
+</p>
+<p>
+You guessed correct, this is the bridge page. All it does just plainly ofrwards any POST request it receives.
+</p>
+
+<script>
+    window.onmessage = function(event) {
+        let data = event.data;
+        if (data.eventType && data.eventType === 'forwardPostRequest') {
+            let http = new XMLHttpRequest();
+            http.open('POST', data.url, true);
+            http.setRequestHeader('Content-Type', 'application/json;UTF-8');
+            http.onload = function() {
+                window.opener.postMessage({eventType: 'backwardPostResponse', response: http.response}, '*');
+            };
+            http.send(JSON.stringify(data.params));
+        }
+    };
+</script>
+
+</body>

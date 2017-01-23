@@ -3,7 +3,7 @@
 import {IGeneralStructure} from "../DataStructures";
 import {DecodeMidi} from "../player/DecodeMidi";
 import {Cls} from "../Cls";
-import {S, IOpts} from "./S";
+import {S, IOpts, IPromise} from "./S";
 import {Dom} from "./Dom";
 
 // defined in /libs/FileSaver.js
@@ -127,8 +127,6 @@ export let Tls = {
             if (fileInfo.size < maxSize ||
                 confirm('File is very large, ' + (fileInfo.size / 1024 / 1024).toFixed(2) + ' MiB . Are you sure?')
             ) {
-                // TODO: chunk when file is 200+ MiB
-
                 var reader = new FileReader();
                 reader.readAsDataURL(fileInfo);
                 reader.onload = (e: any) => {
@@ -139,11 +137,15 @@ export let Tls = {
             }
         };
 
-        var input = Static.FILE_INPUT = Static.FILE_INPUT || <HTMLInputElement>$('<input type="file"/>')[0];
+        if (!Static.FILE_INPUT) {
+            Static.FILE_INPUT = Dom.mk.input({type: 'file'}).s;
+            document.querySelector('body').appendChild(Static.FILE_INPUT);
+        }
+        var input = Static.FILE_INPUT;
         input.onchange = (inputEvent: Event) => loadSelectedFile(input.files[0], whenLoaded);
         input.onclick = (inputEvent: Event) => { input.value = null; };
         console.log(input);
-        $(input).click();
+        input.click();
     },
 
     fetchFile: fetchFile,
@@ -151,8 +153,28 @@ export let Tls = {
     fetchBinaryFile: (url: string, whenLoaded: (buf: ArrayBuffer) => void) =>
         fetchFile(url, 'arraybuffer', whenLoaded),
 
+    http: (url: string, restMethod: 'GET' | 'POST' = 'GET', params: {[k: string]: any} = {}) =>
+        <IPromise<string>>S.promise(delayedReturn => {
+            var http = new XMLHttpRequest();
+            http.open(restMethod, url, true);
+            http.setRequestHeader('Content-Type', 'application/json;UTF-8');
+            http.onload = () => delayedReturn(http.responseText);
+            http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+        }),
+
     fetchJson: (url: string, whenLoaded: (parsedJson: {[k: string]: any}) => void) =>
         fetchFile(url, 'json', whenLoaded),
+
+    ajax: (url: string, restMethod: string, params: {[k: string]: any}) => {
+        let result = {then: (data: any) => {}};
+        var http = new XMLHttpRequest();
+        http.open(restMethod, url, true);
+        http.responseType = 'json';
+        http.setRequestHeader('Content-Type', 'application/json;UTF-8');
+        http.onload = () => result.then(http.response);
+        http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+        return result;
+    },
 
     fetchMidi: (url: string, whenLoaded: { (midi: IGeneralStructure): void }) =>
         Tls.fetchBinaryFile(url, buf =>

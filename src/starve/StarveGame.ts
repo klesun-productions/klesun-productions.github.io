@@ -11,17 +11,6 @@ import {StarveGui} from "./StarveGui";
  */
 export let StarveGame = function(mainCont: HTMLElement)
 {
-    let ajax = function (url: string, restMethod: string, params: {[k: string]: any}) {
-        let result = {then: (data: any) => {}};
-        var http = new XMLHttpRequest();
-        http.open(restMethod, url, true);
-        http.responseType = 'json';
-        http.setRequestHeader('Content-Type', 'application/json;UTF-8');
-        http.onload = () => result.then(http.response);
-        http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
-        return result;
-    };
-
     let gui = StarveGui(mainCont);
 
     let audioCtx = Tls.audioCtx;
@@ -194,11 +183,11 @@ export let StarveGame = function(mainCont: HTMLElement)
 
     let main = function()
     {
-        ajax('/tests/grabs/wiki_food_articles.json', 'GET', {}).then = food_article_opinions =>
-        ajax('/tests/grabs/wiki_food_synonims.json', 'GET', {}).then = wiki_redirects =>
-        ajax('/tests/grabs/dict_food_rus_eng.json', 'GET', {}).then = dict =>
-        ajax('/tests/grabs/vkusnaya_i_zdorovaya_verified.json', 'GET', {}).then = recipeBook =>
-        ajax('/tests/grabs/food_names.json', 'GET', {}).then = synonymBundles => {
+        Tls.ajax('/tests/grabs/wiki_food_articles.json', 'GET', {}).then = food_article_opinions =>
+        Tls.ajax('/tests/grabs/wiki_food_synonims.json', 'GET', {}).then = wiki_redirects =>
+        Tls.ajax('/tests/grabs/dict_food_rus_eng.json', 'GET', {}).then = dict =>
+        Tls.ajax('/tests/grabs/vkusnaya_i_zdorovaya_verified.json', 'GET', {}).then = recipeBook =>
+        Tls.ajax('/tests/grabs/food_names.json', 'GET', {}).then = synonymBundles => {
             let rareWords = new Set([]);
             let easyWords = new Set(Object.keys(dict).filter(w => w.length > 1));
             let synonymMap: Map<string, string> = new Map();
