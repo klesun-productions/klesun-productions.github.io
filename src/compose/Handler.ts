@@ -7,7 +7,7 @@ import {IShmidusicChord} from "../DataStructures";
 import {IShmidusicStructure} from "../DataStructures";
 import {Shmidusicator} from "./Shmidusicator";
 import ShReflect from "../Reflect";
-import {Tls, Opt} from "../utils/Tls";
+import {Tls} from "../utils/Tls";
 import {Player} from "../player/Player";
 import {EncodeMidi} from "./EncodeMidi";
 import {PseudoPiano} from "./PseudoPiano";
@@ -244,10 +244,10 @@ export let Handler = function(cont: HTMLDivElement)
                 .then = (chan) => Dom.showMultiInputDialog(
                     'Chord #' + chordIndex + ' channel #' + chan + ' transitions:',
                     {
-                        startPitchBend: Opt(chord.startState).map(s => s[chan]).map(v => v.pitchBend).def(null),
-                        startVolume: Opt(chord.startState).map(s => s[chan]).map(v => v.volume).def(null),
-                        endPitchBend: Opt(chord.finishState).map(s => s[chan]).map(v => v.pitchBend).def(null),
-                        endVolume: Opt(chord.finishState).map(s => s[chan]).map(v => v.volume).def(null),
+                        startPitchBend: S.opt(chord.startState).map(s => s[chan]).map(v => v.pitchBend).def(null),
+                        startVolume: S.opt(chord.startState).map(s => s[chan]).map(v => v.volume).def(null),
+                        endPitchBend: S.opt(chord.finishState).map(s => s[chan]).map(v => v.pitchBend).def(null),
+                        endVolume: S.opt(chord.finishState).map(s => s[chan]).map(v => v.volume).def(null),
                     }
                 )
                 .then = (changedValues) => {

@@ -21,7 +21,11 @@ You guessed correct, this is the bridge page. All it does just plainly ofrwards 
             http.open('POST', data.url, true);
             http.setRequestHeader('Content-Type', 'application/json;UTF-8');
             http.onload = function() {
-                window.opener.postMessage({eventType: 'backwardPostResponse', response: http.response}, '*');
+                window.opener.postMessage({
+                    eventType: 'backwardPostResponse',
+                    response: http.response,
+                    reference: data.reference || null,
+                }, '*');
             };
             http.send(JSON.stringify(data.params));
         }

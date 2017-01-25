@@ -1,7 +1,6 @@
 /// <reference path="../references.ts" />
 
 import {S} from "./S";
-import {Opt, Tls} from "./Tls";
 
 interface IWrappedDom<T extends HTMLElement> {
     s: T,
@@ -53,10 +52,10 @@ export let Dom = (function()
 
     let wrap = function<T extends HTMLElement>(dom: T, params: IDomParams)
     {
-        Opt(params.className).get = v => dom.className = v;
-        Opt(params.innerHTML).get = v => dom.innerHTML = v;
-        Opt(params.onclick).get = v => dom.onclick = v;
-        Opt(params.style).get = v => S.list(Object.keys(v)).forEach = k => dom.style[k] = v[k];
+        S.opt(params.className).get = v => dom.className = v;
+        S.opt(params.innerHTML).get = v => dom.innerHTML = v;
+        S.opt(params.onclick).get = v => dom.onclick = v;
+        S.opt(params.style).get = v => S.list(Object.keys(v)).forEach = k => dom.style[k] = v[k];
 
         S.list(params.children || []).forEach = c => dom.appendChild(c.s);
 
@@ -80,7 +79,7 @@ export let Dom = (function()
         br: (params?: IDomParams) => wrap(<HTMLBRElement>document.createElement('br'), params || {}),
         button: (params?: IButtonParams) =>
             wrap(<HTMLButtonElement>document.createElement('button'), params || {})
-                .with(dom => Opt(params.type).get = v => dom.type = v),
+                .with(dom => S.opt(params.type).get = v => dom.type = v),
         tr: (params?: IDomParams) => wrap(<HTMLTableRowElement>document.createElement('tr'), params || {}),
         td: (params?: IDomParams) => wrap(<HTMLTableCellElement>document.createElement('td'), params || {}),
         label: (params?: IDomParams) => wrap(<HTMLLabelElement>document.createElement('label'), params || {}),
@@ -88,34 +87,34 @@ export let Dom = (function()
             wrap(<HTMLFormElement>document.createElement('form'), params || {})
                 .with(dom => dom.onsubmit = e => {
                     e.preventDefault();
-                    Opt(params.onsubmit).get = v => v(e);
+                    S.opt(params.onsubmit).get = v => v(e);
                 }),
         input: (params: IInputParams = {}) =>
             wrap(<HTMLInputElement>document.createElement('input'), params)
                 .with(dom => {
-                    Opt(params.type).get = v => dom.setAttribute('type', v);
-                    Opt(params.value).get = v => dom.value = v;
-                    Opt(params.onchange).get = v => dom.onchange = v;
+                    S.opt(params.type).get = v => dom.setAttribute('type', v);
+                    S.opt(params.value).get = v => dom.value = v;
+                    S.opt(params.onchange).get = v => dom.onchange = v;
                 }),
 
         flag: (params: IFlagParams = {}) => {
             params.type = 'checkbox';
             let wrapped = mk.input(params);
-            return wrapped.with(dom => Opt(params.checked).get = v => dom.checked = v)
+            return wrapped.with(dom => S.opt(params.checked).get = v => dom.checked = v)
         },
         select: (params: ISelectParams = {}) =>
             wrap(<HTMLSelectElement>document.createElement('select'), params)
                 .with(dom => {
-                    Opt(params.multiple).get = v => dom.setAttribute('multiple', v + '');
-                    Opt(params.onchange).get = v => dom.onchange = v;
+                    S.opt(params.multiple).get = v => dom.setAttribute('multiple', v + '');
+                    S.opt(params.onchange).get = v => dom.onchange = v;
                 }),
 
         option: (params?: IOptionParams) =>
             wrap(<HTMLOptionElement>document.createElement('option'), params || {})
                 .with(dom => {
-                    Opt(params.value).get = v => dom.value = v;
-                    Opt(params.disabled).get = v => dom.disabled = v;
-                    Opt(params.selected).get = v => dom.selected = v;
+                    S.opt(params.value).get = v => dom.value = v;
+                    S.opt(params.disabled).get = v => dom.disabled = v;
+                    S.opt(params.selected).get = v => dom.selected = v;
                 }),
     };
 

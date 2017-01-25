@@ -103,6 +103,7 @@ secure_method_dict = {
     'add_animes': misc.add_animes,
     'add_recent_users': misc.add_recent_users,
     'add_user_animes': misc.add_user_animes,
+    'add_mal_db_rows': misc.add_mal_db_rows,
     'undo_song_rating': Contribution.undo_song_rating,
     'link_youtube_links': Contribution.link_youtube_links,
     'get_dull_heavy_data': get_dull_heavy_data,

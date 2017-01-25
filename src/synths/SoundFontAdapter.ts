@@ -1,9 +1,8 @@
 /// <reference path="../references.ts" />
 
-
 import {seconds_t} from "../DataStructures";
 import {Cls} from "../Cls";
-import {Tls, Opt} from "../utils/Tls";
+import {Tls} from "../utils/Tls";
 import {
     IInstrumentSample, IPresetInstrument, TransformSf2Parse,
     flattenSamples
@@ -31,8 +30,8 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
     };
 
     let determineCorrectionCents = (delta: number, generator: IGenerator) =>
-        delta * 100 + Opt(generator.fineTune).def(0)
-                    + Opt(generator.coarseTune).map(n => n * 100).def(0);
+        delta * 100 + S.opt(generator.fineTune).def(0)
+                    + S.opt(generator.coarseTune).map(n => n * 100).def(0);
 
     /** @param db - soundfont decibel value */
     let dBtoKoef = (db: number) => Math.pow(10, db/50); // yes, it is 50, not 10 and not 20 - see /tests/attenToPercents.txt
@@ -47,7 +46,7 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
         let fetchedSamples: IFetchedSample[] = [];
 
         isDrum = isDrum || false;
-        velocity = Opt(velocity).def(127);
+        velocity = S.opt(velocity).def(127);
 
         let sampleHeaders = (!isDrum ? presets[preset] : drumPreset)
             .map(s => s.generators
@@ -66,13 +65,13 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
         }
 
         for (let [sam, gen, sampleNumber] of sampleHeaders) {
-            let sampleSemitone = Opt(gen.overridingRootKey).def(sam.originalPitch);
+            let sampleSemitone = S.opt(gen.overridingRootKey).def(sam.originalPitch);
             let correctionCents = determineCorrectionCents(semitone - sampleSemitone, gen);
             let freqFactor = Math.pow(2, correctionCents / 1200);
             let sampleUrl = sampleDirUrl + '/' + sampleNumber + '_' + sam.sampleName.replace('#', '%23') + '.ogg';
             let audioNodes: AudioNode[] = [];
 
-            Opt(gen.initialFilterFc).get
+            S.opt(gen.initialFilterFc).get
             = filterFc => S.If(!performance.disableBiQuadFilter).then
             = () => {
                 // taking twice CPU time...
@@ -90,11 +89,11 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
                 fetched = {
                     buffer: resp,
                     frequencyFactor: freqFactor,
-                    isLooped: Opt(gen.sampleModes).map(m => m === 1).def(false),
+                    isLooped: S.opt(gen.sampleModes).map(m => m === 1).def(false),
                     loopStart: (sam.startLoop + (gen.startloopAddrsOffset || 0)) / sam.sampleRate,
                     loopEnd: (sam.endLoop + (gen.endloopAddrsOffset || 0)) / sam.sampleRate,
                     stereoPan: sam.sampleType,
-                    volumeKoef: Opt(gen.initialAttenuation).map(a => dBtoKoef(-a / 10)).def(1) * (velocity / 127),
+                    volumeKoef: S.opt(gen.initialAttenuation).map(a => dBtoKoef(-a / 10)).def(1) * (velocity / 127),
                     fadeMillis: isDrum ? 10000 : 100, // TODO: update the drum sample format to include generators for instrument and presets
                     audioNodes: audioNodes,
                 };

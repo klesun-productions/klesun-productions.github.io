@@ -1,12 +1,31 @@
 
 import {ISmfFile} from "../DataStructures";
-import {Tls} from "./Tls";
 import {ytlink_t} from "../MainPage";
 import {Dom} from "./Dom";
+import {S, IOpts} from "./S";
 
-var verySecurePassword = '';
-
+var verySecurePassword: string = null;
+(<any>window).assignVerySecurePassword = (p: string) => verySecurePassword = p;
 let awaitingPassword: Array<(password: string) => void> = [];
+let getProxyPostFrame = (): IOpts<Window> =>
+    S.opt((<any>window).proxyPostFrame);
+let lastId = 0;
+let makeId = () => ++lastId;
+let idToHandler: Map<number, (js: any) => void> = new Map();
+// TODO: move this logic to a general singletone
+window.onmessage = function(event) {
+    let data = event.data;
+    if (data.eventType === 'backwardPostResponse') {
+        if (idToHandler.has(data.reference)) {
+            idToHandler.get(data.reference)(data.response);
+        } else {
+            console.error();
+        }
+    } else {
+        console.log('received unknown message event type', event.data);
+    }
+};
+
 // TODO: set it to false when user presses "cancel" to prevent inconsistent state of UX
 let askingForPassword = false;
 
@@ -29,24 +48,47 @@ let askForPassword = function(cb: (pwd: string) => void)
 
 let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: string]: any}, whenLoaded: (js: any) => void)
 {
-    var oReq = new XMLHttpRequest();
-    oReq.open(restMethod, '/htbin/json_service.py?f=' + funcName, true);
-    oReq.responseType = 'json';
-    oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
-    oReq.onload = () => {
-        if (oReq.response === null) {
-            console.error('server error, see network log of ' + funcName);
-            return;
-        }
-        var [result, error] = oReq.response;
-        if (!error) {
-            whenLoaded(result);
-        } else {
-            console.log('failed to ajax [' + funcName + ']: ' + error);
-            verySecurePassword = error !== 'wrongPassword' && verySecurePassword;
-        }
+    let ajaxFromFrame = function(frame: Window)
+    {
+        let reference = makeId();
+        frame.postMessage({
+            eventType: 'forwardPostRequest',
+            url: '/htbin/json_service.py?f=' + funcName,
+            reference: reference,
+            params: params,
+        }, '*');
+        idToHandler.set(reference, whenLoaded);
     };
-    oReq.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+
+    let ajaxFromHere = function()
+    {
+        var oReq = new XMLHttpRequest();
+        oReq.open(restMethod, '/htbin/json_service.py?f=' + funcName, true);
+        oReq.responseType = 'json';
+        oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
+        oReq.onload = () => {
+            if (oReq.response === null) {
+                console.error('server error, see network log of ' + funcName, oReq);
+                return;
+            }
+            var [result, error] = oReq.response;
+            if (!error) {
+                whenLoaded(result);
+            } else {
+                console.log('failed to ajax [' + funcName + ']: ' + error);
+                if (error === 'wrongPassword') {
+                    console.error('wrongPassword while calling ' + funcName);
+                    verySecurePassword = null;
+                }
+            }
+        };
+        oReq.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+    };
+
+    getProxyPostFrame()
+        .map(v => restMethod === 'POST' ? v : null)
+        .err(ajaxFromHere)
+        .els = ajaxFromFrame;
 };
 
 let contribute = (functionName: string, params: {}) => {
@@ -104,6 +146,9 @@ export let ServApi = {
 
     add_user_animes: (params: {rows: user_anime_t[]}) =>
         contribute('add_user_animes', params),
+
+    add_user_anime_lists: (rows: user_anime_list_t[]) =>
+        contribute('add_mal_db_rows', {table: 'animeList', rows: rows}),
 
     set get_animes(cb: (animes: anime_t[]) => void) {
         ajax('get_animes', 'GET', {}, cb);
@@ -181,4 +226,11 @@ export interface user_anime_t {
     malId: number,
     score: number,
     epsSeen: number,
+}
+
+export interface user_anime_list_t {
+    login: string,
+    isFetched: boolean,
+    isInaccessible: boolean,
+    isUnparsable: boolean,
 }

@@ -1,7 +1,7 @@
 
 import {ServApi, article_row_t} from "../utils/ServApi";
 import {YoutubeApi} from "../utils/YoutubeApi";
-import {Tls, IOpt, Opt} from "../utils/Tls";
+import {Tls} from "../utils/Tls";
 import {ParseSoundFontFile, TransformSf2Parse, flattenSamples} from "../synths/soundfont/ParseSf2";
 import {S} from "../utils/S";
 import {Dom} from "../utils/Dom";
@@ -172,22 +172,22 @@ export let Admin = function(mainControl: HTMLDivElement)
             ].includes(word));
 
             if (isFood) {
-                return Opt(5); // food, set automatically
+                return S.opt(5); // food, set automatically
             } else if (isImmaterial || isCodeOrProperName || isChemical
                     || isFiction || isGeography || isMiscNotFood
             ) {
-                return Opt(1); // this is not food... probably
+                return S.opt(1); // this is not food... probably
             } else if (article.food_weight > 10 && [
                 'продукт', 'средство', 'средства', 'вещества',
                 'вещество', 'препарат', 'паста',
             ].includes(noun)) {
-                return Opt(4); // likely food, set automatically
+                return S.opt(4); // likely food, set automatically
             } else if (article.food_weight > 10 && isTaxon && !isLatin) {
-                return Opt(4);
+                return S.opt(4);
             } else if (isLatin) {
-                return Opt(1); // this is not food... probably
+                return S.opt(1); // this is not food... probably
             } else {
-                return Opt(null);
+                return S.opt(null);
             }
         };
 

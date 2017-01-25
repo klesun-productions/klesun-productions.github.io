@@ -9,9 +9,9 @@ import {Shmidusicator} from "./Shmidusicator";
 import {determinePosition, SongAccess, extractNote, CanvasProvider} from "./Painter";
 import {TactMeasurer} from "./Painter";
 import {IShNote} from "../DataStructures";
-import {Tls, IOpt, Opt, IFraction} from "../utils/Tls";
+import {Tls, IFraction} from "../utils/Tls";
 import {Adp} from "../Adp";
-import {S} from "../utils/S";
+import {S, IOpts} from "../utils/S";
 
 export function Control($chordListCont: JQuery, configCont: HTMLElement)
 {
@@ -304,10 +304,10 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
         requestRecalcTacts();
     };
 
-    let flattenOpts = <T>(opts: IOpt<T>[]): IOpt<T[]> =>
+    let flattenOpts = <T>(opts: IOpts<T>[]): IOpts<T[]> =>
         opts.every(o => o.has())
-            ? Opt(opts.map(o => o.def(null)))
-            : Opt(null);
+            ? S.opt(opts.map(o => o.def(null)))
+            : S.opt(null);
 
     // i'm sorry
     let mult = (num: number, den: number, factor: number) => {

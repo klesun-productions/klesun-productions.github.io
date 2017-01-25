@@ -130,6 +130,41 @@ def add_user_animes(params: dict) -> list:
     return 'stored OK'
 
 
+def add_mal_db_rows(params: dict) -> list:
+
+    # validate input
+
+    table = params['table']
+    rows = params['rows']
+
+    if len(rows) < 1:
+        return 'nothing to store'
+
+    keys = params['rows'][0].keys()
+    is_word = re.compile(r'^[a-zA-Z][a-zA-Z0-9]+$')
+
+    if not is_word.match(table):
+        return 'invalid table name'
+
+    invalid_keys = [k for k in keys if not is_word.match(k)]
+    if invalid_keys:
+        return 'invalid column names: ' + ','.join(invalid_keys)
+
+    # write to DB
+
+    db = sqlite3.connect(mal_dump_db_path, timeout=20)
+    db_cursor = db.cursor()
+    sql = '\n'.join([
+        'INSERT OR REPLACE INTO ' + table,
+        '(' + ','.join(keys) + ') VALUES',
+        '(' + ','.join([':' + k for k in keys]) + ')',
+    ])
+    db_cursor.executemany(sql, rows)
+    db.commit()
+
+    return 'stored OK'
+
+
 def get_food_article_opinions(params: dict) -> list:
     db = sqlite3.connect(wiki_dump_db_path)
     db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
@@ -161,7 +196,11 @@ def get_mal_logins(params: dict) -> list:
     db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
     db_cursor = db.cursor()
     return [row['login'] for row in db_cursor.execute(
-        'SELECT DISTINCT login FROM recentUser ORDER BY RANDOM()'
+        'SELECT login FROM animeList ' +
+        'WHERE NOT isFetched ' +
+        '  AND NOT isInaccessible ' +
+        '  AND NOT isUnparsable ' +
+        'ORDER BY RANDOM()'
     )]
 
 

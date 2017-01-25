@@ -1,6 +1,6 @@
 
 import {IPreset, IInstrument, EStereoPan, ISampleInfo, IGenerator} from "../SoundFontAdapter";
-import {Tls, Opt} from "../../utils/Tls";
+import {Tls} from "../../utils/Tls";
 import {S} from "../../utils/S";
 
 // overwrites global keys with local if any
@@ -51,7 +51,7 @@ let combineGenerators = function(global: IGenerator, local: IGenerator): IGenera
  */
 let fillBorders = function(generators: IGenerator[])
 {
-    if (generators.filter(g => !Opt(g.keyRange).has()).length > 0) {
+    if (generators.filter(g => !S.opt(g.keyRange).has()).length > 0) {
         // there are generators that are not limited by key range
         return;
     }

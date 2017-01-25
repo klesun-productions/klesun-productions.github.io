@@ -1,7 +1,7 @@
 
 /// <reference path="../references.ts" />
 
-import {ServApi, anime_t, recent_user_t, user_anime_t} from "../utils/ServApi";
+import {ServApi, anime_t, recent_user_t, user_anime_t, user_anime_list_t} from "../utils/ServApi";
 import {Dom} from "../utils/Dom";
 import {Tls} from "../utils/Tls";
 
@@ -40,19 +40,19 @@ export let GrabMalDb = function(mainCont: HTMLElement)
         return postBridgeFrame;
     };
 
-    window.onmessage = function(event) {
-        let data = event.data;
-        if (data.eventType === 'pageOpened') {
-            if (idToCb.has(data.referrenceId)) {
-                idToCb.get(data.referrenceId)(data.content);
-            }
-        } else if (data.eventType === 'backwardPostResponse') {
-            console.log('server response ### ' + data.response);
-            $$('#outputContainer')[0].innerHTML = 'Last flush on: ' + (new Date().toISOString());
-        } else {
-            console.log('received unknown message event type', event.data);
-        }
-    };
+    // window.onmessage = function(event) {
+    //     let data = event.data;
+    //     if (data.eventType === 'pageOpened') {
+    //         if (idToCb.has(data.referrenceId)) {
+    //             idToCb.get(data.referrenceId)(data.content);
+    //         }
+    //     } else if (data.eventType === 'backwardPostResponse') {
+    //         console.log('server response ### ' + data.response);
+    //         $$('#outputContainer')[0].innerHTML = 'Last flush on: ' + (new Date().toISOString());
+    //     } else {
+    //         console.log('received unknown message event type', event.data);
+    //     }
+    // };
 
     let maxWorkersInput = Dom.get(mainCont).input('input#maxWorkers')[0];
     let getMaxWorkers = () => +maxWorkersInput.value;
@@ -293,30 +293,108 @@ export let GrabMalDb = function(mainCont: HTMLElement)
         }, 1000);
     };
 
-    let parseUserAnimesPage = function(content: string): {[k: string]: string}[] {
-        let pageDom = new DOMParser().parseFromString(content, 'text/html').documentElement;
-        let table = $$('table[data-items]', pageDom)[0];
-        if (table) {
-            let jsonText = table.getAttribute('data-items');
-            return JSON.parse(jsonText);
+    let parseAnimeUrl = function(url: string) {
+        let matches = url.match(/anime\/(\d+)\/(.+)$/);
+        if (matches !== null) {
+            let [_, malId, snakeCaseName] = matches;
+            return {
+                malId: malId,
+                snakeCaseName: snakeCaseName,
+            };
         } else {
-            // old format
-            return $$('#list_surround > table tr', pageDom)
-                .slice(3, -1)
-                .map(tr => {
-                    let [num, title, score, format, epsSeen] = $$('td', tr);
-                    let animeUrl = Dom.get(title).a('.animetitle')[0].getAttribute('href');
-                    return {
-                        anime_id: animeUrl.match(/anime\/(\d+)\/.+$/)[1],
-                        score: score.innerText.trim(),
-                        epsSeen: epsSeen.innerText.trim(),
-                    };
-                });
+            return null;
         }
+    };
+
+    let parseListHeaders = function(tr: HTMLElement) {
+        let headers = $$('td', tr).map(td => td.innerText.trim());
+
+        let textStarts = new Set(['Anime Title', 'Score', 'Progress']);
+
+        for (let i = 0; i < headers.length; ++i) {
+            for (let start of textStarts) {
+                if (headers[i].startsWith(start)) {
+                    headers[i] = start;
+                    textStarts.delete(start);
+                    break;
+                }
+            }
+        }
+
+        if (textStarts.size === 0) {
+            return headers;
+        } else {
+            return null;
+        }
+    };
+
+    let parseListRow = function(tr: HTMLElement, headers: string[]) {
+        let tds = $$('td', tr);
+        if (tds.length === headers.length) {
+            let cells: Map<string, HTMLElement> = new Map();
+            for (let i = 0; i < headers.length; ++i) {
+                cells.set(headers[i], tds[i]);
+            }
+            let parsedUrl = $$('a', cells.get('Anime Title'))
+                .map(a => parseAnimeUrl(a.getAttribute('href')))
+                .filter(p => p !== null)[0];
+            if (parsedUrl) {
+                return {
+                    anime_id: parsedUrl.malId,
+                    score: cells.get('Score').innerText.trim(),
+                    num_watched_episodes: cells.get('Progress').innerText.trim(),
+                };
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    };
+
+    let parseUserAnimesPage = function(content: string) {
+        let pageDom = new DOMParser().parseFromString(content, 'text/html').documentElement;
+
+        let errorDom = $$('.badresult', pageDom)[0];
+        let accessDeniedMsg = 'Access to this list has been restricted by the owner.';
+        let table = $$('table[data-items]', pageDom)[0];
+        let rows: {[k: string]: string}[] = [];
+        let isAccessDenied = false;
+        let isUnparsable = false;
+
+        if (errorDom && errorDom.innerText.trim() === accessDeniedMsg) {
+            isAccessDenied = true;
+        } else if (table) {
+            let jsonText = table.getAttribute('data-items');
+            rows = JSON.parse(jsonText);
+        } else {
+            // old/custom format
+            let headers = null;
+            for (let tr of $$('tr', pageDom)) {
+                if (headers === null) {
+                    headers = parseListHeaders(tr);
+                } else {
+                    let row = parseListRow(tr, headers);
+                    if (row !== null) {
+                        rows.push(row);
+                    } else {
+                        break;
+                    }
+                }
+            }
+            isUnparsable = rows.length === 0;
+        }
+
+        return {
+            isAccessDenied: isAccessDenied,
+            isUnparsable: isUnparsable,
+            rows: rows,
+        };
     };
 
     let fetchAnimeLists = () => ServApi.get_mal_logins = logins => {
         let unflushedRows: user_anime_t[] = [];
+        let loginToUser: Map<string, user_anime_list_t> = new Map();
 
         let makeUrl = (login: string, asc: boolean) =>
             'https://myanimelist.net/animelist/' + login + '?'
@@ -328,33 +406,51 @@ export let GrabMalDb = function(mainCont: HTMLElement)
                 scheduledJobs.push({
                     url: makeUrl(login, asc),
                     cb: content => {
-                        let rows = parseUserAnimesPage(content).map(data => 1 && {
+                        let parsed = parseUserAnimesPage(content);
+                        let parsedRows = parsed.rows;
+                        if (parsedRows.length > 0) {
+                            let rows = parsedRows.map(data => 1 && {
+                                login: login,
+                                malId: +data['anime_id'],
+                                score: +data['score'],
+                                epsSeen: +data['num_watched_episodes'],
+                            });
+                            unflushedRows.push(...rows);
+                        } else if (parsed.isUnparsable) {
+                            console.error('failed to parse ' + login);
+                        }
+                        loginToUser.set(login, {
                             login: login,
-                            malId: +data['anime_id'],
-                            score: +data['score'],
-                            epsSeen: +data['num_watched_episodes'],
+                            isFetched: parsed.rows.length > 0,
+                            isInaccessible: parsed.isAccessDenied,
+                            isUnparsable: parsed.isUnparsable,
                         });
-                        unflushedRows.push(...rows);
                     },
                 });
             }
         }
 
-        let chunkSize = 3000;
+        let animeChunkSize = 3000;
+        let listThresholdSize = 60;
         setInterval(() => {
-            if (unflushedRows.length >= chunkSize) {
-                console.log('flushing to server');
-                let chunk = unflushedRows.splice(0, chunkSize);
+            if (unflushedRows.length >= animeChunkSize) {
+                console.log('flushing animes to server');
+                let chunk = unflushedRows.splice(0, animeChunkSize);
                 let params = {rows: chunk};
                 ServApi.add_user_animes(params).then = (resp) =>
-                    console.log('flushed', resp);
+                    console.log('flushed animes', resp);
+            }
+            if (loginToUser.size >= listThresholdSize) {
+                let chunk = [...loginToUser.values()];
+                loginToUser.clear();
+                console.log('flushing users to server', chunk);
+                ServApi.add_user_anime_lists(chunk).then = (resp) =>
+                    console.log('flushed user', resp);
             }
         }, 1000);
     };
 
     fetchAnimeLists();
-
-    verySecurePassword = prompt('password?');
 };
 
 interface event_data_t {

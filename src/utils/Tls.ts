@@ -325,11 +325,6 @@ export var Fraction = function(num: number, den: number): IFraction {
     };
 };
 
-export let Opt = S.opt;
-
-// TODO: use IOpts everywhere!
-export type IOpt<T> = IOpts<T>;
-
 export interface IFraction {
     num: () => number,
     den: () => number,

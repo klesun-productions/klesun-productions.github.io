@@ -183,14 +183,20 @@ export let S = (function()
 })();
 
 export interface IOpts<T> {
+    // transform value if present
     map: <T2>(f: (arg: T) => T2) => IOpts<T2>,
+    // get value or use passed default
     def: (def: T) => T,
+    // is value present
     has: () => boolean,
+    // call passed function taking value if value present
     get: (value: T) => void,
+    // transform both cases to value of single type
     uni: <T2>(
         some: (v: T) => T2,
         none: () => T2
     ) => T2,
+    // call passed function if value is absent
     err: (none: () => void) => {els: (value: T) => void},
 }
 
