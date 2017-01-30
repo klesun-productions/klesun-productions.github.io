@@ -245,7 +245,7 @@ export let Tls = {
 
     cbList: (v: {(): void}[]) => S.list(v),
     timeout: (seconds: number) => 1 && {
-        set set(cb: () => void) {
+        set then(cb: () => void) {
             setTimeout(cb, seconds * 1000);
         },
     },

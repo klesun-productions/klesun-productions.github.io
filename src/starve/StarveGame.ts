@@ -159,7 +159,7 @@ export let StarveGame = function(mainCont: HTMLElement)
                     resetCounter();
                     playEatingSfx();
                     ++happinessLevel;
-                    Tls.timeout(2.0).set = () => --happinessLevel;
+                    Tls.timeout(2.0).then = () => --happinessLevel;
                 }
             }
         };

@@ -1,9 +1,11 @@
 
 /// <reference path="../references.ts" />
 
-import {ServApi, anime_t, recent_user_t, user_anime_t, user_anime_list_t} from "../utils/ServApi";
+import {ServApi, anime_t, recent_user_t, user_anime_t, user_anime_list_t, user_profile_t} from "../utils/ServApi";
 import {Dom} from "../utils/Dom";
 import {Tls} from "../utils/Tls";
+import {S} from "../utils/S";
+import {Grab} from "../utils/Grab";
 
 declare let postBridgeFrame: Window;
 let verySecurePassword: string = null;
@@ -19,127 +21,6 @@ let verySecurePassword: string = null;
 export let GrabMalDb = function(mainCont: HTMLElement)
 {
     let $$ = (s: string, root?: Element) => <HTMLElement[]>[...(root || document).querySelectorAll(s)];
-
-    let lastId = 0;
-    let makeId = () => ++lastId;
-
-    let idToCb = new Map<number, (content: string) => void>();
-    let scheduledJobs: Array<{url: string, cb: (content: string) => void}> = [];
-    let jobsInProgress = 0;
-    let jobsStarted = 0;
-    let startedSeconds = 0;
-
-    // POST cant be send directly from this window in such case
-    let isProxy = false;
-
-    let getPostBridgeFrame = function() {
-        if (!postBridgeFrame) {
-            let url = 'http://midiana.lv/entry/proxy_proxy.html';
-            postBridgeFrame = window.open(url, '_blank', 'location=yes,height=400,width=400');
-        }
-        return postBridgeFrame;
-    };
-
-    // window.onmessage = function(event) {
-    //     let data = event.data;
-    //     if (data.eventType === 'pageOpened') {
-    //         if (idToCb.has(data.referrenceId)) {
-    //             idToCb.get(data.referrenceId)(data.content);
-    //         }
-    //     } else if (data.eventType === 'backwardPostResponse') {
-    //         console.log('server response ### ' + data.response);
-    //         $$('#outputContainer')[0].innerHTML = 'Last flush on: ' + (new Date().toISOString());
-    //     } else {
-    //         console.log('received unknown message event type', event.data);
-    //     }
-    // };
-
-    let maxWorkersInput = Dom.get(mainCont).input('input#maxWorkers')[0];
-    let getMaxWorkers = () => +maxWorkersInput.value;
-    maxWorkersInput.oninput = () => {
-        startedSeconds = window.performance.now() / 1000;
-        jobsStarted = 0;
-    };
-
-    let fetchPageUsingFrame = function(url: string) {
-        let result = {then: (content: string) => {}};
-        let id = makeId();
-        url += '#openedPageReferrenceId=' + id;
-        let geom = calcGeometry((id % getMaxWorkers()) / getMaxWorkers());
-        let frame = window.open(url, '_blank', 'location=yes,height=' + geom.h + ',width=' + geom.w + ',left=' + geom.x + ',top=' + geom.y);
-
-        /** @debug */
-        console.log('opened frame: ', url, frame);
-
-        idToCb.set(id, (content) => {
-            idToCb.delete(id);
-            result.then(content);
-            frame.close();
-        });
-        setTimeout(() => {
-            idToCb.delete(id);
-            frame.close();
-        }, 15000);
-        return result;
-    };
-
-    setInterval(function() {
-        let free = getMaxWorkers() - jobsInProgress;
-        for (let job of scheduledJobs.splice(0, free)) {
-            if (++jobsStarted % 20 === 0) {
-                let seconds = (window.performance.now() / 1000) - startedSeconds;
-                console.info('processing ' + jobsStarted + '-th job. Doing ' + (jobsStarted / seconds) + ' jobs/second');
-                console.log('url', job.url);
-            }
-            ++jobsInProgress;
-            Tls.http(job.url).then = resp => {
-                --jobsInProgress;
-                if (/^Too Many Requests$/.test(resp.trim())) {
-                    console.error('MAL whimmed on too many requests. Rescheduling job ' + job.url);
-                    scheduledJobs.push(job);
-                } else {
-                    job.cb(resp);
-                }
-            };
-        }
-    }, 100);
-
-    /**
-     *  place window on screen depending on the factor
-     * of it's index being close to max workers
-     */
-    let calcGeometry = function(factor: number) {
-        let rows = 3;
-        let cols = 4;
-        let row = (factor * rows * cols) / rows | 0;
-        let col = (factor * rows * cols) % cols;
-        let result = {
-            w: 300,
-            h: 300,
-            x: col * 300,
-            y: row * 300,
-        };
-        return result;
-    };
-
-    let fetchRawAnimeSearchPages = function() {
-        let totalPages = 250;
-        let makeSearchAnimeUrl = function(page: number) {
-            return 'https://myanimelist.net/anime.php?sy=1917&ey=2017&c[0]=a&c[1]=b&c[2]=c&c[3]=f&gx=0&o=7&w=1&show=' + (page * 50);
-        };
-
-        setInterval(function() {
-            if (idToCb.size < getMaxWorkers() && lastId < totalPages) {
-                let id = lastId;
-                fetchPageUsingFrame(makeSearchAnimeUrl(lastId)).then = content => {
-                    ServApi.store_random_page_data({
-                        file_name: 'myanimelist.net_all_anime_search_page_' + id,
-                        page_data: content,
-                    });
-                };
-            }
-        }, 1000);
-    };
 
     let parseNumber = function(text: string): number {
         text = text.replace(',', '').replace(' ', '').trim();
@@ -241,56 +122,27 @@ export let GrabMalDb = function(mainCont: HTMLElement)
      * need this to acquire approximate list of currently active users
      */
     let fetchAnimeUsersHistoryPages = () => ServApi.get_animes = (animes) => {
-        /** @debug */
-        console.log('fetched animes', animes);
         let maxPages = 100; // MAL limitation
         let usersPerPage = 75;
 
-        let unflushedRows: recent_user_t[] = [];
-
-        let makeUrl = (malId: number, snakeCaseTitle: string, page: number) =>
-            'https://myanimelist.net/anime/' + malId + '/' + snakeCaseTitle + '/stats?show=' + (page * usersPerPage);
-
-        for (let anime of animes) {
-            let pages = Math.min(anime.mbrCnt / usersPerPage, maxPages);
-            for (let page = 0; page < pages; ++page) {
-                scheduledJobs.push({
-                    url: makeUrl(anime.malId, anime.snakeCaseTitle, page),
-                    cb: content => {
-                        let parsed = parseUsersHistoryPage(content);
-                        let rows = parsed.recentUsers.map(u => {
-                            let row = u;
-                            row.malId = anime.malId;
-                            return row;
-                        });
-                        unflushedRows.push(...rows);
-                    },
+        Grab({
+            jobs: S.list(animes).flatMap(anime => {
+                let pages = Math.min(anime.mbrCnt / usersPerPage, maxPages);
+                return S.range(0, pages).map(page => 1 && {
+                    url: 'https://myanimelist.net/anime/'
+                        + anime.malId + '/' + anime.snakeCaseTitle
+                        + '/stats?show=' + (page * usersPerPage),
+                    parser: (content: string) => S.opt(parseUsersHistoryPage(content))
+                        .map(p => p.recentUsers)
+                        .wth(rows => rows.forEach(u => u.malId = anime.malId)),
                 });
-            }
-        }
-
-        let chunkSize = 6000;
-        setInterval(() => {
-            if (unflushedRows.length >= chunkSize) {
-                console.log('flushing to server');
-                let chunk = unflushedRows.splice(0, chunkSize);
-                let params = {rows: chunk};
-                if (!isProxy) {
-                    ServApi.add_recent_users(params).then = (resp) =>
-                        console.log('flushed', resp);
-                } else {
-                    verySecurePassword = verySecurePassword || prompt('password?');
-                    getPostBridgeFrame().postMessage({
-                        eventType: 'forwardPostRequest',
-                        url: '/htbin/json_service.py?f=add_recent_users',
-                        params: {
-                            params: params,
-                            verySecurePassword: verySecurePassword,
-                        },
-                    }, '*');
-                }
-            }
-        }, 1000);
+            }),
+            chunkHandler: chunk => ServApi.add_recent_users({
+                rows: S.list(chunk).flatMap(v => v),
+            }),
+            guiCont: mainCont,
+        }).then = (result: string) =>
+            console.log('Fetched all user profiles', result);
     };
 
     let parseAnimeUrl = function(url: string) {
@@ -357,12 +209,15 @@ export let GrabMalDb = function(mainCont: HTMLElement)
 
         let errorDom = $$('.badresult', pageDom)[0];
         let accessDeniedMsg = 'Access to this list has been restricted by the owner.';
+        let proxyErrorRegex = /^The requested resource could not be loaded because the server returned an error:/;
         let table = $$('table[data-items]', pageDom)[0];
         let rows: {[k: string]: string}[] = [];
         let isAccessDenied = false;
         let isUnparsable = false;
 
-        if (errorDom && errorDom.innerText.trim() === accessDeniedMsg) {
+        if (errorDom && errorDom.innerText.trim() === accessDeniedMsg ||
+            proxyErrorRegex.test(content)
+        ) {
             isAccessDenied = true;
         } else if (table) {
             let jsonText = table.getAttribute('data-items');
@@ -392,70 +247,106 @@ export let GrabMalDb = function(mainCont: HTMLElement)
         };
     };
 
-    let fetchAnimeLists = () => ServApi.get_mal_logins = logins => {
-        let unflushedRows: user_anime_t[] = [];
-        let loginToUser: Map<string, user_anime_list_t> = new Map();
-
-        let makeUrl = (login: string, asc: boolean) =>
-            'https://myanimelist.net/animelist/' + login + '?'
-                + 'status=2&' // "completed"
-                + 'order=' + (asc ? '-' : '') + '4'; // by score
-
-        for (let login of logins) {
-            for (let asc of [false, true]) {
-                scheduledJobs.push({
-                    url: makeUrl(login, asc),
-                    cb: content => {
-                        let parsed = parseUserAnimesPage(content);
-                        let parsedRows = parsed.rows;
-                        if (parsedRows.length > 0) {
-                            let rows = parsedRows.map(data => 1 && {
-                                login: login,
-                                malId: +data['anime_id'],
-                                score: +data['score'],
-                                epsSeen: +data['num_watched_episodes'],
-                            });
-                            unflushedRows.push(...rows);
-                        } else if (parsed.isUnparsable) {
-                            console.error('failed to parse ' + login);
-                        }
-                        loginToUser.set(login, {
+    let fetchAnimeLists = () =>
+        ServApi.get_mal_logins = logins =>
+        Grab({
+            jobs: S.list(logins).flatMap(
+                login => [true, false].map(
+                asc => 1 && {
+                    url: 'https://myanimelist.net/animelist/' + login + '?'
+                        + 'status=2&' // "completed"
+                        + 'order=' + (asc ? '-' : '') + '4', // by score,
+                    parser: (content: string) => S.opt(content)
+                        .map(parseUserAnimesPage)
+                        .map(p => 1 && {
                             login: login,
-                            isFetched: parsed.rows.length > 0,
-                            isInaccessible: parsed.isAccessDenied,
-                            isUnparsable: parsed.isUnparsable,
-                        });
-                    },
-                });
-            }
-        }
+                            parsedPage: p,
+                        }),
+                })),
+            chunkHandler: chunk => S.promise(delayedReturn => {
+                let userAnimesResp: string = null;
+                let listStatusResp: string = null;
 
-        let animeChunkSize = 3000;
-        let listThresholdSize = 60;
-        setInterval(() => {
-            if (unflushedRows.length >= animeChunkSize) {
-                console.log('flushing animes to server');
-                let chunk = unflushedRows.splice(0, animeChunkSize);
-                let params = {rows: chunk};
-                ServApi.add_user_animes(params).then = (resp) =>
-                    console.log('flushed animes', resp);
+                let returnIfDone = () =>
+                    userAnimesResp &&
+                    listStatusResp &&
+                    delayedReturn([userAnimesResp, listStatusResp]);
+
+                ServApi.add_user_animes({
+                    rows: S.list(chunk).flatMap(
+                        e => e.parsedPage.rows.map(
+                        pRow => 1 && {
+                            login: e.login,
+                            malId: +pRow['anime_id'],
+                            score: +pRow['score'],
+                            epsSeen: +pRow['num_watched_episodes'],
+                        })),
+                }).then = (resp: string) => {
+                    userAnimesResp = resp || 'empty response';
+                    returnIfDone();
+                };
+
+                ServApi.add_user_anime_lists(chunk.map(e => 1 && {
+                    login: e.login,
+                    isFetched: !e.parsedPage.isAccessDenied
+                            && !e.parsedPage.isUnparsable,
+                    isInaccessible: e.parsedPage.isAccessDenied,
+                    isUnparsable: e.parsedPage.isUnparsable,
+                })).then = (resp: string) => {
+                    listStatusResp = resp || 'empty response';
+                    returnIfDone();
+                };
+            }),
+            guiCont: mainCont,
+        }).then = (result: string) =>
+        console.log('Fetched all user anime lists', result);
+
+    let parseProfilePage = function(content: string): user_profile_t | null {
+        let pageDom = new DOMParser().parseFromString(content, 'text/html').documentElement;
+        let imgUrl = S.opt($$('.user-image img', pageDom)[0])
+            .map(img => (<any>img).src).def(null);
+        let aboutUser = $$('.profile-about-user', pageDom)
+            .map(dom => dom.innerText.trim()).join('\n');
+
+        let userStats = new Map($$('.user-status li', pageDom).map(function(li) {
+            let [title, value] = $$('span', li);
+            if (title && value) {
+                return tuple(title.innerText.trim(), value.innerText.trim());
+            } else {
+                return null;
             }
-            if (loginToUser.size >= listThresholdSize) {
-                let chunk = [...loginToUser.values()];
-                loginToUser.clear();
-                console.log('flushing users to server', chunk);
-                ServApi.add_user_anime_lists(chunk).then = (resp) =>
-                    console.log('flushed user', resp);
-            }
-        }, 1000);
+        }).filter(a => a !== null));
+
+        let result = {
+            joinedRaw: userStats.get('Joined'),
+            lastOnlineRaw: userStats.get('Last Online'),
+            // following are optional
+            gender: userStats.get('Gender') || null,
+            birthdayRaw: userStats.get('Birthday') || null,
+            location: userStats.get('Location') || null,
+            imgUrl: imgUrl,
+            aboutUser: aboutUser,
+        };
+        if (!result.lastOnlineRaw || !result.joinedRaw) {
+            return null;
+        } else {
+            return result;
+        }
     };
 
-    fetchAnimeLists();
-};
+    let fetchProfileInfo = () =>
+        ServApi.get_mal_logins = (logins) =>
+        Grab({
+            jobs: logins.map(login => 1 && {
+                url: 'https://myanimelist.net/profile/' + login,
+                parser: (content: string) => S.opt(content)
+                    .map(parseProfilePage)
+                    .wth(p => p.login = login),
+            }),
+            chunkHandler: chunk => ServApi.add_mal_db_rows('userProfile', chunk),
+            guiCont: mainCont,
+        }).then = (result: string) =>
+        console.log('Fetched all user profiles', result);
 
-interface event_data_t {
-    eventType: 'pageOpened',
-    url: string,
-    referrenceId: number,
-    content: string,
+    fetchProfileInfo();
 };

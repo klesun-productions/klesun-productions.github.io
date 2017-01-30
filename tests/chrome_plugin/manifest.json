@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+
+  "name": "Call Everywhere",
+  "description": "Calls specified JS code on every page you open. Similar to CJS, but is not domain-specific",
+  "version": "2017.01.27.1",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["myscript.js"]
+    }
+  ]
+}

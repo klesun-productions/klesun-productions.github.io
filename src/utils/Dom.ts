@@ -263,12 +263,15 @@ export let Dom = (function()
         let match = function(tagName: string, selector?: string) {
             selector = selector || tagName;
             return [...(root || document).querySelectorAll(selector)]
-                .filter(dom => dom.tagName.toLowerCase() === tagName.toLowerCase());
+                .filter(dom => !tagName || dom.tagName.toLowerCase() === tagName.toLowerCase());
         };
         return {
             a: (selector?: string) => <HTMLAnchorElement[]>match('a', selector),
             input: (selector?: string) => <HTMLInputElement[]>match('input', selector),
+            textarea: (selector?: string) => <HTMLTextAreaElement[]>match('textarea', selector),
             img: (selector?: string) => <HTMLImageElement[]>match('img', selector),
+            form: (selector?: string) => <HTMLFormElement[]>match('form', selector),
+            any: (selector?: string) => <HTMLElement[]>match(null, selector),
         };
     };
 
@@ -279,6 +282,7 @@ export let Dom = (function()
         showPasswordDialog: showPasswordDialog,
         promptSelect: promptSelect,
         mk: mk,
+        wrap: wrap,
         get: get,
     };
 })();

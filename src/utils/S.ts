@@ -11,8 +11,22 @@ export let S = (function()
                 elmts = [];
                 return tmp;
             },
+
+            // transforms every element from T1 to T2
             map: <Tel2>(f: (v: Tel, i: number) => Tel2) =>
                 list(elmts.map(f)),
+
+            // unlike map(), it not only transforms elements,
+            // but also changes the amount of elements
+            flatMap: <Tel2>(f: (v: Tel, i: number) => Tel2[]) => {
+                let result: Tel2[] = [];
+                for (let i = 0; i < elmts.length; ++i) {
+                    for (let changed of f(elmts[i], i)) {
+                        result.push(changed);
+                    }
+                }
+                return result;
+            },
 
             slice: (from: number, to: number) =>
                 list(elmts.slice(from, to)),
@@ -85,6 +99,11 @@ export let S = (function()
                 if (has()) {
                     cb(value);
                 }
+            },
+
+            wth: (f) => {
+                if (has()) f(value);
+                return self;
             },
 
             uni: <T2>(some: (v: T) => T2, none: () => T2) => has()
@@ -176,6 +195,8 @@ export let S = (function()
             };
         },
 
+        tuple: <T1, T2>(v1: T1, v2: T2): [T1, T2] => [v1, v2],
+
         list: list,
         opt: opt,
         promise: promise,
@@ -191,6 +212,9 @@ export interface IOpts<T> {
     has: () => boolean,
     // call passed function taking value if value present
     get: (value: T) => void,
+    // call passed function taking value if value present
+    // unlike get(), returns the IOpts instance
+    wth: (f: (value: T) => void) => IOpts<T>,
     // transform both cases to value of single type
     uni: <T2>(
         some: (v: T) => T2,

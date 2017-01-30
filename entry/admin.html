@@ -70,6 +70,12 @@
     </div>
 </div>
 
+<script>
+    var wanted = ['/src/entry/Admin.js', '/libs/SMFreader.js', '/libs/sf2-parser.js', '/libs/jquery-2.1.4.js'];
+
+    requirejs(wanted, (Admin) => Admin.Admin(document.getElementById('mainControl')));
+</script>
+
 <style>
     tbody.food-articles td.article-title {
         max-width: 300px;

@@ -92,6 +92,7 @@ insecure_method_dict = {
     'get_food_article_opinions': misc.get_food_article_opinions,
     'get_wiki_article_redirects': misc.get_wiki_article_redirects,
     'get_animes': misc.get_animes,
+    'get_anime_users': misc.get_anime_users,
     'get_mal_logins': misc.get_mal_logins,
 }
 
@@ -128,7 +129,7 @@ for name,function in insecure_method_dict.items():
     )
 
 get_params = {k: v for k,v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}
-method = get_params['f']
+method = get_params.pop('f')
 
 if method in method_dict:
     func, headers, is_secure = method_dict[method]
@@ -137,6 +138,10 @@ if method in method_dict:
         print_response((None, 'wrongPassword'), [])
     else:
         func_params = post_params['params'] if 'params' in post_params else {}
+        # a hack implying that GET params and func_params are same thing
+        # because i'm too lazy to refactor all functions right now
+        func_params.update(get_params)
+
         result, error = func(func_params), None
         print_response((result, error), headers)
 else:

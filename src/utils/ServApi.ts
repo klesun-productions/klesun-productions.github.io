@@ -2,13 +2,16 @@
 import {ISmfFile} from "../DataStructures";
 import {ytlink_t} from "../MainPage";
 import {Dom} from "./Dom";
-import {S, IOpts} from "./S";
+import {S, IOpts, IPromise} from "./S";
 
-var verySecurePassword: string = null;
-(<any>window).assignVerySecurePassword = (p: string) => verySecurePassword = p;
+var askedPassword: string = null;
 let awaitingPassword: Array<(password: string) => void> = [];
+
 let getProxyPostFrame = (): IOpts<Window> =>
     S.opt((<any>window).proxyPostFrame);
+let getPreEnteredPassword = () =>
+    S.opt(<string>(<any>window).preEnteredPassword);
+
 let lastId = 0;
 let makeId = () => ++lastId;
 let idToHandler: Map<number, (js: any) => void> = new Map();
@@ -31,14 +34,15 @@ let askingForPassword = false;
 
 let askForPassword = function(cb: (pwd: string) => void)
 {
-    if (verySecurePassword) {
-        cb(verySecurePassword);
+    let pwd = getPreEnteredPassword().def(askedPassword);
+    if (pwd) {
+        cb(pwd);
     } else {
         if (askingForPassword === false) {
             askingForPassword = true;
             Dom.showPasswordDialog((pwd) => {
                 askingForPassword = false;
-                verySecurePassword = pwd;
+                askedPassword = pwd;
                 awaitingPassword.splice(0).forEach(c => c(pwd));
             });
         }
@@ -46,58 +50,71 @@ let askForPassword = function(cb: (pwd: string) => void)
     }
 };
 
-let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: string]: any}, whenLoaded: (js: any) => void)
+let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: string]: any}, whenLoaded?: (js: any) => void)
 {
-    let ajaxFromFrame = function(frame: Window)
-    {
-        let reference = makeId();
-        frame.postMessage({
-            eventType: 'forwardPostRequest',
-            url: '/htbin/json_service.py?f=' + funcName,
-            reference: reference,
-            params: params,
-        }, '*');
-        idToHandler.set(reference, whenLoaded);
-    };
-
-    let ajaxFromHere = function()
-    {
-        var oReq = new XMLHttpRequest();
-        oReq.open(restMethod, '/htbin/json_service.py?f=' + funcName, true);
-        oReq.responseType = 'json';
-        oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
-        oReq.onload = () => {
-            if (oReq.response === null) {
-                console.error('server error, see network log of ' + funcName, oReq);
-                return;
-            }
-            var [result, error] = oReq.response;
-            if (!error) {
-                whenLoaded(result);
-            } else {
-                console.log('failed to ajax [' + funcName + ']: ' + error);
-                if (error === 'wrongPassword') {
-                    console.error('wrongPassword while calling ' + funcName);
-                    verySecurePassword = null;
-                }
-            }
+    let result = S.promise(delayedReturn => {
+        let ajaxFromFrame = function(frame: Window)
+        {
+            let reference = makeId();
+            frame.postMessage({
+                eventType: 'forwardPostRequest',
+                url: '/htbin/json_service.py?f=' + funcName,
+                reference: reference,
+                params: params,
+            }, '*');
+            idToHandler.set(reference, delayedReturn);
         };
-        oReq.send(restMethod === 'POST' ? JSON.stringify(params) : null);
-    };
 
-    getProxyPostFrame()
-        .map(v => restMethod === 'POST' ? v : null)
-        .err(ajaxFromHere)
-        .els = ajaxFromFrame;
+        let ajaxFromHere = function()
+        {
+            let oReq = new XMLHttpRequest();
+            let url = '/htbin/json_service.py?f=' + funcName;
+            let esc = encodeURIComponent;
+            for (let k of restMethod === 'GET' ? Object.keys(params) : []) {
+                url += '&' + esc(k) + '=' + esc(params[k]);
+            }
+            oReq.open(restMethod, url, true);
+            oReq.responseType = 'json';
+            oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
+            oReq.onload = () => {
+                if (oReq.response === null) {
+                    console.error('server error, see network log of ' + funcName, oReq);
+                    return;
+                }
+                var [result, error] = oReq.response;
+                if (!error) {
+                    delayedReturn(result);
+                } else {
+                    console.log('failed to ajax [' + funcName + ']: ' + error);
+                    if (error === 'wrongPassword') {
+                        console.error('wrongPassword while calling ' + funcName);
+                        askedPassword = null;
+                    }
+                }
+            };
+            oReq.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+        };
+
+        getProxyPostFrame()
+            .map(v => restMethod === 'POST' ? v : null)
+            .err(ajaxFromHere)
+            .els = ajaxFromFrame;
+    });
+    if (whenLoaded) {
+        result.then = whenLoaded;
+    }
+    return result;
 };
 
 let contribute = (functionName: string, params: {}) => {
-    let prom = {then: (r: any) => {}};
-    askForPassword(pwd => ajax(functionName, 'POST', {
-        'params': params,
-        'verySecurePassword': pwd,
-    }, r => prom.then(r)));
-    return prom;
+    return S.promise(
+        delayedReturn => askForPassword(
+        pwd => ajax(functionName, 'POST', {
+            params: params,
+            verySecurePassword: pwd,
+        },
+        r => delayedReturn(r)))
+    );
 };
 
 /**
@@ -106,7 +123,7 @@ let contribute = (functionName: string, params: {}) => {
  */
 export let ServApi = {
     get_ichigos_midi_names: (cb: (songs: ISmfFile[]) => void) =>
-        ajax('get_ichigos_midi_names', 'GET', {}, cb),
+        ajax('get_ichigos_midi_names', 'GET', {}).then = cb,
 
     rateSong: (isGood: boolean, fileName: string, cb: (rating: string) => void) =>
         contribute('add_song_rating', {isGood: isGood, fileName: fileName}).then = cb,
@@ -118,7 +135,7 @@ export let ServApi = {
         contribute('link_youtube_links', {fileName: fileName, links: links}).then = cb,
 
     getYoutubeLinks: (cb: (links: {[fileName: string]: ytlink_t[]}) => void) =>
-        ajax('get_youtube_links', 'GET', {}, cb),
+        ajax('get_youtube_links', 'GET', {}).then = cb,
 
     collectLikedSongs: (cb: (response: any) => void) =>
         contribute('collect_liked_songs', {}).then = cb,
@@ -132,7 +149,7 @@ export let ServApi = {
     }) => contribute('save_sample_wav', params),
 
     set get_assorted_food_articles(cb: (artciles: article_row_t[]) => void) {
-        ajax('get_assorted_food_articles', 'GET', {}, cb);
+        ajax('get_assorted_food_articles', 'GET', {}).then = cb;
     },
 
     set_food_article_opinion: (params: article_opinion_t) =>
@@ -147,8 +164,17 @@ export let ServApi = {
     add_user_animes: (params: {rows: user_anime_t[]}) =>
         contribute('add_user_animes', params),
 
+    get_anime_users: (malId: number): IPromise<Array<{
+        score: number,
+        userProfile: user_profile_t,
+    }>> =>
+        ajax('get_anime_users', 'GET', {malId: malId}),
+
     add_user_anime_lists: (rows: user_anime_list_t[]) =>
         contribute('add_mal_db_rows', {table: 'animeList', rows: rows}),
+
+    add_mal_db_rows: (table: string, rows: {[k: string]: string | number}[]) =>
+        contribute('add_mal_db_rows', {table: table, rows: rows}),
 
     set get_animes(cb: (animes: anime_t[]) => void) {
         ajax('get_animes', 'GET', {}, cb);
@@ -233,4 +259,18 @@ export interface user_anime_list_t {
     isFetched: boolean,
     isInaccessible: boolean,
     isUnparsable: boolean,
+}
+
+export interface user_profile_t {
+    login?: string, // supposed to be assigned manually
+    joinedRaw: string,
+    lastOnlineRaw: string,
+    // following are optional
+    gender?: string,
+    birthdayRaw?: string,
+    location?: string,
+    imgUrl?: string,
+    aboutUser?: string,
+    // hack for shape to dict conversion
+    [k: string]: string
 }

@@ -1,0 +1,69 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <script src="/libs/require.js"></script>
+    <link href="/libs/select2/dist/css/select2.css" rel="stylesheet"/>
+</head>
+<body>
+
+<main>
+    <br/>
+    <h3>Analyze <a href="http://myanimelist.net">MAL</a> database to filter underrated and find underrated animes</h3>
+    <p>
+        I have a <a href="/out/mal_dump.db">database dump</a> from myanimelist. I'm going experiment a bit to find some criteria that differ between good animes and bad animes.
+        You know, animes in TOP on myanimelist are not always really that good, but you live only once and everything can not be watched.
+    </p>
+
+    <form class="analyze-request">
+        <label>
+            Select Anime:
+            <input type="text" list="zhopa" disabled="1" value="Wait, please..." placeholder="Type here..."/>
+            <datalist id="zhopa" class="analyzedAnime">
+                <option disabled="1" selected="1">Please wait...</option>
+            </datalist>
+        </label>
+        <button>Analyze!</button>
+    </form>
+    <h4>Result:</h4>
+    <code class="result">
+        Waiting for your request...
+    </code>
+
+    <br/>
+    <br/>
+    <br/>
+
+    <small>
+        <p>
+            <b>Underrated anime examples</b>: Jinrui wa Suitai Shimashita, Tentai Senshi Sunred, Paniponi Dash, Texnolyze (?), ...
+        </p>
+        <p>
+            <b>Overrated anime examples</b>: Sword Art Online, Parasite, Nana, Kimi no Na wa, Ookami Kodomo no Ame to Yuki, Barakamon, Kino no tabi, Durara, Wolf's Rain,
+            NHK ni Youkoso, Tokyo Godfathers, D.Gray-man, Shinsekai yori
+        </p>
+    </small>
+</main>
+
+<script>
+    let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
+
+    require(
+        ['/src/entry/ShowMalDb.js'],
+        (ShMaNs) => ShMaNs.ShowMalDb($$('main')[0])
+    );
+</script>
+
+<style>
+    textarea#outputContainer {
+        min-width: 600px;
+        min-height: 400px;
+    }
+
+    main {
+        padding-left: 40px;
+        padding-right: 60px;
+    }
+</style>
+
+</body>
+</html>

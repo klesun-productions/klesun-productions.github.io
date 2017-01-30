@@ -141,7 +141,7 @@ def add_mal_db_rows(params: dict) -> list:
         return 'nothing to store'
 
     keys = params['rows'][0].keys()
-    is_word = re.compile(r'^[a-zA-Z][a-zA-Z0-9]+$')
+    is_word = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]+$')
 
     if not is_word.match(table):
         return 'invalid table name'
@@ -185,10 +185,29 @@ def get_animes(params: dict) -> list:
     db_cursor = db.cursor()
     return list(db_cursor.execute(
         'SELECT a.* FROM anime a ' +
-        'LEFT JOIN recentUser ru ON ru.malId = a.malId ' +
-        'WHERE ru.rowid IS NULL ' +
-        'ORDER BY RANDOM() '
+        # 'LEFT JOIN recentUser ru ON ru.malId = a.malId ' +
+        # 'WHERE ru.rowid IS NULL ' +
+        'ORDER BY malId '
     ))
+
+
+def get_anime_users(params: dict) -> list:
+    mal_id = params['malId']
+
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+
+    rows = db_cursor.execute(
+        'SELECT up.*, ua.score FROM userAnime ua ' +
+        'LEFT JOIN userProfile up ON up.login = ua.login ' +
+        'WHERE malId = :malId '
+    , {"malId": mal_id})
+
+    return [{
+        "score": row["score"],
+        "userProfile": row,
+    } for row in rows]
 
 
 def get_mal_logins(params: dict) -> list:
@@ -196,10 +215,9 @@ def get_mal_logins(params: dict) -> list:
     db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
     db_cursor = db.cursor()
     return [row['login'] for row in db_cursor.execute(
-        'SELECT login FROM animeList ' +
-        'WHERE NOT isFetched ' +
-        '  AND NOT isInaccessible ' +
-        '  AND NOT isUnparsable ' +
+        'SELECT al.login FROM animeList al ' +
+        'LEFT JOIN userProfile up ON up.login = al.login ' +
+        'WHERE up.rowid IS NULL ' +
         'ORDER BY RANDOM()'
     )]
 
