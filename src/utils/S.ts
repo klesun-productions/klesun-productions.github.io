@@ -76,12 +76,13 @@ export let S = (function()
         };
     };
 
-    let opt = function<T>(value: T): IOpts<T>
+    /**
+     * @param forceIsPresent - use when value may be null (when it's not typed mostly)
+     */
+    let opt = function<T>(value: T, forceIsPresent = false): IOpts<T>
     {
-        let has = () => value !== null &&
-        value !== undefined;
-        // let exc = (err: Error): any => { throw err; };
-        // exc(new Error('next time check has() before accessing the value'))
+        let has = () => forceIsPresent ||
+            value !== null && value !== undefined;
 
         let self: IOpts<T>;
         return self = {
@@ -147,6 +148,7 @@ export let S = (function()
                 delayedReturn => self.then =
                 (r: T) => delayedReturn(f(r))
             ),
+            now: () => S.opt(result, done),
         };
         return self;
     };
@@ -181,7 +183,7 @@ export let S = (function()
             };
         },
         range: (l: number, r: number): Array<number> =>
-            Array.apply(null, Array(r - l)).map((nop: void, i: number) => l + i),
+            new Array(r - l).fill(0).map((_, i) => l + i),
 
         /** wraps object keyed by number to an iterable thing */
         digt: <Tv>(obj: {[key: number]: Tv}) => {
@@ -195,7 +197,20 @@ export let S = (function()
             };
         },
 
+        onDemand: <T>(f: () => T) => {
+            let value: T = null;
+            let demanded = false;
+            return () => {
+                if (demanded === false) {
+                    demanded = true;
+                    value = f();
+                }
+                return value;
+            };
+        },
+
         tuple: <T1, T2>(v1: T1, v2: T2): [T1, T2] => [v1, v2],
+        t4: <Ta,Tb,Tc,Td>(a: Ta, b: Tb, c: Tc, d: Td): [Ta,Tb,Tc,Td] => [a,b,c,d],
 
         list: list,
         opt: opt,
@@ -227,4 +242,5 @@ export interface IOpts<T> {
 export interface IPromise<T> {
     then: (result: T) => void,
     map: <T2>(f: (result: T) => T2) => IPromise<T2>,
+    now: () => IOpts<T>,
 }

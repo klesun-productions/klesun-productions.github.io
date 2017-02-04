@@ -25,15 +25,6 @@ export let StarveGame = function(mainCont: HTMLElement)
         (b) => brokenGlassSfx = b
     );
 
-    let shuffle = function<T>(elmts: T[])
-    {
-        for (let i = 0; i < elmts.length; ++i) {
-            let rnd = Math.random() * elmts.length | 0;
-            [elmts[i], elmts[rnd]] = [elmts[rnd], elmts[i]];
-        }
-        return elmts;
-    };
-
     let dictLoaded = function(
         easyWordSet: Set<string>,
         rareWordSet: Set<string>,
@@ -103,8 +94,8 @@ export let StarveGame = function(mainCont: HTMLElement)
             --livesLeft;
             counterStartedAt = null;
             let msg = sourceWord
-                + '<br/>' + shuffle(easyWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ')
-                + '<br/>' + shuffle(rareWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ');
+                + '<br/>' + Tls.shuffle(easyWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ')
+                + '<br/>' + Tls.shuffle(rareWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ');
 
             Dom.showMessageDialog(msg).then = () => {
                 if (livesLeft > 0) {

@@ -10,9 +10,11 @@ interface params_t<Trow> {
         url: string,
         parser: (content: string) => IOpts<Trow>,
     }>,
-    chunkSize?: number,
     chunkHandler: (chunk: Trow[]) => IPromise<any>,
     guiCont: HTMLElement,
+
+    chunkSize?: number,
+    maxWorkers?: number,
 }
 
 /**
@@ -53,7 +55,7 @@ export let Grab =
                 S.opt((<any>window).proxyPostFrame).get = w => w.close();
                 window.location.reload();
             }
-            if (++jobsStarted % 20 === 0) {
+            if (++jobsStarted % 50 === 0) {
                 let seconds = (window.performance.now() / 1000) - startedSeconds;
                 let speed = (jobsStarted / seconds);
 
@@ -99,11 +101,13 @@ export let Grab =
             // 1. requests are slower ~4 times, so we can shot more
             // 2. i don't care about MAL intimidations
             gui.maxWorkers = 8;
+
+            Tls.timeout(5 * 60).then = function () {
+                proxyPostFrame.get = w => w.close();
+                window.location.reload();
+            };
         }
     };
 
-    Tls.timeout(5 * 60).then = function () {
-        proxyPostFrame.get = w => w.close();
-        window.location.reload();
-    };
+    S.opt(params.maxWorkers).get = v => gui.maxWorkers = v;
 });

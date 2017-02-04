@@ -83,9 +83,26 @@ let ditu = <Tv>(pairs: {key: number, val: Tv}[]) => {
     return result;
 };
 
-export let Tls = {
+let audioCtxOnDemand = S.onDemand(() => new AudioContext());
 
-    audioCtx: new AudioContext(),
+/**
+ * i put here random reusable functions and stuff
+ * all functions here should migrate to specialized classes like S.ts and Dom.ts one day
+ */
+export let Tls =
+{
+    get audioCtx() {
+        return audioCtxOnDemand();
+    },
+
+    shuffle: function<T>(elmts: T[])
+    {
+        for (let i = 0; i < elmts.length; ++i) {
+            let rnd = Math.random() * elmts.length | 0;
+            [elmts[i], elmts[rnd]] = [elmts[rnd], elmts[i]];
+        }
+        return elmts;
+    },
 
     for: <Tx>(dict: {[k: string]: Tx}, callback: { (k: string, v: Tx): void }) =>
         Object.keys(dict).forEach(k => callback(k, dict[k])),
@@ -270,8 +287,7 @@ export let Tls = {
         })
     },
 
-    removeParentheses: function(title: string): [string, string]
-    {
+    removeParentheses: function(title: string): [string, string] {
         let letters = [];
         let parenthesesLetters = [];
         let level = 0;
@@ -291,6 +307,45 @@ export let Tls = {
         }
 
         return [letters.join('').trim(), parenthesesLetters.join('').trim()];
+    },
+
+    /** @see http://stackoverflow.com/a/1293163/2750743 */
+    csvToTuples: function(strData: string, strDelimiter?: string): string[][] {
+        strDelimiter = (strDelimiter || ",");
+
+        var objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+        );
+
+        var result: string[][] = [[]];
+        var matches = null;
+        while (matches = objPattern.exec( strData )) {
+            var strMatchedDelimiter = matches[1];
+            if (strMatchedDelimiter.length &&
+                strMatchedDelimiter !== strDelimiter
+            ) {
+                result.push([]);
+            }
+            var strMatchedValue;
+            if (matches[ 2 ]) {
+                strMatchedValue = matches[ 2 ].replace(
+                    new RegExp( "\"\"", "g" ),
+                    "\""
+                );
+            } else {
+                strMatchedValue = matches[ 3 ];
+            }
+            result[ result.length - 1 ].push( strMatchedValue );
+        }
+        return(result);
     },
 
     // here is exactly 128 preset names in correct order

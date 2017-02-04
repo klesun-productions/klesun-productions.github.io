@@ -8,7 +8,7 @@
 
 <main>
     <br/>
-    <h3>Analyze <a href="http://myanimelist.net">MAL</a> database to filter underrated and find underrated animes</h3>
+    <h3>Analyze <a href="http://myanimelist.net">MAL</a> database to filter overrated and find underrated animes</h3>
     <p>
         I have a <a href="/out/mal_dump.db">database dump</a> from myanimelist. I'm going experiment a bit to find some criteria that differ between good animes and bad animes.
         You know, animes in TOP on myanimelist are not always really that good, but you live only once and everything can not be watched.
@@ -25,23 +25,54 @@
         <button>Analyze!</button>
     </form>
     <h4>Result:</h4>
-    <code class="result">
-        Waiting for your request...
-    </code>
-
-    <br/>
-    <br/>
-    <br/>
-
-    <small>
-        <p>
-            <b>Underrated anime examples</b>: Jinrui wa Suitai Shimashita, Tentai Senshi Sunred, Paniponi Dash, Texnolyze (?), ...
-        </p>
-        <p>
-            <b>Overrated anime examples</b>: Sword Art Online, Parasite, Nana, Kimi no Na wa, Ookami Kodomo no Ame to Yuki, Barakamon, Kino no tabi, Durara, Wolf's Rain,
-            NHK ni Youkoso, Tokyo Godfathers, D.Gray-man, Shinsekai yori
-        </p>
-    </small>
+    <div>
+        <code class="result">
+            Waiting for your request...
+        </code>
+    </div>
+    <div>
+        <canvas class="chart" width="800" height="300"></canvas>
+    </div>
+    <div class="table-cont">
+        <h5>Participants</h5>
+        <table>
+            <thead>
+                <th>#</th>
+                <th>id</th>
+                <th>login</th>
+                <th>gender</th>
+                <th>joined</th>
+                <th>score</th>
+                <th title="how much is this score different from user's personal average score">attitude</th>
+                <th>personal avg.</th>
+                <th>animes seen</th>
+            </thead>
+            <tbody class="scoring-users">
+                <tr>
+                    <td>1</td>
+                    <td>123</td>
+                    <td>some_login</td>
+                    <td>Male</td>
+                    <td>2014-05-07</td>
+                    <td>8</td>
+                    <td>+1.33</td>
+                    <td>7.67</td>
+                    <td>51</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>456</td>
+                    <td>other_login</td>
+                    <td>Male</td>
+                    <td>2013-05-07</td>
+                    <td>7</td>
+                    <td>+0.53</td>
+                    <td>6.47</td>
+                    <td>214</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </main>
 
 <script>
@@ -54,14 +85,25 @@
 </script>
 
 <style>
-    textarea#outputContainer {
-        min-width: 600px;
-        min-height: 400px;
-    }
-
     main {
         padding-left: 40px;
         padding-right: 60px;
+    }
+    div.table-cont {
+        width: 600px;
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 5px;
+    }
+    table {
+        border-collapse: collapse;
+    }
+    table td {
+        padding: 4px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        border: 1px solid black;
     }
 </style>
 

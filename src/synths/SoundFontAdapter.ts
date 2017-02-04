@@ -38,7 +38,7 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
 
     let fetchSamplesAsync = (
         semitone: number, preset: number, isDrum: boolean, velocity: number
-    ): IPromise<IFetchedSample[]> => S.promise(
+    ) => S.promise<IFetchedSample[]>(
         delayedReturn =>
         tunePresets.then = presets =>
         drumPreset.then = drumPreset =>

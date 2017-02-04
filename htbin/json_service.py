@@ -82,6 +82,20 @@ method_dict = {
         headers=['Cache-Control: max-age=86400'],
         is_secure=False,
     ),
+    'get_user_profiles': Fun(
+        closure=misc.get_user_profiles,
+        headers=['Cache-Control: max-age=86400'],
+        is_secure=False,
+    ),
+    'get_anime_users': Fun(
+        closure=misc.get_anime_users,
+        headers=['Cache-Control: max-age=86400'],
+        is_secure=False,
+    ),
+}
+
+cached_method_dict = {
+
 }
 
 insecure_method_dict = {
@@ -92,8 +106,9 @@ insecure_method_dict = {
     'get_food_article_opinions': misc.get_food_article_opinions,
     'get_wiki_article_redirects': misc.get_wiki_article_redirects,
     'get_animes': misc.get_animes,
-    'get_anime_users': misc.get_anime_users,
     'get_mal_logins': misc.get_mal_logins,
+    'get_last_fetched_user_id': misc.get_last_fetched_user_id,
+    'get_anime_lists_to_fetch': misc.get_anime_lists_to_fetch,
 }
 
 secure_method_dict = {

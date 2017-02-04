@@ -20,6 +20,10 @@ interface IFormParams extends IDomParams {
     onsubmit?: (e: Event) => void,
 }
 
+interface IAnchorParams extends IDomParams {
+    href: string,
+}
+
 interface IInputParams extends IDomParams {
     type?: 'string' | 'text' | 'button' | 'checkbox' | 'password' | 'file',
     value?: string,
@@ -76,6 +80,9 @@ export let Dom = (function()
 
     let mk = {
         div: (params?: IDomParams) => wrap(<HTMLDivElement>document.createElement('div'), params || {}),
+        a: (params?: IAnchorParams) =>
+            wrap(<HTMLAnchorElement>document.createElement('a'), params || {})
+                .with(dom => S.opt(params.href).get = v => dom.href = v),
         br: (params?: IDomParams) => wrap(<HTMLBRElement>document.createElement('br'), params || {}),
         button: (params?: IButtonParams) =>
             wrap(<HTMLButtonElement>document.createElement('button'), params || {})
@@ -271,6 +278,7 @@ export let Dom = (function()
             textarea: (selector?: string) => <HTMLTextAreaElement[]>match('textarea', selector),
             img: (selector?: string) => <HTMLImageElement[]>match('img', selector),
             form: (selector?: string) => <HTMLFormElement[]>match('form', selector),
+            canvas: (selector?: string) => <HTMLCanvasElement[]>match('canvas', selector),
             any: (selector?: string) => <HTMLElement[]>match(null, selector),
         };
     };

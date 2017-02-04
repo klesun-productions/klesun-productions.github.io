@@ -198,16 +198,20 @@ def get_anime_users(params: dict) -> list:
     db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
     db_cursor = db.cursor()
 
+    # @debug
+    db_cursor.execute('PRAGMA main.cache_size=10000;')
+    db_cursor.execute('PRAGMA main.temp_store = MEMORY;')
+
     rows = db_cursor.execute(
-        'SELECT up.*, ua.score FROM userAnime ua ' +
-        'LEFT JOIN userProfile up ON up.login = ua.login ' +
-        'WHERE malId = :malId '
+        'SELECT * FROM userAnime ua ' +
+        # 'LEFT JOIN userProfile up ON up.login = ua.login ' +
+        'WHERE malId = :malId ' +
+        # TODO: find a way to fetch all
+        # TODO: of them faster than 10 seconds
+        'LIMIT 10000'
     , {"malId": mal_id})
 
-    return [{
-        "score": row["score"],
-        "userProfile": row,
-    } for row in rows]
+    return list(rows)
 
 
 def get_mal_logins(params: dict) -> list:
@@ -220,6 +224,39 @@ def get_mal_logins(params: dict) -> list:
         'WHERE up.rowid IS NULL ' +
         'ORDER BY RANDOM()'
     )]
+
+
+def get_anime_lists_to_fetch(params: dict) -> list:
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    return [row['login'] for row in db_cursor.execute(
+        'SELECT al.login FROM animeList al ' +
+        'LEFT JOIN userProfile up ' +
+        ' ON up.login = al.login ' +
+        'AND up.login = al.login ' +
+        'WHERE up.rowid IS NULL ' +
+        'ORDER BY RANDOM() ' +
+        'LIMIT 100000 '
+    )]
+
+
+def get_last_fetched_user_id(params: dict) -> list:
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    rows = list(db_cursor.execute('SELECT MAX(userId) AS maxUserId FROM userCommentList'))
+    if len(rows) > 0:
+        return rows[0]['maxUserId']
+    else:
+        return 0
+
+def get_user_profiles(params: dict) -> list:
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    rows = list(db_cursor.execute('SELECT user_id, login, joinedRaw, gender FROM userProfile'))
+    return rows
 
 
 def get_wiki_article_redirects(params: dict) -> list:

@@ -3,6 +3,7 @@ import {ISmfFile} from "../DataStructures";
 import {ytlink_t} from "../MainPage";
 import {Dom} from "./Dom";
 import {S, IOpts, IPromise} from "./S";
+import {Tls} from "./Tls";
 
 var askedPassword: string = null;
 let awaitingPassword: Array<(password: string) => void> = [];
@@ -117,6 +118,19 @@ let contribute = (functionName: string, params: {}) => {
     );
 };
 
+let csvToObjects = function(csv: string) {
+    let result: {[k: string]: string | number | boolean}[] = [];
+    let tuples = Tls.csvToTuples(csv);
+    let headers = tuples.shift();
+    for (let i = 0; i < tuples.length; ++i) {
+        result[i] = {};
+        for (let j = 0; j < headers.length; ++j) {
+            result[i][headers[j]] = tuples[i][j];
+        }
+    }
+    return result;
+};
+
 /**
  * provides shortcuts to calls provided
  * by /htbin/json_service.py on server side
@@ -164,16 +178,14 @@ export let ServApi = {
     add_user_animes: (params: {rows: user_anime_t[]}) =>
         contribute('add_user_animes', params),
 
-    get_anime_users: (malId: number): IPromise<Array<{
-        score: number,
-        userProfile: user_profile_t,
-    }>> =>
-        ajax('get_anime_users', 'GET', {malId: malId}),
+    get_anime_users: (malId: number): IPromise<user_anime_t[]> =>
+        ajax('get_anime_users', 'GET', {malId: malId})
+            .map(r => <user_anime_t[]>r),
 
     add_user_anime_lists: (rows: user_anime_list_t[]) =>
         contribute('add_mal_db_rows', {table: 'animeList', rows: rows}),
 
-    add_mal_db_rows: (table: string, rows: {[k: string]: string | number}[]) =>
+    add_mal_db_rows: (table: string, rows: {[k: string]: string | number | boolean}[]) =>
         contribute('add_mal_db_rows', {table: table, rows: rows}),
 
     set get_animes(cb: (animes: anime_t[]) => void) {
@@ -182,6 +194,27 @@ export let ServApi = {
 
     set get_mal_logins(cb: (logins: string[]) => void) {
         ajax('get_mal_logins', 'GET', {}, cb);
+    },
+
+    set get_anime_lists_to_fetch(cb: (logins: string[]) => void) {
+        ajax('get_anime_lists_to_fetch', 'GET', {}, cb);
+    },
+
+    set get_user_profiles(cb: (profiles: user_profile_t[]) => void) {
+        // ajax('get_user_profiles', 'GET', {}, cb);
+        Tls.http('/out/userProfile.csv')
+            .map(csv => <user_profile_t[]>csvToObjects(csv))
+            .then = cb;
+    },
+
+    set get_user_calcs(cb: (profiles: user_calc_t[]) => void) {
+        Tls.http('/out/userCalc.csv')
+            .map(csv => <user_calc_t[]>csvToObjects(csv))
+            .then = cb;
+    },
+
+    set get_last_fetched_user_id(cb: (id: number) => void) {
+        ajax('get_last_fetched_user_id', 'GET', {}, cb);
     },
 
     set get_recipe_book(cb: (book: {[word: string]: number}) => void) {
@@ -262,7 +295,7 @@ export interface user_anime_list_t {
 }
 
 export interface user_profile_t {
-    login?: string, // supposed to be assigned manually
+    login: string,
     joinedRaw: string,
     lastOnlineRaw: string,
     // following are optional
@@ -271,6 +304,14 @@ export interface user_profile_t {
     location?: string,
     imgUrl?: string,
     aboutUser?: string,
-    // hack for shape to dict conversion
-    [k: string]: string
+    user_id?: number,
+
+    [k: string]: string | number
+}
+export interface user_calc_t {
+    login: string,
+    animesWatched: number,
+    averageScore: number,
+
+    [k: string]: string | number
 }
