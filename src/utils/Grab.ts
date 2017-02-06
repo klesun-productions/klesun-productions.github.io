@@ -45,7 +45,6 @@ export let Grab =
     };
 
     let proxyPostFrame = S.opt((<any>window).proxyPostFrame);
-    let isProxy = () => proxyPostFrame.map(f => true).def(false);
 
     let processJobsIntervalId = setInterval(function() {
         let free = gui.maxWorkers - jobsInProgress;
@@ -60,8 +59,11 @@ export let Grab =
                 let speed = (jobsStarted / seconds);
 
                 console.log('url', job.url);
-                gui.statusText = 'processing ' + jobsStarted + '-th job.\n'
-                    + 'Doing ' + speed + ' jobs/second';
+                gui.statusText = [
+                    'processing ' + jobsStarted + '-th job',
+                    'Doing ' + speed + ' jobs/second',
+                    new Date().toISOString(),
+                ].join('.\n');
             }
             ++jobsInProgress;
             Tls.http(job.url).then = resp => {
@@ -95,19 +97,18 @@ export let Grab =
         }
     }, 1000);
 
-    Tls.timeout(5).then = () => {
-        if (isProxy()) {
+    Tls.timeout(5).then = () =>
+        proxyPostFrame.get = frame => {
             // this happen in proxy context, that means:
             // 1. requests are slower ~4 times, so we can shot more
             // 2. i don't care about MAL intimidations
-            gui.maxWorkers = 8;
+            gui.maxWorkers = 4;
 
             Tls.timeout(5 * 60).then = function () {
-                proxyPostFrame.get = w => w.close();
+                frame.close();
                 window.location.reload();
             };
-        }
-    };
+        };
 
     S.opt(params.maxWorkers).get = v => gui.maxWorkers = v;
 });

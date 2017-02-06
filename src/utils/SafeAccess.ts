@@ -1,10 +1,15 @@
 
+export type primitive_t = number | string | boolean;
+export type valid_json_t = primitive_t | dict_t | num_dict_t;
+export interface dict_t {[k: string]: valid_json_t};
+export interface num_dict_t {[k: number]: valid_json_t};
+
 /**
  * allows to define rules to describe some type and assert that
  * @param subj matches them
  * @return {Tout}|null
  */
-export var SafeAccess = function<Tout>(subj: any, rule: (acc: ISafeAccess) => Tout): [Tout, Error]
+export var SafeAccess = function<Tout>(subj: valid_json_t, rule: (acc: ISafeAccess) => Tout): [Tout, Error]
 {
     const isList = function<Tel>(elementRule: (acc: ISafeAccess) => Tel): Tel[]
     {
@@ -33,6 +38,20 @@ export var SafeAccess = function<Tout>(subj: any, rule: (acc: ISafeAccess) => To
         }
     };
 
+    const isString = function(): string
+    {
+        if (typeof subj !== 'string') {
+            throw new Error('Must be a string, but got: ' + (typeof subj));
+        } else {
+            return subj;
+        }
+    };
+
+    const isValidJson = function(): valid_json_t
+    {
+        return subj;
+    };
+
     const sub = function<Tkey>(key: string, rule: (acc: ISafeAccess) => Tkey): Tkey
     {
         if (typeof subj !== 'object' || subj === null) {
@@ -40,7 +59,8 @@ export var SafeAccess = function<Tout>(subj: any, rule: (acc: ISafeAccess) => To
         } else if (!(key in subj)) {
             throw new Error('Must contain mandatory key [' + key + ']');
         } else {
-            var [valid, error] = SafeAccess(subj[key], rule);
+            let typed = <dict_t>subj;
+            var [valid, error] = SafeAccess(typed[key], rule);
             if (!error) {
                 return valid;
             } else {
@@ -54,6 +74,8 @@ export var SafeAccess = function<Tout>(subj: any, rule: (acc: ISafeAccess) => To
         var result = rule({
             isList: isList,
             isNumber: isNumber,
+            isString: isString,
+            isValidJson: isValidJson,
             sub: sub,
         });
         return [result,null];
@@ -70,6 +92,10 @@ interface ISafeAccess
     isList: <Tel>(elementRule: (acc: ISafeAccess) => Tel) => Tel[],
     /** @throws Error in case of type mismatch */
     isNumber: () => number,
+    /** @throws Error in case of type mismatch */
+    isString: () => string,
+    /** @throws Error in case of type mismatch */
+    isValidJson: () => valid_json_t,
     /** @throws Error in case key is not present */
     sub: <Tkey>(key: string, rule: (acc: ISafeAccess) => Tkey) => Tkey,
 }

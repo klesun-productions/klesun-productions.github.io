@@ -191,27 +191,20 @@ def get_animes(params: dict) -> list:
     ))
 
 
-def get_anime_users(params: dict) -> list:
+def get_anime_users(params: dict) -> sqlite3.Cursor:
     mal_id = params['malId']
 
     db = sqlite3.connect(mal_dump_db_path)
     db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
     db_cursor = db.cursor()
 
-    # @debug
-    db_cursor.execute('PRAGMA main.cache_size=10000;')
-    db_cursor.execute('PRAGMA main.temp_store = MEMORY;')
-
-    rows = db_cursor.execute(
-        'SELECT * FROM userAnime ua ' +
-        # 'LEFT JOIN userProfile up ON up.login = ua.login ' +
-        'WHERE malId = :malId ' +
-        # TODO: find a way to fetch all
-        # TODO: of them faster than 10 seconds
-        'LIMIT 10000'
-    , {"malId": mal_id})
-
-    return list(rows)
+    return db_cursor.execute('\n'.join([
+        'SELECT ua.login, user_id AS userId, score, joinedRaw, gender, averageScore, animesWatched',
+        'FROM userAnime ua',
+        'JOIN userProfile up on up.login = ua.login',
+        'JOIN userCalc uc on uc.login = ua.login',
+        'WHERE malId = :malId',
+    ]), {"malId": mal_id})
 
 
 def get_mal_logins(params: dict) -> list:
@@ -232,9 +225,20 @@ def get_anime_lists_to_fetch(params: dict) -> list:
     db_cursor = db.cursor()
     return [row['login'] for row in db_cursor.execute(
         'SELECT al.login FROM animeList al ' +
+        'WHERE NOT al.isFetched ' +
+        'ORDER BY RANDOM() ' +
+        'LIMIT 100000 '
+    )]
+
+
+def get_profiles_to_fetch(params: dict) -> list:
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    return [row['login'] for row in db_cursor.execute(
+        'SELECT al.login FROM animeList al ' +
         'LEFT JOIN userProfile up ' +
         ' ON up.login = al.login ' +
-        'AND up.login = al.login ' +
         'WHERE up.rowid IS NULL ' +
         'ORDER BY RANDOM() ' +
         'LIMIT 100000 '
@@ -250,6 +254,7 @@ def get_last_fetched_user_id(params: dict) -> list:
         return rows[0]['maxUserId']
     else:
         return 0
+
 
 def get_user_profiles(params: dict) -> list:
     db = sqlite3.connect(mal_dump_db_path)
@@ -291,4 +296,5 @@ def get_recipe_book(params: dict) -> list:
             occurByWord[noun] += 1
 
     return occurByWord
+
 

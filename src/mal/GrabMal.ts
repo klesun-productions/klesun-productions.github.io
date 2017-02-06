@@ -35,16 +35,23 @@ export let GrabMal = function(guiCont: HTMLElement) {
      * @see https://myanimelist.net/anime.php
      */
     let animeSearch = function() {
-        for (let i = 1; i <= 250; ++i) {
-            Tls.http('http://midiana.lv/out/random_page_data/myanimelist.net/all_anime_search/myanimelist.net_all_anime_search_page_' + i + '.json')
-                .map(jsonWithTrailingComa => jsonWithTrailingComa.slice(0, -2)) // coma and line break
-                .map(JSON.parse)
-                .then
-            = content => {
-                let pageAnimes = ParseMal(content).anime.search();
-                ServApi.add_animes({rows: pageAnimes});
-            };
-        }
+
+        Grab({
+            jobs: S.range(0, 250).map(i => {
+                let rubbishQuery = 'q=&type=0&score=0&status=0&p=0&r=0&sm=0&sd=0&sy=1990&em=0&ed=0&ey=0&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&gx=1&o=2&w=2&';
+                let url = 'https://myanimelist.net/anime.php?' + rubbishQuery + 'show=' + (i * 50);
+                return {
+                    url: url,
+                    parser: (html: string) => ParseMal(html).anime.search(),
+                };
+            }),
+            chunkHandler: chunk => {
+                let rows = S.list(chunk).flatMap(a => a);
+                return ServApi.add_animes({rows: rows});
+            },
+            guiCont: guiCont,
+        }).then = (result: string) =>
+            console.log('Fetched all animes', result);
     };
 
     /**
@@ -57,7 +64,7 @@ export let GrabMal = function(guiCont: HTMLElement) {
 
         Grab({
             jobs: S.list(animes).flatMap(anime => {
-                let pages = Math.min(anime.mbrCnt / usersPerPage, maxPages);
+                let pages = Math.min(anime.mbrCnt / usersPerPage, maxPages) | 0;
                 return S.range(0, pages).map(page => 1 && {
                     url: 'https://myanimelist.net/anime/'
                         + anime.malId + '/' + anime.snakeCaseTitle

@@ -1,10 +1,11 @@
 
 import {ISynth} from "./synths/ISynth";
+import {dict_t} from "./utils/SafeAccess";
 export interface ISongInfo {
     rawFileName: string;
 }
 
-export interface IShNote {
+export interface IShNote extends dict_t {
     // 1.0 - semibreve; 0.25 - quarter note; 0.1666 - triplet of a half note; and so on
     length: number;
     // midi channel number in range [0..16)
@@ -15,16 +16,16 @@ export interface IShNote {
     velocity?: number;
 }
 
-export interface IStateChannel {
+export interface IStateChannel extends dict_t {
     pitchBend: number, // float, in semitones
     volume: number, // 1 means max volume, 0 means muted
 }
 
-export type IChordState = {
+export interface IChordState {
     [channel: number]: IStateChannel;
 }
 
-export interface IShmidusicChord {
+export interface IShmidusicChord extends dict_t {
     noteList: Array<IShNote>;
     startState?: IChordState,
     finishState?: IChordState,

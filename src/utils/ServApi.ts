@@ -1,9 +1,12 @@
 
+/// <reference path="../references.ts" />
+
 import {ISmfFile} from "../DataStructures";
 import {ytlink_t} from "../MainPage";
 import {Dom} from "./Dom";
 import {S, IOpts, IPromise} from "./S";
 import {Tls} from "./Tls";
+import {SafeAccess, valid_json_t, primitive_t} from "./SafeAccess";
 
 var askedPassword: string = null;
 let awaitingPassword: Array<(password: string) => void> = [];
@@ -51,7 +54,7 @@ let askForPassword = function(cb: (pwd: string) => void)
     }
 };
 
-let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: string]: any}, whenLoaded?: (js: any) => void)
+let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_json_t, whenLoaded?: (js: any) => void)
 {
     let result = S.promise(delayedReturn => {
         let ajaxFromFrame = function(frame: Window)
@@ -68,21 +71,21 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: s
 
         let ajaxFromHere = function()
         {
-            let oReq = new XMLHttpRequest();
+            let http = new XMLHttpRequest();
             let url = '/htbin/json_service.py?f=' + funcName;
             let esc = encodeURIComponent;
             for (let k of restMethod === 'GET' ? Object.keys(params) : []) {
-                url += '&' + esc(k) + '=' + esc(params[k]);
+                url += '&' + esc(k) + '=' + esc((<any>params)[k]); // TODO: separate function for GET
             }
-            oReq.open(restMethod, url, true);
-            oReq.responseType = 'json';
-            oReq.setRequestHeader('Content-Type', 'application/json;UTF-8');
-            oReq.onload = () => {
-                if (oReq.response === null) {
-                    console.error('server error, see network log of ' + funcName, oReq);
+            http.open(restMethod, url, true);
+            http.responseType = 'json';
+            http.setRequestHeader('Content-Type', 'application/json;UTF-8');
+            http.onload = () => {
+                if (http.response === null) {
+                    console.error('server error, see network log of ' + funcName, http);
                     return;
                 }
-                var [result, error] = oReq.response;
+                var [result, error] = http.response;
                 if (!error) {
                     delayedReturn(result);
                 } else {
@@ -93,7 +96,7 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: s
                     }
                 }
             };
-            oReq.send(restMethod === 'POST' ? JSON.stringify(params) : null);
+            http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
         };
 
         getProxyPostFrame()
@@ -105,6 +108,98 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: {[k: s
         result.then = whenLoaded;
     }
     return result;
+};
+
+type chunk_type_t = 'interruptingError' | 'info' | 'data';
+type error_type_t = 'wrongPassword' | 'uncaughtException' | 'notExistingFunction';
+
+interface unify_t <T>{
+    data: (content: {
+        chunkItems: valid_json_t[]
+    }) => T,
+    interruptingError: (content: {
+        errorType:error_type_t,
+        message: string,
+    }) => T,
+    info: ((content: {
+        message: string,
+    }) => T)
+}
+
+let typeCheckChunk = function<T>(validJson: valid_json_t, unify: unify_t<T>): T {
+    let [typedChunk, error] = SafeAccess(validJson, a => 1 && {
+        chunkType: a.sub('chunkType', a => <chunk_type_t>a.isString()),
+        content: a.sub('content', a => a.isValidJson()),
+    });
+    if (error) {
+        throw new Error('Chunk structure does not match expected protocol: ' + error);
+    } else if (typedChunk.chunkType === 'data') {
+        return unify.data(<any>typedChunk.content);
+    } else if (typedChunk.chunkType === 'interruptingError') {
+        return unify.interruptingError(<any>typedChunk.content);
+    } else if (typedChunk.chunkType === 'info') {
+        return unify.info(<any>typedChunk.content);
+    } else {
+        throw new Error('Unknown chunk type: ' + typedChunk.chunkType);
+    }
+};
+
+interface IChunked<T> {
+    chunk: (handler: (c: T[]) => void) => IChunked<T>,
+    then: (c: T[]) => void,
+}
+
+let parseChunks = <T>(lines: string[]): T[] =>
+    S.list(lines.map(l => JSON.parse(l)))
+        .flatMap(chunk => typeCheckChunk(chunk, {
+            data: c => c.chunkItems,
+            info: c => [],
+            interruptingError: c => {
+                console.error('Error in chunked response: ' + c.errorType, c.message);
+                return [];
+            },
+        }));
+
+let retrieveChunked = function<T>(funcName: string, params: {[k: string]: primitive_t}): IChunked<T> {
+    let url = '/htbin/chunked_service.py?f=' + funcName;
+    let esc = encodeURIComponent;
+    for (let k of Object.keys(params)) {
+        url += '&' + esc(k) + '=' + esc((<any>params)[k]);
+    }
+
+    let http = new XMLHttpRequest();
+    http.open('GET', url, true);
+    http.responseType = 'text';
+    http.send();
+
+    // TODO: optimize so it did not become slower with each iteration
+
+    let self = {
+        chunk: function(handler: (c: T[]) => void) {
+            var lastLineCount = 0;
+
+            http.onprogress = () => {
+                let partial = <string>http.response;
+                let lines = partial.split('\n');
+                // either empty line or part of incomplete line
+                let last = lines.pop();
+                let newLines = lines.slice(lastLineCount);
+                lastLineCount = lines.length;
+                let items = parseChunks<T>(newLines);
+                handler(items);
+            };
+            return self;
+        },
+        set then (handler: (c: T[]) => void) {
+            http.onload = () =>
+                handler(parseChunks<T>((<string>http.response)
+                    .split('\n')
+                    .slice(0, -1)
+                ));
+        },
+    };
+    return self;
+
 };
 
 let contribute = (functionName: string, params: {}) => {
@@ -178,9 +273,8 @@ export let ServApi = {
     add_user_animes: (params: {rows: user_anime_t[]}) =>
         contribute('add_user_animes', params),
 
-    get_anime_users: (malId: number): IPromise<user_anime_t[]> =>
-        ajax('get_anime_users', 'GET', {malId: malId})
-            .map(r => <user_anime_t[]>r),
+    get_anime_users: (malId: number): IChunked<user_anime_extended_t> =>
+        retrieveChunked('get_anime_users', {malId: malId}),
 
     add_user_anime_lists: (rows: user_anime_list_t[]) =>
         contribute('add_mal_db_rows', {table: 'animeList', rows: rows}),
@@ -198,6 +292,10 @@ export let ServApi = {
 
     set get_anime_lists_to_fetch(cb: (logins: string[]) => void) {
         ajax('get_anime_lists_to_fetch', 'GET', {}, cb);
+    },
+
+    set get_profiles_to_fetch(cb: (logins: string[]) => void) {
+        ajax('get_profiles_to_fetch', 'GET', {}, cb);
     },
 
     set get_user_profiles(cb: (profiles: user_profile_t[]) => void) {
@@ -263,12 +361,15 @@ export interface anime_t {
     malId: number,
     snakeCaseTitle: string,
     title: string,
-    mbrCnt: number,
     epsCnt?: number,
     score: number,
     format: string,
     briefing: string,
     imgUrl: string,
+    startDate: string,
+    endDate: string,
+    mbrCnt: number,
+    ageRestrictionRaw: string,
 }
 
 export interface recent_user_t {
@@ -314,4 +415,20 @@ export interface user_calc_t {
     averageScore: number,
 
     [k: string]: string | number
+}
+
+/** would be achieved after JOIN-ing the three tables in SQL */
+export interface user_anime_extended_t /* extends user_anime_t, user_profile_t, user_calc_t */ {
+    /* userAnime */
+    login: string,
+    score: number,
+
+    /* userProfile */
+    userId: number,
+    joinedRaw: string,
+    gender: string | null,
+
+    /* userCalc */
+    averageScore: number
+    animesWatched: number,
 }

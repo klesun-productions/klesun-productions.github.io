@@ -2,6 +2,7 @@
 import {IPreset, IInstrument, EStereoPan, ISampleInfo, IGenerator} from "../SoundFontAdapter";
 import {Tls} from "../../utils/Tls";
 import {S} from "../../utils/S";
+import {dict_t} from "../../utils/SafeAccess";
 
 // overwrites global keys with local if any
 let updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
@@ -258,7 +259,9 @@ export let ParseSoundFontFile = function(sf2Buf: ArrayBuffer): [IFlatSoundFont, 
     let view = new Uint8Array(sf2Buf);
 
     let parser = new sf2.Parser(view);
-    parser.parse();
+    // well... he uses same object for
+    // parse() function and result
+    (<any>parser).parse();
 
     for (let sampleHeader of parser.sampleHeader) {
         sampleHeader.sampleName = cleanText(sampleHeader.sampleName);
@@ -296,7 +299,7 @@ export interface IInstrumentSample {
     generators: IGenerator[],
 }
 
-interface IItem {
+interface IItem extends dict_t {
     type: string,
     value: {
         // most generators
@@ -308,9 +311,7 @@ interface IItem {
     },
 }
 
-interface ISf2Parser {
-    parse: () => void,
-
+interface ISf2Parser extends dict_t {
     presetHeader: Array<{
         preset: number, // piano - 0, church organ - 19, choir - 52
         bank: number, // pitchable instruments have it 0; drums have it 128; misc stuff - other values

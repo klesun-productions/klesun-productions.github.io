@@ -1,5 +1,6 @@
 <html lang="en">
 <head>
+    <title>Show MAL DB</title>
     <meta charset="UTF-8"/>
     <script src="/libs/require.js"></script>
     <link href="/libs/select2/dist/css/select2.css" rel="stylesheet"/>
@@ -24,14 +25,18 @@
         </label>
         <button>Analyze!</button>
     </form>
-    <h4>Result:</h4>
+    <div>
+        <label><b>Processing Title:</b> <span class="title holder">None</span></label><br/>
+        <label><b>Retrieved scores:</b> <span class="scores-retrieved holder">0</span></label><br/>
+        <labe><span class="retrieval-status holder">Waiting for your request...</span></labe><br/>
+    </div>
+    <h3>Result:</h3>
     <div>
         <code class="result">
-            Waiting for your request...
         </code>
     </div>
     <div>
-        <canvas class="chart" width="800" height="300"></canvas>
+        <canvas class="absolute-chart" width="800" height="300"></canvas>
     </div>
     <div class="table-cont">
         <h5>Participants</h5>
@@ -73,6 +78,9 @@
             </tbody>
         </table>
     </div>
+    <div>
+        <canvas class="attitude-chart" width="800" height="300"></canvas>
+    </div>
 </main>
 
 <script>
@@ -90,11 +98,14 @@
         padding-right: 60px;
     }
     div.table-cont {
-        width: 600px;
+        width: 700px;
         max-height: 400px;
         overflow-y: auto;
         overflow-x: hidden;
         padding: 5px;
+    }
+    tr:hover {
+        background-color: #e3f6ff;
     }
     table {
         border-collapse: collapse;

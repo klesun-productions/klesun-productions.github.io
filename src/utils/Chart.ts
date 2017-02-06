@@ -36,7 +36,7 @@ let argue = (arr: number[]) => {
 export let Chart = function(args: args_t)
 {
     /** @debug */
-    console.log('charting!');
+    console.log(new Date().toISOString(), 'charting!');
 
     let minX: number = null;
     let minY: number = null;
@@ -76,7 +76,7 @@ export let Chart = function(args: args_t)
     let xPxToYs: Map<number, number[]> = new Map();
 
     for (let {x, y} of args.pairs) {
-        drawLine({x:x,y:y}, {x:x+1/pxPerX,y:y}, semiColor);
+        // drawLine({x:x,y:y}, {x:x+1/pxPerX,y:y}, semiColor);
         let pxX = x * pxPerX | 0;
         if (y > 0) {
             if (!xPxToYs.has(pxX)) {

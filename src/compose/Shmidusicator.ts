@@ -39,6 +39,10 @@ var findMinSuperPart = (subpart: number) =>
 var findMaxSubPart = (superpart: number) =>
     lengthOptions.filter(o => o.float() <= superpart)[0] || fr(0, 1);
 
+let deepCopy = function<T extends valid_json_t>(v: T): T {
+    return <T>JSON.parse(JSON.stringify(v));
+};
+
 // this class provides some static methods to convert midi files back and forth to github.com/klesun/shmidusic format
 export let Shmidusicator = {
 
@@ -47,7 +51,7 @@ export let Shmidusicator = {
 
     generalToShmidusic: function(source: Ds.IGeneralStructure): Ds.IShmidusicStructure
     {
-        var timedChords: ITimedShChord[] = JSON.parse(JSON.stringify(source.chordList));
+        var timedChords = deepCopy(source.chordList);
         var pausedChords: IShmidusicChord[] = [];
 
         var firstChord: IShmidusicChord;

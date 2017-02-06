@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Grab MAL DB</title>
     <meta charset="UTF-8"/>
     <script src="/libs/require.js"></script>
 </head>
 <body>
 
 <main data-grab-mal-db-page-token="b4c33b443f7be9b276c3577fcb60baad">
-    <h3>Script to fetch all users anime lists from <a>myanimelist.com</a></h3>
+    <h3>Script to fetch all users anime lists from <a>myanimelist.met</a></h3>
     <p>
         You see, MAL has a shitty way of determining average score.
         There are people (or children) that put 10-s to everything.
@@ -20,6 +21,13 @@
         For all these purposes i need the data from MAL.
         That's what this script is for.
     </p>
+    <div class="grabber-links-cont">
+        <a href=".">Populated</a>
+        <a href=".">By</a>
+        <a href=".">Script</a>
+        <a href=".">Please</a>
+        <a href=".">Wait</a>
+    </div>
     <label>Max workers: <input type="number" value="2" id="maxWorkers"/></label>
     <br/>
     <textarea id="outputContainer">Please wait...</textarea>
@@ -40,10 +48,12 @@
         min-width: 600px;
         min-height: 400px;
     }
-
     main {
         padding-left: 40px;
         padding-right: 60px;
+    }
+    a.current {
+        background-color: #aeF;
     }
 </style>
 

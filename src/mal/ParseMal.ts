@@ -33,11 +33,19 @@ export let ParseMal = function(content: string) {
         }
     };
 
-    let animeSearch = function(): anime_t[] {
-        return $$('.js-block-list tr')
+    let parseDate = function(malDate: string) {
+        if (malDate.trim() === '-') {
+            return null;
+        }
+        malDate = malDate.replace(/\?\?/g, '01');
+        return new Date(malDate.trim() + ' Z').toISOString();
+    };
+
+    let animeSearch = function(): IOpts<anime_t[]> {
+        return S.opt($$('.js-block-list tr')
             .slice(1)
             .map(tr => {
-                let [img, title, format, epsCnt, avgScore, mbrCnt] = $$('td', tr);
+                let [img, title, format, epsCnt, avgScore, startDate, endDate, mbrCnt, ageRestriction] = $$('td', tr);
                 let animeUrl = Dom.get(img).a()[0].href;
                 let [_, animeId, snakeCaseTitle] = /.*\/(\d+)\/(.+)$/.exec(animeUrl);
                 return {
@@ -51,9 +59,12 @@ export let ParseMal = function(content: string) {
                         ? +epsCnt.innerText.trim()
                         : null,
                     score: +avgScore.innerText.trim(),
+                    startDate: parseDate(startDate.innerText),
+                    endDate: parseDate(endDate.innerText),
                     mbrCnt: parseNumber(mbrCnt.innerText),
+                    ageRestrictionRaw: ageRestriction.innerText.trim(),
                 };
-            });
+            }));
     };
 
     let profile = function(): IOpts<{profile: user_profile_t, calc: user_calc_t}> {

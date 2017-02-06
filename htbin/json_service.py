@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-# this should be the only script we call from ajax
+# this should be the only script i call from ajax
 # it will contain the actionName -> method mapping
 
 
@@ -51,7 +51,6 @@ def fetch_info_from_login_token(token):
         return None
 
 
-# works only under linux and only in "python -m http.server --cgi 80" - does not work in Apache
 def read_post() -> dict:
     post_text = sys.stdin.read()
     if post_text != "":
@@ -87,11 +86,6 @@ method_dict = {
         headers=['Cache-Control: max-age=86400'],
         is_secure=False,
     ),
-    'get_anime_users': Fun(
-        closure=misc.get_anime_users,
-        headers=['Cache-Control: max-age=86400'],
-        is_secure=False,
-    ),
 }
 
 cached_method_dict = {
@@ -109,6 +103,7 @@ insecure_method_dict = {
     'get_mal_logins': misc.get_mal_logins,
     'get_last_fetched_user_id': misc.get_last_fetched_user_id,
     'get_anime_lists_to_fetch': misc.get_anime_lists_to_fetch,
+    'get_profiles_to_fetch': misc.get_profiles_to_fetch,
 }
 
 secure_method_dict = {
@@ -143,24 +138,26 @@ for name,function in insecure_method_dict.items():
         is_secure=False,
     )
 
-get_params = {k: v for k,v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}
-method = get_params.pop('f')
+def main():
+    get_params = {k: v for k, v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}
+    method = get_params.pop('f')
 
-if method in method_dict:
-    func, headers, is_secure = method_dict[method]
-    post_params = read_post()
-    if is_secure and not is_correct_password(post_params['verySecurePassword']):
-        print_response((None, 'wrongPassword'), [])
+    if method in method_dict:
+        func, headers, is_secure = method_dict[method]
+        post_params = read_post()
+        if is_secure and not is_correct_password(post_params['verySecurePassword']):
+            print_response((None, 'wrongPassword'), [])
+        else:
+            func_params = post_params['params'] if 'params' in post_params else {}
+            # a hack implying that GET params and func_params are same thing
+            # because i'm too lazy to refactor all functions right now
+            func_params.update(get_params)
+
+            result, error = func(func_params), None
+            print_response((result, error), headers)
     else:
-        func_params = post_params['params'] if 'params' in post_params else {}
-        # a hack implying that GET params and func_params are same thing
-        # because i'm too lazy to refactor all functions right now
-        func_params.update(get_params)
+        print("Content-Type: text")
+        print('')
+        print('Bad Request - Undefined Function - GET["f"] = "' + method + '"')
 
-        result, error = func(func_params), None
-        print_response((result, error), headers)
-else:
-    print("Content-Type: text")
-    print('')
-    print('Bad Request - Undefined Function - GET["f"] = "' + method + '"')
-
+main()

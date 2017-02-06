@@ -8,6 +8,7 @@ import {
     flattenSamples
 } from "./soundfont/ParseSf2";
 import {S, IPromise} from "../utils/S";
+import {dict_t} from "../utils/SafeAccess";
 
 // this object provides access to soundfont info
 // particularly it has a method that
@@ -164,7 +165,7 @@ export interface IGenerator {
 
 export enum EStereoPan {NONE = 0, MONO = 1, LEFT = 2, LINK = 3, RIGHT = 4}
 
-export interface ISampleInfo {
+export interface ISampleInfo extends dict_t {
     sampleName: string,
     originalPitch: number, // means nothing if "overridingRootKey" is defined in generator
     sampleRate: number, // like "44100" or "22500"
