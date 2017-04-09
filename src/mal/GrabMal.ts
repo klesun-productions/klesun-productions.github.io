@@ -1,7 +1,7 @@
 
 import {Tls} from "../utils/Tls";
 import {ParseMal} from "./ParseMal";
-import {ServApi} from "../utils/ServApi";
+import {ServApi, user_anime_score_t} from "../utils/ServApi";
 import {Grab} from "../utils/Grab";
 import {S, IPromise, IOpts} from "../utils/S";
 
@@ -166,6 +166,50 @@ export let GrabMal = function(guiCont: HTMLElement) {
             });
         };
 
+    // '8cad612394caeb8f2e2841f354a83883c047230f'
+    let getCsrfToken = () =>
+        Tls.http('https://myanimelist.net/')
+            .map(html => ParseMal(html).index());
+
+    let includesAjaxNoAuthT6 = () => {
+        let whenGotCsrfToken = getCsrfToken();
+        let whenGotUndatedScores = S.promise<user_anime_score_t[]>(r => ServApi.get_undated_scores = r);
+
+        whenGotCsrfToken.then = mbCsrfToken => mbCsrfToken
+            .err(() => console.error('Failed to obtain MAL CSRF token'))
+            .els = csrfToken =>
+        whenGotUndatedScores.then = scores =>
+        Grab({
+            jobs: scores.map(scoreRec => 1 && {
+                url: 'https://myanimelist.net/includes/ajax-no-auth.inc.php?t=6',
+                retriever: (url: string) =>
+                    Tls.httpForm(url, 'POST', {
+                        color: 1,
+                        id: scoreRec.animeId,
+                        memId: scoreRec.userId,
+                        type: 'anime',
+                        csrf_token: csrfToken,
+                    }),
+                parser: (content: string) =>
+                    S.opt(content)
+                        .saf(json => <{html: string}>JSON.parse(json))
+                        .map(data => data.html.match(/Last Updated:\s+(\d{2}-\d{2}-\d{2})/))
+                        .map(m => m[1])
+                        .map(rawDate => new Date(rawDate + ' Z').toISOString())
+                        .map(dt => {
+                            scoreRec.lastUpdatedDt = dt;
+                            return scoreRec;
+                        }),
+            }),
+            chunkHandler: chunk => ServApi.add_mal_db_rows('userAnimeScore', chunk),
+            guiCont: guiCont,
+            maxWorkers: 12,
+            chunkSize: 1000,
+        }).then = (result: string) =>
+            console.log('Fetched all user score dates', result);
+    };
+
+
     return {
         profile: profile,
         comments: comments,
@@ -173,6 +217,9 @@ export let GrabMal = function(guiCont: HTMLElement) {
             list: animeList,
             stats: animeStats,
             search: animeSearch,
+        },
+        includes: {
+            ajaxNoAuthT6: includesAjaxNoAuthT6,
         },
     };
 };

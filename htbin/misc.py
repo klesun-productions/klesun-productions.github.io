@@ -120,7 +120,7 @@ def add_user_animes(params: dict) -> list:
     db = sqlite3.connect(mal_dump_db_path, timeout=20)
     db_cursor = db.cursor()
     sql = '\n'.join([
-        'INSERT OR IGNORE INTO userAnime',
+        'INSERT OR REPLACE INTO userAnime',
         '(' + ','.join(rows[0].keys()) + ') VALUES',
         '(' + ','.join([':' + k for k in rows[0].keys()]) + ')',
     ])
@@ -243,6 +243,19 @@ def get_profiles_to_fetch(params: dict) -> list:
         'ORDER BY RANDOM() ' +
         'LIMIT 100000 '
     )]
+
+
+def get_undated_scores(params: dict) -> list:
+    db = sqlite3.connect(mal_dump_db_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    return list(db_cursor.execute('\n'.join([
+        'SELECT * FROM userAnimeScore',
+        'WHERE lastUpdatedDt IS NULL',
+        # 'ORDER BY RANDOM()',
+        ' AND rowid >= (ABS(RANDOM()) % (SELECT MAX(rowid) FROM userAnimeScore))',
+        'LIMIT 50000',
+    ])))
 
 
 def get_last_fetched_user_id(params: dict) -> list:

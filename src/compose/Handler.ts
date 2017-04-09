@@ -93,8 +93,9 @@ export let Handler = function(cont: HTMLDivElement)
     window.onfocus = () => tabActive = true;
     window.onblur = () => tabActive = false;
 
-    let handleNoteOn = function(semitone: number, receivedTime: number): IShNote
+    let handleNoteOn = function(semitone: number): IShNote
     {
+        let receivedTime = window.performance.now();
         let note = {
             tune: semitone,
             channel: +$(gui.inputChannelDropdown).val(),
@@ -211,7 +212,7 @@ export let Handler = function(cont: HTMLDivElement)
     };
 
     // TODO reset to default before opening. some legacy songs do not have loopTimes/Start
-    let openSongFromJson = function(parsed: {[k: string]: any}): void
+    let openSongFromJson = function(parsed: valid_json_t): void
     {
         let song: IShmidusicStructure;
         if (song = ShReflect().validateShmidusic(parsed)) {
@@ -378,7 +379,7 @@ export let Handler = function(cont: HTMLDivElement)
                     let semitone: number;
                     if (semitone = semitoneByKey[(<any>keyEvent).code]) {
                         keyEvent.preventDefault();
-                        let note = handleNoteOn(semitone, window.performance.now());
+                        let note = handleNoteOn(semitone);
                         oneShotPlayer.playChord([note]);
                         highlightNotes(control.getFocusedNotes());
                         return;
@@ -425,7 +426,7 @@ export let Handler = function(cont: HTMLDivElement)
             let tune = message.data[1];
             let velocity = message.data[2];
 
-            let note = handleNoteOn(tune, message.receivedTime);
+            let note = handleNoteOn(tune);
             gui.enablePlayOnKeyDownFlag.checked && oneShotPlayer.playChord([note]);
 
             highlightNotes(control.getFocusedNotes());
@@ -478,7 +479,7 @@ export let Handler = function(cont: HTMLDivElement)
         handleHashChange();
         hangMidiHandlers();
         gui.piano.onClick(semitone => {
-            let note = handleNoteOn(semitone, window.performance.now());
+            let note = handleNoteOn(semitone);
             oneShotPlayer.playChord([note]);
             return () => {}; // () => handleNoteOff()
         });

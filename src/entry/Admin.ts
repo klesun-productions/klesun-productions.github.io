@@ -3,7 +3,7 @@ import {ServApi, article_row_t} from "../utils/ServApi";
 import {YoutubeApi} from "../utils/YoutubeApi";
 import {Tls} from "../utils/Tls";
 import {ParseSoundFontFile, TransformSf2Parse, flattenSamples} from "../synths/soundfont/ParseSf2";
-import {S} from "../utils/S";
+import {S, IOpts} from "../utils/S";
 import {Dom} from "../utils/Dom";
 
 var Gui = function(mainControl: HTMLDivElement)
@@ -100,7 +100,7 @@ export let Admin = function(mainControl: HTMLDivElement)
             return popularity;
         };
 
-        let detectOpinion = function(article: article_row_t): IOpt<number>
+        let detectOpinion = function(article: article_row_t): IOpts<number>
         {
             let noun = article.definition_noun.split(',')
                 .filter(w => w.length > 1)[0] || '';

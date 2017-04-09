@@ -29,7 +29,7 @@ class MidiFileProvider(object):
 
         file_list = [os.path.relpath(curDir, root) + '/' + fileName
                      for curDir, _, fileNames in os.walk(root) if not curDir.endswith('source_ichigos_com')
-                     for fileName in fileNames if fileName.endswith('.mid')]
+                     for fileName in fileNames if fileName.endswith('.mid') or fileName.endswith('.MID')]
 
         rating_by_name = {r.fileName: r.rating for r in select(r for r in SongRating)}
 

@@ -9,6 +9,7 @@ interface params_t<Trow> {
     jobs: Array<{
         url: string,
         parser: (content: string) => IOpts<Trow>,
+        retriever?: (url: string) => IPromise<string>,
     }>,
     chunkHandler: (chunk: Trow[]) => IPromise<any>,
     guiCont: HTMLElement,
@@ -38,6 +39,7 @@ export let Grab =
     let jobsInProgress = 0;
     let startedSeconds = 0;
     let jobsStarted = 0;
+    let errors = 0;
 
     gui.maxWorkersChanged = v => {
         startedSeconds = window.performance.now() / 1000;
@@ -62,11 +64,14 @@ export let Grab =
                 gui.statusText = [
                     'processing ' + jobsStarted + '-th job',
                     'Doing ' + speed + ' jobs/second',
+                    'Errors ' + errors,
                     new Date().toISOString(),
                 ].join('.\n');
             }
             ++jobsInProgress;
-            Tls.http(job.url).then = resp => {
+
+            let retriever = job.retriever || Tls.http;
+            retriever(job.url).then = resp => {
                 --jobsInProgress;
                 if (/^Too Many Requests$/.test(resp.trim())) {
                     console.error('MAL whimmed on too many requests. Rescheduling job ' + job.url);
@@ -74,6 +79,7 @@ export let Grab =
                 } else {
                     job.parser(resp)
                         .err(() =>  console.error('Failed to parse response', {
+                            counter: ++errors,
                             url: job.url,
                             response: resp,
                         }))
@@ -82,6 +88,10 @@ export let Grab =
             };
         }
     }, 100);
+
+    // =======================================
+    //  фейсбук расписание
+    // ================================
 
     let chunkProcessedJobsId = setInterval(() => {
         if (unflushedRows.length >= chunkSize || scheduledJobs.length === 0) {
@@ -99,11 +109,6 @@ export let Grab =
 
     Tls.timeout(5).then = () =>
         proxyPostFrame.get = frame => {
-            // this happen in proxy context, that means:
-            // 1. requests are slower ~4 times, so we can shot more
-            // 2. i don't care about MAL intimidations
-            gui.maxWorkers = 4;
-
             Tls.timeout(5 * 60).then = function () {
                 frame.close();
                 window.location.reload();

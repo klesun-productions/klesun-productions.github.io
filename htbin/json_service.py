@@ -104,6 +104,7 @@ insecure_method_dict = {
     'get_last_fetched_user_id': misc.get_last_fetched_user_id,
     'get_anime_lists_to_fetch': misc.get_anime_lists_to_fetch,
     'get_profiles_to_fetch': misc.get_profiles_to_fetch,
+    'get_undated_scores': misc.get_undated_scores,
 }
 
 secure_method_dict = {

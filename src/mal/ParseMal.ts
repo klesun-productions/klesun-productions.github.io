@@ -179,7 +179,7 @@ export let ParseMal = function(content: string) {
             isAccessDenied = true;
         } else if (table) {
             let jsonText = table.getAttribute('data-items');
-            rows = JSON.parse(jsonText);
+            rows = <{[k: string]: string}[]>JSON.parse(jsonText);
         } else {
             // old/custom format
             let headers = null;
@@ -253,7 +253,14 @@ export let ParseMal = function(content: string) {
         };
     };
 
+    // for now i parse only security token, since rest is of no use
+    let index = function() {
+        return S.opt($$('meta[name="csrf_token"]')[0])
+            .map(dom => dom.getAttribute('content'));
+    };
+
     return {
+        index: index,
         profile: profile,
         anime: {
             list: animeList,

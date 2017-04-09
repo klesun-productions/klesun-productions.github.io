@@ -1,4 +1,6 @@
 
+/// <reference path="../references.ts" />
+
 /** S stands for "Shortcuts" */
 export let S = (function()
 {
@@ -89,6 +91,17 @@ export let S = (function()
             map: <T2>(f: (arg: T) => T2): IOpts<T2> => has()
                 ? opt(f(value))
                 : opt(null),
+
+            saf: <T2>(f: (arg: T) => T2): IOpts<T2> => {
+                if (has()) {
+                    try {
+                        return opt(f(value))
+                    } catch (exc) {
+                        console.error('Opt mapping threw an exception', exc);
+                    }
+                }
+                return opt(null);
+            },
 
             def: (def: T): T => has()
                 ? value
@@ -221,6 +234,8 @@ export let S = (function()
 export interface IOpts<T> {
     // transform value if present
     map: <T2>(f: (arg: T) => T2) => IOpts<T2>,
+    /** same as map, by catches exception */
+    saf: <T2>(f: (arg: T) => T2) => IOpts<T2>,
     // get value or use passed default
     def: (def: T) => T,
     // is value present

@@ -170,7 +170,26 @@ export let Tls =
     fetchBinaryFile: (url: string, whenLoaded: (buf: ArrayBuffer) => void) =>
         fetchFile(url, 'arraybuffer', whenLoaded),
 
-    http: (url: string, restMethod: 'GET' | 'POST' = 'GET', params: {[k: string]: any} = {}) =>
+    httpForm: (url: string, restMethod: 'GET' | 'POST' = 'GET', params: {[k: string]: primitive_t} = {}) =>
+        <IPromise<string>>S.promise(delayedReturn => {
+            let http = new XMLHttpRequest();
+            http.onload = () => delayedReturn(http.responseText);
+            let esc = encodeURIComponent;
+            let query = Object.keys(params)
+                .map(k => esc(k) + '=' + esc('' + params[k]))
+                .join('&');
+
+            if (restMethod === 'GET') {
+                http.open(restMethod, url + '?' + query, true);
+                http.send(null);
+            } else {
+                http.open(restMethod, url + '?' + query, true);
+                http.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                http.send(query);
+            }
+        }),
+
+    http: (url: string, restMethod: 'GET' | 'POST' = 'GET', params: valid_json_t = {}) =>
         <IPromise<string>>S.promise(delayedReturn => {
             var http = new XMLHttpRequest();
             http.open(restMethod, url, true);
