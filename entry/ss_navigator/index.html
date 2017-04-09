@@ -1,0 +1,32 @@
+<head>
+    <script src="/libs/require.js"></script>
+</head>
+<body>
+
+<main>
+    <p>There is such web site - <a href="ss.lv">ss.lv</a> with lot of useful ads</p>
+    <p>A sad thing, there is also a lot of ads i'm not interested in</p>
+    <p>This script opens all ads from all pages and filters them by keywords</p>
+
+    <form class="search-params">
+        <label>Search url: <input class="search-url"/></label>
+        <button type="submit">Go!</button>
+    </form>
+
+    <div class="ad-rows-holder">
+        <table>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<script>
+    let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
+    require(
+        ['/entry/ss_navigator/index.js'],
+        (index) => index.main($$('main')[0])
+    );
+</script>
+</body>

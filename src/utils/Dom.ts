@@ -16,6 +16,10 @@ interface IDomParams {
     style?: {[prop: string]: string},
 }
 
+interface ITdParams extends IDomParams {
+    colSpan?: number,
+}
+
 interface IFormParams extends IDomParams {
     onsubmit?: (e: Event) => void,
 }
@@ -54,7 +58,7 @@ export let Dom = (function()
 {
     let $$ = (s: string): HTMLElement[] => (<HTMLElement[]>[...document.querySelectorAll(s)]);
 
-    let wrap = function<T extends HTMLElement>(dom: T, params: IDomParams)
+    let wrap = function<T extends HTMLElement>(dom: T, params: IDomParams = {})
     {
         S.opt(params.className).get = v => dom.className = v;
         S.opt(params.innerHTML).get = v => dom.innerHTML = v;
@@ -88,7 +92,9 @@ export let Dom = (function()
             wrap(<HTMLButtonElement>document.createElement('button'), params || {})
                 .with(dom => S.opt(params.type).get = v => dom.type = v),
         tr: (params?: IDomParams) => wrap(<HTMLTableRowElement>document.createElement('tr'), params || {}),
-        td: (params?: IDomParams) => wrap(<HTMLTableCellElement>document.createElement('td'), params || {}),
+        td: (params?: ITdParams) =>
+            wrap(<HTMLTableCellElement>document.createElement('td'), params || {})
+                .with(dom => S.opt(params.colSpan).get = v => dom.colSpan = v),
         label: (params?: IDomParams) => wrap(<HTMLLabelElement>document.createElement('label'), params || {}),
         form: (params?: IFormParams) =>
             wrap(<HTMLFormElement>document.createElement('form'), params || {})

@@ -7,6 +7,7 @@ import {Dom} from "./Dom";
 import {S, IOpts, IPromise} from "./S";
 import {Tls} from "./Tls";
 import {SafeAccess, valid_json_t, primitive_t} from "./SafeAccess";
+import {FrameBridge} from "./FrameBridge";
 
 var askedPassword: string = null;
 let awaitingPassword: Array<(password: string) => void> = [];
@@ -15,23 +16,6 @@ let getProxyPostFrame = (): IOpts<Window> =>
     S.opt((<any>window).proxyPostFrame);
 let getPreEnteredPassword = () =>
     S.opt(<string>(<any>window).preEnteredPassword);
-
-let lastId = 0;
-let makeId = () => ++lastId;
-let idToHandler: Map<number, (js: any) => void> = new Map();
-// TODO: move this logic to a general singletone
-window.onmessage = function(event) {
-    let data = event.data;
-    if (data.eventType === 'backwardPostResponse') {
-        if (idToHandler.has(data.reference)) {
-            idToHandler.get(data.reference)(data.response);
-        } else {
-            console.error();
-        }
-    } else {
-        console.log('received unknown message event type', event.data);
-    }
-};
 
 // TODO: set it to false when user presses "cancel" to prevent inconsistent state of UX
 let askingForPassword = false;
@@ -56,36 +40,18 @@ let askForPassword = function(cb: (pwd: string) => void)
 
 let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_json_t, whenLoaded?: (js: any) => void)
 {
+    let url = '/htbin/json_service.py?f=' + funcName;
     let result = S.promise(delayedReturn => {
-        let ajaxFromFrame = function(frame: Window)
-        {
-            let reference = makeId();
-            frame.postMessage({
-                eventType: 'forwardPostRequest',
-                url: '/htbin/json_service.py?f=' + funcName,
-                reference: reference,
-                params: params,
-            }, '*');
-            idToHandler.set(reference, delayedReturn);
-        };
-
-        let ajaxFromHere = function()
-        {
-            let http = new XMLHttpRequest();
-            let url = '/htbin/json_service.py?f=' + funcName;
-            let esc = encodeURIComponent;
-            for (let k of restMethod === 'GET' ? Object.keys(params) : []) {
-                url += '&' + esc(k) + '=' + esc((<any>params)[k]); // TODO: separate function for GET
-            }
-            http.open(restMethod, url, true);
-            http.responseType = 'json';
-            http.setRequestHeader('Content-Type', 'application/json;UTF-8');
-            http.onload = () => {
-                if (http.response === null) {
-                    console.error('server error, see network log of ' + funcName, http);
+        let ajaxFromFrame = (frame: Window) =>
+            FrameBridge.sendPostThroughFrame(frame, url, params).then = delayedReturn;
+        let ajaxFromHere = () =>
+            Tls.http(url, restMethod, params).then = resp => {
+                if (resp === null) {
+                    console.error('server error, see network log of ' + funcName);
                     return;
                 }
-                var [result, error] = http.response;
+                let parsed = JSON.parse(resp);
+                var [result, error] = <[valid_json_t, string | null]>parsed;
                 if (!error) {
                     delayedReturn(result);
                 } else {
@@ -96,8 +62,6 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_
                     }
                 }
             };
-            http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
-        };
 
         getProxyPostFrame()
             .map(v => restMethod === 'POST' ? v : null)
@@ -298,6 +262,10 @@ export let ServApi = {
         ajax('get_profiles_to_fetch', 'GET', {}, cb);
     },
 
+    set get_undated_scores(cb: (scores: user_anime_score_t[]) => void) {
+        ajax('get_undated_scores', 'GET', {}, cb);
+    },
+
     set get_user_profiles(cb: (profiles: user_profile_t[]) => void) {
         // ajax('get_user_profiles', 'GET', {}, cb);
         Tls.http('/out/userProfile.csv')
@@ -386,6 +354,7 @@ export interface user_anime_t {
     malId: number,
     score: number,
     epsSeen: number,
+    lastUpdatedDt?: string,
 }
 
 export interface user_anime_list_t {
@@ -413,6 +382,15 @@ export interface user_calc_t {
     login: string,
     animesWatched: number,
     averageScore: number,
+
+    [k: string]: string | number
+}
+
+export interface user_anime_score_t {
+    userId: number,
+    animeId: number,
+    score: number,
+    lastUpdatedDt: string | null,
 
     [k: string]: string | number
 }

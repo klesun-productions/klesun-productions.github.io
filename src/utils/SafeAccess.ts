@@ -1,4 +1,5 @@
 
+import {IOpts} from "./S";
 export type primitive_t = number | string | boolean;
 export type valid_json_t = primitive_t | dict_t | num_dict_t;
 export interface dict_t {[k: string]: valid_json_t};
@@ -52,6 +53,9 @@ export var SafeAccess = function<Tout>(subj: valid_json_t, rule: (acc: ISafeAcce
         return subj;
     };
 
+    const custom = <T>(rule: (v: any) => IOpts<T>): T =>
+        rule(subj).uni(v => v, () => { throw new Error('Must match custom rule - ' + rule); });
+
     const sub = function<Tkey>(key: string, rule: (acc: ISafeAccess) => Tkey): Tkey
     {
         if (typeof subj !== 'object' || subj === null) {
@@ -76,6 +80,7 @@ export var SafeAccess = function<Tout>(subj: valid_json_t, rule: (acc: ISafeAcce
             isNumber: isNumber,
             isString: isString,
             isValidJson: isValidJson,
+            custom: custom,
             sub: sub,
         });
         return [result,null];
@@ -96,6 +101,8 @@ interface ISafeAccess
     isString: () => string,
     /** @throws Error in case of type mismatch */
     isValidJson: () => valid_json_t,
+    /** @throws Error in case of type mismatch */
+    custom: <T>(rule: (v: any) => IOpts<T>) => T,
     /** @throws Error in case key is not present */
     sub: <Tkey>(key: string, rule: (acc: ISafeAccess) => Tkey) => Tkey,
 }

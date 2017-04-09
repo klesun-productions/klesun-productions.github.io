@@ -1,7 +1,6 @@
-console.log('Initializing plugin i called "Run Everywhere!"');
 
-var my_awesome_script = document.createElement('script');
+var scriptDom = document.createElement('script');
+console.log('Initializing plugin "Call Everywhere!"', scriptDom);
+document.head.appendChild(scriptDom);
+scriptDom.setAttribute('src','https://intranet.dyninno.net/~aklesuns/dev_data/misc/call-everywhere.js');
 
-my_awesome_script.setAttribute('src','https://intranet.dyninno.net/~aklesuns/dev_data/misc/call-everywhere.js');
-
-document.head.appendChild(my_awesome_script);
