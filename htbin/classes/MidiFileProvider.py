@@ -14,9 +14,11 @@ dirpath = os.path.dirname(os.path.realpath(__file__))
 def make_order_value(rating: str) -> str:
     return rating.replace('+', 'a').replace('-', 'c').ljust(31, 'b')
 
+
 class MidiFileProvider(object):
-    content_folder = dirpath + '/../../Dropbox/web/'
-    soundfont_folder = dirpath + '/../../out/sf2parsed/'
+    project_root = dirpath + '/../../'
+    content_folder = project_root + '/Dropbox/web/'
+    soundfont_folder = project_root + '/out/sf2parsed/'
 
     @classmethod
     @db_session
@@ -43,6 +45,17 @@ class MidiFileProvider(object):
         result = sorted(result, key=lambda k: (make_order_value(k['rating']) + k['fileName']))
 
         return result
+
+    @classmethod
+    def get_my_song_links(cls, params) -> list:
+        url_base = '/unversioned/gits/riddle-needle/Assets/Audio/midjs/'
+        root = cls.project_root + url_base
+        return [{
+                "name": fileName,
+                "url": url_base + os.path.relpath(curDir, root) + '/' + fileName,
+            }
+            for curDir, _, fileNames in os.walk(root)
+            for fileName in fileNames if fileName.endswith('.js') or fileName.endswith('.json')]
 
     @classmethod
     @db_session

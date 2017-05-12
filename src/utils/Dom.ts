@@ -88,6 +88,7 @@ export let Dom = (function()
             wrap(<HTMLAnchorElement>document.createElement('a'), params || {})
                 .with(dom => S.opt(params.href).get = v => dom.href = v),
         br: (params?: IDomParams) => wrap(<HTMLBRElement>document.createElement('br'), params || {}),
+        li: (params?: IDomParams) => wrap(<HTMLLIElement>document.createElement('li'), params || {}),
         button: (params?: IButtonParams) =>
             wrap(<HTMLButtonElement>document.createElement('button'), params || {})
                 .with(dom => S.opt(params.type).get = v => dom.type = v),
@@ -283,6 +284,7 @@ export let Dom = (function()
             input: (selector?: string) => <HTMLInputElement[]>match('input', selector),
             textarea: (selector?: string) => <HTMLTextAreaElement[]>match('textarea', selector),
             img: (selector?: string) => <HTMLImageElement[]>match('img', selector),
+            ul: (selector?: string) => <HTMLUListElement[]>match('ul', selector),
             form: (selector?: string) => <HTMLFormElement[]>match('form', selector),
             canvas: (selector?: string) => <HTMLCanvasElement[]>match('canvas', selector),
             any: (selector?: string) => <HTMLElement[]>match(null, selector),

@@ -464,12 +464,11 @@ export let Handler = function(cont: HTMLDivElement)
             .split('&')
             .map(p => <[string, string]>p.split('=')));
 
-        if (hash.has('songRelPath')) {
-            Tls.fetchJson('/Dropbox/yuzefa_git/a_opuses_json/' + hash.get('songRelPath'), songJson => {
+        S.opt(hash.get('songUrl')).get = url =>
+            Tls.fetchJson(url, songJson => {
                 openSongFromJson(songJson);
                 play();
             });
-        }
     };
 
     let init = function()

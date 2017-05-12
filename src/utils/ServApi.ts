@@ -301,6 +301,9 @@ export let ServApi = {
     set get_wiki_article_redirects(cb: (mainWordBySynonim: {[k: string]: string}) => void) {
         ajax('get_wiki_article_redirects', 'GET', {}, cb);
     },
+    set get_my_song_links(cb: (mySongRecords: {name: string, url: string}[]) => void) {
+        ajax('get_my_song_links', 'GET', {}, cb);
+    },
 };
 
 export interface article_row_t {

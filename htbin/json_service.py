@@ -88,10 +88,6 @@ method_dict = {
     ),
 }
 
-cached_method_dict = {
-
-}
-
 insecure_method_dict = {
     'get_assorted_food_articles': misc.get_assorted_food_articles,
     'get_recipe_book': misc.get_recipe_book,
@@ -105,6 +101,7 @@ insecure_method_dict = {
     'get_anime_lists_to_fetch': misc.get_anime_lists_to_fetch,
     'get_profiles_to_fetch': misc.get_profiles_to_fetch,
     'get_undated_scores': misc.get_undated_scores,
+    'get_my_song_links': MidiFileProvider.get_my_song_links,
 }
 
 secure_method_dict = {
@@ -138,6 +135,7 @@ for name,function in insecure_method_dict.items():
         headers=[],
         is_secure=False,
     )
+
 
 def main():
     get_params = {k: v for k, v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}
