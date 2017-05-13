@@ -1,6 +1,6 @@
 
 <head>
-    <link rel="stylesheet" type="text/css" href="/entry/main.css">
+    <link rel="stylesheet" type="text/css" href="/entry/midi_player/index.css">
     <link rel="stylesheet" type="text/css" href="/entry/common.css">
     <link rel="shortcut icon" href="/imgs/denya.png">
     <meta charset="utf-8"/>
@@ -29,9 +29,11 @@
 
     <div class="topic-links-cont">
         <a class="topic-option" href="/unversioned/midiCollection.zip">my midi collection</a>
-        <a class="topic-option" href="/entry/compose.html">compose shmidusic</a>
-        <a class="topic-option" href="/unversioned/denya-loves-viski/">3D game</a>
-        <a class="topic-option" href="/entry/starve_game.html">starve game</a>
+        <a class="topic-option" href="/entry/compose/">compose shmeet music</a>
+        <!-- temporary unavailable - need to recompile -->
+        <!--<a class="topic-option" href="/unversioned/denya-loves-viski/">3D game</a>-->
+        <a class="topic-option" href="/entry/starve_game/">starve game</a>
+        <a class="topic-option" href="/entry/mal_db/show.html">Show MAL DB</a>
         <a class="topic-option" href="https://github.com/klesun/shmidusic.lv">git</a>
     </div>
     <br/>
@@ -148,13 +150,12 @@
     <br clear="all"/>
 
     <script>
-        var wanted = ['/src/MainPage.js', '/libs/jquery.js', '/libs/FileSaver.js', '/libs/SMFreader.js'];
-
-        requirejs(wanted, function(MainPage) {
-            return MainPage.MainPage(document.getElementById('mainCont'));
-        });
+        require(
+            ['./index.js', '/libs/jquery.js', '/libs/FileSaver.js', '/libs/SMFreader.js'],
+            function(MainPage) {
+                return MainPage.MainPage(document.getElementById('mainCont'));
+            });
     </script>
 </div>
 </body>
 
-</html>

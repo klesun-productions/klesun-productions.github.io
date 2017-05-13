@@ -1,6 +1,6 @@
 
 import {Tls} from "./Tls";
-import {ytlink_t} from "../MainPage";
+import {ytlink_t} from "../../../../../../home/klesun/big/p/shmidusic.lv/src/utils/ServApi";
 
 // TODO: replace implementation with official OAuth 2.0
 // if it is not related with too much of annal occupation

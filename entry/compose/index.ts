@@ -1,19 +1,19 @@
-/// <reference path="../references.ts" />
+/// <reference path="../../src/references.ts" />
 
 import MIDIMessageEvent = WebMidi.MIDIMessageEvent;
-import {SongAccess} from "./Painter";
-import {IShNote} from "../DataStructures";
-import {IShmidusicChord} from "../DataStructures";
-import {IShmidusicStructure} from "../DataStructures";
-import {Shmidusicator} from "./Shmidusicator";
-import ShReflect from "../Reflect";
-import {Tls} from "../utils/Tls";
-import {Player} from "../player/Player";
+import {SongAccess} from "../../src/compose/Painter";
+import {IShNote} from "../../src/DataStructures";
+import {IShmidusicChord} from "../../src/DataStructures";
+import {IShmidusicStructure} from "../../src/DataStructures";
+import {Shmidusicator} from "../../src/compose/Shmidusicator";
+import ShReflect from "../../src/Reflect";
+import {Tls} from "../../src/utils/Tls";
+import {Player} from "../../src/player/Player";
 import {EncodeMidi} from "./EncodeMidi";
 import {PseudoPiano} from "./PseudoPiano";
 import {ComposeGui} from "./ComposeGui";
-import {S} from "../utils/S";
-import {Dom} from "../utils/Dom";
+import {S} from "../../src/utils/S";
+import {Dom} from "../../src/utils/Dom";
 
 // represents the X in bits of midi message
 // XXXX???? ???????? ????????

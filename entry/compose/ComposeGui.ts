@@ -1,11 +1,11 @@
 
-import {SheetMusicPainter} from "./Painter";
-import PianoLayout from "../views/PianoLayout";
-import {PresetList} from "../views/PresetList";
-import {Switch} from "../synths/Switch";
-import {Tls} from "../utils/Tls";
-import {Dom} from "../utils/Dom";
-import {ServApi} from "../utils/ServApi";
+import {SheetMusicPainter} from "../../src/compose/Painter";
+import PianoLayout from "../../src/views/PianoLayout";
+import {PresetList} from "../../src/views/PresetList";
+import {Switch} from "../../src/synths/Switch";
+import {Tls} from "../../src/utils/Tls";
+import {Dom} from "../../src/utils/Dom";
+import {ServApi} from "../../src/utils/ServApi";
 
 let $$ = (selector: string, el?: HTMLElement) =>
     <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));

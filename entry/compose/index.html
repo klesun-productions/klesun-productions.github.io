@@ -113,12 +113,11 @@ Treats you PC keyboard as piano keyboard according to keys placement
 
 <script>
 
-    var wanted = ['/src/compose/Compose.js',
-        '/libs/jquery.js', '/libs/FileSaver.js', '/libs/SMFreader.js', '/libs/jsmidgen.js'];
-
-    requirejs(wanted, function(Compose)
+    require([
+        'index.js',
+        '/libs/jquery.js', '/libs/FileSaver.js', '/libs/SMFreader.js', '/libs/jsmidgen.js'], function(Handler)
     {
-        Compose.Compose(document.getElementById('composeCont'));
+        Handler.Handler(document.getElementById('composeCont'));
     });
 
 

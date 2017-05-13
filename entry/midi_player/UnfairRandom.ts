@@ -1,11 +1,11 @@
-/// <reference path="DataStructures.ts" />
-/// <reference path="references.ts" />
+/// <reference path="../../src/DataStructures.ts" />
+/// <reference path="../../src/references.ts" />
 
 // and so i thought, that we could have pretty complicated logic of how
 // frequently should be played this song and how rarely this... that's
 // what this class is needed for - to store the logic
 
-import {ISmfFile} from "./DataStructures";
+import {ISmfFile} from "../../src/DataStructures";
 
 export default function UnfairRandom(songList: ISmfFile[])
 {

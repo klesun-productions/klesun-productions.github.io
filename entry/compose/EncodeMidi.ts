@@ -1,7 +1,7 @@
 
-import {IShmidusicStructure, IShmidusicChord} from "../DataStructures";
-import {IJsMidGen} from "../toDefinitelyTyped/IJsMidGen";
-import {Tls} from "../utils/Tls";
+import {IShmidusicStructure, IShmidusicChord} from "../../src/DataStructures";
+import {IJsMidGen} from "../../src/toDefinitelyTyped/IJsMidGen";
+import {Tls} from "../../src/utils/Tls";
 
 // encodes IShmidusicStructure song into a Standard Midi File (.mid)
 // .mid files can be opened in some popular players, like Van Basco

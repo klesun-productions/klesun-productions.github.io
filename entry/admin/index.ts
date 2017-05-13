@@ -1,10 +1,10 @@
 
-import {ServApi, article_row_t} from "../utils/ServApi";
-import {YoutubeApi} from "../utils/YoutubeApi";
-import {Tls} from "../utils/Tls";
-import {ParseSoundFontFile, TransformSf2Parse, flattenSamples} from "../synths/soundfont/ParseSf2";
-import {S, IOpts} from "../utils/S";
-import {Dom} from "../utils/Dom";
+import {ServApi, article_row_t} from "../../src/utils/ServApi";
+import {YoutubeApi} from "../../src/utils/YoutubeApi";
+import {Tls} from "../../src/utils/Tls";
+import {ParseSoundFontFile, TransformSf2Parse, flattenSamples} from "../../src/synths/soundfont/ParseSf2";
+import {S, IOpts} from "../../src/utils/S";
+import {Dom} from "../../src/utils/Dom";
 
 var Gui = function(mainControl: HTMLDivElement)
 {

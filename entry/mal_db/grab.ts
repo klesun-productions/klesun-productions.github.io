@@ -1,13 +1,12 @@
+/// <reference path="../../src/references.ts" />
 
-/// <reference path="../references.ts" />
-
-import {ServApi, anime_t, recent_user_t, user_anime_t, user_anime_list_t, user_profile_t} from "../utils/ServApi";
-import {Dom} from "../utils/Dom";
-import {Tls} from "../utils/Tls";
-import {S} from "../utils/S";
-import {Grab} from "../utils/Grab";
-import {ParseMal} from "../mal/ParseMal";
-import {GrabMal} from "../mal/GrabMal";
+import {ServApi, anime_t, recent_user_t, user_anime_t, user_anime_list_t, user_profile_t} from "../../src/utils/ServApi";
+import {Dom} from "../../src/utils/Dom";
+import {Tls} from "../../src/utils/Tls";
+import {S} from "../../src/utils/S";
+import {Grab} from "../../src/utils/Grab";
+import {ParseMal} from "./ParseMal";
+import {GrabMal} from "./GrabMal";
 
 declare let postBridgeFrame: Window;
 let verySecurePassword: string = null;

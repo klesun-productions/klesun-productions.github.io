@@ -25,7 +25,7 @@
 <script>
     let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
     require(
-        ['/entry/ss_navigator/index.js'],
+        ['./index.js'],
         (index) => index.main($$('main')[0])
     );
 </script>

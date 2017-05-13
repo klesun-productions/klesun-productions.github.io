@@ -1,11 +1,11 @@
 
-/// <reference path="../references.ts" />
+/// <reference path="../../src/references.ts" />
 
-import {ServApi, user_profile_t, user_anime_t, user_calc_t, user_anime_extended_t} from "../utils/ServApi";
-import {Dom} from "../utils/Dom";
-import {S} from "../utils/S";
-import {Chart} from "../utils/Chart";
-import {Tls} from "../utils/Tls";
+import {ServApi, user_profile_t, user_anime_t, user_calc_t, user_anime_extended_t} from "../../src/utils/ServApi";
+import {Dom} from "../../src/utils/Dom";
+import {S} from "../../src/utils/S";
+import {Chart} from "../../src/utils/Chart";
+import {Tls} from "../../src/utils/Tls";
 
 declare let $: any;
 

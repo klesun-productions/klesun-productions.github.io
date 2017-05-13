@@ -88,7 +88,7 @@
 let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
 
 window.onload =
-    () => requirejs(['/src/starve/StarveGame.js'],
+    () => require(['./index.js'],
     (StGaNs) => StGaNs.StarveGame($$('.game-main')[0]));
 
 </script>

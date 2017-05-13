@@ -1,6 +1,6 @@
-/// <reference path="../references.ts" />
+/// <reference path="../../src/references.ts" />
 
-import {Tls} from "../utils/Tls";
+import {Tls} from "../../src/utils/Tls";
 export let StarveGui = function(mainCont: HTMLElement)
 {
     let $$ = (s: string) => <HTMLElement[]>[...mainCont.querySelectorAll(s)];

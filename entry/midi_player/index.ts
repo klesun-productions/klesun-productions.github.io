@@ -1,27 +1,21 @@
-/// <reference path="references.ts" />
+/// <reference path="../../src/references.ts" />
 
 // initialises the website main page - the js performed the moment page is loaded
 
-import {IShmidusicStructure, IGeneralStructure} from "./DataStructures";
-import {SheetMusicPainter} from "./compose/Painter";
+import {IShmidusicStructure, IGeneralStructure} from "../../src/DataStructures";
+import {SheetMusicPainter} from "../../src/compose/Painter";
 import UnfairRandom from "./UnfairRandom";
-import {ISmfFile} from "./DataStructures";
-import {TableGenerator} from "./TableGenerator";
-import {ColModel} from "./TableGenerator";
-import {Tls} from "./utils/Tls";
-import PianoLayout from "./views/PianoLayout";
-import {Player} from "./player/Player";
-import {Switch} from "./synths/Switch";
-import {PresetList} from "./views/PresetList";
-import PlaybackControl from "./views/PlaybackControl";
-import {ServApi} from "./utils/ServApi";
-import {LongestRepeatedSubstring} from "./utils/LongestRepeatedSubstring";
+import {ISmfFile} from "../../src/DataStructures";
+import {TableGenerator} from "../../src/TableGenerator";
+import {ColModel} from "../../src/TableGenerator";
+import {Tls} from "../../src/utils/Tls";
+import PianoLayout from "../../src/views/PianoLayout";
+import {Player} from "../../src/player/Player";
+import {Switch} from "../../src/synths/Switch";
+import {PresetList} from "../../src/views/PresetList";
+import PlaybackControl from "../../src/views/PlaybackControl";
+import {ServApi, ytlink_t} from "../../src/utils/ServApi";
 
-export interface ytlink_t {
-    youtubeId: string,
-    viewCount: number,
-    videoName: string,
-};
 
 let $$ = (selector: string, el?: HTMLElement) =>
     <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));

@@ -1,9 +1,9 @@
 
-import {Tls} from "../utils/Tls";
+import {Tls} from "../../src/utils/Tls";
 import {ParseMal} from "./ParseMal";
-import {ServApi, user_anime_score_t} from "../utils/ServApi";
-import {Grab} from "../utils/Grab";
-import {S, IPromise, IOpts} from "../utils/S";
+import {ServApi, user_anime_score_t} from "../../src/utils/ServApi";
+import {Grab} from "../../src/utils/Grab";
+import {S, IPromise, IOpts} from "../../src/utils/S";
 
 /** combine opt-s */
 let optAll = function<T>(options: IOpts<T>[]): IOpts<T[]> {

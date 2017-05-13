@@ -86,7 +86,7 @@
     let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
 
     require(
-        ['/src/entry/ShowMalDb.js'],
+        ['./show.js'],
         (ShMaNs) => ShMaNs.ShowMalDb($$('main')[0])
     );
 </script>

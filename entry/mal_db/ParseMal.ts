@@ -1,9 +1,8 @@
+/// <reference path="../../src/references.ts" />
 
-/// <reference path="../references.ts" />
-
-import {user_profile_t, recent_user_t, anime_t, user_calc_t} from "../utils/ServApi";
-import {S, IOpts} from "../utils/S";
-import {Dom} from "../utils/Dom";
+import {user_profile_t, recent_user_t, anime_t, user_calc_t} from "../../src/utils/ServApi";
+import {S, IOpts} from "../../src/utils/S";
+import {Dom} from "../../src/utils/Dom";
 
 /**
  * unites functions that transform MAL pages into data

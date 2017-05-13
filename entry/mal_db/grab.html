@@ -22,11 +22,11 @@
         That's what this script is for.
     </p>
     <div class="grabber-links-cont">
-        <a href=".">Populated</a>
-        <a href=".">By</a>
-        <a href=".">Script</a>
-        <a href=".">Please</a>
-        <a href=".">Wait</a>
+        <a href="../">Populated</a>
+        <a href="../">By</a>
+        <a href="../">Script</a>
+        <a href="../">Please</a>
+        <a href="../">Wait</a>
     </div>
     <label>Max workers: <input type="number" value="2" id="maxWorkers"/></label>
     <br/>
@@ -38,7 +38,7 @@
     let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
 
     window.onload =
-        () => requirejs(['/src/entry/GrabMalDb.js', '/libs/FileSaver.js'],
+        () => requirejs(['./grab.js', '/libs/FileSaver.js'],
         (GrMaNs) => GrMaNs.GrabMalDb($$('main')[0]));
 
 </script>

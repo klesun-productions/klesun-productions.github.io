@@ -1,9 +1,9 @@
-/// <reference path="../references.ts" />
+/// <reference path="../../src/references.ts" />
 
-import {Tls} from "../utils/Tls";
-import {S} from "../utils/S";
-import {Dom} from "../utils/Dom";
-import {ServApi} from "../utils/ServApi";
+import {Tls} from "../../src/utils/Tls";
+import {S} from "../../src/utils/S";
+import {Dom} from "../../src/utils/Dom";
+import {ServApi} from "../../src/utils/ServApi";
 import {StarveGui} from "./StarveGui";
 
 /**
@@ -172,15 +172,20 @@ export let StarveGame = function(mainCont: HTMLElement)
         gui.main.className += ' dict-loaded';
     };
 
+    let isCyrillic = function(word: string) {
+        let letters = 'йцукенгшщзхъёфывапролджэячсмитьбю';
+        return word && letters.includes(word[0].toLocaleLowerCase());
+    };
+
     let main = function()
     {
         Tls.ajax('/tests/grabs/wiki_food_articles.json', 'GET', {}).then = food_article_opinions =>
         Tls.ajax('/tests/grabs/wiki_food_synonims.json', 'GET', {}).then = wiki_redirects =>
-        Tls.ajax('/tests/grabs/dict_food_rus_eng.json', 'GET', {}).then = dict =>
+        Tls.ajax('/tests/grabs/food_names.json', 'GET', {}).then = (easyWordArr: string[]) =>
         Tls.ajax('/tests/grabs/vkusnaya_i_zdorovaya_verified.json', 'GET', {}).then = recipeBook =>
         Tls.ajax('/tests/grabs/food_names.json', 'GET', {}).then = synonymBundles => {
             let rareWords = new Set([]);
-            let easyWords = new Set(Object.keys(dict).filter(w => w.length > 1));
+            let easyWords = new Set(easyWordArr.filter(w => w.length > 1));
             let synonymMap: Map<string, string> = new Map();
 
             let norm = (s: string) => Tls.removeParentheses(s)[0].toLowerCase();
@@ -215,6 +220,12 @@ export let StarveGame = function(mainCont: HTMLElement)
                 let mainTitle = wiki_redirects[synonym];
                 synonymMap.set(norm(synonym), norm(mainTitle));
             }
+
+            // there are widely known words like "sprite", "cheetos", etc mixed with
+            // russian words causing user to occasionally think of russian word
+            // starting with a latin letter... should i do transliteration?
+            easyWords = new Set([...easyWords].filter(isCyrillic));
+            rareWords = new Set([...rareWords].filter(isCyrillic));
 
             dictLoaded(easyWords, rareWords, synonymMap);
         };

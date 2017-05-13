@@ -2,7 +2,6 @@
 /// <reference path="../references.ts" />
 
 import {ISmfFile} from "../DataStructures";
-import {ytlink_t} from "../MainPage";
 import {Dom} from "./Dom";
 import {S, IOpts, IPromise} from "./S";
 import {Tls} from "./Tls";
@@ -412,4 +411,10 @@ export interface user_anime_extended_t /* extends user_anime_t, user_profile_t, 
     /* userCalc */
     averageScore: number
     animesWatched: number,
+}
+
+export interface ytlink_t {
+    youtubeId: string,
+    viewCount: number,
+    videoName: string,
 }
