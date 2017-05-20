@@ -21,7 +21,6 @@ __pycache__
 /src/**/*.js.map
 /entry/**/*.js
 /entry/**/*.js.map
-.*
 /node_modules
 /tests/flow_compilled
 /b/

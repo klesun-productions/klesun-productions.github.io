@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noEmitOnError": true,
+        "target": "ES6",
+        
+        "skipLibCheck": true,
+        "lib": ["ES6"]
+    },
+    "files": [
+		  "entry/admin/index.ts"
+    ]
+}

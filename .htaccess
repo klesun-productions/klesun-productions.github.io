@@ -1,0 +1,14 @@
+# when i googled this i could find only .htaccess
+# solution even though it is said to be a bad practice
+<Files ~ "local\.config\.json">
+  Order allow,deny
+  Deny from all
+</Files>
+
+Header add Access-Control-Allow-Origin "*"
+Header add Access-Control-Allow-Headers "origin, x-requested-with, content-type"
+Header add Access-Control-Allow-Methods "PUT, GET, POST, DELETE, OPTIONS"
+
+IndexOptions +Charset=UTF-8
+
+AddOutputFilterByType DEFLATE text/csv

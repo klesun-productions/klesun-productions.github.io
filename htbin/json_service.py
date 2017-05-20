@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 # -*- coding: UTF-8 -*-
 
 # this should be the only script i call from ajax
 # it will contain the actionName -> method mapping
-
 
 import cgitb
 cgitb.enable()

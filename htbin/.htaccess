@@ -1,0 +1,4 @@
+IndexOptions +Charset=UTF-8
+
+# need to put to apache config to handle cgitb putting ""<!-- spam:" in headers
+# HttpProtocolOptions Unsafe

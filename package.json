@@ -1,0 +1,15 @@
+{
+  "name": "midiana.lv",
+  "version": "1.0.0",
+  "description": "Some random js apps, mostly related to MIDI song composition and playback",
+  "repository": "github.com/klesun/midiana.lv",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "scripts": {
+    "tsc": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "2.1.5"
+  }
+}
