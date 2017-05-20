@@ -1,7 +1,10 @@
 
 /// <reference path="../../src/references.ts" />
 
-import {ServApi, user_profile_t, user_anime_t, user_calc_t, user_anime_extended_t} from "../../src/utils/ServApi";
+import {
+    ServApi, user_profile_t, user_anime_t, user_calc_t, user_anime_extended_t,
+    summed_anime_t
+} from "../../src/utils/ServApi";
 import {Dom} from "../../src/utils/Dom";
 import {S} from "../../src/utils/S";
 import {Chart} from "../../src/utils/Chart";
@@ -114,6 +117,8 @@ let listRandomUsers = function(
     console.log(new Date().toISOString(), 'generated dom');
 };
 
+let trueAnimeList = S.promise<summed_anime_t[]>(take => ServApi.get_true_anime_list = take);
+
 /**
  * mapper between page and code
  * provides access to my borrowed MAL database dump
@@ -122,6 +127,7 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
     ServApi.get_animes = animes =>
 {
     let titleToId = new Map(animes.map(a => S.tuple(a.title, a.malId)));
+    let idToAnime = new Map(animes.map(a => S.tuple(a.malId, a)));
     let select = Dom.get(mainCont).any('.analyzedAnime')[0];
 
     Dom.wrap(select, {
@@ -167,6 +173,7 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
         };
 
         Dom.get(mainCont).any('.result')[0].innerHTML = [
+            'Average Attitude    : ' + ' (' + avg(userScores.map(a => a.score - a.averageScore)) + ')',
             'Average Score, Guys : ' + ' (' + avg(guys) + ') ' + percent(guys.length, genderedScores),
             'Average Score, Gals : ' + ' (' + avg(gals) + ') ' + percent(gals.length, genderedScores),
             'Average Score, Anons: ' + ' (' + avg(rest) + ') ' + rest.length,
@@ -225,4 +232,33 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
         // don't know why, but preventDefault(); does not work
         return false;
     };
+
+    let malAvg = 7.1;
+    trueAnimeList.then = summedAnimes =>
+        Dom.wrap(Dom.get(mainCont).any('tbody.true-anime-list')[0], {
+            innerHTML: '',
+            children: summedAnimes
+                // .sort((a,b) => b.overrate - a.overrate)
+                .filter((a) => S.opt(idToAnime.get(a.malId)).map(a => a.mbrCnt > 500).def(false))
+                .filter((a) => a.avgAbsScore % 1 != 0.00) // some rare titles finished by just one user
+                .map((anime, i) => Dom.mk.tr({
+                    children: [
+                        Dom.mk.td({innerHTML: i + ''}),
+                        Dom.mk.td({innerHTML: 'TODO'}),
+                        Dom.mk.td({innerHTML: 'TODO'}),
+                        Dom.mk.td({innerHTML: 'TODO'}),
+                        Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.mbrCnt + '').def('N/a')}),
+                        Dom.mk.td({
+                            children: [Dom.mk.a({
+                                href: 'https://myanimelist.net/anime/' + anime.malId,
+                                innerHTML: anime.avgAbsScore.toFixed(4),
+                            })],
+                        }),
+                        Dom.mk.td({innerHTML: anime.overrate.toFixed(4)}),
+                        Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.format).def('N/a')}),
+                        Dom.mk.td({innerHTML: anime.avgAttitude.toFixed(4)}),
+                        Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.title).def('N/a')}),
+                    ],
+                }).with(tr => tr.onmousedown = () => tr.classList.toggle('clicked'))),
+        });
 };

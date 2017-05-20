@@ -13,6 +13,7 @@ page_data_dir = os.path.dirname(__file__) + '/../out/random_page_data'
 # this is single-time-use functionality, so that's okay
 wiki_dump_db_path = '/home/klesun/big/deleteMe/wikipedia_dump/ruwiki.db'
 mal_dump_db_path = '/home/klesun/big/p/shmidusic.lv/out/mal_dump.db'
+mal_denorm_path = '/home/klesun/big/p/shmidusic.lv/out/mal_denorm.db'
 recipe_book_path = '/home/klesun/big/p/shmidusic.lv/unversioned/misc/kniga_o_vkusnoj_i_zdorovoj_pische.txt'
 
 
@@ -189,6 +190,16 @@ def get_animes(params: dict) -> list:
         # 'WHERE ru.rowid IS NULL ' +
         'ORDER BY malId '
     ))
+
+
+def get_true_anime_list(params: dict) -> list:
+    db = sqlite3.connect(mal_denorm_path)
+    db.row_factory = lambda c, row: {col[0]: row[i] for i, col in enumerate(c.description)}
+    db_cursor = db.cursor()
+    return list(db_cursor.execute('\n'.join([
+        'SELECT *, avgAbsScore - 7.1 - avgAttitude AS overrate ',
+        'FROM trueAnimeList ORDER BY avgAttitude DESC'
+    ])))
 
 
 def get_anime_users(params: dict) -> sqlite3.Cursor:

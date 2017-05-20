@@ -249,6 +249,10 @@ export let ServApi = {
         ajax('get_animes', 'GET', {}, cb);
     },
 
+    set get_true_anime_list(cb: (animes: summed_anime_t[]) => void) {
+        ajax('get_true_anime_list', 'GET', {}, cb);
+    },
+
     set get_mal_logins(cb: (logins: string[]) => void) {
         ajax('get_mal_logins', 'GET', {}, cb);
     },
@@ -411,6 +415,13 @@ export interface user_anime_extended_t /* extends user_anime_t, user_profile_t, 
     /* userCalc */
     averageScore: number
     animesWatched: number,
+}
+
+export interface summed_anime_t {
+    malId: number,
+    avgAbsScore: number,
+    avgAttitude: number,
+    overrate: number, // measures how wrong mal is
 }
 
 export interface ytlink_t {

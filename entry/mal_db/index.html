@@ -41,6 +41,7 @@
         <h5>Participants</h5>
         <table>
             <thead>
+            <tr>
                 <th>#</th>
                 <th>id</th>
                 <th>login</th>
@@ -50,6 +51,7 @@
                 <th title="how much is this score different from user's personal average score">attitude</th>
                 <th>personal avg.</th>
                 <th>animes seen</th>
+            </tr>
             </thead>
             <tbody class="scoring-users">
                 <tr>
@@ -80,13 +82,54 @@
     <div>
         <canvas class="attitude-chart" width="800" height="300"></canvas>
     </div>
+    <div class="useful-list">
+        <h5>Participants</h5>
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th title="How big part of users are men">manliness</th>
+                <th title="How big part of users don't specify gender">anonymity</th>
+                <th title="How close user scores vary are to each other. If half was +10 and half was -10, it would be 0.0, if all scores were same, it would be 1.0">unanimity</th>
+                <th title="How big part of users did not score it">members</th>
+                <th title="Average score">absolute average</th>
+                <th title="Average of personal score delta">overrate</th>
+                <th>format</th>
+                <th title="Average of personal score delta">personal average</th>
+                <th>name</th>
+            </tr>
+            </thead>
+            <tbody class="true-anime-list">
+                <tr>
+                    <td>1</td>
+                    <td>8.5</td>
+                    <td>-0.6</td>
+                    <td>0.51</td>
+                    <td>0.10</td>
+                    <td>0.13</td>
+                    <td>0.96</td>
+                    <td>Attack on titan</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>9.1</td>
+                    <td>+1.6</td>
+                    <td>0.51</td>
+                    <td>0.10</td>
+                    <td>0.13</td>
+                    <td>0.96</td>
+                    <td>Full-metal alchemist</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </main>
 
 <script>
     let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
 
     require(
-        ['./show.js'],
+        ['./index.js'],
         (ShMaNs) => ShMaNs.ShowMalDb($$('main')[0])
     );
 </script>
@@ -102,6 +145,9 @@
         overflow-y: auto;
         overflow-x: hidden;
         padding: 5px;
+    }
+    tr.clicked {
+        background-color: #fbff3d;
     }
     tr:hover {
         background-color: #e3f6ff;

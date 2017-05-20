@@ -96,6 +96,7 @@ insecure_method_dict = {
     'get_food_article_opinions': misc.get_food_article_opinions,
     'get_wiki_article_redirects': misc.get_wiki_article_redirects,
     'get_animes': misc.get_animes,
+    'get_true_anime_list': misc.get_true_anime_list,
     'get_mal_logins': misc.get_mal_logins,
     'get_last_fetched_user_id': misc.get_last_fetched_user_id,
     'get_anime_lists_to_fetch': misc.get_anime_lists_to_fetch,
