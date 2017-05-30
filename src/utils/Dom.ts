@@ -283,10 +283,12 @@ export let Dom = (function()
             a: (selector?: string) => <HTMLAnchorElement[]>match('a', selector),
             input: (selector?: string) => <HTMLInputElement[]>match('input', selector),
             textarea: (selector?: string) => <HTMLTextAreaElement[]>match('textarea', selector),
+            select: (selector?: string) => <HTMLSelectElement[]>match('select', selector),
             img: (selector?: string) => <HTMLImageElement[]>match('img', selector),
             ul: (selector?: string) => <HTMLUListElement[]>match('ul', selector),
             form: (selector?: string) => <HTMLFormElement[]>match('form', selector),
             canvas: (selector?: string) => <HTMLCanvasElement[]>match('canvas', selector),
+            button: (selector?: string) => <HTMLButtonElement[]>match('button', selector),
             any: (selector?: string) => <HTMLElement[]>match(null, selector),
         };
     };

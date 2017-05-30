@@ -6,9 +6,11 @@ import {
     summed_anime_t
 } from "../../src/utils/ServApi";
 import {Dom} from "../../src/utils/Dom";
-import {S} from "../../src/utils/S";
+import {IPromise, S} from "../../src/utils/S";
 import {Chart} from "../../src/utils/Chart";
 import {Tls} from "../../src/utils/Tls";
+import {ShowMalGui} from "./gui";
+import {ParseMal} from "./ParseMal";
 
 declare let $: any;
 
@@ -126,6 +128,7 @@ let trueAnimeList = S.promise<summed_anime_t[]>(take => ServApi.get_true_anime_l
 export let ShowMalDb = (mainCont: HTMLElement) =>
     ServApi.get_animes = animes =>
 {
+    let gui = ShowMalGui(mainCont);
     let titleToId = new Map(animes.map(a => S.tuple(a.title, a.malId)));
     let idToAnime = new Map(animes.map(a => S.tuple(a.malId, a)));
     let select = Dom.get(mainCont).any('.analyzedAnime')[0];
@@ -233,15 +236,12 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
         return false;
     };
 
-    let malAvg = 7.1;
-    trueAnimeList.then = summedAnimes =>
-        Dom.wrap(Dom.get(mainCont).any('tbody.true-anime-list')[0], {
-            innerHTML: '',
-            children: summedAnimes
-                // .sort((a,b) => b.overrate - a.overrate)
-                .filter((a) => S.opt(idToAnime.get(a.malId)).map(a => a.mbrCnt > 500).def(false))
-                .filter((a) => a.avgAbsScore % 1 != 0.00) // some rare titles finished by just one user
-                .map((anime, i) => Dom.mk.tr({
+    trueAnimeList.then = summedAnimes => {
+        let filters = gui.betterList.filters;
+        let reorder = (summedAnimes: summed_anime_t[]) =>
+            Dom.wrap(Dom.get(mainCont).any('tbody.true-anime-list')[0], {
+                innerHTML: '',
+                children: summedAnimes.map((anime, i) => Dom.mk.tr({
                     children: [
                         Dom.mk.td({innerHTML: i + ''}),
                         Dom.mk.td({innerHTML: 'TODO'}),
@@ -260,5 +260,34 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
                         Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.title).def('N/a')}),
                     ],
                 }).with(tr => tr.onmousedown = () => tr.classList.toggle('clicked'))),
-        });
+            });
+
+        let refilter = () => {
+            let login = filters.notInListOf();
+            let userAnimeIds = login
+                ? ServApi.get_url('https://myanimelist.net/animelist/' + login + '?status=2')
+                    .map(resp => ParseMal(resp).anime.list())
+                    .map(parsed => new Set(parsed.rows.map(r => +r['anime_id'])))
+                : S.promise<Set<number>>(ret => ret(new Set([])));
+
+            let minMembers = filters.minMembers();
+            let minPersonal = filters.minPersonal();
+            let sortBy = filters.sortBy();
+            userAnimeIds.then = ids => reorder(summedAnimes
+                .filter(sa =>
+                    !ids.has(sa.malId) &&
+                    S.opt(idToAnime.get(sa.malId)).map(a => a.mbrCnt >= minMembers).def(false) &&
+                    sa.avgAbsScore % 1 != 0.00 && // some rare titles finished by just one user
+                    sa.avgAttitude >= minPersonal)
+                .sort((a,b) =>
+                    sortBy === 'personalScore' ? b.avgAttitude - a.avgAttitude :
+                    sortBy === 'overrate' ? a.overrate - b.overrate :
+                    sortBy === 'absoluteScore' ? b.avgAbsScore - a.avgAbsScore :
+                    a.malId - b.malId)
+                .slice(0, filters.limit()));
+        };
+
+        filters.submit = () => refilter();
+        refilter();
+    };
 };

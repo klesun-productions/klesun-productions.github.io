@@ -102,6 +102,7 @@ insecure_method_dict = {
     'get_profiles_to_fetch': misc.get_profiles_to_fetch,
     'get_undated_scores': misc.get_undated_scores,
     'get_my_song_links': MidiFileProvider.get_my_song_links,
+    'get_url': misc.get_url,
 }
 
 secure_method_dict = {
@@ -152,8 +153,8 @@ def main():
             # because i'm too lazy to refactor all functions right now
             func_params.update(get_params)
 
-            result, error = func(func_params), None
-            print_response((result, error), headers)
+            result = func(func_params)
+            print_response(result, headers)
     else:
         print("Content-Type: text")
         print('')

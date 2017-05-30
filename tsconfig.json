@@ -10,6 +10,6 @@
         "lib": ["ES6"]
     },
     "files": [
-		  "entry/admin/index.ts"
+		"entry/ss_navigator/index.ts"
     ]
 }

@@ -50,16 +50,7 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_
                     return;
                 }
                 let parsed = JSON.parse(resp);
-                var [result, error] = <[valid_json_t, string | null]>parsed;
-                if (!error) {
-                    delayedReturn(result);
-                } else {
-                    console.log('failed to ajax [' + funcName + ']: ' + error);
-                    if (error === 'wrongPassword') {
-                        console.error('wrongPassword while calling ' + funcName);
-                        askedPassword = null;
-                    }
-                }
+                delayedReturn(parsed);
             };
 
         getProxyPostFrame()
@@ -244,6 +235,15 @@ export let ServApi = {
 
     add_mal_db_rows: (table: string, rows: {[k: string]: string | number | boolean}[]) =>
         contribute('add_mal_db_rows', {table: table, rows: rows}),
+
+    /**
+     * as all of you know, javascript forbids doing XMLHttpRequest to other domains
+     * so we need to pass it through server on this domain... damn google.
+     */
+    get_url: (url: string) => {
+        url = '/htbin/text_service.py?f=get_url&url=' + encodeURIComponent(url);
+        return Tls.http(url, 'GET', {});
+    },
 
     set get_animes(cb: (animes: anime_t[]) => void) {
         ajax('get_animes', 'GET', {}, cb);

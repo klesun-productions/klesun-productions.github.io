@@ -5,6 +5,8 @@ import os
 import sqlite3
 
 import re
+import urllib
+import urllib.request
 from collections import defaultdict
 
 import pymorphy2
@@ -32,6 +34,14 @@ def store_random_page_data(params: dict):
         outfile.write(',\n')
 
     return 'stored OK'
+
+
+def get_url(params: dict) -> str:
+    url = params['url']
+    f = urllib.request.urlopen(url)
+    data = f.read()
+    resp = data.decode('utf-8')
+    return resp
 
 
 def get_assorted_food_articles(params: dict) -> list:
@@ -288,7 +298,7 @@ def get_user_profiles(params: dict) -> list:
     return rows
 
 
-def get_wiki_article_redirects(params: dict) -> list:
+def get_wiki_article_redirects(params: dict) -> dict:
     db = sqlite3.connect(wiki_dump_db_path)
     db_cursor = db.cursor()
     return {
@@ -305,7 +315,7 @@ def get_wiki_article_redirects(params: dict) -> list:
     }
 
 
-def get_recipe_book(params: dict) -> list:
+def get_recipe_book(params: dict) -> dict:
     with open(recipe_book_path) as f:
         text = f.read()
 
@@ -320,5 +330,4 @@ def get_recipe_book(params: dict) -> list:
             occurByWord[noun] += 1
 
     return occurByWord
-
 
