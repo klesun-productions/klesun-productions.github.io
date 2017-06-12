@@ -5,10 +5,20 @@
   Deny from all
 </Files>
 
-Header add Access-Control-Allow-Origin "*"
-Header add Access-Control-Allow-Headers "origin, x-requested-with, content-type"
-Header add Access-Control-Allow-Methods "PUT, GET, POST, DELETE, OPTIONS"
 
 IndexOptions +Charset=UTF-8
 
+# Added by klesun to fix python3.5's "'ascii' codec can't encode character "
+# see https://stackoverflow.com/questions/9322410/set-encoding-in-python-3-cgi-scripts
+PassEnv LANG
+
 AddOutputFilterByType DEFLATE text/csv
+
+# debug... does not work
+# Header add Access-Control-Allow-Origin "*"
+# Header add Access-Control-Allow-Headers "origin, x-requested-with, content-type"
+# Header add Access-Control-Allow-Methods "PUT, GET, POST, DELETE, OPTIONS"
+#Header set Access-Control-Allow-Origin "*"
+#Header set Access-Control-Allow-Credentials true
+#Header set Access-Control-Allow-Methods "PUT, GET, POST, DELETE, OPTIONS"
+#Header set Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token

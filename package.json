@@ -10,6 +10,7 @@
     "tsc": "tsc"
   },
   "devDependencies": {
+    "requirejs": "2.3.3",
     "typescript": "2.1.5"
   }
 }

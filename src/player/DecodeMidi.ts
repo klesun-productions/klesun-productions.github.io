@@ -2,9 +2,9 @@
 /// <reference path="../references.ts" />
 
 import {IGeneralStructure, IShChannel} from "../DataStructures";
-import {Tls} from "../utils/Tls";
 import {IMidJsNote} from "../DataStructures";
 import {ISynth} from "../synths/ISynth";
+import {S} from "../utils/S";
 
 declare var Ns: {
     Libs:{
@@ -25,7 +25,7 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
     var chordByTime: {[t: number]: IMidJsNote[]} = {};
     var tempoByTime: {[t: number]: number} = {};
     var controlsByTime: {[t: number]: Array<(s: ISynth) => void>} = {};
-    var channels: {[ch: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {
+    var channels: {[ch: number]: IShChannel} = S.range(0,16).map(i => 1 && {
         preset: 0, volume: 127, pitchBendRange: 2,
     });
     var pitchBends: [number, number, number, number][] = [];
@@ -36,7 +36,7 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
 
     var unknownControlChanges: [number, number, number][] = [];
 
-    var openNotes: [ticks_t, velocity_t][][] = Tls.range(0,16).map(i => []);
+    var openNotes: [ticks_t, velocity_t][][] = S.range(0,16).map(i => []);
     var pitchBendRangeA = false, pitchBendRangeB = false;
 
     var handleChannelEvent = (time: ticks_t, event: ISMFmidiEvent, trackIdx: number) =>

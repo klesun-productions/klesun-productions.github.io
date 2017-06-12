@@ -18,6 +18,25 @@ export let S = (function()
             map: <Tel2>(f: (v: Tel, i: number) => Tel2) =>
                 list(elmts.map(f)),
 
+            // map and filter. handy since there is helluva functions i return opt from
+            fop: <Tel2>(f: (v: Tel, i: number) => IOpts<Tel2>) => {
+                return list(elmts.map(f).filter(m => m.has()).map(m => m.unw()));
+            },
+
+            // map to opt and unwrap all
+            unw: <Tel2>(f: (v: Tel, i: number) => IOpts<Tel2>) => {
+                return list(elmts.map(f).map(m => m.unw()));
+            },
+
+            srt: (f: (el: Tel) => string | number) => {
+                let weights = elmts.map(f);
+                return list(S.range(0, elmts.length)
+                    .sort((a,b) =>
+                        weights[a] > weights[b] ? +1 :
+                        weights[a] < weights[b] ? -1 : 0)
+                    .map(idx => elmts[idx]));
+            },
+
             // unlike map(), it not only transforms elements,
             // but also changes the amount of elements
             flatMap: <Tel2>(f: (v: Tel, i: number) => Tel2[]) => {
@@ -32,6 +51,18 @@ export let S = (function()
 
             slice: (from: number, to: number) =>
                 list(elmts.slice(from, to)),
+
+            chunk: (length: number) => {
+                let chunks = [];
+                let chunk = [];
+                for (let i = 0; i < elmts.length; ++i) {
+                    chunk.push(elmts[i]);
+                    if ((i + 1) % length === 0) {
+                        chunks.push(chunk.splice(0));
+                    }
+                }
+                return list(chunks);
+            },
 
             sort: (f: (v: Tel) => string|number) =>
                 list(elmts.sort((a,b) => f(a) > f(b) ? +1 : f(a) < f(b) ? -1 : 0)),
@@ -63,7 +94,7 @@ export let S = (function()
                 elmts.forEach(cb);
             },
             /** perform async operations on every element one by one */
-            set sequence(cb: (el: Tel, i: number) => {then: (r: any) => void}) {
+            set sequence(cb: (el: Tel, i: number) => IPromise<any>) {
                 let i = 0;
                 let next = () => {
                     if (i < elmts.length) {
@@ -88,14 +119,17 @@ export let S = (function()
 
         let self: IOpts<T>;
         return self = {
+            // "map"
             map: <T2>(f: (arg: T) => T2): IOpts<T2> => has()
                 ? opt(f(value))
                 : opt(null),
 
+            // "filter"
             flt: (f: (arg: T) => boolean): IOpts<T> => has() && f(value)
                 ? opt(value)
                 : opt(null),
 
+            // "safe"
             saf: <T2>(f: (arg: T) => T2): IOpts<T2> => {
                 if (has()) {
                     try {
@@ -107,6 +141,16 @@ export let S = (function()
                 return opt(null);
             },
 
+            // "unwrap"
+            unw: () => {
+                if (has()) {
+                    return value;
+                } else {
+                    throw new Error('Tried to unwrap absent value!');
+                }
+            },
+
+            // "default"
             def: (def: T): T => has()
                 ? value
                 : def,
@@ -119,15 +163,18 @@ export let S = (function()
                 }
             },
 
+            // "with"
             wth: (f) => {
                 if (has()) f(value);
                 return self;
             },
 
+            // "unify"
             uni: <T2>(some: (v: T) => T2, none: () => T2) => has()
                 ? some(value)
                 : none(),
 
+            // "error"
             err: (none) => {
                 if (has()) {
                     return {
@@ -242,6 +289,8 @@ export interface IOpts<T> {
     flt: (f: (arg: T) => boolean) => IOpts<T>,
     /** same as map, by catches exception */
     saf: <T2>(f: (arg: T) => T2) => IOpts<T2>,
+    /** @throws Error */
+    unw: () => T,
     // get value or use passed default
     def: (def: T) => T,
     // is value present

@@ -9,7 +9,7 @@
         "skipLibCheck": true,
         "lib": ["ES6"]
     },
-    "files": [
-		"entry/ss_navigator/index.ts"
+    "include": [
+		"entry/**/index.ts"
     ]
 }

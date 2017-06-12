@@ -12,6 +12,7 @@ interface IDomParams {
     className?: string,
     children?: IWrappedDom<HTMLElement>[],
     innerHTML?: string,
+    title?: string,
     onclick?: (e: Event) => void,
     style?: {[prop: string]: string},
 }
@@ -49,6 +50,14 @@ interface IOptionParams extends IDomParams {
     selected?: boolean,
 }
 
+interface IImgParams extends IDomParams {
+    src?: string,
+}
+
+interface IBrParams extends IDomParams {
+    clear?: 'all',
+}
+
 interface IButtonParams extends IDomParams {
     type?: 'submit' | 'button',
 }
@@ -84,10 +93,12 @@ export let Dom = (function()
 
     let mk = {
         div: (params?: IDomParams) => wrap(<HTMLDivElement>document.createElement('div'), params || {}),
+        span: (params?: IDomParams) => wrap(<HTMLSpanElement>document.createElement('span'), params || {}),
         a: (params?: IAnchorParams) =>
             wrap(<HTMLAnchorElement>document.createElement('a'), params || {})
                 .with(dom => S.opt(params.href).get = v => dom.href = v),
-        br: (params?: IDomParams) => wrap(<HTMLBRElement>document.createElement('br'), params || {}),
+        br: (params?: IBrParams) => wrap(<HTMLBRElement>document.createElement('br'), params || {})
+            .with(dom => S.opt(params.clear).get = v => dom.clear = v),
         li: (params?: IDomParams) => wrap(<HTMLLIElement>document.createElement('li'), params || {}),
         button: (params?: IButtonParams) =>
             wrap(<HTMLButtonElement>document.createElement('button'), params || {})
@@ -130,6 +141,9 @@ export let Dom = (function()
                     S.opt(params.disabled).get = v => dom.disabled = v;
                     S.opt(params.selected).get = v => dom.selected = v;
                 }),
+        img: (params?: IImgParams) =>
+            wrap(<HTMLImageElement>document.createElement('img'), params || {})
+                .with(dom => S.opt(params.src).get = v => dom.src = v),
     };
 
     let showDialog = function(content: HTMLElement)
