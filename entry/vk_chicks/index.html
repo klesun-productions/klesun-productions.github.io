@@ -1,0 +1,28 @@
+<html>
+<head>
+    <!--<script src="/libs/require.js"></script>-->
+    <script src="/src/relquire.js"></script>
+    <meta charset="utf-8"/>
+</head>
+<body>
+
+<main>
+    <h2>VK Chicks page</h2>
+    <p>This page provides interface to grab people names from vk.com</p>
+    <p>In future it will also provide interface to filter them, chat with them, do statistics, etc...</p>
+
+    <button class="grab-vk-chicks" onclick="alert('Wait for JS to load!');">Grab VK chicks!</button>
+    <button class="grab-person-pages" onclick="alert('Wait for JS to load!');">Grab Person Pages!</button>
+    <label>Max workers: <input type="number" value="1" class="max-workers"/></label>
+    <div class="chick-list-holder"></div>
+</main>
+
+<script>
+
+    let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
+    require(['./index'], (index) => index.main($$('main')[0]));
+
+</script>
+
+</body>
+</html>
