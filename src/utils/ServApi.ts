@@ -3,39 +3,14 @@
 
 import {ISmfFile} from "../DataStructures";
 import {Dom} from "./Dom";
-import {S, IOpts, IPromise} from "./S";
+import {S, IOpts} from "./S";
 import {Tls} from "./Tls";
 import {SafeAccess, valid_json_t, primitive_t} from "./SafeAccess";
 import {FrameBridge} from "./FrameBridge";
-
-var askedPassword: string = null;
-let awaitingPassword: Array<(password: string) => void> = [];
+import {ClientUtil} from "./ClientUtil";
 
 let getProxyPostFrame = (): IOpts<Window> =>
     S.opt((<any>window).proxyPostFrame);
-let getPreEnteredPassword = () =>
-    S.opt(<string>(<any>window).preEnteredPassword);
-
-// TODO: set it to false when user presses "cancel" to prevent inconsistent state of UX
-let askingForPassword = false;
-
-let askForPassword = function(cb: (pwd: string) => void)
-{
-    let pwd = getPreEnteredPassword().def(askedPassword);
-    if (pwd) {
-        cb(pwd);
-    } else {
-        if (askingForPassword === false) {
-            askingForPassword = true;
-            Dom.showPasswordDialog((pwd) => {
-                askingForPassword = false;
-                askedPassword = pwd;
-                awaitingPassword.splice(0).forEach(c => c(pwd));
-            });
-        }
-        awaitingPassword.push(cb);
-    }
-};
 
 let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_json_t, whenLoaded?: (js: any) => void)
 {
@@ -158,12 +133,12 @@ let retrieveChunked = function<T>(funcName: string, params: {[k: string]: primit
 
 let contribute = (functionName: string, params: {}) => {
     return S.promise(
-        delayedReturn => askForPassword(
+        delayedReturn => ClientUtil.askForPassword().then =
         pwd => ajax(functionName, 'POST', {
             params: params,
             verySecurePassword: pwd,
         },
-        r => delayedReturn(r)))
+        r => delayedReturn(r))
     );
 };
 

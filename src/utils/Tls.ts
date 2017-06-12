@@ -2,8 +2,7 @@
 
 import {IGeneralStructure} from "../DataStructures";
 import {DecodeMidi} from "../player/DecodeMidi";
-import {Cls} from "../Cls";
-import {S, IOpts, IPromise} from "./S";
+import {S, IPromise} from "./S";
 import {Dom} from "./Dom";
 
 // defined in /libs/FileSaver.js
