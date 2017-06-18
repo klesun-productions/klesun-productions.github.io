@@ -6,6 +6,7 @@ import {S} from "../../src/utils/S";
 import {GrabTraffic} from "../../src/utils/GrabTraffic";
 import {GrabVkChicks, searched_chick_t} from "./utils/GrabVkChicks";
 import {ClientUtil} from "../../src/utils/ClientUtil";
+import {ParseProfile} from "./utils/ParseProfile";
 
 export let main = function(mainCont: HTMLElement)
 {
@@ -22,30 +23,32 @@ export let main = function(mainCont: HTMLElement)
 
     // draw grid with some of their photos
     vkChicks.then = (vkChicks) => vkChicks
-        .srt((c) => Math.random())
-        .slice(0, 200)
+        // .srt((c) => Math.random())
+        .slice(0, 100)
         .chunk(20)
         .sequence = (chunk, i) =>
             S.promise(delayedReturn => {
                 S.list(chunk).forEach = chick =>
                     gui.chickListHolder.appendChild(Dom.mk.span({
                         style: {display: 'inline-block'},
-                        children: [].concat(!chick.login.match(/^\/?id\d+$/) ? [
-                            Dom.mk.span({
-                                innerHTML: chick.login,
-                                style: {
-                                    'writing-mode': 'vertical-lr',
-                                    transform: 'rotate(180.00deg)',
-                                },
-                            }),
-                        ] : []).concat([
+                        children: [
                             Dom.mk.a({
-                                href: 'http://vk.com/' + chick.login,
+                                href: 'out/person_pages/' + chick.login + '.html',
+                                // href: 'http://vk.com/' + chick.login,
                                 children: [
                                     Dom.mk.img({src: chick.imgUrl, title: chick.fullName}),
                                 ],
                             }),
-                        ]),
+                            Dom.mk.button({
+                                innerHTML: 'PRS',
+                                onclick: () => Tls.http('out/person_pages/' + chick.login + '.html').then = (html) => {
+                                    let page = new DOMParser().parseFromString(html, 'text/html').documentElement;
+                                    let parsed = ParseProfile(page);
+                                    /** @debug */
+                                    console.log('Parsed profile page', parsed);
+                                },
+                            }),
+                        ],
                     }).s);
                 Tls.timeout(0.5).then = () => delayedReturn(null);
             });
@@ -67,7 +70,6 @@ export let main = function(mainCont: HTMLElement)
         let emptyUrlsInARow: string[] = [];
 
         S.list(vkChicks)
-            .slice(500, 50000)
             .forEach = chick => traffic.http('https://vk.com/' + chick.login)
                 .then = page => {
                     console.log('Got page', page);

@@ -124,6 +124,10 @@ export let S = (function()
                 ? opt(f(value))
                 : opt(null),
 
+            fap: <T2>(f: (arg: T) => IOpts<T2>): IOpts<T2> => has()
+                ? f(value)
+                : opt(null),
+
             // "filter"
             flt: (f: (arg: T) => boolean): IOpts<T> => has() && f(value)
                 ? opt(value)
@@ -285,6 +289,8 @@ export let S = (function()
 export interface IOpts<T> {
     // transform value if present
     map: <T2>(f: (arg: T) => T2) => IOpts<T2>,
+    // Flat Map - transforms to anther optional if present
+    fap: <T2>(f: (arg: T) => IOpts<T2>) => IOpts<T2>,
     // filter by predicate
     flt: (f: (arg: T) => boolean) => IOpts<T>,
     /** same as map, by catches exception */

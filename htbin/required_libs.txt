@@ -1,4 +1,0 @@
-sudo su
-pip3 install pony
-pip3 install pymorphy2
-pip3 install oauth2client
