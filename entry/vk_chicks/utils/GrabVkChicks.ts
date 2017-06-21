@@ -104,7 +104,7 @@ export class searched_chick_t {
         if (!error) {
             return S.opt(typed);
         } else {
-            return S.opt(null, true);
+            return S.opt(null);
         }
     };
 }
