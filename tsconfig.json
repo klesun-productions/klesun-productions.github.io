@@ -10,8 +10,6 @@
         "noImplicitReturns": true,
         "noEmitOnError": true,
         "target": "ES6",
-
-        "compileOnSave": true,
         "skipLibCheck": true,
         "lib": ["ES6"]
     },
