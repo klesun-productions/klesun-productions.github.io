@@ -48,7 +48,7 @@ export let Grab =
 
     let proxyPostFrame = S.opt((<any>window).proxyPostFrame);
 
-    let processJobsIntervalId = setInterval(function() {
+    let processJobsIntervalId = window.setInterval(function() {
         let free = gui.maxWorkers - jobsInProgress;
         for (let job of scheduledJobs.splice(0, free)) {
             if (jobsStarted > 20000) {
@@ -93,7 +93,7 @@ export let Grab =
     //  фейсбук расписание
     // ================================
 
-    let chunkProcessedJobsId = setInterval(() => {
+    let chunkProcessedJobsId = window.setInterval(() => {
         if (unflushedRows.length >= chunkSize || scheduledJobs.length === 0) {
             let chunk = unflushedRows.splice(0, chunkSize);
             console.log('flushing grabbed data chunk to server', chunk);

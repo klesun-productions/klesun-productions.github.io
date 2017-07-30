@@ -53,10 +53,10 @@ export default function PlaybackControl($cont: JQuery): IPlaybackControl
         };
         updateState();
 
-        var triggerId = setInterval(updateState, 1000);
+        var triggerId = window.setInterval(updateState, 1000);
         playback.setPauseHandler(function() {
             window.clearInterval(triggerId);
-            playback.setResumeHandler(() => (triggerId = setInterval(updateState, 1000)));
+            playback.setResumeHandler(() => (triggerId = window.setInterval(updateState, 1000)));
         });
 
         $timeSlider.off().on('input change', function() {

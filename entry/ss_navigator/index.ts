@@ -5,6 +5,7 @@ import {Dom} from "../../src/utils/Dom";
 import {Tls} from "../../src/utils/Tls";
 import {FrameBridge} from "../../src/utils/FrameBridge";
 import {GrabTraffic} from "../../src/utils/GrabTraffic";
+import {S} from "../../src/utils/S";
 
 export let main = function(mainCont: HTMLElement)
 {
@@ -19,8 +20,17 @@ export let main = function(mainCont: HTMLElement)
 
     let skipAd = function(pageDom: HTMLElement, searchProfile: search_profile_t) {
         let skip = false;
-        if (pageDom.innerHTML.match(/veikal/i)) {
+        if (pageDom.innerHTML.match(/veikal/i) ||
+            pageDom.innerHTML.match(/avotu iela 76/i) // "ZCena" shop that floods the site
+        ) {
             skip = true;
+        }
+        if (searchProfile === 'ddr3Pc') {
+            if (pageDom.innerHTML.match(/ddr2/i) ||
+                pageDom.innerHTML.match(/divi kodoli/i) ||
+            0) {
+                skip = true;
+            }
         }
         return skip;
     };
@@ -53,6 +63,9 @@ export let main = function(mainCont: HTMLElement)
                 if (skipAd(adPage, 'ddr3Pc')) {
                     tr.remove();
                 } else {
+                    // remove main image since it takes too much space and is duplicated below anyways
+                    S.list(Dom.get(adPage).any('#msg_div_preload')).forEach = dom => dom.remove;
+
                     let bigRow = Dom.mk.tr({
                         children: [Dom.mk.td({
                             children: [Dom.wrap(adPage)],
@@ -60,6 +73,8 @@ export let main = function(mainCont: HTMLElement)
                         })]
                     });
                     tbody.insertBefore(bigRow.s, tr);
+                    S.list(Dom.get(tr).input('[type="checkbox"]')).forEach = flag =>
+                        flag.onchange = e => bigRow.s.style.display = e.target.checked ? 'none' : 'block';
                 }
             };
         }

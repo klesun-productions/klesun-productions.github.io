@@ -10,7 +10,8 @@
     "tsc": "tsc"
   },
   "devDependencies": {
+    "jsdom": "11.0.0",
     "requirejs": "2.3.3",
-    "typescript": "2.1.5"
+    "typescript": "2.4.2"
   }
 }

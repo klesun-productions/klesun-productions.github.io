@@ -6,7 +6,7 @@ export let S = (function()
 {
     let list = function<Tel>(iter: Iterable<Tel>)
     {
-        let elmts = [...iter];
+        let elmts: Tel[] = [...iter];
         return {
             clear: () => {
                 var tmp = elmts;
@@ -17,6 +17,9 @@ export let S = (function()
             // transforms every element from T1 to T2
             map: <Tel2>(f: (v: Tel, i: number) => Tel2) =>
                 list(elmts.map(f)),
+
+            flt: (f: (v: Tel, i: number) => boolean) =>
+                list(elmts.filter(f)),
 
             // map and filter. handy since there is helluva functions i return opt from
             fop: <Tel2>(f: (v: Tel, i: number) => IOpts<Tel2>) => {
@@ -61,11 +64,14 @@ export let S = (function()
                         chunks.push(chunk.splice(0));
                     }
                 }
+                if (chunk.length > 0) {
+                    chunks.push(chunk.splice(0));
+                }
                 return list(chunks);
             },
 
             sort: (f: (v: Tel) => string|number) =>
-                list(elmts.sort((a,b) => f(a) > f(b) ? +1 : f(a) < f(b) ? -1 : 0)),
+                list(elmts.sort((a:Tel,b) => f(a) > f(b) ? +1 : f(a) < f(b) ? -1 : 0)),
 
             groupBy: (f: (el: Tel) => number): {[k: number]: Tel[]} => {
                 let result: {[k: number]: Tel[]} = {};

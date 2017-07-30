@@ -6,25 +6,40 @@ import {S} from "../../src/utils/S";
 import {GrabTraffic} from "../../src/utils/GrabTraffic";
 import {GrabVkChicks, searched_chick_t} from "./utils/GrabVkChicks";
 import {ClientUtil} from "../../src/utils/ClientUtil";
-import {ParseProfile} from "./utils/ParseProfile";
+import {parsed_profile_t, ParseProfile} from "./utils/ParseProfile";
 
 export let main = function(mainCont: HTMLElement)
 {
     let gui = {
         grabVkChicksBtn: Dom.get(mainCont).button('.grab-vk-chicks')[0],
         grabPersonPagesBtn: Dom.get(mainCont).button('.grab-person-pages')[0],
+        parsePersonPagesBtn: Dom.get(mainCont).button('.parse-person-pages')[0],
         maxWorkersInp: Dom.get(mainCont).input('.max-workers')[0],
         chickListHolder: Dom.get(mainCont).any('.chick-list-holder')[0],
     };
 
-    let vkChicks = Tls.http('/out/vk_chicks_flat.json')
+    let vkChicks = Tls.http('./out/vk_chicks_flat.json')
         .map(jsonText => S.list(<valid_json_t[]>JSON.parse(jsonText)))
         .map(jsonData => jsonData.unw(searched_chick_t.cast));
 
+    let loginToParsed = Tls.http('./out/parsed_profiles_filtered.json')
+        .map(jsonText => <{[k:string]: parsed_profile_t}>JSON.parse(jsonText));
+
     // draw grid with some of their photos
-    vkChicks.then = (vkChicks) => vkChicks
+    vkChicks.then
+    = (vkChicks) => loginToParsed.then
+    = (loginToParsed) => vkChicks
+        .flt(c => {
+            let parsed = S.opt(loginToParsed[c.login]);
+            let married = parsed
+                .map(c => c.profileInfoShort['Семейное положение:'])
+                // 'в активном поиске', "не замужем"
+                .flt(fam => !!fam.match(/^(есть друг|замужем|помолвлена|влюблена|в гражданском браке)/i))
+                .has();
+            return parsed.has() && !married;
+        })
         // .srt((c) => Math.random())
-        .slice(0, 100)
+        .slice(0, 4000)
         .chunk(20)
         .sequence = (chunk, i) =>
             S.promise(delayedReturn => {
@@ -67,8 +82,6 @@ export let main = function(mainCont: HTMLElement)
 
     let grabPersonPages = function(vkChicks: searched_chick_t[]) {
         let traffic = GrabTraffic(getMaxWorkers, FrameBridge.getPage);
-        let emptyUrlsInARow: string[] = [];
-
         S.list(vkChicks)
             .forEach = chick => traffic.http('https://vk.com/' + chick.login)
                 .then = page => {
@@ -81,8 +94,27 @@ export let main = function(mainCont: HTMLElement)
         };
     };
 
+    let parsePersonPages = function(vkChicks: searched_chick_t[]) {
+        let traffic = GrabTraffic(getMaxWorkers, Tls.http);
+        S.list(vkChicks)
+            .slice(0, 1000)
+            .forEach = (chick, i) => traffic.http('out/person_pages/' + chick.login + '.html')
+                .map(html => new DOMParser().parseFromString(html, 'text/html').documentElement)
+                .map(ParseProfile)
+                .then = page => {
+                    console.log('Parsed page ' + i + ' ' + page.fullName, page);
+                };
+        traffic.onIdle = (peoplePacks) => {
+            console.log('Done parsing profile pages', peoplePacks);
+        };
+    };
+
     gui.grabVkChicksBtn.onclick = () => GrabVkChicks(getMaxWorkers);
     vkChicks.then = vkChicks =>
         gui.grabPersonPagesBtn.onclick = () =>
         grabPersonPages(vkChicks.s);
+
+    vkChicks.then = vkChicks =>
+        gui.parsePersonPagesBtn.onclick = () =>
+        parsePersonPages(vkChicks.s);
 };

@@ -7,6 +7,9 @@
 import cgitb
 cgitb.enable()
 import sys
+import select
+import io
+import shutil
 
 from classes.Contribution import Contribution
 
@@ -49,13 +52,27 @@ def fetch_info_from_login_token(token):
         # log maybe?
         return None
 
-
 def read_post() -> dict:
-    post_text = sys.stdin.read()
-    if post_text != "":
-        return json.loads(post_text, object_pairs_hook=collections.OrderedDict)
+    runs_through_cgi = True
+    if runs_through_cgi:
+        if 'CONTENT_LENGTH' in os.environ:
+            # http.server
+            if not os.environ['CONTENT_LENGTH']:
+                post_string = ''
+            else:
+                # hangs if you run script through http.server and don't check 'CONTENT_LENGTH'
+                post_length = int(os.environ['CONTENT_LENGTH'])
+                # post_length stores byte count, but stdin.read, apparently, takes the character count
+                post_string = sys.stdin.buffer.read(post_length).decode('utf-8')
+        else:
+            # apache
+            post_string = sys.stdin.read()
+
     else:
-        return {}
+        # apache does not make script hang unlike cgi
+        post_string = sys.stdin.read()
+
+    return json.loads(post_string) if post_string else {}
 
 def is_correct_password(entered_password: str) -> bool:
     local_config_path = 'unversioned/local.config.json'
@@ -144,6 +161,7 @@ def main():
 
     if method in method_dict:
         func, headers, is_secure = method_dict[method]
+        # post_params = read_post() if is_secure else {}
         post_params = read_post()
         if is_secure and not is_correct_password(post_params['verySecurePassword']):
             print_response((None, 'wrongPassword'), [])

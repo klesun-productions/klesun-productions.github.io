@@ -164,7 +164,7 @@ export let StarveGame = function(mainCont: HTMLElement)
 
         gui.startGameButton.onclick = () => {
             gui.main.className += ' game-started';
-            setInterval(onFrame, 40);
+            window.setInterval(onFrame, 40);
             gui.gamePlayAudio.play();
             resetCounter();
         };

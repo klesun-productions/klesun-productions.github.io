@@ -24,8 +24,12 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_
                     console.error('server error, see network log of ' + funcName);
                     return;
                 }
-                let parsed = JSON.parse(resp);
-                delayedReturn(parsed);
+                try {
+                    let parsed = JSON.parse(resp);
+                    delayedReturn(parsed);
+                } catch (err) {
+                    console.error('Failed to parse JSON response of ' + funcName);
+                }
             };
 
         getProxyPostFrame()

@@ -1,15 +1,23 @@
 {
     "compilerOptions": {
+        "baseUrl": "./",
+        "typeRoots": [
+            "libs/dts"
+        ],
+
         "module": "amd",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "noEmitOnError": true,
         "target": "ES6",
-        
+
+        "compileOnSave": true,
         "skipLibCheck": true,
         "lib": ["ES6"]
     },
+    "compileOnSave": true,
     "include": [
-		"entry/**/index.ts"
+        "./entry/poverty-vs-you-2d/src/MokonaGame.ts",
+        "./entry/**/index.ts"
     ]
 }

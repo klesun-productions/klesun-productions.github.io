@@ -26,7 +26,7 @@ export let GrabTraffic = function<T>(
 
     // it would be nice if this interval was removed
     // could be handled by wrapping in singleton
-    let processJobsIntervalId = setInterval(function() {
+    let processJobsIntervalId = window.setInterval(function() {
         if (window.performance.now() < sleepUntil) return;
 
         let free = getMaxJobs() - jobsInProgress;

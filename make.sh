@@ -21,3 +21,4 @@
 #node_modules/typescript/bin/tsc -p tsconfig.json
 #node_modules/typescript/bin/tsc entry/compose/index.ts --target ES6 --lib es6 --skipLibCheck --module amd
 node_modules/typescript/bin/tsc -w -pretty
+# ../../b/dontDeleteMe/TypeScript-2.1-rc/bin/tsc src/utils/S.ts -pretty --target ES6 --lib es6 --skipLibCheck --module amd

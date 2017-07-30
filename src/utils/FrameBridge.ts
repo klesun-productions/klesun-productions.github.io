@@ -78,7 +78,8 @@ export let FrameBridge = (function()
          */
         getPage: (url: string) => S.promise<HTMLElement>(delayedReturn => {
             // TODO: use frame instead of window.open to preserve focus
-            let frame = window.open(url, null, 'width=50, height=50, top=50, left=50');
+            let frame = window.open(url, '_blank');
+            // let frame = window.open(url, null, 'width=50, height=50, top=50, left=50');
             handlers.more = {
                 frame: frame,
                 then: (data) => castPageLoaded(data).uni(
