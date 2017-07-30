@@ -60,15 +60,10 @@ export let SongAccess = {
 
 type sign_e = 'none' | 'flat' | 'sharp' | 'natural';
 
-// damn typescript with wrong signatures
-interface huj_t {
-    findIndex: (predicate: (value: number, i: number) => boolean) => number,
-}
-
 /** @return [ivoryIndex, sign] */
 export const determinePosition = function(semitone: number, keySignature: number): [number, sign_e]
 {
-    let ebonySignMap: {[s: number]: number[]} = {
+    let ebonySignMap: {[s: number]: Array<number>} = {
         [-7]: [-1, -1, -1, -1, -1, -1, -1],
         [-6]: [-1, -1, -1,  0, -1, -1, -1],
         [-5]: [ 0, -1, -1,  0, -1, -1, -1],
@@ -79,23 +74,24 @@ export const determinePosition = function(semitone: number, keySignature: number
         [+0]: [ 0,  0,  0,  0,  0,  0,  0],
         [+1]: [ 0,  0,  0, +1,  0,  0,  0],
         [+2]: [+1,  0,  0, +1,  0,  0,  0],
+        [+7]: [+1, +1, +1, +1, +1, +1, +1],
         [+3]: [+1,  0,  0, +1, +1,  0,  0],
         [+4]: [+1, +1,  0, +1, +1,  0,  0],
         [+5]: [+1, +1,  0, +1, +1, +1,  0],
         [+6]: [+1, +1, +1, +1, +1, +1,  0],
-        [+7]: [+1, +1, +1, +1, +1, +1, +1],
     };
 
     let octave = Math.floor(semitone / 12);
 
-    let ivory = (<huj_t>ebonySignMap[keySignature]).findIndex((sign, idx) =>
-        [0,2,4,5,7,9,11][idx] + sign === semitone % 12);
+    let ivory = ebonySignMap[keySignature].findIndex((sign: number, idx: number) => {
+        return [0,2,4,5,7,9,11][idx] + sign === semitone % 12;
+    });
 
     if (ivory > -1) {
         // present in base key signature
         return [ivory + octave * 7, 'none'];
     } else {
-        let becarIvory = (<huj_t>ebonySignMap[keySignature]).findIndex((sign, idx) =>
+        let becarIvory = ebonySignMap[keySignature].findIndex((sign, idx) =>
             sign !== 0 && [0,2,4,5,7,9,11][idx] === semitone % 12);
 
         if (becarIvory > -1) {

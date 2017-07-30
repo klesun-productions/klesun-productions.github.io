@@ -71,7 +71,7 @@ export let S = (function()
             },
 
             sort: (f: (v: Tel) => string|number) =>
-                list(elmts.sort((a:Tel,b) => f(a) > f(b) ? +1 : f(a) < f(b) ? -1 : 0)),
+                list(elmts.sort((a:Tel,b:Tel) => f(a) > f(b) ? +1 : f(a) < f(b) ? -1 : 0)),
 
             groupBy: (f: (el: Tel) => number): {[k: number]: Tel[]} => {
                 let result: {[k: number]: Tel[]} = {};
@@ -210,7 +210,7 @@ export let S = (function()
             result = r;
             thens.forEach((cb) => cb(result));
         });
-        let self = {
+        let self: IPromise<T> = {
             set then(receive: (result: T) => void) {
                 if (done) {
                     receive(result);
@@ -218,7 +218,7 @@ export let S = (function()
                     thens.push(receive);
                 }
             },
-            map: <T2>(f: (r: T) => T2) => promise(
+            map: <T2>(f: (r: T) => T2) => promise<T2>(
                 delayedReturn => self.then =
                 (r: T) => delayedReturn(f(r))
             ),

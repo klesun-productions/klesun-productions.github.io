@@ -21,7 +21,7 @@ export let main = function(mainCont: HTMLElement)
     let vkChicks = Tls.http('./out/vk_chicks_flat.json')
         .map(jsonText => S.list(<valid_json_t[]>JSON.parse(jsonText)))
         .map(jsonData => jsonData.unw(searched_chick_t.cast));
-
+ 
     let loginToParsed = Tls.http('./out/parsed_profiles_filtered.json')
         .map(jsonText => <{[k:string]: parsed_profile_t}>JSON.parse(jsonText));
 
