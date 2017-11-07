@@ -1,0 +1,57 @@
+<html>
+<head>
+    <script src="https://cdn.rawgit.com/showdownjs/showdown/1.7.2/dist/showdown.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css">
+</head>
+<body>
+    <main>
+        <div class="header-holder">
+            <h2>deep-keys</h2>
+            <h6>a phpstorm plugin for associative array auto-completion inferenced from outside files</h3>
+            <a href="https://github.com/klesun/phpstorm-deep-keys">sources</a>
+            |
+            <a href="https://plugins.jetbrains.com/plugin/9927-deep-keys">repository page</a>
+            |
+            <a href="/out/phpstorm_deep_keys_2017.08.20.001.jar">download</a>
+            |
+            <a href="/">site home</a>
+        </div>
+        <div class="docs-markdown-holder">
+            Please, wait - markdown is being rendered... (or link is broken if you're still reading this)
+        </div>
+    </main>
+
+<script>
+(function(){
+    let http = function(url, then) {
+        var http = new XMLHttpRequest();
+        http.open('GET', url, true);
+        http.onload = () => then(http.responseText);
+        http.send(null);
+    };
+    let $$ = s => [...document.querySelectorAll(s)];
+    
+    let url = 'https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/README.md';
+    http(url, (resp) => {
+        let html = new showdown.Converter().makeHtml(resp);
+        $$('.docs-markdown-holder')[0].innerHTML = html;
+    });
+}());
+</script>
+
+</body>
+
+<style>
+main {
+    padding: 16px;
+}
+.header-holder {
+    text-align: center;
+}
+.docs-markdown-holder {
+    margin: 32px;
+    padding: 32px;
+    border: solid grey 2px;
+}
+</style>
+</html>
