@@ -51,6 +51,7 @@ export let Handler = function(cont: HTMLDivElement)
         control.setChordFocus(stopIndex);
         playbackInfo = null;
     };
+    let heldMidiKeys: {[chan: number]: {[tune: number]: {(): void}[]}} = {};
 
     player.anotherSynth = synthSwitch;
     player.anotherNoteHandler = (s,c,v,i) => {
@@ -423,14 +424,18 @@ export let Handler = function(cont: HTMLDivElement)
         if (isNoteEvent) {
             let tune = message.data[1];
             let velocity = message.data[2];
+            heldMidiKeys[channel] = heldMidiKeys[channel] || {};
+            heldMidiKeys[channel][tune] = heldMidiKeys[channel][tune] || [];
             if (midiEventType === 9 && velocity > 0) {
                 let note = handleNoteOn(tune, velocity);
                 if (gui.enablePlayOnKeyDownFlag.checked) {
-                    oneShotPlayer.playChord([note]);
+                    let release = oneShotPlayer.holdNote(tune, channel, velocity, -1);
+                    heldMidiKeys[channel][tune].push(release);
                 }
                 highlightNotes(control.getFocusedNotes());
             } else {
                 // NOTE OFF
+                S.opt(heldMidiKeys[channel][tune].shift()).get = (release) => release();
             }
         } else {
             midiEventType in typeHandlers

@@ -52,16 +52,22 @@ export function Player(control: IPlaybackControl)
         }, millis);
     };
 
+    let holdNote = function(tune: number, channel: number, velocity: number, index = -1)
+    {
+        let offList = synths.map(s => s.playNote(
+            tune, channel, velocity, index
+        ));
+        return () => offList.forEach(release => release());
+    }
+
     let playChord = function(notes: IShNote[], tempo?: number, index?: number)
     {
         tempo = tempo || 120;
         index = index || -1;
 
         S.list(notes).forEach = (noteJs) => {
-            let offList = synths.map(s => s.playNote(
-                noteJs.tune, noteJs.channel, noteJs.velocity || 127, index
-            ));
-            scheduleInterruptable(toMillis(noteJs.length, tempo), [() => offList.forEach(c => c())]);
+            let release = holdNote(noteJs.tune, noteJs.channel, noteJs.velocity || 127, index);
+            scheduleInterruptable(toMillis(noteJs.length, tempo), [release]);
         };
     };
 
@@ -141,6 +147,7 @@ export function Player(control: IPlaybackControl)
             synths.push(h);
         },
         stop: stop,
+        holdNote: holdNote,
         playChord: playChord,
     };
 };
