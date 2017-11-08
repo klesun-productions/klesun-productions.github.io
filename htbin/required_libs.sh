@@ -18,3 +18,4 @@ pip3 install oauth2client
 # if you get Permission Denied on json_service.py, that probably means that 
 # drive is mounted with "noexec" option. here is my fstab for NTFS drive:
 # /dev/disk/by-uuid/26D8995BD8992A57 /mnt/26D8995BD8992A57 auto defaults,exec,uid=1000,gid=1000,x-gvfs-show 0 0
+# /dev/disk/by-uuid/38B6A927723EBF4A /mnt/38B6A927723EBF4A auto defaults,exec,uid=1000,gid=1000,x-gvfs-show 0 0

@@ -61,7 +61,6 @@ export function Player(control: IPlaybackControl)
             let offList = synths.map(s => s.playNote(
                 noteJs.tune, noteJs.channel, noteJs.velocity || 127, index
             ));
-
             scheduleInterruptable(toMillis(noteJs.length, tempo), [() => offList.forEach(c => c())]);
         };
     };

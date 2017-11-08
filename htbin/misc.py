@@ -13,10 +13,10 @@ import pymorphy2
 
 page_data_dir = os.path.dirname(__file__) + '/../out/random_page_data'
 # this is single-time-use functionality, so that's okay
-wiki_dump_db_path = '/home/klesun/big/deleteMe/wikipedia_dump/ruwiki.db'
-mal_dump_db_path = '/home/klesun/big/p/shmidusic.lv/out/mal_dump.db'
-mal_denorm_path = '/home/klesun/big/p/shmidusic.lv/out/mal_denorm.db'
-recipe_book_path = '/home/klesun/big/p/shmidusic.lv/unversioned/misc/kniga_o_vkusnoj_i_zdorovoj_pische.txt'
+wiki_dump_db_path = os.path.dirname(__file__) + '/../../deleteMe/wikipedia_dump/ruwiki.db'
+mal_dump_db_path = os.path.dirname(__file__) + '/../out/mal_dump.db'
+mal_denorm_path = os.path.dirname(__file__) + '/../out/mal_denorm.db'
+recipe_book_path = os.path.dirname(__file__) + '/../unversioned/misc/kniga_o_vkusnoj_i_zdorovoj_pische.txt'
 
 
 def store_random_page_data(params: dict):

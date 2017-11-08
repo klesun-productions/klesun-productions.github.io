@@ -15,7 +15,6 @@
     },
     "compileOnSave": true,
     "include": [
-        "./entry/poverty-vs-you-2d/src/MokonaGame.ts",
-        "./entry/**/index.ts"
+        "./entry/*/index.ts"
     ]
 }

@@ -98,7 +98,7 @@ export let Dom = (function()
             wrap(<HTMLAnchorElement>document.createElement('a'), params || {})
                 .with(dom => S.opt(params.href).get = v => dom.href = v),
         br: (params?: IBrParams) => wrap(<HTMLBRElement>document.createElement('br'), params || {})
-            .with(dom => S.opt(params.clear).get = v => dom.clear = v),
+            .with(dom => S.opt(params).map(p => p.clear).get = v => dom.clear = v),
         li: (params?: IDomParams) => wrap(<HTMLLIElement>document.createElement('li'), params || {}),
         button: (params?: IButtonParams) =>
             wrap(<HTMLButtonElement>document.createElement('button'), params || {})

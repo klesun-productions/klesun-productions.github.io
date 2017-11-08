@@ -27,9 +27,7 @@ export function PresetList(cont: HTMLDivElement): IPresetList
             $(select).append($('<option></option>')
                 .val(i).html(('00' + i).slice(-3) + ': ' + d)));
 
-
         $(select).attr('readonly', 'readonly');
-
         select.onchange = () => onChanges.forEach(cb => cb({[chan]: {preset: $(select).val()}}));
 
         return select;

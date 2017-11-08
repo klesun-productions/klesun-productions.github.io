@@ -15,14 +15,6 @@ import {ComposeGui} from "./ComposeGui";
 import {S} from "../../src/utils/S";
 import {Dom} from "../../src/utils/Dom";
 
-// represents the X in bits of midi message
-// XXXX???? ???????? ????????
-
-const NOTE_ON = 0x09;
-
-// and channel number is
-// ????XXXX ???????? ????????
-
 // this function binds some events: midi/mouse/keyboard to the
 // SheetMusicPainter in other words, it allows to write the sheet music
 
@@ -93,13 +85,14 @@ export let Handler = function(cont: HTMLDivElement)
     window.onfocus = () => tabActive = true;
     window.onblur = () => tabActive = false;
 
-    let handleNoteOn = function(semitone: number): IShNote
+    let handleNoteOn = function(semitone: number, velocity: number): IShNote
     {
         let receivedTime = window.performance.now();
         let note = {
             tune: semitone,
             channel: +$(gui.inputChannelDropdown).val(),
-            length: 0.25
+            length: 0.25,
+            velocity: velocity,
         };
 
         if (tabActive && gui.enableMidiInputFlag.checked) {
@@ -379,7 +372,7 @@ export let Handler = function(cont: HTMLDivElement)
                     let semitone: number;
                     if (semitone = semitoneByKey[(<any>keyEvent).code]) {
                         keyEvent.preventDefault();
-                        let note = handleNoteOn(semitone);
+                        let note = handleNoteOn(semitone, 127);
                         oneShotPlayer.playChord([note]);
                         highlightNotes(control.getFocusedNotes());
                         return;
@@ -416,20 +409,29 @@ export let Handler = function(cont: HTMLDivElement)
     {
         let typeHandlers: {[type: number]: (b1: number, b2: number) => void} = {
             14: (b1, b2) => console.log('Pitch Bend', ((b2 << 8) + b1 - (64 << 8)) / ((64 << 8))),
-            9: (b1,b2) => {}, // console.log('Note Off', b1),
+            // 8: (b1,b2) => {}, // console.log('Note Off', b1),
         };
-        
+
+        // represents the X in bits of midi message
+        // XXXX???? ???????? ????????
         let midiEventType = message.data[0] >> 4;
+        // ????XXXX ???????? ????????
         let channel = message.data[0] & 0x0F;
 
-        if (midiEventType === NOTE_ON && message.data[2] > 0) {
+        let isNoteEvent = [8,9].includes(midiEventType);
+
+        if (isNoteEvent) {
             let tune = message.data[1];
             let velocity = message.data[2];
-
-            let note = handleNoteOn(tune);
-            gui.enablePlayOnKeyDownFlag.checked && oneShotPlayer.playChord([note]);
-
-            highlightNotes(control.getFocusedNotes());
+            if (midiEventType === 9 && velocity > 0) {
+                let note = handleNoteOn(tune, velocity);
+                if (gui.enablePlayOnKeyDownFlag.checked) {
+                    oneShotPlayer.playChord([note]);
+                }
+                highlightNotes(control.getFocusedNotes());
+            } else {
+                // NOTE OFF
+            }
         } else {
             midiEventType in typeHandlers
                 ? typeHandlers[midiEventType](message.data[1], message.data[2])
@@ -444,20 +446,20 @@ export let Handler = function(cont: HTMLDivElement)
             console.log("Midi Access Success!", midiInfo);
 
             let inputs = midiInfo.inputs.values();
-            for (let input = inputs.next(); input && !input.done; input = inputs.next()) {
-                input.value.onmidimessage = handleMidiEvent;
+            for (let input of [...<any>inputs]) {
+                input.onmidimessage = handleMidiEvent;
             }
         };
 
         // request MIDI access
         if (navigator.requestMIDIAccess) {
             navigator.requestMIDIAccess()
-                .then(gotMidi, (e: any) => console.log("Failed To Access Midi, Even Though Your Browser Has The Method...", e));
+                .then(gotMidi, (e: any) => console.error("Failed To Access Midi, Even Though Your Browser Has The Method...", e));
         } else {
             console.log("No MIDI support in your browser.");
         }
     };
-    
+
     let handleHashChange = function()
     {
         let hash = new Map(location.hash.substr(1)
@@ -467,7 +469,16 @@ export let Handler = function(cont: HTMLDivElement)
         S.opt(hash.get('songUrl')).get = url =>
             Tls.fetchJson(url, songJson => {
                 openSongFromJson(songJson);
-                play();
+                /** ading some pauses at start cuz for some reason it always jerks first few seconds of playback */
+                //~ play();
+                Tls.timeout(5.0).then = play;
+            });
+        S.opt(hash.get('songRelUrl')).get = relUrl =>
+            Tls.fetchJson('/unversioned/gits/riddle-needle/Assets/Audio/midjs/' + relUrl, songJson => {
+                openSongFromJson(songJson);
+                /** ading some pauses at start cuz for some reason it always jerks first few seconds of playback */
+                //~ play();
+                Tls.timeout(5.0).then = play;
             });
     };
 
@@ -478,7 +489,7 @@ export let Handler = function(cont: HTMLDivElement)
         handleHashChange();
         hangMidiHandlers();
         gui.piano.onClick(semitone => {
-            let note = handleNoteOn(semitone);
+            let note = handleNoteOn(semitone, 127);
             oneShotPlayer.playChord([note]);
             return () => {}; // () => handleNoteOff()
         });
