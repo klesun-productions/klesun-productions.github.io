@@ -12,7 +12,6 @@
 
 <script>
 
-let range = (l,r) => new Array(r - l).fill().map((_,k) => k + l);
 let deepCopy = v => JSON.parse(JSON.stringify(v));
 let sqr = a => a * a;
 
@@ -148,6 +147,7 @@ let main = function()
     let repaint = () => painter.repaint(points, dragged);
     repaint();
 
+    canvas.oncontextmenu = function(e){return false;};
     canvas.onmousedown = function(e) {
         let x = e.offsetX / scale;
         let y = (canvas.height - e.offsetY) / scale;
@@ -158,8 +158,22 @@ let main = function()
                 closest = i;
             }
         }
-        dragged = closest;
-
+        if (e.which == 3) {
+            // right mouse button
+            if (points.length > 3 && distance(points[closest]) * scale < 20) {
+                // remove
+                points.splice(closest, 1);
+            } else {
+                // add new
+                points.push({x: x, y: y});
+            }
+            e.preventDefault();
+        } else {
+            dragged = closest;
+        }
+        let closestObj = points[closest];
+        points.sort((a,b) => a.x - b.x);
+        closest = points.indexOf(closest);
         repaint();
     };
 
