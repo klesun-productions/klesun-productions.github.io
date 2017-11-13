@@ -1,0 +1,122 @@
+<head>
+
+</head>
+
+<body>
+
+<p>Type a js expression like <code>Math.pow(x, 2)</code>, and I'll draw you the curve from it</p>
+
+
+<canvas width="720" height="576" style="border: solid red 2px"></canvas>
+<b>max y: </b><span class="max-y-holder"></span>
+<br clear="all"/>
+<label>Expression:<input type="text" class="expression-holder" oninput="onExpressionChanged();" value="x * a"/></label>
+<span class="status-holder"></span><br/>
+<b>Constants:</b>
+<label>x: <input type="number" disabled="1" value=""/></label>
+<label>a: <input value="1" step="0.1" type="number" class="constant-holder" data-name="a" oninput="onExpressionChanged();"/></label>
+<label>b: <input value="1" step="0.1" type="number" class="constant-holder" data-name="b" oninput="onExpressionChanged();"/></label>
+<label>c: <input value="1" step="0.1" type="number" class="constant-holder" data-name="c" oninput="onExpressionChanged();"/></label>
+<label>d: <input value="1" step="0.1" type="number" class="constant-holder" data-name="d" oninput="onExpressionChanged();"/></label>
+<label>e: <input value="1" step="0.1" type="number" class="constant-holder" data-name="e" oninput="onExpressionChanged();"/></label>
+<label>f: <input value="1" step="0.1" type="number" class="constant-holder" data-name="f" oninput="onExpressionChanged();"/></label>
+<br/>
+<label>Scale Y by max value: <input type="checkbox" class="scale-y-by-max-value" onchange="onExpressionChanged();"/></label>
+
+<script>
+
+let extraArgs = [];
+let getY = function(x) {
+    return x;
+};
+
+let minX = 0;
+let maxX = 20 * 60;
+
+let Painter = function(canvas)
+{
+    let context = canvas.getContext("2d");
+    let xScale = canvas.width / maxX;
+    let drawLine = function (x0, y0, x1, y1, color, yScale) {
+        color = color || [0, 0, 0];
+        context.beginPath();
+        context.moveTo(x0 * xScale, canvas.height - y0 * yScale);
+        context.lineTo(x1 * xScale, canvas.height - y1 * yScale);
+        context.strokeStyle = "rgba(" + color.join(',') + ", 1)";
+        context.stroke();
+    };
+
+    return {
+        repaint: function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            let points = [];
+            let maxY = 0;
+            let step = Math.abs(maxX - minX) / 1000;
+            for (let x = minX; x < maxX; x += step) {
+                let y = getY(...[x].concat(extraArgs));
+                maxY = Math.max(y, maxY);
+                points.push({x: x, y: y});
+            }
+            let yScale = $$('.scale-y-by-max-value')[0].checked
+                ? canvas.height / maxY : xScale;
+            for (let i = 1; i < points.length; ++i) {
+                let [p0, p1] = points.slice(i - 1, i + 1);
+                drawLine(p0.x, p0.y, p1.x, p1.y, [0,255,0], yScale);
+            }
+            $$('.max-y-holder').forEach(span => span.innerHTML = maxY);
+        },
+    };
+};
+
+let $$ = (s, root) => [...(root || document).querySelectorAll(s)];
+let canvas = document.querySelectorAll('canvas')[0];
+let scale = 40;
+let painter = Painter(canvas);
+
+let onExpressionChanged = function()
+{
+    let text = $$('.expression-holder')[0].value;
+    let consts = $$('.constant-holder').map(input => 1 && {
+        name: input.getAttribute('data-name'),
+        value: input.value,
+    });
+    let func;
+    try {
+        let funcText = '(function(' + ['x'].concat(consts.map(c => c.name).join(',')) + '){return ' + text + ';})';
+        func = eval(funcText);
+    } catch (exc) {
+        let status = 'Error: failed to evaluate expression';
+        $$('.status-holder').forEach(span => span.innerHTML = status);
+        //console.error(status, exc);
+        return;
+    }
+    for (let x of [-1, 0, 1]) {
+        try {
+            let args = [x];
+            let y = func(...args);
+        } catch (exc) {
+            let status = 'Error: exception was thrown on attempt to get Y whe X = ' + x + ' using your expression';
+            $$('.status-holder').forEach(span => span.innerHTML = status);
+            return;
+        }
+    }
+    $$('.status-holder').forEach(span => span.innerHTML = 'OK: ' + text);
+    getY = func;
+    extraArgs = consts.map(c => c.value);
+    painter.repaint();
+};
+
+let main = function()
+{
+    onExpressionChanged();
+};
+
+main();
+
+</script>
+<style>
+    input[type="number"] {
+        width: 50px;
+    }
+</style>
+</body>
