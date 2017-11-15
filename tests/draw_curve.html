@@ -1,14 +1,18 @@
-<head>
-
-</head>
-
 <body>
 
 <p>Type a js expression like <code>Math.pow(x, 2)</code>, and I'll draw you the curve from it</p>
 
-
-<canvas width="720" height="576" style="border: solid red 2px"></canvas>
-<b>max y: </b><span class="max-y-holder"></span>
+<div style="float: left;">
+	<canvas width="720" height="576" style="border: solid red 2px"></canvas>
+</div>
+<div style="float: left;">
+	<b>max y: </b><span class="max-y-holder"></span>
+	<div class="specific-values-holder" style="white-space: pre; font-family: monospace">
+		huj<br/>
+		huj<br/>
+		huj<br/>
+	</div>
+</div>
 <br clear="all"/>
 <label>Expression:<input type="text" class="expression-holder" oninput="onExpressionChanged();" value="x * a"/></label>
 <span class="status-holder"></span><br/>
@@ -68,6 +72,7 @@ let Painter = function(canvas)
     };
 };
 
+var range = (l,r) => new Array(r - l).fill().map((_,k) => k + l);
 let $$ = (s, root) => [...(root || document).querySelectorAll(s)];
 let canvas = document.querySelectorAll('canvas')[0];
 let scale = 40;
@@ -104,6 +109,13 @@ let onExpressionChanged = function()
     getY = func;
     extraArgs = consts.map(c => c.value);
     painter.repaint();
+    let specValLen = 10;
+    $$('.specific-values-holder').forEach(span => 
+		span.innerHTML = range(0,specValLen + 1).map(i => {
+			let x = maxX * i / specValLen;
+			let y = getY(...[x].concat(extraArgs));
+			return 'X = 60 * ' + ('  ' + (x / 60)).slice(-2) + ', Y = ' + y;
+		}).join('<br/>'));
 };
 
 let main = function()
