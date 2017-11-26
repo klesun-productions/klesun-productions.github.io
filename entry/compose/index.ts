@@ -474,16 +474,10 @@ export let Handler = function(cont: HTMLDivElement)
         S.opt(hash.get('songUrl')).get = url =>
             Tls.fetchJson(url, songJson => {
                 openSongFromJson(songJson);
-                /** ading some pauses at start cuz for some reason it always jerks first few seconds of playback */
-                //~ play();
-                Tls.timeout(5.0).then = play;
             });
         S.opt(hash.get('songRelUrl')).get = relUrl =>
             Tls.fetchJson('/unversioned/gits/riddle-needle/Assets/Audio/midjs/' + relUrl, songJson => {
                 openSongFromJson(songJson);
-                /** ading some pauses at start cuz for some reason it always jerks first few seconds of playback */
-                //~ play();
-                Tls.timeout(5.0).then = play;
             });
     };
 
