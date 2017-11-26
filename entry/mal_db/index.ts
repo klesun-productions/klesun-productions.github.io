@@ -262,6 +262,19 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
                 }).with(tr => tr.onmousedown = () => tr.classList.toggle('clicked'))),
             });
 
+        let formatIn = function(malFormat: string, guiFormats: Set<string>) {
+            malFormat = malFormat.trim();
+            if (malFormat === 'TV') {
+                return guiFormats.has('tv');
+            } else if (malFormat === 'Movie') {
+                return guiFormats.has('movie');
+            } else if (malFormat === 'OVA') {
+                return guiFormats.has('ova');
+            } else {
+                return guiFormats.has('other');
+            }
+        };
+
         let refilter = () => {
             let login = filters.notInListOf();
             let userAnimeIds = login
@@ -279,11 +292,15 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
             let minMembers = filters.minMembers();
             let maxOverrate = filters.maxOverrate();
             let minPersonal = filters.minPersonal();
+            let formats = new Set(filters.formats());
             let sortBy = filters.sortBy();
             userAnimeIds.then = ids => reorder(summedAnimes
                 .filter(sa =>
                     !ids.has(sa.malId) &&
-                    S.opt(idToAnime.get(sa.malId)).map(a => a.mbrCnt >= minMembers).def(false) &&
+                    S.opt(idToAnime.get(sa.malId)).map(a => {
+                        return a.mbrCnt >= minMembers
+                            && formatIn(a.format, formats);
+                    }).def(false) &&
                     sa.avgAbsScore % 1 != 0.00 && // some rare titles finished by just one user
                     sa.overrate <= maxOverrate &&
                     sa.avgAttitude >= minPersonal)
