@@ -168,7 +168,9 @@ export let ParseMal = function(content: string) {
         let accessDeniedMsg = 'Access to this list has been restricted by the owner.';
         let proxyErrorRegex = /^The requested resource could not be loaded because the server returned an error:/;
         let table = $$('table[data-items]')[0];
-        let rows: {[k: string]: string}[] = [];
+        let firstTableTitle: string = null;
+        let firstTableRows: {[k: string]: string}[] = null;
+        let followingTables: {title: string, rows: {[k: string]: string}[]}[] = [];
         let isAccessDenied = false;
         let isUnparsable = false;
 
@@ -178,29 +180,46 @@ export let ParseMal = function(content: string) {
             isAccessDenied = true;
         } else if (table) {
             let jsonText = table.getAttribute('data-items');
-            rows = <{[k: string]: string}[]>JSON.parse(jsonText);
+            firstTableRows = <{[k: string]: string}[]>JSON.parse(jsonText);
         } else {
             // old/custom format
             let headers = null;
+            let rows = [];
+            let tableTitle = null;
             for (let tr of $$('tr')) {
                 if (headers === null) {
                     headers = parseListHeaders(tr);
+                    if (headers === null) {
+                        tableTitle = tr.innerText.trim();
+                    }
                 } else {
                     let row = parseListRow(tr, headers);
                     if (row !== null) {
                         rows.push(row);
-                    } else {
-                        break;
+                    } else if (rows.length > 0) {
+                        if (firstTableRows === null) {
+                            firstTableTitle = tableTitle;
+                            firstTableRows = rows;
+                        } else {
+                            // multiple tables on page: Watching/Completed/Dropped/etc..
+                            followingTables.push({
+                                title: tableTitle,
+                                rows: rows,
+                            })
+                        }
+                        rows = [];
+                        headers = null;
                     }
                 }
             }
-            isUnparsable = rows.length === 0;
+            isUnparsable = firstTableRows.length === 0;
         }
-
         return {
             isAccessDenied: isAccessDenied,
             isUnparsable: isUnparsable,
-            rows: rows,
+            tableTitle: firstTableTitle,
+            rows: firstTableRows || [],
+            followingTables: followingTables,
         };
     };
 

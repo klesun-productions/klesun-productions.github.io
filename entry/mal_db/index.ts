@@ -265,12 +265,19 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
         let refilter = () => {
             let login = filters.notInListOf();
             let userAnimeIds = login
-                ? ServApi.get_url('https://myanimelist.net/animelist/' + login + '?status=2')
+                ? ServApi.get_url('https://myanimelist.net/animelist/' + login)
                     .map(resp => ParseMal(resp).anime.list())
-                    .map(parsed => new Set(parsed.rows.map(r => +r['anime_id'])))
+                    .map(parsed => {
+                        let allRows = parsed.followingTables
+                            .map(t => t.rows)
+                            .reduce((a, b) => a.concat(b), [])
+                            .concat(parsed.rows);
+                        return new Set(allRows.map(r => +r['anime_id']));
+                    })
                 : S.promise<Set<number>>(ret => ret(new Set([])));
 
             let minMembers = filters.minMembers();
+            let maxOverrate = filters.maxOverrate();
             let minPersonal = filters.minPersonal();
             let sortBy = filters.sortBy();
             userAnimeIds.then = ids => reorder(summedAnimes
@@ -278,6 +285,7 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
                     !ids.has(sa.malId) &&
                     S.opt(idToAnime.get(sa.malId)).map(a => a.mbrCnt >= minMembers).def(false) &&
                     sa.avgAbsScore % 1 != 0.00 && // some rare titles finished by just one user
+                    sa.overrate <= maxOverrate &&
                     sa.avgAttitude >= minPersonal)
                 .sort((a,b) =>
                     sortBy === 'personalScore' ? b.avgAttitude - a.avgAttitude :
