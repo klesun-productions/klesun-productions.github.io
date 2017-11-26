@@ -244,9 +244,6 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
                 children: summedAnimes.map((anime, i) => Dom.mk.tr({
                     children: [
                         Dom.mk.td({innerHTML: i + ''}),
-                        Dom.mk.td({innerHTML: 'TODO'}),
-                        Dom.mk.td({innerHTML: 'TODO'}),
-                        Dom.mk.td({innerHTML: 'TODO'}),
                         Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.mbrCnt + '').def('N/a')}),
                         Dom.mk.td({
                             children: [Dom.mk.a({
@@ -258,6 +255,8 @@ export let ShowMalDb = (mainCont: HTMLElement) =>
                         Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.format).def('N/a')}),
                         Dom.mk.td({innerHTML: anime.avgAttitude.toFixed(4)}),
                         Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.title).def('N/a')}),
+                        Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.startDate).map(dt => dt.slice(0,4)).def('N/a')}),
+                        Dom.mk.td({innerHTML: S.opt(idToAnime.get(anime.malId)).map(a => a.epsCnt+'').def('N/a')}),
                     ],
                 }).with(tr => tr.onmousedown = () => tr.classList.toggle('clicked'))),
             });
