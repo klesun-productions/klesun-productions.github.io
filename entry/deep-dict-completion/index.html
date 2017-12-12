@@ -6,13 +6,11 @@
 <body>
     <main>
         <div class="header-holder">
-            <h2>deep-assoc-completion</h2>
-            <h6>a phpstorm plugin for associative array auto-completion inferred from other functions</h3>
-            <a href="https://github.com/klesun/deep-assoc-completion">sources</a>
+            <h2>deep-dict-completion</h2>
+            <h6>a pycharm plugin for dict auto-completion inferred from other functions</h3>
+            <a href="https://github.com/klesun/deep-dict-completion">sources</a>
             |
-            <a href="https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion">repository page</a>
-            |
-            <a href="/out/phpstorm_deep_keys_2017.08.20.001.jar">download</a>
+            <a href="https://www.dropbox.com/s/a5eki8wfne2zwdd/deep-dict-completion.jar?dl=0">download</a>
             |
             <a href="/">site home</a>
         </div>
@@ -31,7 +29,7 @@
     };
     let $$ = s => [...document.querySelectorAll(s)];
     
-    let url = 'https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/README.md';
+    let url = 'https://raw.githubusercontent.com/klesun/deep-dict-completion/master/README.md';
     http(url, (resp) => {
         let html = new showdown.Converter().makeHtml(resp);
         $$('.docs-markdown-holder')[0].innerHTML = html;
