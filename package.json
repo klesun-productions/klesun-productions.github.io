@@ -4,8 +4,7 @@
   "description": "Some random js apps, mostly related to MIDI song composition and playback",
   "repository": "github.com/klesun/midiana.lv",
   "license": "MIT",
-  "dependencies": {
-  },
+  "dependencies": {},
   "scripts": {
     "tsc": "tsc"
   },
