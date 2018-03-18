@@ -225,7 +225,9 @@ export let ServApi = {
     },
 
     set get_animes(cb: (animes: anime_t[]) => void) {
-        ajax('get_animes', 'GET', {}, cb);
+        Tls.http('/out/animes.json', 'GET', {})
+            .map(r => JSON.parse(r))
+            .then = cb;
     },
 
     set get_true_anime_list(cb: (animes: summed_anime_t[]) => void) {
@@ -323,6 +325,7 @@ export interface anime_t {
     endDate: string,
     mbrCnt: number,
     ageRestrictionRaw: string,
+    [k: string]: valid_json_t,
 }
 
 export interface recent_user_t {
