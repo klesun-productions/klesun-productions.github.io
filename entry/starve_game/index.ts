@@ -132,15 +132,17 @@ export let StarveGame = function(mainCont: HTMLElement)
                 Dom.showMessageDialog('Wrong letter, your word must start with "' + sourceWord[0] + '", but you typed "' + typedWord + '"')
                     .then = () => gui.foodNameInput.focus();
             } else {
+                let synonyms = [typedWord];
                 if (synonymMap.has(typedWord)) {
                     typedWord = synonymMap.get(typedWord);
+                    synonyms.push(typedWord);
                 }
                 let index = usedWords.indexOf(typedWord);
 
                 if (index > 0) {
                     Dom.showMessageDialog('You already used word ' + typedWord +' in ' + index + '-th round!')
                         .then = () => gui.foodNameInput.focus();
-                } else if (!easyWordSet.has(typedWord) && !rareWordSet.has(typedWord)) {
+                } else if (!synonyms.some(w => easyWordSet.has(w) || rareWordSet.has(w))) {
                     Dom.showMessageDialog('I don\'t know such food: "' + typedWord + '"')
                         .then = () => gui.foodNameInput.focus();
                 } else {

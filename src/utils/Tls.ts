@@ -204,9 +204,9 @@ export let Tls =
         let result = {then: (data: any) => {}};
         var http = new XMLHttpRequest();
         http.open(restMethod, url, true);
-        http.responseType = 'json';
+        http.responseType = 'text';
         http.setRequestHeader('Content-Type', 'application/json;UTF-8');
-        http.onload = () => result.then(http.response);
+        http.onload = () => result.then(JSON.parse(http.response));
         http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
         return result;
     },
