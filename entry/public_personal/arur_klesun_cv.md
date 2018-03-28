@@ -1,4 +1,6 @@
 
+![cv_photo](https://user-images.githubusercontent.com/5202330/38005603-08518c7c-324a-11e8-9531-fb23edb76b3a.jpg)
+
 Name       | Artur Klesun
  ---       |  ---
 Profession | Programmer
@@ -6,7 +8,6 @@ Location   | Riga, Center
 Phone      | +371 24839510
 E-mail     | a.klesuns@itncorp.com
 github     | https://github.com/klesun
-
 
  Work XP-rience
 ----------------
@@ -59,17 +60,22 @@ https://www.youtube.com/watch?v=xlgqaG2gFfs
 
 - http://midiana.lv/entry/compose/ - browser sheet music editor using connected MIDI device. Written in pure javascript. 
 Sources: https://github.com/klesun/midiana.lv
+![alt tag](https://github.com/klesun/midiana.lv/raw/master/screenshot_compose.png)
 
 - https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion - Intellij IDEA plugin that adds type inference based completion in PHP code. 
 Written in Java.
 Sources: https://github.com/klesun/deep-assoc-completion
+![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
 
 - http://midiana.lv/entry/starve_game/ - a word game where you have to come up with a word meaning a food starting with a specific letter. 
 To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 
 The data processing part was written in python.
 Sources: https://github.com/klesun/midiana.lv/blob/master/htbin/scr/wiki_dump/hell_wrapper.py
+![alt tag](https://cloud.githubusercontent.com/assets/5202330/26429290/babeb7f2-40ee-11e7-98e0-ab4b04306c41.png)
 
 - https://steamcommunity.com/sharedfiles/filedetails/?id=1170060197 - a mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
 Sources: https://github.com/klesun/green-envy-xmas-defense
+![alt tag](https://steamuserimages-a.akamaihd.net/ugc/867368888873667911/D53C89CC75A47AC50C09409D0BFBA4CF97242F80/)
 
 - https://github.com/klesun/riddle-needle - A Unity game written in C#. Temporarily on hiatus, but great job was done nevertheless.
+![alt tag](https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true)
