@@ -11,10 +11,10 @@ github     | https://github.com/klesun
  Work XP-rience
 ----------------
 
-- 2014-06-01 - present time (4 years)<br/>
+- 2014-06-01 - present time (4 years)<br/><br/>
 Backend Developer at "Internation Travel Network" travel agency.<br/>
 Website: https://itncorp.com<br/>
-General Distribution System (GDS) integration department.<br/>
+General Distribution System (GDS) integration department.<br/><br/>
  We write PHP code to connect to different distribution systems, like Galileo, 
 Sabre, Amadeus, Hertz, Delpaso, usually via SOAP XML protocol and do stuff there. 
 A major part of our work is to make life of travel agents easier.
@@ -22,10 +22,10 @@ We give them a single terminal GUI that gives them access to all systems we supp
 at once. That involves a lot of  airline terminal text parsing, writing SQL-s to 
 interact with database, implementing various logics that our travel business guys 
 request... Most of that we always cover with PHPUnit tests. My job also involves 
-developing frontend stuff sometimes.<br/>
+developing frontend stuff sometimes.<br/><br/>
  For version control we use git. In years of co-operation we learned the good 
 practices like keeping files small, commiting by little, but frequently, deliver 
-basic functionality soon and then extending according to client wishes...<br/>
+basic functionality soon and then extending it according to client wishes...<br/>
 
  Skills
 --------
@@ -53,7 +53,6 @@ https://www.youtube.com/watch?v=xlgqaG2gFfs
 - "Progmeistars" courses: 5 main semesters, 3 spec-courses: OOP (Delphi), C (low-level programming), Java
 - A lot of programming related self-study.
 - Riga secondary school No. 65, 12 years.
-- I quit the university when realised it wasn't necessary for my job.
 
  Personal Projects
 -------------------
