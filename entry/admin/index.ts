@@ -46,7 +46,7 @@ export let Admin = function(mainControl: HTMLDivElement)
                     sampleNumber: i,
                     sampleName: d[1].sampleName,
                     sampleRate: d[1].sampleRate,
-                    samplingValues: d[0],
+                    samplingValues: [...d[0]],
                 });
         });
 

@@ -88,7 +88,7 @@ class MidiFileProvider(object):
         sample_rate = params['sampleRate']
 
         # JSON.stringify() of Int16Array in javascript returns them as a dict for some reason
-        sampling_values = list(params['samplingValues'].values())
+        sampling_values = params['samplingValues']
 
         data_byte_list = [
             int(b)
