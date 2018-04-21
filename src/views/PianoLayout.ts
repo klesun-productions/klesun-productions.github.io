@@ -99,8 +99,8 @@ export default function PianoLayout(canvas: HTMLCanvasElement)
         var octave = Math.floor(tune / 12);
 
         if (!isFlat) {
-            var invory = [0,2,4,5,7,9,11].indexOf(tune % 12) + octave * 7;
-            var x = invory * IVORY_WIDTH;
+            var ivory = [0,2,4,5,7,9,11].indexOf(tune % 12) + octave * 7;
+            var x = ivory * IVORY_WIDTH;
             fillRect(x + 1, EBONY_LENGTH + 1, IVORY_WIDTH - 2, IVORY_LENGTH - EBONY_LENGTH - 2, color); // +1 / -2 for border to be left untouched
         } else {
             var invory = [0,2,4,5,7,9,11].indexOf(tune % 12 - 1) + octave * 7;

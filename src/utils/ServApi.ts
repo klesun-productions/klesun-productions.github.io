@@ -187,7 +187,7 @@ export let ServApi = {
         sampleNumber: number,
         sampleName: string,
         sampleRate: number,
-        samplingValues: Int16Array,
+        samplingValues: number[], // int_16 array
     }) => contribute('save_sample_wav', params),
 
     set get_assorted_food_articles(cb: (artciles: article_row_t[]) => void) {
