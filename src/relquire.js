@@ -44,18 +44,27 @@
             http(moduleUrl).then = code => {
                 currentUrl = moduleUrl;
                 let resolvingDeps = eval(code);
-                resolvingDeps.then = (moduleResult) => {
+                let whenDepsResolved = (moduleResult) => {
                     cachedModules[moduleUrl] = moduleResult;
                     awaiting[moduleUrl].forEach(done => done(moduleResult));
                     delete awaiting[moduleUrl];
                 };
+                if (typeof resolvingDeps === 'object') {
+                    resolvingDeps.then = whenDepsResolved;
+                } else {
+                    // not require.js module, just a JS file
+                    whenDepsResolved([]);
+                }
             };
         }
     });
 
     let addPathToUrl = function (path, url) {
         let result;
-        if (!path.startsWith('./') && !path.startsWith('../')) {
+        if (path.startsWith('/')) {
+            // full path from the site root
+            result = path;
+        } else if (!path.startsWith('./') && !path.startsWith('../')) {
             // apparently, typescript compiler makrs paths from root this way
             // src/utils/Dom, weird, but ok
             result = '/' + path;
