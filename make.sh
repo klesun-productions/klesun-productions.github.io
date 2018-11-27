@@ -10,8 +10,8 @@
 # into .../midiana.lv/out
 # TODO: make contents of /out/ generable with a script
 
-# download http://midiana.lv/unversioned/
-# into .../midiana.lv/unversioned
+# download http://midiana.lv/unv/
+# into .../midiana.lv/unv
 # TODO: move music to a separate repository and make it a submodule. also move rest files inside /Dropbox/web/
 
 # compile all .ts files in .../midiana.lv/entry/**/** and .../midiana.lv/src/**/**

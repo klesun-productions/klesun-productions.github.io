@@ -26,9 +26,9 @@ var eng = rus = pol = null;
 //     console.log(maybeLinked);
 // };
 //
-// $.get('/unversioned/wedmin/wedmin_last_wish_eng.txt', t => (eng = t) && rus && pol && loaded());
-// $.get('/unversioned/wedmin/wedmin_last_wish_rus.txt', t => eng && (rus = t) && pol && loaded());
-// $.get('/unversioned/wedmin/wedmin_last_wish_pol.txt', t => eng && rus && (pol = t) && loaded());
+// $.get('/unv/wedmin/wedmin_last_wish_eng.txt', t => (eng = t) && rus && pol && loaded());
+// $.get('/unv/wedmin/wedmin_last_wish_rus.txt', t => eng && (rus = t) && pol && loaded());
+// $.get('/unv/wedmin/wedmin_last_wish_pol.txt', t => eng && rus && (pol = t) && loaded());
 
 // it is like simple json, but allows [,'a',,'b',]
 var parseGoogleJson = function(gjsonText)
@@ -56,7 +56,7 @@ var dictLoaded = function(dictJsonText)
     console.log(adapted);
 };
 
-$.get('/unversioned/wedmin/translate.google.ru_wedmin_eng_ru_detailed_fixed_better.har.txt', a => dictLoaded(a));
+$.get('/unv/wedmin/translate.google.ru_wedmin_eng_ru_detailed_fixed_better.har.txt', a => dictLoaded(a));
 
 </script>
 

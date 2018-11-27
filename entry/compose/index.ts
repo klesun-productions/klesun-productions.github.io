@@ -476,7 +476,7 @@ export let Handler = function(cont: HTMLDivElement)
                 openSongFromJson(songJson);
             });
         S.opt(hash.get('songRelUrl')).get = relUrl =>
-            Tls.fetchJson('/unversioned/gits/riddle-needle/Assets/Audio/midjs/' + relUrl, songJson => {
+            Tls.fetchJson('/unv/gits/riddle-needle/Assets/Audio/midjs/' + relUrl, songJson => {
                 openSongFromJson(songJson);
             });
     };

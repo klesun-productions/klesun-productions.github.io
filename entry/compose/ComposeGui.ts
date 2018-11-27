@@ -48,7 +48,7 @@ export let ComposeGui = function(cont: HTMLDivElement)
     enablePseudoPianoInputFlag.onchange = e => pseudoPianoImg.style.display = enablePseudoPianoInputFlag.checked ? 'inline-block' : 'none';
     enablePseudoPianoInputFlag.onchange(<any>{});
 
-    let songBaseUrl = '/unversioned/gits/riddle-needle/Assets/Audio/midjs/';
+    let songBaseUrl = '/unv/gits/riddle-needle/Assets/Audio/midjs/';
     ServApi.get_my_song_links = mySongs =>
         Dom.wrap(Dom.get(cont).ul('.my-song-links')[0], {
             innerHTML: '',

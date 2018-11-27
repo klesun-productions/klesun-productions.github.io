@@ -30,7 +30,7 @@ def read_post() -> dict:
 
 
 def is_correct_password(entered_password: str) -> bool:
-    local_config_path = 'unversioned/local.config.json'
+    local_config_path = 'unv/local.config.json'
     with open(os.path.dirname(__file__) + '/../' + local_config_path) as f:
         config = json.load(f)
 

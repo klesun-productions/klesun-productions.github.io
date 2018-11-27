@@ -61,7 +61,7 @@ class MidiFileProvider(object):
     @db_session
     def collect_liked_songs(cls, params: dict):
         root = cls.content_folder + '/midiCollection/'
-        destination_root = '/unversioned/midiCollectionLiked/'
+        destination_root = '/unv/midiCollectionLiked/'
 
         file_list = [os.path.relpath(curDir, root) + '/' + fileName
                      for curDir, _, fileNames in os.walk(root) if not curDir.endswith('source_ichigos_com')

@@ -37,7 +37,7 @@ export let Admin = function(mainControl: HTMLDivElement)
             console.log(flattenSamples(TransformSf2Parse(<any>sf2parse))));
 
     gui.btns.decodeSoundFont.onclick = () =>
-        Tls.fetchBinaryFile('/unversioned/soundfonts/fluid.sf2', byteBuffer => {
+        Tls.fetchBinaryFile('/unv/soundfonts/fluid.sf2', byteBuffer => {
             var [soundFont, audioDataSamples] = ParseSoundFontFile(byteBuffer);
             console.log('Decoded Soundfont: ', soundFont);
             S.list(audioDataSamples).sequence = (d, i) =>

@@ -26,8 +26,7 @@ __pycache__
 /b/
 /imgs/big/
 /out/*
-/unversioned/*
-/entry/unversioned/*
+/unv/*
 /entry/*/out/
 
 /scripts/out.js

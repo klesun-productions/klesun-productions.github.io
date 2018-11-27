@@ -17,11 +17,11 @@ export let StarveGame = function(mainCont: HTMLElement)
     let eatingSfx: AudioBuffer = null;
     let brokenGlassSfx: AudioBuffer = null;
     Tls.getAudioBuffer(
-        '/unversioned/imagesFromWeb/watermelon_eating_sound.ogg',
+        '/unv/imagesFromWeb/watermelon_eating_sound.ogg',
         (b) => eatingSfx = b
     );
     Tls.getAudioBuffer(
-        '/unversioned/imagesFromWeb/broken_glass.ogg',
+        '/unv/imagesFromWeb/broken_glass.ogg',
         (b) => brokenGlassSfx = b
     );
 

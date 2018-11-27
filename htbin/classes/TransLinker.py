@@ -16,7 +16,7 @@ ChapterT = Iterable[ParagraphT]
 BookT = Iterable[ChapterT]
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-content_dir = '/home/klesun/fat/p/shmidusic.lv/unversioned/wedmin/'
+content_dir = '/home/klesun/fat/p/shmidusic.lv/unv/wedmin/'
 
 
 def _get_eng_phrase_to_translation_mapping() -> Dict[str, Iterable[str]]:
