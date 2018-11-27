@@ -230,6 +230,8 @@ export let S = (function()
     return {
         /** stands for Tuple of 2 elements */
         T2: <T1, T2>(a: T1, b: T2): [T1, T2] => [a, b],
+        /** stands for Tuple of 3 elements */
+        T3: <T1, T2, T3>(a: T1, b: T2, c: T3): [T1, T2, T3] => [a, b, c],
         /** D stands for "Dictionary" */
         D: function<Tk, Tv>(subject: Map<Tk, Tv>) {
             return {

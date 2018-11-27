@@ -195,6 +195,7 @@ soundfont_dirs = [
 #     '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/fluid',
 #     '/home/klesun/fat/p/shmidusic.lv/out/sf2parsed/arachno'
 #     '/home/klesun/big/p/shmidusic.lv/out/sf2parsed/zunpet',
+    '/home/klesun/big/p/midiana.lv/out/sf2parsed/arabic',
 ];
 
 for soundfont_dir in soundfont_dirs:

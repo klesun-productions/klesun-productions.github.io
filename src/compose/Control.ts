@@ -242,7 +242,6 @@ export function Control($chordListCont: JQuery, configCont: HTMLElement)
     };
 
     /** adds a chord element _at_ the index. or to the end, if index not provided */
-    /** @unused */
     let addChord = function(chord: Ds.IShmidusicChord): number
     {
         let index = $chordListCont.find('.focused').index() + 1;

@@ -94,6 +94,8 @@ export let TransformSf2Parse = function(root: ISf2Parser)
         return result;
     };
 
+    let isNull = (val: any) => [undefined, null].includes(val);
+
     let getInstrumentInfo = function(instr_idx: number, extendKeyRanges: boolean): IInstrument
     {
         let instrumentName = root.instrument[instr_idx].instrumentName;
@@ -116,7 +118,7 @@ export let TransformSf2Parse = function(root: ISf2Parser)
                 return itemsToGenerator(items);
             });
 
-        let generatorApplyToAll = !propertyBundles[0].sampleID
+        let generatorApplyToAll = isNull(propertyBundles[0].sampleID)
             ? propertyBundles.shift()
             : null;
 
@@ -164,7 +166,7 @@ export let TransformSf2Parse = function(root: ISf2Parser)
                     return itemsToGenerator(items);
                 });
 
-            let generatorApplyToAll = !propertyBundles[0].instrument
+            let generatorApplyToAll = isNull(propertyBundles[0].instrument)
                 ? propertyBundles.shift()
                 : null;
 

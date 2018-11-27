@@ -14,17 +14,18 @@ export default function UnfairRandom(songList: ISmfFile[])
     var weightRules: Array<[number, (song: ISmfFile) => boolean]> = [
         [0.0, (song) => song.rating.startsWith('-')],
         [0.0, (song) => song.rating.startsWith('+---')],
-        [0.3, (song) => song.rawFileName.startsWith('random/notre_dame/')],
-        [0.3, (song) => song.rawFileName.startsWith('random/monkey_island/')],
-        [0.3, (song) => song.rawFileName.startsWith('touhou') &&
+        [1.0, (song) => song.rating.startsWith('+') && !song.rating.startsWith('+---')],
+        [0.1, (song) => song.rawFileName.startsWith('random/notre_dame/')],
+        [0.1, (song) => song.rawFileName.startsWith('random/monkey_island/')],
+        [0.5, (song) => song.rawFileName.startsWith('touhou') &&
             !song.rawFileName.startsWith('touhou/06_eosd') &&
             !song.rawFileName.startsWith('touhou/07_pcb') &&
             !song.rawFileName.startsWith('touhou/08_in') &&
             !song.rawFileName.startsWith('touhou/11_sa') &&
             !song.rawFileName.startsWith('touhou/12_ufo') &&
             true],
-        [0.1, (song) => song.rawFileName.startsWith('ismayil112')],
-        [1, (song) => true], // default
+        [0.002, (song) => song.rawFileName.startsWith('ismayil112')],
+        [0.005, (song) => true], // default
     ];
 
     var getAny = function(): ISmfFile

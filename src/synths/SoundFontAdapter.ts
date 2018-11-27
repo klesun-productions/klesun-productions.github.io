@@ -23,6 +23,8 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
         .map(TransformSf2Parse)
         .map(flattenSamples);
 
+    soundfont.then = sf => console.log('loaded soundfont meta data', sf);
+
     let tunePresets = soundfont.map(sf => sf[0]);
     let drumPreset = soundfont.map(sf => sf[128][+Object.keys(sf[128])[0]]);
     let performance = {
@@ -56,7 +58,7 @@ export let SoundFontAdapter = Cls['SoundFontAdapter'] = function(soundfontDirUrl
                     g.keyRange.hi >= semitone &&
                     g.velRange.lo <= velocity &&
                     g.velRange.hi >= velocity)
-                .map(g => <[ISampleInfo, IGenerator, number]>[s.sampleInfo, g, s.sampleNumber]))
+                .map(g => S.T3(s.sampleInfo, g, s.sampleNumber)))
             .reduce((a,b) => a.concat(b));
 
         if (!isDrum && sampleHeaders.length === 0) {

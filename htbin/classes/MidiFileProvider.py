@@ -48,7 +48,7 @@ class MidiFileProvider(object):
 
     @classmethod
     def get_my_song_links(cls, params) -> list:
-        url_base = '/unversioned/gits/riddle-needle/Assets/Audio/midjs/'
+        url_base = '/unv/gits/riddle-needle/Assets/Audio/midjs/'
         root = cls.project_root + url_base
         return [{
                 "name": fileName,
@@ -96,7 +96,9 @@ class MidiFileProvider(object):
             for b in n.to_bytes(2, byteorder='little', signed=True)
         ]
 
-        path = cls.soundfont_folder + '/' + sfname + '/samples/' + str(sample_number) + '_' + sample_name + '.wav'
+        dir_path = cls.soundfont_folder + '/' + sfname + '/samples/'
+        os.makedirs(dir_path, exist_ok=True)
+        path = dir_path + str(sample_number) + '_' + sample_name + '.wav'
         with open(path, 'wb') as f:
             f.write(bytearray(cls.add_riff_header(sample_rate, data_byte_list)))
 
