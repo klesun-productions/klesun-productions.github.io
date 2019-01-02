@@ -20,6 +20,15 @@
 
 <script>
 
+    // for compatibility with Tor 6.5.1
+    Object.entries = (obj) => {
+        let result = [];
+        for (let key of Object.keys(obj)) {
+            result.push([key, obj[key]]);
+        }
+        return result;
+    };
+
     let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
     require(['./index'], (index) => index.main($$('main')[0]));
 

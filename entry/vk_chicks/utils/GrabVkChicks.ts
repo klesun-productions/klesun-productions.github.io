@@ -89,22 +89,25 @@ export class searched_chick_t {
     login: string;
     fullName: string;
     imgUrl: string;
-    dob: string;
+    dob?: string;
     miscFacts: string[];
+    searchDob: string;
 
-    static cast = function(raw: valid_json_t): IOpts<searched_chick_t> {
+    static cast = function(raw: valid_json_t): searched_chick_t {
         // TODO: this likely can be automated using reflection since we no more work with an interface
+        // actually, there is a type operator in typescript that allows creating type from function result
         let [typed, error] = SafeAccess(raw, a => 1 && {
             login: a.sub('login', a => a.isString()),
             fullName: a.sub('fullName', a => a.isString()),
             imgUrl: a.sub('imgUrl', a => a.isString()),
-            dob: a.sub('dob', a => a.isString()),
+            dob: a.sub('dob', a => a.isNullString()),
             miscFacts: a.sub('miscFacts', a => a.isList(a => a.isString())),
+            searchDob: a.sub('searchDob', a => a.isString()),
         });
         if (!error) {
-            return S.opt(typed);
+            return typed;
         } else {
-            return S.opt(null);
+            throw new Error('Failed to cast data to a chick - ' + error);
         }
     };
 }
