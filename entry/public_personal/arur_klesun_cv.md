@@ -36,7 +36,7 @@ Languages:
 - Latvian: poor
 
 Programming:
-- Actively worked (at least 10k lines of code each) with: C#, Java, Javascript, Python, PHP
+- Actively worked (at least 10k lines of code each) with: C#, Java, Javascript, Python, PHP, Scala
 (see "Personal Projects" below)
 - Had a lot of experience with SQL at my present work, tried hundreds things with alive DB in search 
 of optimization tricks: choosing right indexes, splitting tables, thinking thorough queries...
@@ -66,6 +66,11 @@ Sources: https://github.com/klesun/midiana.lv
 Written in Java.
 Sources: https://github.com/klesun/deep-assoc-completion
 ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
+
+- https://plugins.jetbrains.com/plugin/11478-deep-js-completion - Another IDEA/Webstorm plugin that that does same thing, but in JS code. 
+Written in Scala.
+Sources: https://github.com/klesun/deep-js-completion
+![alt tag](https://user-images.githubusercontent.com/5202330/50492169-c01e0400-0a1e-11e9-9eff-44d2cfebe09b.png)
 
 - http://midiana.lv/entry/starve_game/ - a word game where you have to come up with a word meaning a food starting with a specific letter. 
 To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 

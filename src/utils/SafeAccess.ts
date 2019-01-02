@@ -42,7 +42,18 @@ export var SafeAccess = function<Tout>(subj: valid_json_t, rule: (acc: ISafeAcce
     const isString = function(): string
     {
         if (typeof subj !== 'string') {
-            throw new Error('Must be a string, but got: ' + (typeof subj));
+            throw new Error('Must be a string, but got: ' + (typeof subj) + " " + JSON.stringify(subj).slice(0, 100));
+        } else {
+            return subj;
+        }
+    };
+
+    const isNullString = function(): string | null
+    {
+        if (subj === null) {
+            return null;
+        } else if (typeof subj !== 'string') {
+            throw new Error('Must be a string or null, but got: ' + (typeof subj) + " " + JSON.stringify(subj).slice(0, 100));
         } else {
             return subj;
         }
@@ -79,6 +90,7 @@ export var SafeAccess = function<Tout>(subj: valid_json_t, rule: (acc: ISafeAcce
             isList: isList,
             isNumber: isNumber,
             isString: isString,
+            isNullString: isNullString,
             isValidJson: isValidJson,
             custom: custom,
             sub: sub,
@@ -99,6 +111,7 @@ interface ISafeAccess
     isNumber: () => number,
     /** @throws Error in case of type mismatch */
     isString: () => string,
+    isNullString: () => string | null,
     /** @throws Error in case of type mismatch */
     isValidJson: () => valid_json_t,
     /** @throws Error in case of type mismatch */

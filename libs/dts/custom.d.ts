@@ -26,4 +26,5 @@ interface KeyboardEvent {
 }
 interface Array<T> {
     findIndex(predicate: (value: T, i: number) => boolean): number,
+    flatMap<B>(func: (el: T) => B[]): B[],
 }

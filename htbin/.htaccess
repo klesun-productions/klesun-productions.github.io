@@ -1,6 +1,7 @@
 IndexOptions +Charset=UTF-8
 
 # need to put to apache config to handle cgitb putting ""<!-- spam:" in headers
+# (putting it in .htaccess is not allowed, btw)
 # HttpProtocolOptions Unsafe
 
 # Added by klesun to fix python3.5's "'ascii' codec can't encode character "

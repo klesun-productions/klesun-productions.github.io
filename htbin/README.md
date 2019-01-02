@@ -6,7 +6,7 @@ The easiest way to start server is:
 ```bash
 sudo python3.5 -m http.server --cgi 80
 ```
-But cgi lib requests often hang requiring to restart server manually. Apache does not have usch problem, but it is harder to setup. Here are the steps:
+But cgi lib requests often hang requiring to restart server manually. Apache does not have such problem, but it is harder to setup. Here are the steps:
 - Install apache
 ```bash
 sudo apt-get install apache2

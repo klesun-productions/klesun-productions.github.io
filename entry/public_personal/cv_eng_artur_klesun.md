@@ -93,5 +93,3 @@ And also, this is definitely of no use for you, but I have a very good musical e
 ### My face
 
 ![portrait](cv_photo.jpg)
-
-

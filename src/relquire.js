@@ -42,7 +42,9 @@
             awaiting[moduleUrl] = [];
             awaiting[moduleUrl].push(done);
             http(moduleUrl).then = code => {
+				let requiringUrl = currentUrl;
                 currentUrl = moduleUrl;
+                code += '\n//# sourceURL=' + requiringUrl + '_x_' + moduleUrl;
                 let resolvingDeps = eval(code);
                 let whenDepsResolved = (moduleResult) => {
                     cachedModules[moduleUrl] = moduleResult;
