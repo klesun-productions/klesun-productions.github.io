@@ -16,6 +16,7 @@ export let main = function(mainCont: HTMLElement)
         parsePersonPagesBtn: Dom.get(mainCont).button('.parse-person-pages')[0],
         maxWorkersInp: Dom.get(mainCont).input('.max-workers')[0],
         chickListHolder: Dom.get(mainCont).any('.chick-list-holder')[0],
+        skipBeforeInput: Dom.get(mainCont).input('.skip-before')[0],
     };
 
     let vkChicks = Tls.http('./out/vk_chicks_flat.json')
@@ -118,7 +119,9 @@ export let main = function(mainCont: HTMLElement)
     let after = (login: string) => {
         let occurred = false;
         return (chick: searched_chick_t) => {
-            if (chick.login === login) {
+            if (!login) {
+                return true;
+            } else if (chick.login === login) {
                 occurred = true;
                 return false;
             } else {
@@ -130,7 +133,7 @@ export let main = function(mainCont: HTMLElement)
     gui.grabVkChicksBtn.onclick = () => GrabVkChicks(getMaxWorkers);
     vkChicks.then = vkChicks =>
         gui.grabPersonPagesBtn.onclick = () =>
-        grabPersonPages(vkChicks.s.filter(after('/id138807328')));
+        grabPersonPages(vkChicks.s.filter(after(gui.skipBeforeInput.value)));
 
     vkChicks.then = vkChicks =>
         gui.parsePersonPagesBtn.onclick = () =>
