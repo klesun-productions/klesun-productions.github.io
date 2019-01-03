@@ -86,7 +86,13 @@ export let main = function(mainCont: HTMLElement)
             .forEach = chick => traffic.http('https://vk.com/' + chick.login)
                 .then = page => {
                     console.log('Got page', page);
-                    vkChicksApi.store_person_page(chick.login.match(/^\/?(.*)/)[1], page);
+                    let isError = page.innerHTML.indexOf('Вы попытались загрузить более одной однотипной страницы в секунду') > -1;
+                    if (isError) {
+                        traffic.sleep(66.666);
+                    } else {
+                        vkChicksApi.store_person_page(chick.login.match(/^\/?(.*)/)[1], page);
+                        traffic.sleep(1.000);
+                    }
                 };
 
         traffic.onIdle = (peoplePacks) => {
@@ -109,10 +115,22 @@ export let main = function(mainCont: HTMLElement)
         };
     };
 
+    let after = (login: string) => {
+        let occurred = false;
+        return (chick: searched_chick_t) => {
+            if (chick.login === login) {
+                occurred = true;
+                return false;
+            } else {
+                return occurred;
+            }
+        };
+    };
+
     gui.grabVkChicksBtn.onclick = () => GrabVkChicks(getMaxWorkers);
     vkChicks.then = vkChicks =>
         gui.grabPersonPagesBtn.onclick = () =>
-        grabPersonPages(vkChicks.s);
+        grabPersonPages(vkChicks.s.filter(after('/id138807328')));
 
     vkChicks.then = vkChicks =>
         gui.parsePersonPagesBtn.onclick = () =>
