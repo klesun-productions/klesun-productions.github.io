@@ -1,5 +1,4 @@
 <table><tr>
-	<td><img src="https://user-images.githubusercontent.com/5202330/38005603-08518c7c-324a-11e8-9531-fb23edb76b3a.jpg" align="right"/></td>
 	<td><table>
 		<tr><td> Name          </td><td> Artur Klesun                                                                    </td></tr>
 		<tr><td> Profession    </td><td> Programmer                                                                      </td></tr>
@@ -7,6 +6,7 @@
 		<tr><td> github        </td><td> <a href="https://github.com/klesun">klesun</a>                                  </td></tr>
 		<tr><td> stackoverflow </td><td> <a href="https://stackoverflow.com/users/2750743/artur-klesun">artur-klesun</a> </td></tr>
 	</table></td>
+	<td><img src="https://user-images.githubusercontent.com/5202330/38005603-08518c7c-324a-11e8-9531-fb23edb76b3a.jpg" align="right"/></td>
 </tr></table>
 
  Work XP-rience
