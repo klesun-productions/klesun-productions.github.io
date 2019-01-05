@@ -50,7 +50,7 @@ export var SafeAccess = function<Tout>(subj: valid_json_t, rule: (acc: ISafeAcce
 
     const isNullString = function(): string | null
     {
-        if (subj === null) {
+        if (subj === null || subj === undefined) {
             return null;
         } else if (typeof subj !== 'string') {
             throw new Error('Must be a string or null, but got: ' + (typeof subj) + " " + JSON.stringify(subj).slice(0, 100));
@@ -71,8 +71,6 @@ export var SafeAccess = function<Tout>(subj: valid_json_t, rule: (acc: ISafeAcce
     {
         if (typeof subj !== 'object' || subj === null) {
             throw new Error('Must be a non-null dict, but got: ' + (typeof subj));
-        } else if (!(key in subj)) {
-            throw new Error('Must contain mandatory key [' + key + ']');
         } else {
             let typed = <dict_t>subj;
             var [valid, error] = SafeAccess(typed[key], rule);

@@ -81,7 +81,7 @@ export let GrabVkChicks = function(getMaxWorkers: () => number) {
         .forEach = url => processUrl(url);
 
     traffic.onIdle = (peoplePacks) => {
-        console.log('Done grabbing chicks', peoplePacks);
+        console.log('Done greabbing chicks', peoplePacks);
     };
 };
 
@@ -91,7 +91,7 @@ export class searched_chick_t {
     imgUrl: string;
     dob?: string;
     miscFacts: string[];
-    searchDob: string;
+    searchDob?: string;
 
     static cast = function(raw: valid_json_t): searched_chick_t {
         // TODO: this likely can be automated using reflection since we no more work with an interface
@@ -102,7 +102,7 @@ export class searched_chick_t {
             imgUrl: a.sub('imgUrl', a => a.isString()),
             dob: a.sub('dob', a => a.isNullString()),
             miscFacts: a.sub('miscFacts', a => a.isList(a => a.isString())),
-            searchDob: a.sub('searchDob', a => a.isString()),
+            searchDob: a.sub('searchDob', a => a.isNullString()),
         });
         if (!error) {
             return typed;
