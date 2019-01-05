@@ -47,8 +47,7 @@ export let DrawChickGrid = (
             className: 'chick-cell' + (status ? ' single' : ''),
             children: [
                 Dom.mk.a({
-                    href: 'out/person_pages/' + chick.login + '.html',
-                    // href: 'http://vk.com/' + chick.login,
+                    href: 'https://vk.com' + chick.login,
                     children: [
                         Dom.mk.img({src: chick.imgUrl, title: chick.fullName}),
                     ],
@@ -73,6 +72,11 @@ export let DrawChickGrid = (
                             innerHTML: (profile.modules || [])
                                 .filter(m => m.type === 'profile_friends')
                                 .map(m => m.count + ' friends')[0],
+                        }),
+                        Dom.mk.div({
+                            innerHTML: S.opt(profile.counters)
+                                .map(c => c['подписчиков'])
+                                .map(n => n + ' subs').def(''),
                         }),
                         Dom.mk.div({
                             innerHTML: chick.searchDob,

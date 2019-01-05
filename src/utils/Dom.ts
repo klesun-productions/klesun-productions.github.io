@@ -72,6 +72,7 @@ export let Dom = (function()
         S.opt(params.className).get = v => dom.className = v;
         S.opt(params.innerHTML).get = v => dom.innerHTML = v;
         S.opt(params.onclick).get = v => dom.onclick = v;
+        S.opt(params.title).get = v => dom.setAttribute('title', v);
         S.opt(params.style).get = v => S.list(Object.keys(v)).forEach = k => dom.style[k] = v[k];
 
         S.list(params.children || []).forEach = c => dom.appendChild(c.s);

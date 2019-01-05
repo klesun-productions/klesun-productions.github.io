@@ -11,7 +11,7 @@
 |<b>Birth date:</b>         | 1995-01-22 11:10:00 EET 
 |<b>Address:</b>            | Rīga, Rīgas rajons, Latvia
 |<b>Experience:</b>         | 2.5 years
-|<b>Min. monthly salary:</b>| 1200.00 €
+|<b>Min. monthly salary:</b>| 2200.00 €
 
 <b>tl;dr:</b> Take me - I'm worth this money
 

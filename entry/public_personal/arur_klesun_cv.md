@@ -1,13 +1,13 @@
-
-![cv_photo](https://user-images.githubusercontent.com/5202330/38005603-08518c7c-324a-11e8-9531-fb23edb76b3a.jpg)
-
-Name       | Artur Klesun
- ---       |  ---
-Profession | Programmer
-Location   | Riga, Center
-Phone      | +371 24839510
-E-mail     | a.klesuns@itncorp.com
-github     | https://github.com/klesun
+<table><tr>
+	<td><img src="https://user-images.githubusercontent.com/5202330/38005603-08518c7c-324a-11e8-9531-fb23edb76b3a.jpg" align="right"/></td>
+	<td><table>
+		<tr><td> Name          </td><td> Artur Klesun                                                                    </td></tr>
+		<tr><td> Profession    </td><td> Programmer                                                                      </td></tr>
+		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
+		<tr><td> github        </td><td> <a href="https://github.com/klesun">klesun</a>                                  </td></tr>
+		<tr><td> stackoverflow </td><td> <a href="https://stackoverflow.com/users/2750743/artur-klesun">artur-klesun</a> </td></tr>
+	</table></td>
+</tr></table>
 
  Work XP-rience
 ----------------
@@ -15,7 +15,7 @@ github     | https://github.com/klesun
 - 2014-06-01 - present time (4 years)<br/><br/>
 Backend Developer at "Internation Travel Network" travel agency.<br/>
 Website: https://itncorp.com<br/>
-General Distribution System (GDS) integration department.<br/><br/>
+[GDS](https://en.wikipedia.org/wiki/Global_distribution_system) integration department.<br/><br/>
  We write PHP code to connect to different distribution systems, like Galileo, 
 Sabre, Amadeus, Hertz, Delpaso, usually via SOAP XML protocol and do stuff there. 
 A major part of our work is to make life of travel agents easier.
@@ -37,7 +37,7 @@ Languages:
 
 Programming:
 - Actively worked (at least 10k lines of code each) with: C#, Java, Javascript, Python, PHP, Scala
-(see "Personal Projects" below)
+(see "[Personal Projects](#user-content-personal-projects)" below)
 - Had a lot of experience with SQL at my present work, tried hundreds things with alive DB in search 
 of optimization tricks: choosing right indexes, splitting tables, thinking thorough queries...
 - Capable of maintaining a Unix sever. And in general am pretty comfortable in Linux environment.

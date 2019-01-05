@@ -2,17 +2,19 @@
 <head>
     <script src="https://cdn.rawgit.com/showdownjs/showdown/1.7.2/dist/showdown.min.js"></script>
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css">
-    <title>deep-js-completion</title>
+    <title>deep-assoc-completion</title>
     <link rel="shortcut icon" type="image/png" href="../../imgs/deep_16_ruby2.png"/>
 </head>
 <body>
     <main>
         <div class="header-holder">
-            <h2><img class="logo-icon" src="../../imgs/deep_16_ruby2.png"/>deep-js-completion</h2>
-            <h6>a webstorm plugin for property auto-completion inferred from other functions</h6>
-            <a href="https://github.com/klesun/deep-js-completion">sources</a>
+            <h2><img class="logo-icon" src="../../imgs/deep_16_ruby2.png"/>deep-assoc-completion</h2>
+            <h6>a phpstorm plugin for associative array auto-completion inferred from other functions</h6>
+            <a href="https://github.com/klesun/deep-assoc-completion">sources</a>
             |
-            <a href="https://plugins.jetbrains.com/plugin/11478-deep-js-completion">jetbrains repository</a>
+            <a href="https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion">repository page</a>
+            |
+            <a href="/out/deep-assoc-completion.jar" title="for latest release see jetbrains repo">download (old)</a>
             |
             <a href="/">site home</a>
         </div>
@@ -31,7 +33,7 @@
     };
     let $$ = s => [...document.querySelectorAll(s)];
     
-    let url = 'https://raw.githubusercontent.com/klesun/deep-js-completion/master/README.md';
+    let url = 'https://raw.githubusercontent.com/klesun/deep-assoc-completion/master/README.md';
     http(url, (resp) => {
         let html = new showdown.Converter().makeHtml(resp);
         $$('.docs-markdown-holder')[0].innerHTML = html;
@@ -52,6 +54,12 @@ main {
     margin: 32px;
     padding: 32px;
     border: solid grey 2px;
+}
+.logo-icon {
+    height: 48px;
+    margin-right: 24px;
+    image-rendering: optimizeSpeed; /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: pixelated; /* Chrome */
 }
 .logo-icon {
     height: 48px;
