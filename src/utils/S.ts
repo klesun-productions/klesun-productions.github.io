@@ -1,6 +1,8 @@
 
 /// <reference path="../references.ts" />
 
+import {ParseProfile} from "../../entry/vk_chicks/utils/ParseProfile";
+
 /** S stands for "Shortcuts" */
 export let S = (function()
 {
@@ -21,6 +23,14 @@ export let S = (function()
             flt: (f: (v: Tel, i: number) => boolean) =>
                 list(elmts.filter(f)),
 
+            // run action on each element, return same list
+            btw: (action: (el: Tel) => void) => {
+                for (let el of elmts) {
+                    action(el);
+                }
+                return list(elmts);
+            },
+
             // map and filter. handy since there is helluva functions i return opt from
             fop: <Tel2>(f: (v: Tel, i: number) => IOpts<Tel2>) => {
                 return list(elmts.map(f).filter(m => m.has()).map(m => m.unw()));
@@ -39,6 +49,7 @@ export let S = (function()
                         weights[a] < weights[b] ? -1 : 0)
                     .map(idx => elmts[idx]));
             },
+            rvr: () => list(elmts.reverse()),
 
             // unlike map(), it not only transforms elements,
             // but also changes the amount of elements
@@ -133,6 +144,8 @@ export let S = (function()
             fap: <T2>(f: (arg: T) => IOpts<T2>): IOpts<T2> => has()
                 ? f(value)
                 : opt(null),
+
+            arr: () => has() ? [value] : [],
 
             // "filter"
             flt: (f: (arg: T) => boolean): IOpts<T> => has() && f(value)
@@ -294,11 +307,15 @@ export let S = (function()
     };
 })();
 
+let listSample = 1?null: S.list(null);
+export type list_t = typeof listSample;
+
 export interface IOpts<T> {
     // transform value if present
     map: <T2>(f: (arg: T) => T2) => IOpts<T2>,
     // Flat Map - transforms to anther optional if present
     fap: <T2>(f: (arg: T) => IOpts<T2>) => IOpts<T2>,
+    arr: () => T[],
     // filter by predicate
     flt: (f: (arg: T) => boolean) => IOpts<T>,
     /** same as map, by catches exception */

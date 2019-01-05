@@ -146,10 +146,16 @@ export let ParseProfile = function(dom: HTMLElement)
     };
 
     return {
+        login: <string>null,
+        fetchedDt: <string>null,
+        dob: <string>null,
+        lastOnlineDt: <string>null,
+
         fullName: S.opt(Dom.get(dom).any('.page_name')[0])
             .map(h => h.textContent.trim()).def(null),
-        lastOnline: S.opt(Dom.get(dom).any('.profile_online > :not([style="display: none;"])')[0])
-            .map(h => h.textContent.trim()).def(null),
+        lastOnline: Dom.get(dom).any('.profile_online > *')
+            .map(h => h.textContent.trim()).slice(-1)[0],
+        fromPhone: Dom.get(dom).any('.profile_mob_onl:not(.unshown)').length > 0,
         imgUrl: S.opt(Dom.get(dom).img('.page_avatar_img')[0])
             .map(h => h.src).def(null),
         moodText: S.opt(Dom.get(dom).any('.page_current_info .current_text')[0])

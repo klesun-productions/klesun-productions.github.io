@@ -189,13 +189,12 @@ export let Tls =
         }),
 
     http: (url: string, restMethod: 'GET' | 'POST' = 'GET', params: valid_json_t = {}) =>
-        <IPromise<string>>S.promise(delayedReturn => {
-            var http = new XMLHttpRequest();
-            http.open(restMethod, url, true);
-            http.setRequestHeader('Content-Type', 'application/json;UTF-8');
-            http.onload = () => delayedReturn(http.responseText);
-            http.send(restMethod === 'POST' ? JSON.stringify(params) : null);
-        }),
+        S.promise<string>(resolve => fetch(url, {
+            method: restMethod,
+            headers: {'Content-Type': 'application/json;UTF-8'},
+            body: restMethod === 'POST' ? JSON.stringify(params) : null,
+        })  .then(respObj => respObj.text())
+            .then(respTxt => resolve(respTxt))),
 
     fetchJson: (url: string, whenLoaded: (parsedJson: {[k: string]: any}) => void) =>
         fetchFile(url, 'json', whenLoaded),

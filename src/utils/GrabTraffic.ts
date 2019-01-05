@@ -12,6 +12,10 @@ import {Tls} from "./Tls";
  * some limit like 10 or 20 alive http requests at a time
  *
  * this class does the job
+ *
+ * NOTE, this class stores _all_ results, if you process several thousands html files, it
+ * will take 3+ GiB of RAM. One solution would be to parse html in the lambda passed to
+ * constructor, not in the http(), this way only the parsed data will be kept in memory
  */
 export let GrabTraffic = function<T>(
     getMaxJobs: () => number,

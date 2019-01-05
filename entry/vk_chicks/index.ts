@@ -7,6 +7,8 @@ import {GrabTraffic} from "../../src/utils/GrabTraffic";
 import {GrabVkChicks, searched_chick_t} from "./utils/GrabVkChicks";
 import {ClientUtil} from "../../src/utils/ClientUtil";
 import {parsed_profile_t, ParseProfile} from "./utils/ParseProfile";
+import {ParseRelDt} from "./utils/ParseRelDt";
+import {DrawChickGrid} from "./utils/DrawChickGrid";
 
 export let main = function(mainCont: HTMLElement)
 {
@@ -17,57 +19,12 @@ export let main = function(mainCont: HTMLElement)
         maxWorkersInp: Dom.get(mainCont).input('.max-workers')[0],
         chickListHolder: Dom.get(mainCont).any('.chick-list-holder')[0],
         skipBeforeInput: Dom.get(mainCont).input('.skip-before')[0],
+        progressHolder: Dom.get(mainCont).any('.progress-holder')[0],
     };
 
-    let vkChicks = Tls.http('./out/vk_chicks_flat.json')
-        .map(jsonText => S.list(<valid_json_t[]>JSON.parse(jsonText)))
+    let whenSearchRows = Tls.http('./out/vk_chicks_flat.json')
+        .map(jsonText => <valid_json_t[]>JSON.parse(jsonText))
         .map(jsonData => jsonData.map(raw => searched_chick_t.cast(raw)));
- 
-    let loginToParsed = Tls.http('./out/parsed_profiles_filtered.json')
-        .map(jsonText => <{[k:string]: parsed_profile_t}>JSON.parse(jsonText));
-
-    // draw grid with some of their photos
-    vkChicks.then
-    = (vkChicks) => loginToParsed.then
-    = (loginToParsed) => vkChicks
-        .flt(c => {
-            let parsed = S.opt(loginToParsed[c.login]);
-            let married = parsed
-                .map(c => c.profileInfoShort['Семейное положение:'])
-                // 'в активном поиске', "не замужем"
-                .flt(fam => !!fam.match(/^(есть друг|замужем|помолвлена|влюблена|в гражданском браке)/i))
-                .has();
-            return parsed.has() && !married;
-        })
-        // .srt((c) => Math.random())
-        .slice(0, 4000)
-        .chunk(20)
-        .sequence = (chunk, i) =>
-            S.promise(delayedReturn => {
-                S.list(chunk).forEach = chick =>
-                    gui.chickListHolder.appendChild(Dom.mk.span({
-                        style: {display: 'inline-block'},
-                        children: [
-                            Dom.mk.a({
-                                href: 'out/person_pages/' + chick.login + '.html',
-                                // href: 'http://vk.com/' + chick.login,
-                                children: [
-                                    Dom.mk.img({src: chick.imgUrl, title: chick.fullName}),
-                                ],
-                            }),
-                            Dom.mk.button({
-                                innerHTML: 'PRS',
-                                onclick: () => Tls.http('out/person_pages/' + chick.login + '.html').then = (html) => {
-                                    let page = new DOMParser().parseFromString(html, 'text/html').documentElement;
-                                    let parsed = ParseProfile(page);
-                                    /** @debug */
-                                    console.log('Parsed profile page', parsed);
-                                },
-                            }),
-                        ],
-                    }).s);
-                Tls.timeout(0.5).then = () => delayedReturn(null);
-            });
 
     let getMaxWorkers = () => +gui.maxWorkersInp.value;
 
@@ -101,15 +58,41 @@ export let main = function(mainCont: HTMLElement)
         };
     };
 
-    let parsePersonPages = function(vkChicks: searched_chick_t[]) {
-        let traffic = GrabTraffic(getMaxWorkers, Tls.http);
+    // parse Apache directory listing
+    let getPersonFiles = () => Tls.http('./out/person_pages')
+        .map(html => new DOMParser().parseFromString(html, 'text/html').documentElement)
+        .map(doc => Dom.get(doc).any('tbody tr').flatMap(tr => {
+            let tds = Dom.get(tr).any('td');
+            if (tds.length >= 4) {
+                let [iconTd, fileLinkTd, dtTd, sizeTd] = tds;
+                return [{
+                    fileName: fileLinkTd.textContent.trim(),
+                    dt: dtTd.textContent.trim() + ':00',
+                    size: sizeTd.textContent.trim(),
+                }];
+            } else {
+                return [];
+            }
+        }))
+        .map(files => new Map(files.map(f => S.T2(f.fileName, f))));
+
+    let parsePersonPages = (vkChicks: searched_chick_t[]) => getPersonFiles().then = files => {
+        let traffic = GrabTraffic(getMaxWorkers, url => Tls.http(url)
+            .map(html => new DOMParser().parseFromString(html, 'text/html').documentElement)
+            .map(ParseProfile));
         S.list(vkChicks)
-            .slice(0, 1000)
             .forEach = (chick, i) => traffic.http('out/person_pages/' + chick.login + '.html')
-                .map(html => new DOMParser().parseFromString(html, 'text/html').documentElement)
-                .map(ParseProfile)
                 .then = page => {
-                    console.log('Parsed page ' + i + ' ' + page.fullName, page);
+                    let file = files.get(chick.login.slice(1) + '.html');
+                    page.fetchedDt = file ? file.dt : null;
+                    page.login = chick.login;
+                    page.dob = chick.searchDob;
+                    page.lastOnlineDt = ParseRelDt(file.dt, page.lastOnline);
+                    gui.progressHolder.innerHTML = i + '';
+
+                    if (i % 50 === 0) {
+                        console.log('Parsed page #' + i + ' ' + chick.login + ' ' + page.fullName, page);
+                    }
                 };
         traffic.onIdle = (peoplePacks) => {
             console.log('Done parsing profile pages', peoplePacks);
@@ -131,11 +114,13 @@ export let main = function(mainCont: HTMLElement)
     };
 
     gui.grabVkChicksBtn.onclick = () => GrabVkChicks(getMaxWorkers);
-    vkChicks.then = vkChicks =>
+    whenSearchRows.then = vkChicks =>
         gui.grabPersonPagesBtn.onclick = () =>
-        grabPersonPages(vkChicks.s.filter(after(gui.skipBeforeInput.value)));
+        grabPersonPages(vkChicks.filter(after(gui.skipBeforeInput.value)));
 
-    vkChicks.then = vkChicks =>
+    whenSearchRows.then = vkChicks =>
         gui.parsePersonPagesBtn.onclick = () =>
-        parsePersonPages(vkChicks.s);
+        parsePersonPages(vkChicks);
+
+    DrawChickGrid(gui.chickListHolder, whenSearchRows);
 };

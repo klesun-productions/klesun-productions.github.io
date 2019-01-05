@@ -16,6 +16,9 @@
     <button class="parse-person-pages" onclick="alert('Wait for JS to load!');">Parse Person Pages!</button>
     <label>Max workers: <input type="number" value="1" class="max-workers"/></label>
     <label>Skip before: <input type="text" class="skip-before" placeholder="/tengusja"/></label>
+    <label>Progress: <span class="progress-holder">0</span></label>
+    <br/>
+    <br/>
     <div class="chick-list-holder"></div>
 </main>
 
@@ -34,6 +37,14 @@
     require(['./index'], (index) => index.main($$('main')[0]));
 
 </script>
+
+<style>
+    .chick-cell {
+        border: 2px solid #d2fffd;
+        display: inline-block;
+        text-align: center;
+    }
+</style>
 
 </body>
 </html>
