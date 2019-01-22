@@ -4,12 +4,22 @@
 <table><tr>
 	<td><table>
 		<tr><td> Artur Klesun  </td><td> Backend Developer                                                               </td></tr>
-		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
-		<tr><td> github        </td><td> <a href="https://github.com/klesun">klesun</a>                                  </td></tr>
+		<tr><td colspan="2">
+			<a href="https://github.com/klesun/riddle-needle">C#</a> |
+			<a href="https://github.com/klesun/deep-assoc-completion">Java</a> |
+			<a href="https://github.com/klesun/midiana.lv">js/node.js</a> |
+			<a href="https://github.com/klesun/deep-js-completion">Scala</a> |
+			<a href="https://github.com/klesun/midiana.lv/tree/master/htbin">Python</a> |
+			<a href="https://github.com/klesun/green-envy-xmas-defense">Lua</a> |
+			<a href="https://www.asaptickets.com/">PHP</a>
+		</td></tr>
+		<tr><td> github        </td><td> <a href="https://github.com/klesun?tab=repositories">klesun</a>                 </td></tr>
 		<tr><td> stackoverflow </td><td> <a href="https://stackoverflow.com/users/2750743/artur-klesun">artur-klesun</a> </td></tr>
 		<tr><td> Web-Site      </td><td> <a href="https://midiana.lv">midiana.lv</a>                                     </td></tr>
+		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
+		<tr><td> Location      </td><td>Riga, Latvia, Center                                                             </td></tr>
 	</table></td>
-	<td><img src="https://user-images.githubusercontent.com/5202330/38005603-08518c7c-324a-11e8-9531-fb23edb76b3a.jpg" align="right"/></td>
+	<td><img src="https://user-images.githubusercontent.com/5202330/51569692-07b87400-1e95-11e9-96da-82ab7c7da184.png" align="right"/></td>
 </tr></table>
 
  Work Experience
