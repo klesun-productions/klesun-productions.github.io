@@ -72,9 +72,9 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
 -------------------
 
 - ### [deep-assoc-completion](https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion)
-    Intellij IDEA plugin that adds type inference based completion in PHP code. 
+    [Intellij IDEA](https://www.jetbrains.com/idea/) plugin that adds type inference based completion in PHP code. 
     Written in Java.
-    Sources: https://github.com/klesun/deep-assoc-completion
+    [Sources Code](https://github.com/klesun/deep-assoc-completion)
     ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
 
 - ### [deep-js-completion](https://plugins.jetbrains.com/plugin/11478-deep-js-completion)
@@ -84,19 +84,19 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
     ![alt tag](https://user-images.githubusercontent.com/5202330/50492169-c01e0400-0a1e-11e9-9eff-44d2cfebe09b.png)
 
 - ### [midiana](http://midiana.lv/entry/compose/)
-    browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
+    Browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
     [Sources Code](https://github.com/klesun/midiana.lv)
     ![alt tag](https://github.com/klesun/midiana.lv/raw/master/screenshot_compose.png)
 
 - ### [starve_game](http://midiana.lv/entry/starve_game/)
-    a word game where you have to come up with a word meaning a food starting with a specific letter. 
+    A word game where you have to come up with a word meaning a food starting with a specific letter. 
     To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 
     The data processing part was written in python.
-    Sources: https://github.com/klesun/midiana.lv/blob/master/htbin/scr/wiki_dump/hell_wrapper.py
+    [Sources Code](https://github.com/klesun/midiana.lv/blob/master/htbin/scr/wiki_dump/hell_wrapper.py)
 ![alt tag](https://cloud.githubusercontent.com/assets/5202330/26429290/babeb7f2-40ee-11e7-98e0-ab4b04306c41.png)
 
 - ### [green-envy-xmas-defense](https://steamcommunity.com/sharedfiles/filedetails/?id=1170060197)
-    a mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
+    A mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
     [Sources Code](https://github.com/klesun/green-envy-xmas-defense)
     ![alt tag](https://steamuserimages-a.akamaihd.net/ugc/867368888873667911/D53C89CC75A47AC50C09409D0BFBA4CF97242F80/)
 
