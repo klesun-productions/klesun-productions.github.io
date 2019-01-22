@@ -44,7 +44,7 @@
     If you track history of ITN, you could tell that the 2014 was the start a golden age for 
     this company. Before I started developing it, it was just a relatively small travel agency. 
     Now it shows on the first pages in google and have mostly very positive ratings by customers 
-    (except for reviews related to Ticket Protection, whcih is one of the few things there that weren't written by me).
+    (except for reviews related to Ticket Protection, which is one of the few things there that weren't written by me).
 
  Skills
 --------
