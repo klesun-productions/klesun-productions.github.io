@@ -26,24 +26,34 @@
 ----------------
 
 - 2014 - present time (5 years)<br/><br/>
-    Backend Developer at "Internation Travel Network" travel agency.<br/>
-    Website: https://itncorp.com<br/>
-    [GDS](https://en.wikipedia.org/wiki/Global_distribution_system) integration department.<br/><br/>
-     We write PHP code to connect to different distribution systems, like Galileo, 
-    Sabre, Amadeus, Hertz, Delpaso, usually via SOAP XML protocol and do stuff there. 
+    Backend Developer at "[Internation Travel Network](https://itncorp.com)" agency.<br/>
+    [GDS](https://en.wikipedia.org/wiki/Global_distribution_system) integration department.
+    
+    We write PHP code to connect to different distribution systems, like
+    [Galileo (United Airlines)](https://en.wikipedia.org/wiki/Galileo_GDS), 
+    [Sabre (American Airlines)](https://www.sabre.com/about/), 
+    [Amadeus](http://www.amadeus.com/web/amadeus/ru_1A-corporate/Hotels/Our-portfolio/Connect/Distribute-&-sell-through-more-channels/Hotels_Product_AmadeusGDS/1319572127006-Solution_C-AMAD_ProductDetailPpal-1319578304458?industrySegment=1259068355773&level2=1319608960115&level3=1319610649867), 
+    [Hertz](https://www.hertz.com/rentacar/reservation/), 
+    [Delpaso](https://www.delpasocarhire.com/), 
+    etc... usually via [SOAP XML](https://en.wikipedia.org/wiki/SOAP) protocol and do stuff there. 
+
     A major part of our work is to make life of travel agents easier.
-    We give them a single terminal GUI that gives them access to all systems we support 
-    at once. That involves a lot of  airline terminal text parsing; a ot of work with 
-    MySQL databases and Redis; implementing various interesting ideas our travel business guys 
-    request... Most of that we always cover with PHPUnit tests. My job also involves 
-    developing frontend stuff sometimes.<br/><br/>
-     For version control we use git. In years of co-operation we learned the good 
-    practices like keeping files small, commiting by little, but frequently, deliver 
-    basic functionality soon and then extending it according to client wishes...<br/>
+    We give them a single terminal GUI that gives access to all systems we support 
+    at once. That involves a lot of  airline terminal text parsing; a lot of work with 
+    [MySQL](https://www.mysql.com/) databases and [Redis](https://redis.io/); arranging 
+    hundreds cron jobs for parallel data processing with [memcached](https://memcached.org/)
+    for locks; implementing various interesting ideas our travel business guys 
+    request... Most of that we always cover with [PHPUnit](https://github.com/sebastianbergmann/phpunit) tests.
+    My job also involves 
+    developing frontend stuff rarely.
+
+    For version control we use git. In years of co-operation we learned the good 
+    practices like keeping files small, yet not too numerous, commiting by little, but frequently, 
+    delivering basic functionality quickly and extending it according to client wishes little by little...<br/>
     <br/>
     If you track history of ITN, you could tell that the 2014 was the start a golden age for 
     this company. Before I started developing it, it was just a relatively small travel agency. 
-    Now it shows on the first pages in google and have mostly very positive ratings by customers 
+    Now it shows on the first pages in google and have [mostly very positive ratings by customers](https://www.trustpilot.com/review/www.asaptickets.com) 
     (except for reviews related to Ticket Protection, which is one of the few things there that weren't written by me).
 
  Skills
@@ -58,7 +68,7 @@ Programming:
 (see "[Personal Projects](#user-content-personal-projects)" below)
 - Had a lot of experience with SQL at my present work, tried hundreds things with alive DB with billions of
 records in search of optimization tricks, choosing right indexes and stuff. Later started working with Redis.
-- Capable of maintaining a [Unix sever](https://midiana.lv/entry/denisbook/views/) on either node or Apache. And in general am pretty comfortable in Linux environment and admin work.
+- Capable of maintaining a [Unix sever](https://midiana.lv/entry/denisbook/views/) on either node or Apache. And in general am pretty comfortable in Linux environment and good at serious admin stuff like managing certificates and permissions.
 - Academically familliar with: C, C++, Pascal
 
  Education
@@ -74,30 +84,30 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
 - ### [deep-assoc-completion](https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion)
     [Intellij IDEA](https://www.jetbrains.com/idea/) plugin that adds type inference based completion in PHP code. 
     Written in Java.
-    [Sources Code](https://github.com/klesun/deep-assoc-completion)
+    [Source Code](https://github.com/klesun/deep-assoc-completion)
     ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
 
 - ### [deep-js-completion](https://plugins.jetbrains.com/plugin/11478-deep-js-completion)
     Another IDEA/Webstorm plugin that gives same deep type inference, but in JS code. 
     Written in Scala.
-    [Sources Code](https://github.com/klesun/deep-js-completion)
+    [Source Code](https://github.com/klesun/deep-js-completion)
     ![alt tag](https://user-images.githubusercontent.com/5202330/50492169-c01e0400-0a1e-11e9-9eff-44d2cfebe09b.png)
 
 - ### [midiana](http://midiana.lv/entry/compose/)
     Browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
-    [Sources Code](https://github.com/klesun/midiana.lv)
+    [Source Code](https://github.com/klesun/midiana.lv)
     ![alt tag](https://github.com/klesun/midiana.lv/raw/master/screenshot_compose.png)
 
 - ### [starve_game](http://midiana.lv/entry/starve_game/)
     A word game where you have to come up with a word meaning a food starting with a specific letter. 
     To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 
     The data processing part was written in python.
-    [Sources Code](https://github.com/klesun/midiana.lv/blob/master/htbin/scr/wiki_dump/hell_wrapper.py)
+    [Source Code](https://github.com/klesun/midiana.lv/blob/master/htbin/scr/wiki_dump/hell_wrapper.py)
 ![alt tag](https://cloud.githubusercontent.com/assets/5202330/26429290/babeb7f2-40ee-11e7-98e0-ab4b04306c41.png)
 
 - ### [green-envy-xmas-defense](https://steamcommunity.com/sharedfiles/filedetails/?id=1170060197)
     A mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
-    [Sources Code](https://github.com/klesun/green-envy-xmas-defense)
+    [Source Code](https://github.com/klesun/green-envy-xmas-defense)
     ![alt tag](https://steamuserimages-a.akamaihd.net/ugc/867368888873667911/D53C89CC75A47AC50C09409D0BFBA4CF97242F80/)
 
 - ### [riddle-needle](https://github.com/klesun/riddle-needle)
