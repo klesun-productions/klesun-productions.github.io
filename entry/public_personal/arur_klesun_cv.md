@@ -83,7 +83,7 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
 
 - ### [deep-assoc-completion](https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion)
     [Intellij IDEA](https://www.jetbrains.com/idea/) plugin that adds type inference based completion in PHP code. 
-    Written in Java.
+    500+ active users currently. Written in Java.
     [Source Code](https://github.com/klesun/deep-assoc-completion)
     ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
 
