@@ -3,7 +3,7 @@
 
 <table><tr>
 	<td><table>
-		<tr><td> Artur Klesun  </td><td> Backend Developer                                                               </td></tr>
+		<tr><td> Backend Developer  </td><td> Artur Klesun                                                               </td></tr>
 		<tr><td colspan="2">
 			<a href="https://github.com/klesun/riddle-needle">C#</a> |
 			<a href="https://github.com/klesun/deep-assoc-completion">Java</a> |
