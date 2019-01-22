@@ -1,8 +1,6 @@
 
 [//]: # (You can look at rendered version of this document at https://github.com/klesun/midiana.lv/blob/master/entry/public_personal/arur_klesun_cv.md)
 
-View raw: [link](https://raw.githubusercontent.com/klesun/midiana.lv/master/entry/public_personal/arur_klesun_cv.md)
-
 <table><tr>
 	<td><table>
 		<tr><td> Artur Klesun  </td><td> Backend Developer                                                               </td></tr>
