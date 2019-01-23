@@ -48,12 +48,12 @@
     developing frontend stuff rarely.
 
     For version control we use git. In years of co-operation we learned the good 
-    practices like keeping files small, yet not too numerous, commiting by little, but frequently, 
+    practices like keeping files small, yet not too numerous; commiting by little, but frequently; 
     delivering basic functionality quickly and extending it according to client wishes after they have something to click...<br/>
     <br/>
     If you track history of ITN, you could tell that the 2014 was the start a golden age for 
     this company. Before I started developing it, it was just a relatively small travel agency. 
-    Now it shows on the first pages in google and have [mostly very positive ratings by customers](https://www.trustpilot.com/review/www.asaptickets.com) 
+    Now it shows on the first pages in google and has [mostly very positive ratings by customers](https://www.trustpilot.com/review/www.asaptickets.com) 
     (except for reviews related to Ticket Protection, which is one of the few things there that weren't written by me).
 
  Skills
