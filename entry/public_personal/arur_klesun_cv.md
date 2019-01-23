@@ -74,7 +74,7 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
  Education
 -----------
 
-- "Progmeistars" courses: 5 main semesters, 3 spec-courses: OOP (Delphi), C (low-level programming), Java
+- "[Progmeistars](http://progmeistars.lv/index.php?lang=ru&act=aboutseniors)" courses: 5 main semesters, 3 spec-courses: OOP (Delphi), C (low-level programming), Java
 - A lot of programming related self-study.
 - Riga secondary school No. 65, 12 years.
 
