@@ -49,7 +49,7 @@
 
     For version control we use git. In years of co-operation we learned the good 
     practices like keeping files small, yet not too numerous, commiting by little, but frequently, 
-    delivering basic functionality quickly and extending it according to client wishes little by little...<br/>
+    delivering basic functionality quickly and extending it according to client wishes after they have something to click...<br/>
     <br/>
     If you track history of ITN, you could tell that the 2014 was the start a golden age for 
     this company. Before I started developing it, it was just a relatively small travel agency. 
