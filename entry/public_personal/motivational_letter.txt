@@ -1,3 +1,19 @@
+Hi, I'm Artur Klesun, an anything backend developer.
+You definitely would like to hire me, since I'm very skillful and experienced programmer.
+
+My main selling points are my big open source projects, some having 20000+ users. You can find them in my CV:
+https://github.com/klesun/midiana.lv/blob/master/entry/public_personal/artur_klesun_cv.md
+(some of them written in Java, btw)
+
+I'm more of a coding guy, but I can speak with the customers pretty well when needed too.
+
+I'm cool with the Java, C# and JS, wrote tens of thousands lines of code in each of them. 
+I'm actually language-agnostic, can write in any existing language, no matter, is it functional, statically-typed, with manual memory allocation, etc...
+I'm good at understanding complex systems and explaining how stuff works to others.
+Able to come up with smart recursive algorithms and implementing them (see my projects).
+5 years of coding experience.
+
+
 Greetings.
 I would like to apply to this job, I believe I meet most of the requirements: 
 https://www.ss.lv/msg/ru/work/are-required/programmer/meogx.html
@@ -9,3 +25,11 @@ If link is dead, you can use the attached file.
 If you are interested in hiring me for the monthly salary specified in the CV, please, let me know.
 
 I will require couple of week to quit my current job before I can start full-time work, hope that fits into "asap".
+
+
+
+
+Hi. I'm a full-stack developer (more towards backend, though).
+I'm talented and experienced. I'm also dependable and harworking -  you will quickly see that I'm worth my pay.
+
+I once was on a presentation led by your lead, he seemed like a cool dude, so I'm applying here. I also love javascript with all my soul, so I guess we'll be on the same wave.
