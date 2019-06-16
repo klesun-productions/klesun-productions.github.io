@@ -19,7 +19,7 @@
 		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
 		<tr><td> Location      </td><td>Riga, Latvia, Center                                                             </td></tr>
 	</table></td>
-	<td><img src="https://user-images.githubusercontent.com/5202330/59568034-bcca1380-9064-11e9-8e99-7fec3025c6d0.jpg" align="right"/></td>
+	<td><img src="https://user-images.githubusercontent.com/5202330/59568034-bcca1380-9064-11e9-8e99-7fec3025c6d0.jpg" align="right" width="65%"/></td>
 </tr></table>
 
  Work Experience
