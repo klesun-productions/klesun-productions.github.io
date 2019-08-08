@@ -1,6 +1,6 @@
 
 #### This is my professional recommendation for Denis Orlov, an IT bachelor, hardware geek, and just a good guy.
-#### You can find it [here](https://github.com/klesun/midiana.lv/blob/master/entry/public_personal/Denis_Orlov_recommentation.md)
+##### You can find it at https://github.com/klesun/midiana.lv/blob/master/entry/public_personal/Denis_Orlov_recommentation.md
 
 
 I know Denis for many years. He is a trustworthy dedicated person, fast to learn and easy to collaborate with. He is good at speaking in several languages, capable of quickly coming up with a solution in unexpected situations, responsible and effective at whatever he does, slightly impulsive, but resourceful and enthusiastic, that's the kind of person he is.
