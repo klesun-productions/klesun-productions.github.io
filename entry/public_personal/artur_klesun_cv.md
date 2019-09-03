@@ -68,7 +68,7 @@ Programming:
 records in search of optimization tricks, choosing right indexes and stuff. Later started working with Redis.
 - Capable of maintaining a [Unix sever](https://midiana.lv/entry/denisbook/views/) on either node or Apache. And in general am pretty comfortable in Linux environment.
 - Academically familliar with: C, C++, Pascal
-- My forte is recursive algorithms. Most people can't easily understand them, but I can. I wrote numerous cool things starting from [Hanoi Tower resolver](https://github.com/klesun/Progmeistars_tasks/tree/master/Sem5_PointersRecursions_Vlad/e11) in school and ending with my present [php semi-compiler](https://github.com/klesun/deep-assoc-completion/blob/master/src/org/klesun/deep_assoc_completion/resolvers/DirectTypeResolver.java) for [IDEA](https://github.com/JetBrains/intellij-community).
+- My forte is recursive algorithms. Most people can't easily understand them, but I can. I wrote numerous beautiful things starting from [Hanoi Tower resolver](https://github.com/klesun/Progmeistars_tasks/tree/master/Sem5_PointersRecursions_Vlad/e11) in school and ending with my present [php semi-compiler](https://github.com/klesun/deep-assoc-completion/blob/master/src/org/klesun/deep_assoc_completion/resolvers/DirectTypeResolver.java) for [IDEA](https://github.com/JetBrains/intellij-community).
 - Am a good and responsive team lead.
 
  Personal Projects
