@@ -26,7 +26,7 @@
 ----------------
 
 - 2014 - present time (5 years)<br/><br/>
-    Backend Developer at "[Internation Travel Network](https://itncorp.com)" agency.<br/>
+    Backend Developer at "[ASAP Tickets](https://www.asaptickets.com/)" travel agency.<br/>
     [GDS](https://en.wikipedia.org/wiki/Global_distribution_system) integration department.
     
     I maintain a node.js project that connects to different distribution systems, like
