@@ -57,9 +57,10 @@
  Skills
 --------
 Languages:
-- Russian: native
-- English: very good
-- Latvian: poor
+- Russian: fluent
+- English: technical fluent
+- Javascript: native
+- Latvian: average
 
 Programming:
 - Actively worked (at least 10k lines of code each) with: C#, Java, node/Javascript, Scala, Python, Lua, PHP
