@@ -19,77 +19,71 @@
 		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
 		<tr><td> Location      </td><td>Riga, Latvia, Center                                                             </td></tr>
 	</table></td>
-	<td><img src="https://user-images.githubusercontent.com/5202330/51569692-07b87400-1e95-11e9-96da-82ab7c7da184.png" align="right"/></td>
+	<td><img src="https://user-images.githubusercontent.com/5202330/59568034-bcca1380-9064-11e9-8e99-7fec3025c6d0.jpg" align="right" width="65%"/></td>
 </tr></table>
 
  Work Experience
 ----------------
 
 - 2014 - present time (5 years)<br/><br/>
-    Backend Developer at "[Internation Travel Network](https://itncorp.com)" agency.<br/>
+    Backend Developer at "[ASAP Tickets](https://www.asaptickets.com/)" travel agency.<br/>
     [GDS](https://en.wikipedia.org/wiki/Global_distribution_system) integration department.
     
-    We write PHP code to connect to different distribution systems, like
+    I maintain a node.js project that connects to different distribution systems, like
     [Galileo (United Airlines)](https://en.wikipedia.org/wiki/Galileo_GDS), 
     [Sabre (American Airlines)](https://www.sabre.com/about/), 
     [Amadeus](http://www.amadeus.com/web/amadeus/ru_1A-corporate/Hotels/Our-portfolio/Connect/Distribute-&-sell-through-more-channels/Hotels_Product_AmadeusGDS/1319572127006-Solution_C-AMAD_ProductDetailPpal-1319578304458?industrySegment=1259068355773&level2=1319608960115&level3=1319610649867), 
     [Hertz](https://www.hertz.com/rentacar/reservation/), 
     [Delpaso](https://www.delpasocarhire.com/), 
-    etc... usually via [SOAP XML](https://en.wikipedia.org/wiki/SOAP) protocol and do stuff there. 
+    etc... usually via [SOAP XML](https://en.wikipedia.org/wiki/SOAP) protocol and does stuff there. 
 
-    A major part of our work is to make life of travel agents easier.
-    We give them a single terminal GUI that gives access to all systems we support 
+    A major part of my work is to make life of travel agents easier.
+    I give them a single terminal GUI that provides access to all systems we support 
     at once. That involves a lot of  airline terminal text parsing; a lot of work with 
-    [MySQL](https://www.mysql.com/) databases and [Redis](https://redis.io/); arranging 
-    hundreds cron jobs for parallel data processing with [memcached](https://memcached.org/)
-    for locks; implementing various interesting ideas our travel business guys 
-    request... Most of that we always cover with [PHPUnit](https://github.com/sebastianbergmann/phpunit) tests.
+    [MySQL](https://www.mysql.com/) databases; arranging 
+    hundreds cron jobs for parallel data processing with [Redis](https://redis.io/); implementing various interesting ideas our travel business guys 
+    request... Most of the code is always covered with [mocha](https://github.com/mochajs/mocha) tests.
     My job also involves 
-    developing frontend stuff rarely.
+    developing frontend stuff occasionally.
 
-    For version control we use git. In years of co-operation we learned the good 
-    practices like keeping files small, yet not too numerous; commiting by little, but frequently; 
+    In years of co-operation with my colleagues I learned both good practices and how not to not repeat their mistakes.
+    I write clean code, keeping files small, yet not too numerous, making commits atomic,
     delivering basic functionality quickly and extending it according to client wishes after they have something to click...<br/>
     <br/>
     If you track history of ITN, you could tell that the 2014 was the start a golden age for 
     this company. Before I started developing it, it was just a relatively small travel agency. 
-    Now it shows on the first pages in google and has [mostly very positive ratings by customers](https://www.trustpilot.com/review/www.asaptickets.com) 
-    (except for reviews related to Ticket Protection, which is one of the few things there that weren't written by me).
+    Now it shows on the first pages in google and has [mostly very positive ratings by customers](https://www.trustpilot.com/review/www.asaptickets.com) .
 
  Skills
 --------
 Languages:
-- Russian: native
-- English: very good
-- Latvian: poor
+- Russian: fluent
+- English: technical fluent
+- Javascript: native
+- Latvian: average
 
 Programming:
 - Actively worked (at least 10k lines of code each) with: C#, Java, node/Javascript, Scala, Python, Lua, PHP
 (see "[Personal Projects](#user-content-personal-projects)" below)
 - Had a lot of experience with SQL at my present work, tried hundreds things with alive DB with billions of
 records in search of optimization tricks, choosing right indexes and stuff. Later started working with Redis.
-- Capable of maintaining a [Unix sever](https://midiana.lv/entry/denisbook/views/) on either node or Apache. And in general am pretty comfortable in Linux environment and good at serious admin stuff like managing certificates and permissions.
+- Capable of maintaining a [Unix sever](https://midiana.lv/entry/denisbook/views/) on either node or Apache. And in general am pretty comfortable in Linux environment.
 - Academically familliar with: C, C++, Pascal
-
- Education
------------
-
-- "[Progmeistars](http://progmeistars.lv/index.php?lang=ru&act=aboutseniors)" courses: 5 main semesters, 3 spec-courses: OOP (Delphi), C (low-level programming), Java
-- A lot of programming related self-study.
-- Riga secondary school No. 65, 12 years.
+- My forte is recursive algorithms. Most people can't easily understand them, but I can. I wrote numerous beautiful things starting from [Hanoi Tower resolver](https://github.com/klesun/Progmeistars_tasks/tree/master/Sem5_PointersRecursions_Vlad/e11) in school and ending with my present [php semi-compiler](https://github.com/klesun/deep-assoc-completion/blob/master/src/org/klesun/deep_assoc_completion/resolvers/DirectTypeResolver.java) for [IDEA](https://github.com/JetBrains/intellij-community).
+- Am a good and responsive team lead.
 
  Personal Projects
 -------------------
 
 - ### [deep-assoc-completion](https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion)
     [Intellij IDEA](https://www.jetbrains.com/idea/) plugin that adds type inference based completion in PHP code. 
-    500+ active users currently. Written in Java. [Source Code](https://github.com/klesun/deep-assoc-completion)
+    1834+ active users currently. Written in Java. [Source Code](https://github.com/klesun/deep-assoc-completion)
 
     ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
 
 - ### [deep-js-completion](https://plugins.jetbrains.com/plugin/11478-deep-js-completion)
     Another IDEA/Webstorm plugin that gives same deep type inference, but in JS code. 
-    Written in Scala.
+    424+ active users currenly. Written in Scala.
     [Source Code](https://github.com/klesun/deep-js-completion)
     ![alt tag](https://user-images.githubusercontent.com/5202330/50492169-c01e0400-0a1e-11e9-9eff-44d2cfebe09b.png)
 
@@ -113,6 +107,13 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
 - ### [riddle-needle](https://github.com/klesun/riddle-needle)
     A Unity game written in C#. Temporarily on hiatus, but great job was done nevertheless.
     ![alt tag](https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true)
+
+ Education
+-----------
+
+- "[Progmeistars](http://progmeistars.lv/index.php?lang=ru&act=aboutseniors)" courses: 5 main semesters, 3 spec-courses: OOP (Delphi), C (low-level programming), Java
+- A lot of programming related self-study.
+- Riga secondary school No. 65, 12 years.
 
  Misc
 ------
