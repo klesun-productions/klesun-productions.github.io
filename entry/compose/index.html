@@ -1,6 +1,6 @@
 <head>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" type="text/css" href="/entry/common.css">
+    <link rel="stylesheet" type="text/css" href="../common.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 </head>
 <body tabIndex="-1">
@@ -56,7 +56,7 @@ Treats you PC keyboard as piano keyboard according to keys placement
         </div>
         <div style="margin-left: 20px; margin-top: 10px; background-color: #f8f8f8;">
             <div style="text-align: center">
-                <img class="pseudoPianoImg" src="/imgs/pseudoPiano.png">
+                <img class="pseudoPianoImg" src="../../imgs/pseudoPiano.png">
             </div>
             <div class="manualCont">
                 <div style="width: 400px">
@@ -115,7 +115,11 @@ Treats you PC keyboard as piano keyboard according to keys placement
 
     require([
         'index.js',
-        '/libs/jquery.js', '/libs/FileSaver.js', '/libs/SMFreader.js', '/libs/jsmidgen.js'], function(Handler)
+        'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js',
+        'https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js',
+        'https://klesun-misc.github.io/SMFPlayer/js/SMFreaderModule.js',
+        'https://cdn.jsdelivr.net/npm/jsmidgen@0.1.5/lib/jsmidgen.js',
+    ], function(Handler)
     {
         Handler.Handler(document.getElementById('composeCont'));
     });

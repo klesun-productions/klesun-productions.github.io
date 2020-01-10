@@ -13,10 +13,6 @@ const handleRq = async (rq, rs) => {
 		rs.end();
 	};
 
-	path = {
-		'/favicon.ico': '/imgs/klesun-productions_32x32.ico',
-	}[path] || path;
-
 	if (path === '/') {
 		return redirect('/entry/main/');
 	} else if (path.startsWith('/entry/') 
@@ -24,6 +20,7 @@ const handleRq = async (rq, rs) => {
 			|| path.startsWith('/libs/')
 			|| path.startsWith('/out/')
 			|| path.startsWith('/imgs/')
+			|| path === '/favicon.ico'
 	) {
 		path = decodeURIComponent(path);
         let absPath = __dirname + path;
