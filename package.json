@@ -5,6 +5,7 @@
   "repository": "github.com/klesun/midiana.lv",
   "license": "MIT",
   "dependencies": {
+    "http-proxy": "^1.18.0",
     "soundfont-parser": "^0.1.1"
   },
   "scripts": {
