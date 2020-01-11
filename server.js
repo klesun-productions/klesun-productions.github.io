@@ -1,10 +1,12 @@
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const fs = require('fs').promises;
+const httpProxy = require('http-proxy');
 
 const handleRq = async (rq, rs) => {
     const parsedUrl = url.parse(rq.url);
-    let path = parsedUrl.path;
+    let pathname = parsedUrl.pathname;
 
 	const redirect = url => {
 		rs.writeHead(302, {
@@ -13,21 +15,22 @@ const handleRq = async (rq, rs) => {
 		rs.end();
 	};
 
-	if (path === '/') {
+	if (pathname === '/') {
 		return redirect('/entry/main/');
-	} else if (path.startsWith('/entry/') 
-			|| path.startsWith('/src/') 
-			|| path.startsWith('/libs/')
-			|| path.startsWith('/out/')
-			|| path.startsWith('/imgs/')
-			|| path === '/favicon.ico'
+	} else if (pathname.startsWith('/entry/')
+			|| pathname.startsWith('/src/')
+			|| pathname.startsWith('/libs/')
+			|| pathname.startsWith('/out/')
+			|| pathname.startsWith('/imgs/')
+			|| pathname.startsWith('/unv/hosted/')
+			|| pathname === '/favicon.ico'
 	) {
-		path = decodeURIComponent(path);
-        let absPath = __dirname + path;
+		pathname = decodeURIComponent(pathname);
+        let absPath = __dirname + pathname;
         if (absPath.endsWith('/')) {
             absPath += 'index.html';
         } else if ((await fs.lstat(absPath)).isDirectory()) {
-			return redirect(path + '/');
+			return redirect(pathname + '/');
 		}
         const bytes = await fs.readFile(absPath);
         if (absPath.endsWith('.html')) {
@@ -46,17 +49,27 @@ const handleRq = async (rq, rs) => {
 };
 
 const main = async () => {
-    const httpServer = http.createServer((rq, rs) => {
-        handleRq(rq, rs).catch(exc => {
-            rs.statusCode = exc.httpStatusCode || 500;
-            rs.end(JSON.stringify({error: exc + '', stack: exc.stack}));
-            console.error('HTTP request failed', exc);
-        });
-    });
-    const PORT = 80;
-    httpServer.listen(PORT, '0.0.0.0', () => {
-        console.log('listening on *:' + PORT + ' - for standard http request handling');
-   	});
+	const proxy = httpProxy.createProxy();
+	const handeRq = (rq, rs) => {
+		if (['travelaci.com', 'the-travel-hacks.com'].includes(rq.headers.host)) {
+			proxy.web(rq, rs, {target: 'http://localhost:30186'});
+		} else {
+			handleRq(rq, rs).catch(exc => {
+				rs.statusCode = exc.httpStatusCode || 500;
+				rs.end(JSON.stringify({error: exc + '', stack: exc.stack}));
+				console.error('HTTP request failed', exc);
+			});
+		}
+	};
+    http.createServer(handeRq).listen(80, '0.0.0.0', () => {
+		console.log('listening http://klesun-productions.com');
+	});
+    https.createServer({
+		key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey1.pem'),
+		cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert1.pem'),
+	}, handeRq).listen(443, '0.0.0.0', () => {
+		console.log('listening https://klesun-productions.com');
+	});
 };
 
 main().catch(exc => {
