@@ -16,7 +16,7 @@ const handleRq = async (rq, rs) => {
 	};
 
 	if (pathname === '/') {
-		return redirect('/entry/main/');
+		return redirect('/entry/');
 	} else if (pathname.startsWith('/entry/')
 			|| pathname.startsWith('/src/')
 			|| pathname.startsWith('/libs/')
