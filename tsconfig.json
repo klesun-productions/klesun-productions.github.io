@@ -11,11 +11,15 @@
         "noEmitOnError": true,
         "target": "ES6",
         "skipLibCheck": true,
-        "lib": ["ES6"]
+        "lib": ["es2017", "dom"]
     },
     "compileOnSave": true,
     "include": [
         "./entry/*/index.ts",
         "./entry/poverty-vs-you-2d/src/MokonaGame.ts"
+    ],
+    "exclude": [
+        "./tests",
+        "./src_ts_trans"
     ]
 }
