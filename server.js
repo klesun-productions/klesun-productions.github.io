@@ -3,7 +3,12 @@ const https = require('https');
 const url = require('url');
 const fs = require('fs').promises;
 const httpProxy = require('http-proxy');
+const {PythonShell} = require('python-shell');
 
+/**
+ * @param {http.IncomingMessage} rq
+ * @param {http.ServerResponse} rs
+ */
 const handleRq = async (rq, rs) => {
     const parsedUrl = url.parse(rq.url);
     let pathname = parsedUrl.pathname;
@@ -25,26 +30,51 @@ const handleRq = async (rq, rs) => {
 			|| pathname.startsWith('/unv/hosted/')
 			|| pathname.startsWith('/unv/imagesFromWeb/')
 			|| pathname.startsWith('/tests/grabs/')
+			|| pathname.startsWith('/Dropbox/web/')
 			|| pathname === '/favicon.ico'
 	) {
 		pathname = decodeURIComponent(pathname);
-        let absPath = __dirname + pathname;
-        if (absPath.endsWith('/')) {
-            absPath += 'index.html';
-        } else if ((await fs.lstat(absPath)).isDirectory()) {
+		let absPath = __dirname + pathname;
+		if (absPath.endsWith('/')) {
+			absPath += 'index.html';
+		} else if ((await fs.lstat(absPath)).isDirectory()) {
 			return redirect(pathname + '/');
 		}
-        const bytes = await fs.readFile(absPath);
-        if (absPath.endsWith('.html')) {
-            rs.setHeader('Content-Type', 'text/html');
-        } else if (absPath.endsWith('.css')) {
-            rs.setHeader('Content-Type', 'text/css');
-        } else if (absPath.endsWith('.js')) {
-            rs.setHeader('Content-Type', 'text/javascript');
-        } else if (absPath.endsWith('.svg')) {
-            rs.setHeader('Content-Type', 'image/svg+xml');
-        }
-        rs.end(bytes);
+		const bytes = await fs.readFile(absPath);
+		if (absPath.endsWith('.html')) {
+			rs.setHeader('Content-Type', 'text/html');
+		} else if (absPath.endsWith('.css')) {
+			rs.setHeader('Content-Type', 'text/css');
+		} else if (absPath.endsWith('.js')) {
+			rs.setHeader('Content-Type', 'text/javascript');
+		} else if (absPath.endsWith('.svg')) {
+			rs.setHeader('Content-Type', 'image/svg+xml');
+		}
+		rs.end(bytes);
+	} else if (pathname === '/htbin/json_service.py') {
+		return new Promise((resolve, reject) => {
+			PythonShell.run(__dirname + '/htbin/json_service.py', {
+				args: [JSON.stringify({
+					override_environ: {
+						CONTENT_LENGTH: rq.headers['content-length'],
+						QUERY_STRING: parsedUrl.query,
+					},
+				})],
+			}, (err, results) => {
+				if (err) {
+					reject(err);
+				} else {
+					const responseWithHeaders = (results || []).join('\n');
+					const [headersPart, bodyPart] = responseWithHeaders.split('\n\n');
+					for (const headerLine of !headersPart ? [] : headersPart.split('\n')) {
+						const [key, value] = headerLine.split(': ');
+						rs.setHeader(key, value);
+					}
+					rs.end(bodyPart);
+					resolve();
+				}
+			});
+		});
     } else {
         throw new Error('No API routes matched ' + parsedUrl.path);
     }
@@ -53,8 +83,11 @@ const handleRq = async (rq, rs) => {
 const main = async () => {
 	const proxy = httpProxy.createProxy();
 	const handeRq = (rq, rs) => {
+		const pathname = url.parse(rq.url).pathname;
 		if (['travelaci.com', 'the-travel-hacks.com'].includes(rq.headers.host)) {
 			proxy.web(rq, rs, {target: 'http://localhost:30186'});
+		// } else if (pathname === '/htbin/json_service.py') {
+		// 	proxy.web(rq, rs, {target: 'http://localhost:54749'});
 		} else {
 			handleRq(rq, rs).catch(exc => {
 				rs.statusCode = exc.httpStatusCode || 500;

@@ -4,17 +4,10 @@
 # this should be the only script i call from ajax
 # it will contain the actionName -> method mapping
 
-import cgitb
-cgitb.enable()
 import sys
-import select
-import io
-import shutil
 
 from classes.Contribution import Contribution
 
-
-import collections
 from collections import namedtuple
 
 import misc
@@ -24,12 +17,26 @@ import os
 import time
 
 from classes.MidiFileProvider import MidiFileProvider
-#from classes.TransLinker import TransLinker
 from oauth2client import client, crypt
+
+override_environ = None
+if len(sys.argv) > 1:
+    json_str = sys.argv[1]
+    try:
+        json_data = json.loads(json_str)
+        if 'override_environ' in json_data:
+            # when called via cgi, http request meta info is supplied via os
+            # environment variables, but when script is invoked directly from node,
+            # I pass it via command line argument, since I'm not sure using system-wide
+            # variable is a good idea considering there can be spawned multiple processes at once
+            override_environ = json_data['override_environ']
+    except ValueError as exc:
+        pass
+
+environ = override_environ or os.environ
 
 
 def print_response(response, headers: list):
-
     payload = json.dumps(response)
 
     print("Content-Type: text/json")
@@ -39,8 +46,10 @@ def print_response(response, headers: list):
     print('')
     print(payload)
 
+
 class TimeoutException(Exception):
     pass
+
 
 # @return dict|None
 def fetch_info_from_login_token(token):
@@ -52,16 +61,17 @@ def fetch_info_from_login_token(token):
         # log maybe?
         return None
 
+
 def read_post() -> dict:
     runs_through_cgi = True
     if runs_through_cgi:
-        if 'CONTENT_LENGTH' in os.environ:
+        if 'CONTENT_LENGTH' in environ:
             # http.server
-            if not os.environ['CONTENT_LENGTH']:
+            if not environ['CONTENT_LENGTH']:
                 post_string = ''
             else:
                 # hangs if you run script through http.server and don't check 'CONTENT_LENGTH'
-                post_length = int(os.environ['CONTENT_LENGTH'])
+                post_length = int(environ['CONTENT_LENGTH'])
                 # post_length stores byte count, but stdin.read, apparently, takes the character count
                 post_string = sys.stdin.buffer.read(post_length).decode('utf-8')
         else:
@@ -74,6 +84,7 @@ def read_post() -> dict:
 
     return json.loads(post_string) if post_string else {}
 
+
 def is_correct_password(entered_password: str) -> bool:
     local_config_path = 'unv/local.config.json'
     with open(os.path.dirname(__file__) + '/../' + local_config_path) as f:
@@ -81,9 +92,11 @@ def is_correct_password(entered_password: str) -> bool:
 
     return entered_password == config['verySecurePassword']
 
-def get_dull_heavy_data (params):
+
+def get_dull_heavy_data(params):
     time.sleep(5)
     return None
+
 
 Fun = namedtuple('Fun', ['closure', 'headers', 'is_secure'])
 method_dict = {
@@ -140,14 +153,14 @@ secure_method_dict = {
     'store_random_page_data': misc.store_random_page_data,
 }
 
-for name,function in secure_method_dict.items():
+for name, function in secure_method_dict.items():
     method_dict[name] = Fun(
         closure=function,
         headers=[],
         is_secure=True,
     )
 
-for name,function in insecure_method_dict.items():
+for name, function in insecure_method_dict.items():
     method_dict[name] = Fun(
         closure=function,
         headers=[],
@@ -156,7 +169,7 @@ for name,function in insecure_method_dict.items():
 
 
 def main():
-    get_params = {k: v for k, v in [pair.split('=') for pair in os.environ['QUERY_STRING'].split('&')]}
+    get_params = {k: v for k, v in [pair.split('=') for pair in environ['QUERY_STRING'].split('&')]}
     method = get_params.pop('f')
 
     if method in method_dict:
@@ -177,5 +190,6 @@ def main():
         print("Content-Type: text")
         print('')
         print('Bad Request - Undefined Function - GET["f"] = "' + method + '"')
+
 
 main()

@@ -6,13 +6,13 @@
   "license": "MIT",
   "dependencies": {
     "http-proxy": "^1.18.0",
+    "python-shell": "^1.0.8",
     "soundfont-parser": "^0.1.1"
   },
   "scripts": {
     "tsc": "tsc"
   },
   "devDependencies": {
-    "jsdom": "11.0.0",
     "requirejs": "2.3.3",
     "typescript": "2.4.2"
   }

@@ -2,6 +2,8 @@ sudo su
 
 apt-get install python3-pip
 
+apt-get install python3-setuptools
+
 # A lib to write sql queries with generators. I don't
 # use it much, but it is left in few old pieces of code
 pip3 install pony
