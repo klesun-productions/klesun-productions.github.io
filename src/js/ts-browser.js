@@ -96,12 +96,12 @@ const es6ToDestr = (tsCode, importClause) => {
 };
 
 const modulePromises = {};
-const dependencyGraph = {};
+const resolutionUrlToParents = {};
 
 const CACHE_LOADED = 'ts-browser-loaded-modules';
 
 /** @param {ts.SourceFile} sourceFile */
-const loadDependencies = ({baseUrl, tsCode, sourceFile}) => {
+const loadDependencies = ({baseUrl, tsCode, sourceFile, parents}) => {
     const importLinePromises = [];
     let tsCodeAfterImports = '';
     for (const statement of sourceFile.statements) {
@@ -109,15 +109,14 @@ const loadDependencies = ({baseUrl, tsCode, sourceFile}) => {
         if (kindName === 'ImportDeclaration') {
             const relPath = statement.moduleSpecifier.text;
             const newUrl = addPathToUrl(relPath, baseUrl);
-            dependencyGraph[baseUrl] = dependencyGraph[baseUrl] || new Set();
-            dependencyGraph[baseUrl].add(newUrl);
-
-            const isCircular = hasCirculation(newUrl);
+            const isCircular = parents.has(newUrl) ||
+                [...parents].some(p => (resolutionUrlToParents[newUrl] || new Set()).has(p));
             window[CACHE_LOADED] = window[CACHE_LOADED] || {};
 
             let whenModule;
             if (!modulePromises[newUrl]) {
-                whenModule = loadModulePlain(newUrl).then(module => {
+                resolutionUrlToParents[newUrl] = parents;
+                whenModule = loadModulePlain(newUrl, new Set([...parents, newUrl])).then(module => {
                     return window[CACHE_LOADED][newUrl] = module;
                 });
                 modulePromises[newUrl] = whenModule;
@@ -127,7 +126,6 @@ const loadDependencies = ({baseUrl, tsCode, sourceFile}) => {
                 let loadedModule = null;
                 modulePromises[newUrl]
                     .then(module => loadedModule = module);
-                const creationStack = new Error().stack;
                 const fakeModule = new Proxy({}, {
                     get: (target, name) => {
                         return new Proxy(() => {}, {
@@ -135,15 +133,14 @@ const loadDependencies = ({baseUrl, tsCode, sourceFile}) => {
                                 if (loadedModule) {
                                     return loadedModule[name].apply(thisArg, argumentsList);
                                 } else {
-                                    console.error('circ ref call', {target, callTarget, thisArg, creationStack});
-                                    throw new Error('Tried to call ' + name + '() on a circular reference ' + newUrl + ': ' + parents.join(', '));
+                                    throw new Error('Tried to call ' + name + '() on a circular reference ' + newUrl + ': ' + [...parents].join(', '));
                                 }
                             },
                             get: (target, subName) => {
                                 if (loadedModule) {
                                     return loadedModule[name][subName];
                                 } else {
-                                    throw new Error('Tried to get field ' + name + '.' + subName + ' on a circular reference ' + newUrl + ': ' + parents.join(', '));
+                                    throw new Error('Tried to get field ' + name + '.' + subName + ' on a circular reference ' + newUrl + ': ' + [...parents].join(', '));
                                 }
                             },
                         });
@@ -174,20 +171,20 @@ const loadDependencies = ({baseUrl, tsCode, sourceFile}) => {
     return Promise.all(importLinePromises).then(importLines => {
         const tsCodeResult = importLines.join('\n') + '\n' + tsCodeAfterImports;
         const jsCode = window.ts.transpile(tsCodeResult, {
-            module: 5 /* ES2015 */, target: 99,
+            module: 5, target: 5 /* ES2018 */,
         });
         return jsCode;
     });
 };
 
 /** @return {Promise<Module>} - just  */
-export const loadModulePlain = (absUrl) => {
+export const loadModulePlain = (absUrl, parents = new Set()) => {
     return fetch(absUrl)
         .then(rs => rs.text())
         .then(async tsCode => {
             const sourceFile = window.ts.createSourceFile('ololo.ts', tsCode);
             let jsCode = await loadDependencies({
-                baseUrl: absUrl, tsCode, sourceFile,
+                baseUrl: absUrl, tsCode, sourceFile, parents,
             });
             jsCode += '\n//# sourceURL=' + absUrl;
             const module = await import('data:text/javascript;base64,' + btoa(jsCode));

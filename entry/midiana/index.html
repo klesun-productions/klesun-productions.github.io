@@ -1,13 +1,6 @@
 <head>
     <meta charset="utf-8"/>
     <link rel="stylesheet" type="text/css" href="../common.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
-    <script src="https://klesun-misc.github.io/SMFPlayer/js/SMFreaderModule.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsmidgen@0.1.5/lib/jsmidgen.js"></script>
-<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>-->
-
-    <script src="https://klesun-misc.github.io/TypeScript/lib/typescriptServices.js"></script>
 </head>
 <body tabIndex="-1">
 
@@ -117,11 +110,14 @@ Treats you PC keyboard as piano keyboard according to keys placement
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
+<script src="https://klesun-misc.github.io/SMFPlayer/js/SMFreaderModule.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsmidgen@0.1.5/lib/jsmidgen.js"></script>
+<script src="https://klesun-misc.github.io/TypeScript/lib/typescriptServices.js"></script>
 <script type="module">
     import {loadModule} from './../../src/js/ts-browser.js';
-    console.log('Handler loading', loadModule);
     loadModule('./index.ts').then(Handler => {
-        console.log('Handler loaded', Handler);
         return Handler.Handler(document.getElementById('composeCont'));
     });
 </script>
