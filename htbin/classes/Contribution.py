@@ -80,7 +80,7 @@ class Contribution(object):
 
         classes.DbTables.commit()
 
-        return row.rowid
+        return {'status': 'written', 'rowid': row.rowid}
 
     @staticmethod
     @db_session

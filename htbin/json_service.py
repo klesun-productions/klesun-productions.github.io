@@ -19,7 +19,8 @@ import time
 from classes.MidiFileProvider import MidiFileProvider
 from oauth2client import client, crypt
 
-override_environ = None
+environ_from_arg = None
+post_string_from_arg = None
 if len(sys.argv) > 1:
     json_str = sys.argv[1]
     try:
@@ -29,11 +30,13 @@ if len(sys.argv) > 1:
             # environment variables, but when script is invoked directly from node,
             # I pass it via command line argument, since I'm not sure using system-wide
             # variable is a good idea considering there can be spawned multiple processes at once
-            override_environ = json_data['override_environ']
+            environ_from_arg = json_data['override_environ']
+
+        post_string_from_arg = json_data['post_string']
     except ValueError as exc:
         pass
 
-environ = override_environ or os.environ
+environ = environ_from_arg or os.environ
 
 
 def print_response(response, headers: list):
@@ -64,7 +67,9 @@ def fetch_info_from_login_token(token):
 
 def read_post() -> dict:
     runs_through_cgi = True
-    if runs_through_cgi:
+    if post_string_from_arg:
+        post_string = post_string_from_arg
+    elif runs_through_cgi:
         if 'CONTENT_LENGTH' in environ:
             # http.server
             if not environ['CONTENT_LENGTH']:

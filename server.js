@@ -5,6 +5,17 @@ const fs = require('fs').promises;
 const httpProxy = require('http-proxy');
 const {PythonShell} = require('python-shell');
 
+const readPost = (rq) => new Promise((ok, err) => {
+	if (rq.method === 'POST') {
+		let body = '';
+		rq.on('data', (data) => body += data);
+		rq.on('error', exc => err(exc));
+		rq.on('end', () => ok(body));
+	} else {
+		ok('');
+	}
+});
+
 /**
  * @param {http.IncomingMessage} rq
  * @param {http.ServerResponse} rs
@@ -52,13 +63,14 @@ const handleRq = async (rq, rs) => {
 		}
 		rs.end(bytes);
 	} else if (pathname === '/htbin/json_service.py') {
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 			PythonShell.run(__dirname + '/htbin/json_service.py', {
 				args: [JSON.stringify({
 					override_environ: {
 						CONTENT_LENGTH: rq.headers['content-length'],
 						QUERY_STRING: parsedUrl.query,
 					},
+					post_string: await readPost(rq),
 				})],
 			}, (err, results) => {
 				if (err) {
