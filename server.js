@@ -23,6 +23,8 @@ const handleRq = async (rq, rs) => {
 			|| pathname.startsWith('/out/')
 			|| pathname.startsWith('/imgs/')
 			|| pathname.startsWith('/unv/hosted/')
+			|| pathname.startsWith('/unv/imagesFromWeb/')
+			|| pathname.startsWith('/tests/grabs/')
 			|| pathname === '/favicon.ico'
 	) {
 		pathname = decodeURIComponent(pathname);

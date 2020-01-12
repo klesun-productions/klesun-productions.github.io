@@ -93,9 +93,11 @@ export let StarveGame = function(mainCont: HTMLElement)
             rareWordSet.delete(sourceWord);
             --livesLeft;
             counterStartedAt = null;
+            const easyOptions = easyWordsByLetter[sourceWord[0]];
             let msg = sourceWord
-                + '<br/>' + Tls.shuffle(easyWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ')
-                + '<br/>' + Tls.shuffle(rareWordsByLetter[sourceWord[0]]).slice(0, 5).join(', ');
+                + '<br/>' + Tls.shuffle(easyOptions).slice(0, 5).join(', ')
+                + (easyOptions.length > 0 ? '' :
+                    '<br/>' + Tls.shuffle(rareWordsByLetter[sourceWord[0]]).slice(0, 5).join(', '));
 
             Dom.showMessageDialog(msg).then = () => {
                 if (livesLeft > 0) {
