@@ -1,6 +1,8 @@
+const Rej = require('klesun-node-tools/src/Rej.js');
 const http = require('http');
 const https = require('https');
 const url = require('url');
+const fsSync = require('fs');
 const fs = require('fs').promises;
 const httpProxy = require('http-proxy');
 const {PythonShell} = require('python-shell');
@@ -40,15 +42,20 @@ const handleRq = async (rq, rs) => {
 			|| pathname.startsWith('/imgs/')
 			|| pathname.startsWith('/unv/hosted/')
 			|| pathname.startsWith('/unv/imagesFromWeb/')
-			|| pathname.startsWith('/tests/grabs/')
+			|| pathname.startsWith('/tests/')
 			|| pathname.startsWith('/Dropbox/web/')
+			|| pathname.startsWith('/node_modules/')
 			|| pathname === '/favicon.ico'
 	) {
 		pathname = decodeURIComponent(pathname);
 		let absPath = __dirname + pathname;
 		if (absPath.endsWith('/')) {
 			absPath += 'index.html';
-		} else if ((await fs.lstat(absPath)).isDirectory()) {
+		}
+		if (!fsSync.existsSync(absPath)) {
+			return Rej.NotFound('File ' + pathname + ' does not exist');
+		}
+		if ((await fs.lstat(absPath)).isDirectory()) {
 			return redirect(pathname + '/');
 		}
 		const bytes = await fs.readFile(absPath);
