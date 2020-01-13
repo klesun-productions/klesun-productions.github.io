@@ -114,9 +114,10 @@ Treats you PC keyboard as piano keyboard according to keys placement
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js"></script>
 <script src="https://klesun-misc.github.io/SMFPlayer/js/SMFreaderModule.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsmidgen@0.1.5/lib/jsmidgen.js"></script>
+
 <script src="https://klesun-misc.github.io/TypeScript/lib/typescriptServices.js"></script>
 <script type="module">
-    import {loadModule} from './../../src/js/ts-browser.js';
+    import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
     loadModule('./index.ts').then(Handler => {
         return Handler.Handler(document.getElementById('composeCont'));
     });
