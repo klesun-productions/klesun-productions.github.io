@@ -1,6 +1,8 @@
 
 /// <reference path="../references.ts" />
 
+import {ParseProfile} from "../../entry/vk_chicks/utils/ParseProfile";
+
 /** S stands for "Shortcuts" */
 export let S = (function()
 {

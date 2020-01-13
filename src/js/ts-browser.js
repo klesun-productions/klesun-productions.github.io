@@ -45,27 +45,6 @@ const addPathToUrl = (path, url) => {
     return result;
 };
 
-const parseSyntaxTree = tsCode => {
-    const sourceFile = window.ts.createSourceFile('ololo.ts', tsCode);
-    const root = {};
-
-    /** @param {ts.Node} node */
-    const makeTree = (node) => {
-        const children = [];
-        window.ts.forEachChild(node, subNode => {
-            children.push(makeTree(subNode));
-        });
-        const {pos, end} = node;
-        return {
-            kind: window.ts.SyntaxKind[node.kind],
-            node, children,
-            text: tsCode.slice(pos, end),
-        };
-    };
-
-    return makeTree(sourceFile);
-};
-
 /**
  * @param {ts.ImportClause} importClause - `{Field1, Field2}`
  */
@@ -95,116 +74,113 @@ const es6ToDestr = (tsCode, importClause) => {
     }
 };
 
-const modulePromises = {};
-const resolutionUrlToParents = {};
+const fetchModuleData = url => fetch(url)
+    .then(rs => rs.text())
+    .then(async tsCode => {
+        const sourceFile = window.ts.createSourceFile('ololo.ts', tsCode);
+        let tsCodeAfterImports = '';
+        const dependencies = [];
+        for (const statement of sourceFile.statements) {
+            const kindName = window.ts.SyntaxKind[statement.kind];
+            if (kindName === 'ImportDeclaration') {
+                const relPath = statement.moduleSpecifier.text;
+                const {importClause = null} = statement;
+                dependencies.push({
+                    url: addPathToUrl(relPath, url),
+                    // can be not set in case of side-effectish `import './some/url.css';`
+                    destrJsPart: importClause
+                        ? es6ToDestr(tsCode, importClause) : '',
+                });
+            } else {
+                const {pos, end} = statement;
+                tsCodeAfterImports += tsCode.slice(pos, end) + '\n';
+            }
+        }
+        return {url, dependencies, tsCodeAfterImports};
+    });
+
+const fetchDependencyFiles = async (entryUrls) => {
+    const cachedFiles = {};
+    const urlToPromise = {};
+    for (const entryUrl of entryUrls) {
+        urlToPromise[entryUrl] = fetchModuleData(entryUrl);
+    }
+    let promises;
+    while ((promises = Object.values(urlToPromise)).length > 0) {
+        const next = await Promise.race(promises);
+        cachedFiles[next.url] = next;
+        delete urlToPromise[next.url];
+        for (const {url} of next.dependencies) {
+            if (!urlToPromise[url] && !cachedFiles[url]) {
+                urlToPromise[url] = fetchModuleData(url);
+            }
+        }
+    }
+    return cachedFiles;
+};
 
 const CACHE_LOADED = 'ts-browser-loaded-modules';
 
-/** @param {ts.SourceFile} sourceFile */
-const loadDependencies = ({baseUrl, tsCode, sourceFile, parents}) => {
-    const importLinePromises = [];
-    let tsCodeAfterImports = '';
-    for (const statement of sourceFile.statements) {
-        const kindName = window.ts.SyntaxKind[statement.kind];
-        if (kindName === 'ImportDeclaration') {
-            const relPath = statement.moduleSpecifier.text;
-            const newUrl = addPathToUrl(relPath, baseUrl);
-            const isCircular = parents.has(newUrl) ||
-                [...parents].some(p => (resolutionUrlToParents[newUrl] || new Set()).has(p));
+/** @return {Promise<Module>} - just  */
+const loadModulePlain = (baseUrl, cachedFiles) => {
+    const modulePromises = {};
+    const load = async (baseUrl) => {
+        const fileData = cachedFiles[baseUrl];
+        let tsCodeImports = '';
+        for (const dependency of fileData.dependencies) {
+            const newUrl = dependency.url;
             window[CACHE_LOADED] = window[CACHE_LOADED] || {};
-
-            let whenModule;
             if (!modulePromises[newUrl]) {
-                resolutionUrlToParents[newUrl] = parents;
-                whenModule = loadModulePlain(newUrl, new Set([...parents, newUrl])).then(module => {
-                    return window[CACHE_LOADED][newUrl] = module;
+                let reportOk, reportErr;
+                modulePromises[newUrl] = new Promise((ok,err) => {
+                    [reportOk, reportErr] = [ok, err];
                 });
-                modulePromises[newUrl] = whenModule;
-            } else if (!window[CACHE_LOADED][newUrl] || isCircular) {
+                load(newUrl).then(reportOk).catch(reportErr);
+                window[CACHE_LOADED][newUrl] = await modulePromises[newUrl];
+            } else if (!window[CACHE_LOADED][newUrl]) {
                 // from position of an app writer, it would be better to just not use circular
                 // references, but since typescript supports them somewhat, so should I I guess
                 let loadedModule = null;
-                modulePromises[newUrl]
-                    .then(module => loadedModule = module);
-                const fakeModule = new Proxy({}, {
+                modulePromises[newUrl].then(module => loadedModule = module);
+                window[CACHE_LOADED][newUrl] = new Proxy({}, {
                     get: (target, name) => {
                         return new Proxy(() => {}, {
                             apply: (callTarget, thisArg, argumentsList) => {
                                 if (loadedModule) {
                                     return loadedModule[name].apply(thisArg, argumentsList);
                                 } else {
-                                    throw new Error('Tried to call ' + name + '() on a circular reference ' + newUrl + ': ' + [...parents].join(', '));
+                                    throw new Error('Tried to call ' + name + '() on a circular reference ' + newUrl);
                                 }
                             },
                             get: (target, subName) => {
                                 if (loadedModule) {
                                     return loadedModule[name][subName];
                                 } else {
-                                    throw new Error('Tried to get field ' + name + '.' + subName + ' on a circular reference ' + newUrl + ': ' + [...parents].join(', '));
+                                    throw new Error('Tried to get field ' + name + '.' + subName + ' on a circular reference ' + newUrl);
                                 }
                             },
                         });
                     },
                 });
-                window[CACHE_LOADED][newUrl] = fakeModule;
-                whenModule = Promise.resolve();
-            } else {
-                whenModule = modulePromises[newUrl];
             }
-            importLinePromises.push(whenModule.then(() => {
-                const cacheName = CACHE_LOADED;
-                //const cacheName = !isCircular ? 'ts-browser-loaded-modules' : 'ts-browser-circular-modules';
-                const assignedValue = 'window[' + JSON.stringify(cacheName) + '][' + JSON.stringify(newUrl) + ']';
-                const {importClause = null} = statement;
-                if (importClause) {
-                    // can be not set in case of side-effectish `import './some/url.css';`
-                    return es6ToDestr(tsCode, importClause) + ' = ' + assignedValue + ';';
-                } else {
-                    return '';
-                }
-            }));
-        } else {
-            const {pos, end} = statement;
-            tsCodeAfterImports += tsCode.slice(pos, end) + '\n';
+            const assignedValue = 'window[' + JSON.stringify(CACHE_LOADED) + '][' + JSON.stringify(newUrl) + ']';
+            if (dependency.destrJsPart) {
+                tsCodeImports += dependency.destrJsPart + ' = ' + assignedValue + ';\n';
+            }
         }
-    }
-    return Promise.all(importLinePromises).then(importLines => {
-        const tsCodeResult = importLines.join('\n') + '\n' + tsCodeAfterImports;
-        const jsCode = window.ts.transpile(tsCodeResult, {
+        const tsCodeResult = tsCodeImports + '\n' + fileData.tsCodeAfterImports;
+        let jsCode = window.ts.transpile(tsCodeResult, {
             module: 5, target: 5 /* ES2018 */,
         });
-        return jsCode;
-    });
-};
+        jsCode += '\n//# sourceURL=' + baseUrl;
+        return import('data:text/javascript;base64,' + btoa(jsCode));
+    };
 
-/** @return {Promise<Module>} - just  */
-export const loadModulePlain = (absUrl, parents = new Set()) => {
-    return fetch(absUrl)
-        .then(rs => rs.text())
-        .then(async tsCode => {
-            const sourceFile = window.ts.createSourceFile('ololo.ts', tsCode);
-            let jsCode = await loadDependencies({
-                baseUrl: absUrl, tsCode, sourceFile, parents,
-            });
-            jsCode += '\n//# sourceURL=' + absUrl;
-            const module = await import('data:text/javascript;base64,' + btoa(jsCode));
-            return module;
-        });
+    return load(baseUrl);
 };
 
 /** @return {Promise<any>} */
-export const loadModule = (absUrl) => {
-    return loadModulePlain(absUrl);
-    // .then(es6Module => {
-    //     return es6Module.initTsModule({
-    //         importTs: (relPath) => {
-    //             const newUrl = addPathToUrl(relPath, absUrl);
-    //             return loadModule(newUrl);
-    //         },
-    //         importTsPlain: (relPath) => {
-    //             const newUrl = addPathToUrl(relPath, absUrl);
-    //             return loadModulePlain(newUrl);
-    //         },
-    //     });
-    // });
+export const loadModule = async (absUrl) => {
+    const cachedFiles = await fetchDependencyFiles([absUrl]);
+    return loadModulePlain(absUrl, cachedFiles);
 };
