@@ -1,6 +1,5 @@
 <head>
     <meta charset="utf-8"/>
-    <script src="/libs/require.js"></script>
 </head>
 
 <body>
@@ -83,14 +82,11 @@
     <div class="dull-cont-for-preloading">You should not see this container</div>
 </div>
 
-<script>
-
-let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
-
-window.onload =
-    () => require(['./index.js'],
-    (StGaNs) => StGaNs.StarveGame($$('.game-main')[0]));
-
+<script src="https://klesun-misc.github.io/TypeScript/lib/typescriptServices.js"></script>
+<script type="module">
+    import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
+    const mainCont = document.querySelector('.game-main');
+    loadModule('./index.ts').then((StGaNs) => StGaNs.StarveGame(mainCont));
 </script>
 
 <style>

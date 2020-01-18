@@ -1,0 +1,3 @@
+# will free to index my pages however you want, google
+User-agent: *
+Allow: /

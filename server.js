@@ -23,8 +23,8 @@ const readPost = (rq) => new Promise((ok, err) => {
  * @param {http.ServerResponse} rs
  */
 const handleRq = async (rq, rs) => {
-    const parsedUrl = url.parse(rq.url);
-    let pathname = parsedUrl.pathname;
+	const parsedUrl = url.parse(rq.url);
+	let pathname = parsedUrl.pathname;
 
 	const redirect = url => {
 		rs.writeHead(302, {
@@ -46,6 +46,7 @@ const handleRq = async (rq, rs) => {
 			|| pathname.startsWith('/Dropbox/web/')
 			|| pathname.startsWith('/node_modules/')
 			|| pathname === '/favicon.ico'
+			|| pathname === '/robots.txt'
 	) {
 		pathname = decodeURIComponent(pathname);
 		let absPath = __dirname + pathname;
@@ -94,9 +95,9 @@ const handleRq = async (rq, rs) => {
 				}
 			});
 		});
-    } else {
-        throw new Error('No API routes matched ' + parsedUrl.path);
-    }
+	} else {
+		throw new Error('No routes matched');
+	}
 };
 
 const main = async () => {
@@ -105,20 +106,21 @@ const main = async () => {
 		const pathname = url.parse(rq.url).pathname;
 		if (['travelaci.com', 'the-travel-hacks.com'].includes(rq.headers.host)) {
 			proxy.web(rq, rs, {target: 'http://localhost:30186'});
-		// } else if (pathname === '/htbin/json_service.py') {
-		// 	proxy.web(rq, rs, {target: 'http://localhost:54749'});
+		} else if (pathname.startsWith('/nginx/')) {
+			proxy.web(rq, rs, {target: 'http://localhost:44921'});
 		} else {
 			handleRq(rq, rs).catch(exc => {
 				rs.statusCode = exc.httpStatusCode || 500;
 				rs.end(JSON.stringify({error: exc + '', stack: exc.stack}));
-				console.error('HTTP request failed', exc);
+				const clientIp = rq.connection.remoteAddress;
+				console.error('HTTP request by ' + clientIp + ' failed', exc);
 			});
 		}
 	};
-    http.createServer(handeRq).listen(80, '0.0.0.0', () => {
+	http.createServer(handeRq).listen(80, '0.0.0.0', () => {
 		console.log('listening http://klesun-productions.com');
 	});
-    https.createServer({
+	https.createServer({
 		key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey1.pem'),
 		cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert1.pem'),
 	}, handeRq).listen(443, '0.0.0.0', () => {
@@ -127,6 +129,6 @@ const main = async () => {
 };
 
 main().catch(exc => {
-    console.log('Failed to start server', exc);
-    process.exit(1);
+	console.log('Failed to start server', exc);
+	process.exit(1);
 });
