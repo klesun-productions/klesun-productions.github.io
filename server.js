@@ -106,25 +106,32 @@ const main = async () => {
 		const pathname = url.parse(rq.url).pathname;
 		if (['travelaci.com', 'the-travel-hacks.com'].includes(rq.headers.host)) {
 			proxy.web(rq, rs, {target: 'http://localhost:30186'});
-		} else if (pathname.startsWith('/nginx/')) {
-			proxy.web(rq, rs, {target: 'http://localhost:44921'});
 		} else {
 			handleRq(rq, rs).catch(exc => {
 				rs.statusCode = exc.httpStatusCode || 500;
 				rs.end(JSON.stringify({error: exc + '', stack: exc.stack}));
-				const clientIp = rq.connection.remoteAddress;
-				console.error('HTTP request by ' + clientIp + ' failed', exc);
+				const clientIp = rq.connection.remoteAddress
+					|| rq.socket.remoteAddress
+					|| (rq.connection.socket || {}).remoteAddress;
+				const fwd = rq.headers['x-forwarded-for'];
+				const msg = 'HTTP request ' + pathname + ' by ' +
+					clientIp + ' failed' + (fwd ? ' fwd: ' + fwd : '');
+				console.error(msg, exc);
 			});
 		}
 	};
-	http.createServer(handeRq).listen(80, '0.0.0.0', () => {
-		console.log('listening http://klesun-productions.com');
-	});
 	https.createServer({
 		key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey1.pem'),
 		cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert1.pem'),
 	}, handeRq).listen(443, '0.0.0.0', () => {
 		console.log('listening https://klesun-productions.com');
+	});
+	http.createServer((rq, rs) => {
+		// force https
+		rs.writeHead(301, {'Location': 'https://' + rq.headers.host + rq.url});
+		rs.end();
+	}).listen(80, '0.0.0.0', () => {
+		console.log('listening http://klesun-productions.com');
 	});
 };
 
