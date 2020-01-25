@@ -17,8 +17,8 @@ __pycache__
 *-compiled.js.map
 *.js.map
 /ignored
-/src/**/*.js
-/src/**/*.js.map
+#/src/**/*.js
+#/src/**/*.js.map
 /entry/**/*.js
 /entry/**/*.js.map
 /node_modules
