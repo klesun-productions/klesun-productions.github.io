@@ -8,8 +8,7 @@ import {Tls} from "../../src/utils/Tls";
 // .mid files are also supported by most composing software, like Musescore, Cubase
 // .mid files are also used by Synthesia, a well-known educational piano application
 
-// this module provides access to the jsmidgen https://github.com/dingram/jsmidgen
-
+import 'https://cdn.jsdelivr.net/npm/jsmidgen@0.1.5/lib/jsmidgen.js';
 declare var Midi: IJsMidGen;
 
 const TICKS_PER_BEAT = 384;

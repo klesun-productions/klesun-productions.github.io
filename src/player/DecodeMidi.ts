@@ -6,11 +6,8 @@ import {IMidJsNote} from "../DataStructures";
 import {ISynth} from "../synths/ISynth";
 import {S} from "../utils/S";
 
-declare var Ns: {
-    Libs:{
-        SMFreader: (b:ArrayBuffer) => ISMFRead,
-    },
-};
+import Ns from 'https://klesun-misc.github.io/SMFPlayer/js/SMFreaderModule.js';
+const SMFreader: (b:ArrayBuffer) => ISMFRead = Ns.Libs.SMFreader;
 
 type ticks_t = number;
 type velocity_t = number;
@@ -20,7 +17,7 @@ type velocity_t = number;
 // - all control messages are gathered in a single place
 export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
 {
-    var smf = Ns.Libs.SMFreader(smfBuf);
+    var smf = SMFreader(smfBuf);
 
     var chordByTime: {[t: number]: IMidJsNote[]} = {};
     var tempoByTime: {[t: number]: number} = {};

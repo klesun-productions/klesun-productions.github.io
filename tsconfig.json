@@ -11,9 +11,9 @@
         "noEmitOnError": true,
         "target": "ES6",
         "skipLibCheck": true,
+        "esModuleInterop": true,
         "lib": ["es2017", "dom"]
     },
-    "compileOnSave": true,
     "include": [
         "./entry/*/index.ts",
         "./entry/poverty-vs-you-2d/src/MokonaGame.ts"
