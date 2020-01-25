@@ -8,7 +8,7 @@ import {S} from "../utils/S";
 
 declare var Ns: {
     Libs:{
-        SMFreader: (b:ArrayBuffer) => ISMFreaded,
+        SMFreader: (b:ArrayBuffer) => ISMFRead,
     },
 };
 
@@ -159,7 +159,7 @@ export function DecodeMidi(smfBuf: ArrayBuffer): IGeneralStructure
     };
 
     // static
-    var fillChordsAndMetas = function(smf: ISMFreaded): void
+    var fillChordsAndMetas = function(smf: ISMFRead): void
     {
         var sysexes: [number, number[]][] = [];
 
@@ -262,7 +262,7 @@ interface ISMFmidiEvent extends ISMFevent {
     type: 'MIDI',
 }
 
-interface ISMFreaded {
+interface ISMFRead {
     format: number, // 1
     numTracks: number, // 3
     // divide an event time by this to get time in seconds
