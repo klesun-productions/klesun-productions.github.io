@@ -5,9 +5,6 @@ import {DecodeMidi} from "../player/DecodeMidi";
 import {S, IPromise} from "./S";
 import {Dom} from "./Dom";
 
-// defined in /libs/FileSaver.js
-declare var saveAs: any;
-
 var Static: any = {};
 
 // for asynchronous buffer retrieval
@@ -238,18 +235,6 @@ export let Tls =
         } else {
             onOk(cachedSampleBuffers[url]);
         }
-    },
-
-    saveJsonToDisc: function(content: string): void
-    {
-        var blob = new Blob([content], {type: "text/json;charset=utf-8"});
-        saveAs(blob, 'song.mid.json', true);
-    },
-
-    saveMidiToDisc: function(content: ArrayBuffer): void
-    {
-        var blob = new Blob([content], {type: "midi/binary"});
-        saveAs(blob, 'song.mid', true);
     },
 
     /** @param chunkSize - count of elements that will be foreached in one iteration

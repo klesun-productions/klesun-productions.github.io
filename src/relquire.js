@@ -1,5 +1,8 @@
 
 /**
+ * Upd.: was useful when ts-browser wasn't a thing.
+ *  Now kept just for historical purposes
+ *
  * time for another module resolution util!
  * damn requirejs implicitly loads module seconds time if
  * index.html is located not in the root of the project:
@@ -42,7 +45,7 @@
             awaiting[moduleUrl] = [];
             awaiting[moduleUrl].push(done);
             http(moduleUrl).then = code => {
-				let requiringUrl = currentUrl;
+                let requiringUrl = currentUrl;
                 currentUrl = moduleUrl;
                 code += '\n//# sourceURL=' + requiringUrl + '_x_' + moduleUrl;
                 let resolvingDeps = eval(code);

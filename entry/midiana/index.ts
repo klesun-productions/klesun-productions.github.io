@@ -15,11 +15,23 @@ import {ComposeGui} from "./ComposeGui";
 import {S} from "../../src/utils/S";
 import {Dom} from "../../src/utils/Dom";
 
-// this function binds some events: midi/mouse/keyboard to the
-// SheetMusicPainter in other words, it allows to write the sheet music
+import 'https://cdn.jsdelivr.net/npm/file-saver@2.0.2/dist/FileSaver.min.js';
+declare var saveAs: any;
 
-const $$ = (s: string): HTMLElement[] => <any>Array.from(document.querySelectorAll(s));
+const saveJsonToDisc = (content: string) => {
+    const blob = new Blob([content], {type: "text/json;charset=utf-8"});
+    saveAs(blob, 'song.mid.json', true);
+};
 
+const saveMidiToDisc = (content: ArrayBuffer) => {
+    const blob = new Blob([content], {type: "midi/binary"});
+    saveAs(blob, 'song.mid', true);
+};
+
+/**
+ * this function binds some events: midi/mouse/keyboard to the
+ * SheetMusicPainter in other words, it allows to write the sheet music
+ */
 export let Handler = function(cont: HTMLDivElement)
 {
     let gui = ComposeGui(cont);
@@ -269,9 +281,9 @@ export let Handler = function(cont: HTMLDivElement)
         // "o"
         79: (e: KeyboardEvent) => e.ctrlKey && Tls.selectFileFromDisc(openSongFromBase64),
         // "s"
-        83: (e: KeyboardEvent) => e.ctrlKey && Tls.saveJsonToDisc(Tls.xmlyJson(collectSong(control.getChordList()))),
+        83: (e: KeyboardEvent) => e.ctrlKey && saveJsonToDisc(Tls.xmlyJson(collectSong(control.getChordList()))),
         // "e" stands for "export midi"
-        69: (e: KeyboardEvent) => e.ctrlKey && Tls.saveMidiToDisc(EncodeMidi(collectSong(control.getChordList()))),
+        69: (e: KeyboardEvent) => e.ctrlKey && saveMidiToDisc(EncodeMidi(collectSong(control.getChordList()))),
         // "i" stands for "import midi"
         73: (e: KeyboardEvent) => e.ctrlKey && Tls.openMidi(m => openSong(Shmidusicator.generalToShmidusic(m))),
         // F4
