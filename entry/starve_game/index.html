@@ -82,11 +82,10 @@
     <div class="dull-cont-for-preloading">You should not see this container</div>
 </div>
 
-<script src="https://klesun-misc.github.io/TypeScript/lib/typescriptServices.js"></script>
 <script type="module">
     import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
     const mainCont = document.querySelector('.game-main');
-    loadModule('./index.ts').then((StGaNs) => StGaNs.StarveGame(mainCont));
+    loadModule('./index.ts').then((index) => index.StarveGame(mainCont));
 </script>
 
 <style>

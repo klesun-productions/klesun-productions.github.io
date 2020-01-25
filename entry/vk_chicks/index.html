@@ -1,6 +1,5 @@
 <html>
 <head>
-    <script src="../../src/relquire.js"></script>
     <meta charset="utf-8"/>
 </head>
 <body>
@@ -21,7 +20,8 @@
     <div class="chick-list-holder">Please wait... (about 5 seconds)</div>
 </main>
 
-<script>
+<script type="module">
+    import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
 
     // for compatibility with Tor 6.5.1
     Object.entries = (obj) => {
@@ -32,9 +32,9 @@
         return result;
     };
 
-    let $$ = (s, parent) => [...(parent || document).querySelectorAll(s)];
-    require(['./index'], (index) => index.main($$('main')[0]));
-
+    loadModule('./index.ts').then((index) => {
+        index.main(document.querySelector('main'));
+    });
 </script>
 
 <style>
