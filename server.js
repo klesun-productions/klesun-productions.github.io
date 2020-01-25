@@ -46,6 +46,9 @@ const serveStaticFile = async (pathname, rs) => {
 	if (absPath.endsWith('/')) {
 		absPath += 'index.html';
 	}
+	if (pathname.startsWith('/entry/dev_data/')) {
+		return redirect(rs, 'https://klesun-misc.github.io/dev_data/' + pathname.slice('/entry/dev_data/'.length));
+	}
 	if (!fsSync.existsSync(absPath)) {
 		return Rej.NotFound('File ' + pathname + ' does not exist');
 	}
@@ -145,7 +148,7 @@ const handleRq = async (rq, rs) => {
 			rs.end(JSON.stringify(result));
 		});
 	} else if (isStaticFile(pathname)) {
-		return serveStaticFile(pathname);
+		return serveStaticFile(pathname, rs);
 	} else if (pathname === '/htbin/json_service.py') {
 		return servePythonScript(rq, rs);
 	} else {
