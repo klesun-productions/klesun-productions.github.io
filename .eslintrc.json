@@ -10,7 +10,6 @@
   "rules": {
     "prefer-const": "warn",
     "keyword-spacing": ["warn", {"after":  true}],
-    "indent": ["error", "tab"],
     "for-direction": "error",
     "semi": ["error", "always"],
     "no-invalid-this": "warn",
