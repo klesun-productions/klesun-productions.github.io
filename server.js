@@ -2,6 +2,7 @@ const Rej = require('klesun-node-tools/src/Rej.js');
 const http = require('http');
 const https = require('https');
 const url = require('url');
+const path = require('path');
 const fsSync = require('fs');
 const fs = require('fs').promises;
 const httpProxy = require('http-proxy');
@@ -29,6 +30,7 @@ const isStaticFile = pathname => {
         || pathname.startsWith('/tests/')
         || pathname.startsWith('/Dropbox/web/')
         || pathname.startsWith('/node_modules/')
+        || pathname.startsWith('/unv/gits/riddle-needle/Assets/Audio/midjs/')
         || pathname === '/favicon.ico'
         || pathname === '/robots.txt';
 };
@@ -128,12 +130,34 @@ const redirects = {
 };
 
 /**
+ * @param path = '/entry/midiana/../../secret/ololo.pem'
+ * @return {String} '/secret/ololo.pem'
+ */
+const removeDots = path => {
+    const parts = path.split('/');
+    const resultParts = [];
+    for (const part of parts) {
+        if (part === '..' && resultParts.slice(-1)[0] !== '..') {
+            while (resultParts.slice(-1)[0] === '.') resultParts.pop();
+            if (resultParts.length > 0) {
+                resultParts.pop();
+            } else {
+                resultParts.push('..');
+            }
+        } else if (part !== '.') {
+            resultParts.push(part);
+        }
+    }
+    return resultParts.join('/');
+};
+
+/**
  * @param {http.IncomingMessage} rq
  * @param {http.ServerResponse} rs
  */
 const handleRq = async (rq, rs) => {
     const parsedUrl = url.parse(rq.url);
-    const pathname = parsedUrl.pathname;
+    const pathname = removeDots(parsedUrl.pathname);
 
     const redirectUrl = redirects[pathname];
     const apiAction = apiRoutes[pathname];
