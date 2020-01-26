@@ -114,7 +114,7 @@ Treats you PC keyboard as piano keyboard according to keys placement
     import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
     //import {loadModule} from '../ts-browser/src/ts-browser.js';
     loadModule('./index.ts').then(index => {
-        return index.Handler(document.getElementById('composeCont'));
+        return index.default(document.getElementById('composeCont'));
     });
 </script>
 
