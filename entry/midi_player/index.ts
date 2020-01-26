@@ -2,7 +2,7 @@
 
 // initialises the website main page - the js performed the moment page is loaded
 
-import {IShmidusicStructure, IGeneralStructure} from "../../src/DataStructures";
+import {IGeneralStructure} from "../../src/DataStructures";
 import {SheetMusicPainter} from "../../src/compose/Painter";
 import UnfairRandom from "./UnfairRandom";
 import {ISmfFile} from "../../src/DataStructures";
@@ -69,8 +69,8 @@ const index = (mainCont: HTMLDivElement) => {
         player.playSheetMusic(song, () => {}, 0);
     };
 
-    const songDirUrl = '/Dropbox/web/midiCollection/';
-    const preCompiledOggRoot = '/out/convertedOgg/';
+    // TODO: use Google Drive API or Dropobx API
+    const songDirUrl = 'https://klesun-productions.com' + '/Dropbox/web/midiCollection/';
 
     let embedYoutubeVideos = function(urls: ytlink_t[])
     {

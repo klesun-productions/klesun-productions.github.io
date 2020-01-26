@@ -12,6 +12,11 @@ import {ClientUtil} from "./ClientUtil";
 let getProxyPostFrame = (): IOpts<Window> =>
     S.opt((<any>window).proxyPostFrame);
 
+const baseUrl = window.location.host === 'klesun.github.io'
+    ? 'https://klesun-productions.com' : '';
+
+const http = (path: string, restMethod?: 'POST' | 'GET', params?: any) => Tls.http(baseUrl + path, restMethod, params);
+
 let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_json_t, whenLoaded?: (js: any) => void)
 {
     let url = '/htbin/json_service.py?f=' + funcName;
@@ -19,7 +24,7 @@ let ajax = function(funcName: string, restMethod: 'POST' | 'GET', params: valid_
         let ajaxFromFrame = (frame: Window) =>
             FrameBridge.sendPostThroughFrame(frame, url, params).then = delayedReturn;
         let ajaxFromHere = () =>
-            Tls.http(url, restMethod, params).then = resp => {
+            http(url, restMethod, params).then = resp => {
                 if (resp === null) {
                     console.error('server error, see network log of ' + funcName);
                     return;
@@ -94,7 +99,7 @@ let parseChunks = <T>(lines: string[]): T[] =>
         }));
 
 let retrieveChunked = function<T>(funcName: string, params: {[k: string]: primitive_t}): IChunked<T> {
-    let url = '/htbin/chunked_service.py?f=' + funcName;
+    let url = baseUrl + '/htbin/chunked_service.py?f=' + funcName;
     let esc = encodeURIComponent;
     for (let k of Object.keys(params)) {
         url += '&' + esc(k) + '=' + esc((<any>params)[k]);
@@ -221,11 +226,11 @@ export let ServApi = {
      */
     get_url: (url: string) => {
         url = '/htbin/text_service.py?f=get_url&url=' + encodeURIComponent(url);
-        return Tls.http(url, 'GET', {});
+        return http(url, 'GET', {});
     },
 
     set get_animes(cb: (animes: anime_t[]) => void) {
-        Tls.http('/out/animes.json', 'GET', {})
+        http('/out/animes.json', 'GET', {})
             .map(r => JSON.parse(r))
             .then = cb;
     },
@@ -252,13 +257,13 @@ export let ServApi = {
 
     set get_user_profiles(cb: (profiles: user_profile_t[]) => void) {
         // ajax('get_user_profiles', 'GET', {}, cb);
-        Tls.http('/out/userProfile.csv')
+        http('/out/userProfile.csv')
             .map(csv => <user_profile_t[]>csvToObjects(csv))
             .then = cb;
     },
 
     set get_user_calcs(cb: (profiles: user_calc_t[]) => void) {
-        Tls.http('/out/userCalc.csv')
+        http('/out/userCalc.csv')
             .map(csv => <user_calc_t[]>csvToObjects(csv))
             .then = cb;
     },
