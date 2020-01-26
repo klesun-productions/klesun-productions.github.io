@@ -22,8 +22,11 @@ interface iSounding {
     src: AudioBufferSourceNode,
     baseVolume: number,
     baseFrequency: number,
-};
+}
 
+/**
+ * unlike Sf3Synth, this one works with each sample as a _separate_ file on the internets
+ */
 export let WebAudioSfSynth = function(soundFont: ISoundFontAdapter): ISynth
 {
     let audioCtx = Tls.audioCtx;
