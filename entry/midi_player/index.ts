@@ -24,8 +24,7 @@ let $$ = (selector: string, el?: HTMLElement) =>
 
 /** @param mainCont - div dom with children
  * structure defined in index.html */
-export let MainPage = function (mainCont: HTMLDivElement)
-{
+const index = (mainCont: HTMLDivElement) => {
     let pianoCanvas = <HTMLCanvasElement>$$('.pianoLayoutCanvas', mainCont)[0],
         $playbackControlCont = $(mainCont).find('.playbackControlCont'), // TODO: get rid of $
         sheetMusicConfigCont = $$('#sheetMusicConfigDiv', mainCont)[0],
@@ -162,3 +161,5 @@ export let MainPage = function (mainCont: HTMLDivElement)
 
     initIchigosMidiList();
 };
+
+export default index;
