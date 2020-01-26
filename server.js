@@ -117,6 +117,8 @@ const serveCors = (rs) => {
     rs.setHeader('Access-Control-Allow-Methods', 'GET, POST');
     rs.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     rs.setHeader('Access-Control-Allow-Credentials', true);
+    rs.write('CORS ok');
+    rs.end();
 };
 
 const apiRoutes = {

@@ -17,27 +17,35 @@ import PlaybackControl from "../../src/views/PlaybackControl";
 import {ServApi, ytlink_t} from "../../src/utils/ServApi";
 
 import jQuery from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+import SfAdapter from "../../src/js/sfplayerjs/SfAdapter.js";
 const $: JQueryStatic = jQuery;
 
 let $$ = (selector: string, el?: HTMLElement) =>
     <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
 
-/** @param mainCont - div dom with children
+/** @param rootDom - div dom with children
  * structure defined in index.html */
-const index = (mainCont: HTMLDivElement) => {
-    let pianoCanvas = <HTMLCanvasElement>$$('.pianoLayoutCanvas', mainCont)[0],
-        $playbackControlCont = $(mainCont).find('.playbackControlCont'), // TODO: get rid of $
-        sheetMusicConfigCont = $$('#sheetMusicConfigDiv', mainCont)[0],
-        sheetMusicCont = $$('.sheetMusicCont', mainCont)[0],
-        violinKeyImage = $$('.violinKeyImage', mainCont)[0],
-        bassKeyImage = $$('.bassKeyImage', mainCont)[0],
-        instrumentInfoBlock = <HTMLDivElement>$$('#instrumentInfoBlock', mainCont)[0],
-        drawSheetMusicFlag = <HTMLInputElement>$$('#drawSheetMusicFlag', mainCont)[0],
-        playRandomBtn = $$('.playRandomBtn', mainCont)[0],
-        playMidiFromDiskBtn = $$('.playMidiFromDiskBtn', mainCont)[0],
-        midiFileCounter = <HTMLAnchorElement>$$('#midiFileCounter', mainCont)[0],
-        youtubeEmbededVideosCont = <HTMLDivElement>$$('#youtubeEmbededVideosCont', mainCont)[0],
-        preCompiledOggControl = <HTMLAudioElement>$$('#preCompiledOggControl', mainCont)[0],
+const index = async ({rootDom, whenSfBuffer}: {
+    rootDom: HTMLDivElement,
+    whenSfBuffer: Promise<ArrayBuffer>,
+}) => {
+    const sf3Adapter = await whenSfBuffer.then(async sfBuffer => {
+        return SfAdapter(sfBuffer, Tls.audioCtx, true);
+    });
+
+    let pianoCanvas = <HTMLCanvasElement>$$('.pianoLayoutCanvas', rootDom)[0],
+        $playbackControlCont = $(rootDom).find('.playbackControlCont'), // TODO: get rid of $
+        sheetMusicConfigCont = $$('#sheetMusicConfigDiv', rootDom)[0],
+        sheetMusicCont = $$('.sheetMusicCont', rootDom)[0],
+        violinKeyImage = $$('.violinKeyImage', rootDom)[0],
+        bassKeyImage = $$('.bassKeyImage', rootDom)[0],
+        instrumentInfoBlock = <HTMLDivElement>$$('#instrumentInfoBlock', rootDom)[0],
+        drawSheetMusicFlag = <HTMLInputElement>$$('#drawSheetMusicFlag', rootDom)[0],
+        playRandomBtn = $$('.playRandomBtn', rootDom)[0],
+        playMidiFromDiskBtn = $$('.playMidiFromDiskBtn', rootDom)[0],
+        midiFileCounter = <HTMLAnchorElement>$$('#midiFileCounter', rootDom)[0],
+        youtubeEmbededVideosCont = <HTMLDivElement>$$('#youtubeEmbededVideosCont', rootDom)[0],
+        preCompiledOggControl = <HTMLAudioElement>$$('#preCompiledOggControl', rootDom)[0],
         O_O = 'O_O'
         ;
     
@@ -45,9 +53,9 @@ const index = (mainCont: HTMLDivElement) => {
 
     const piano = PianoLayout(pianoCanvas);
     const synth = Switch(
-        <HTMLSelectElement>mainCont.querySelector('#synthDropdown'),
-        <HTMLDivElement>mainCont.querySelector('#synthControl'),
-        PresetList(instrumentInfoBlock)
+        <HTMLSelectElement>rootDom.querySelector('#synthDropdown'),
+        <HTMLDivElement>rootDom.querySelector('#synthControl'),
+        PresetList(instrumentInfoBlock), sf3Adapter
     );
     piano.onClick((semitone) => synth.playNote(semitone, 0, 127, -1));
 

@@ -25,12 +25,19 @@ const WebAudioSfSynthWrapper = (sf3Adapter: any): ISynth => {
                 .forEach(webAudioSfSynth.release);
         }
 
-        webAudioSfSynth.pressBy({
+        const params = {
             semitone: tune,
             velocity: velocity,
             bank: channelState.bank,
             preset: channelState.preset,
-        }, channelState);
+        };
+        // 9 = drum track
+        if (+channel === 9 && params.bank < 128) {
+            // in case of improper bank message
+            params.bank = 128;
+            params.preset = 0;
+        }
+        webAudioSfSynth.pressBy(params, channelState);
 
         openedDict[channel][tune] |= 0;
         openedDict[channel][tune] += 1;
