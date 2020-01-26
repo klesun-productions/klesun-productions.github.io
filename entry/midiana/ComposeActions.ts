@@ -55,7 +55,14 @@ const ComposeActions = ({control, synthSwitch, configCont, painter, gui}: any) =
         song.staffList
             .forEach(s => {
                 let config: {[k: string]: any} = s.staffConfig;
-                Tls.for(config, (k, v) => (<HTMLInputElement>configCont.querySelector('.holder.' + k)).value = v);
+                Tls.for(config, (k, v) => {
+                    const input: HTMLInputElement = configCont.querySelector('.holder.' + k);
+                    if (input) {
+                        input.value = v;
+                    } else {
+                        console.warn('Unknown setting: ' + k);
+                    }
+                });
 
                 synthSwitch.consumeConfig((s.staffConfig.channelList || [])
                     .map(c => 1 && { preset: c.instrument || 0 }));
