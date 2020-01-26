@@ -7,6 +7,9 @@ import {IShmidusicChord} from "../DataStructures";
 import {Tls} from "../utils/Tls";
 import {S} from "../utils/S";
 
+import jQuery from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+const $: JQueryStatic = jQuery;
+
 export function TactMeasurer(tactSize: number)
 {
     let sumFraction = 0;
@@ -120,14 +123,15 @@ export function CanvasProvider(getNoteRadius: () => number)
 /** TODO: get rid of this class, we i the stuff with clean CSS now */
 export function SheetMusicPainter(parentId: string, config: HTMLElement)
 {
-    let $parentEl = $('#' + parentId);
-    let getNoteRadius = () => +getComputedStyle($parentEl[0]).getPropertyValue('--b-radius').slice(0, -2); // cutting "px" at the end
+    let parentEl = document.querySelector('#' + parentId);
+    let getNoteRadius = () => +getComputedStyle(parentEl).getPropertyValue('--b-radius').slice(0, -2); // cutting "px" at the end
 
-    let $chordListCont =  $('<div class="chordListCont"></div>');
-    $parentEl.append($chordListCont);
+    let chordListCont = document.createElement('div');
+    chordListCont.classList.toggle('chordListCont', true);
+    parentEl.appendChild(chordListCont);
 
     let canvaser = CanvasProvider(getNoteRadius);
-    let control = Control($chordListCont, config);
+    let control = Control(chordListCont, config);
 
     let interruptDrawing = () => {};
     let currentSong: Ds.IShmidusicStructure = null;

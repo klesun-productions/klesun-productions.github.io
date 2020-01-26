@@ -103,7 +103,7 @@ export let Handler = function(cont: HTMLDivElement)
         let receivedTime = window.performance.now();
         let note = {
             tune: semitone,
-            channel: +$(gui.inputChannelDropdown).val(),
+            channel: +gui.inputChannelDropdown.value,
             length: 0.25,
             velocity: velocity,
         };
@@ -125,20 +125,20 @@ export let Handler = function(cont: HTMLDivElement)
     };
 
     let collectConfig = () => 1 && {
-        tempo: $(configCont).find('.holder.tempo').val(),
-        loopStart: $(configCont).find('.holder.loopStart').val(),
-        loopTimes: $(configCont).find('.holder.loopTimes').val(),
-        keySignature: $(configCont).find('.holder.keySignature').val(),
-        tactSize: $(configCont).find('.holder.tactSize').val(),
+        tempo: +(<HTMLInputElement>configCont.querySelector('.holder.tempo')).value,
+        loopStart: +(<HTMLInputElement>configCont.querySelector('.holder.loopStart')).value,
+        loopTimes: +(<HTMLInputElement>configCont.querySelector('.holder.loopTimes')).value,
+        keySignature: +(<HTMLInputElement>configCont.querySelector('.holder.keySignature')).value,
+        tactSize: +(<HTMLInputElement>configCont.querySelector('.holder.tactSize')).value,
         channelList: gui.channelListControl.collectData(),
     };
 
-    let collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => 1 && {
+    let collectSong = (chords: IShmidusicChord[]): IShmidusicStructure => ({
         staffList: [{
             staffConfig: collectConfig(),
             chordList: chords
         }]
-    };
+    });
 
     let play = function(): void
     {
@@ -162,7 +162,7 @@ export let Handler = function(cont: HTMLDivElement)
     {
         let selection = window.getSelection();
         let range = selection.getRangeAt(0);
-        let allWithinRangeParent = $(range.commonAncestorContainer).find('*').toArray();
+        let allWithinRangeParent = [...(<HTMLElement>range.commonAncestorContainer).querySelectorAll('*')];
 
         let chordSpans: HTMLSpanElement[] = [];
         let first = true;
@@ -204,7 +204,7 @@ export let Handler = function(cont: HTMLDivElement)
         song.staffList
             .forEach(s => {
                 let config: {[k: string]: any} = s.staffConfig;
-                Tls.for(config, (k, v) => $(configCont).find('.holder.' + k).val(v));
+                Tls.for(config, (k, v) => (<HTMLInputElement>configCont.querySelector('.holder.' + k)).value = v);
 
                 synthSwitch.consumeConfig((s.staffConfig.channelList || [])
                     .map(c => 1 && { preset: c.instrument || 0 }));
@@ -405,7 +405,7 @@ export let Handler = function(cont: HTMLDivElement)
         };
         el.onpaste = (e: any) => pasteFromClipboard(e.clipboardData.getData('Text'));
 
-        $('body')[0].onkeydown = function(keyEvent: KeyboardEvent)
+        document.body.onkeydown = function(keyEvent: KeyboardEvent)
         {
             if (keyEvent.keyCode in globalHandlers) {
                 keyEvent.preventDefault();
@@ -506,8 +506,8 @@ export let Handler = function(cont: HTMLDivElement)
         });
         hangKeyboardHandlers(gui.sheetMusictCont);
 
-        $(configCont).find('.holder.keySignature').change((e: any) =>
-            painter.setKeySignature(e.target.value));
+        configCont.querySelector('.holder.keySignature')
+            .addEventListener('change', (e: any) => painter.setKeySignature(e.target.value));
     };
 
     init();

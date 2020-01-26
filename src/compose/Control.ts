@@ -13,12 +13,15 @@ import {Tls, IFraction} from "../utils/Tls";
 import {Adp} from "../Adp";
 import {S, IOpts} from "../utils/S";
 
-export function Control($chordListCont: JQuery, configCont: HTMLElement)
-{
-    let canvaser = CanvasProvider(() => +getComputedStyle($chordListCont[0]).getPropertyValue('--b-radius').slice(0, -2));
+import jQuery from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+const $: JQueryStatic = jQuery;
 
-    let $parentEl = $chordListCont.parent();
-    let chordListCont = $chordListCont[0];
+export function Control(chordListCont: HTMLDivElement, configCont: HTMLElement)
+{
+    const $chordListCont = $(chordListCont);
+
+    let canvaser = CanvasProvider(() => +getComputedStyle(chordListCont).getPropertyValue('--b-radius').slice(0, -2));
+    let $parentEl = $(chordListCont.parentElement);
 
     let log = (msg: string, data: any) => console.log('# Score control message: ', msg, data);
 

@@ -1,5 +1,6 @@
 
 import {Tls} from "../utils/Tls";
+import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
 
 // draws a piano layout on a canvas
 // and highlights notes when asked

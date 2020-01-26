@@ -3,6 +3,8 @@
 import {Tls} from "./utils/Tls";
 type NodeT = (string | HTMLElement | JQuery);
 
+import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+
 export type ColModel<Trow> = Array<{
     name: string,
     caption: string,

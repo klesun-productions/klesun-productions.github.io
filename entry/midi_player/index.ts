@@ -16,6 +16,8 @@ import {PresetList} from "../../src/views/PresetList";
 import PlaybackControl from "../../src/views/PlaybackControl";
 import {ServApi, ytlink_t} from "../../src/utils/ServApi";
 
+import jQuery from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+const $: JQueryStatic = jQuery;
 
 let $$ = (selector: string, el?: HTMLElement) =>
     <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
@@ -44,8 +46,8 @@ export let MainPage = function (mainCont: HTMLDivElement)
 
     const piano = PianoLayout(pianoCanvas);
     const synth = Switch(
-        <HTMLSelectElement>$(mainCont).find('#synthDropdown')[0],
-        <HTMLDivElement>$(mainCont).find('#synthControl')[0],
+        <HTMLSelectElement>mainCont.querySelector('#synthDropdown'),
+        <HTMLDivElement>mainCont.querySelector('#synthControl'),
         PresetList(instrumentInfoBlock)
     );
     piano.onClick((semitone) => synth.playNote(semitone, 0, 127, -1));

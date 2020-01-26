@@ -8,6 +8,7 @@ import {ISynth} from "./ISynth";
 import {Cls} from "../Cls";
 import {SpeedLog} from "../utils/SpeedLog";
 import {S} from "../utils/S";
+import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
 
 // we play sample audio files on "playNote()"
 

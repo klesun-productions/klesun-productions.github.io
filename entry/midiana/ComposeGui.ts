@@ -10,6 +10,9 @@ import {ServApi} from "../../src/utils/ServApi";
 let $$ = (selector: string, el?: HTMLElement) =>
     <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
 
+import jQuery from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+const $: JQueryStatic = jQuery;
+
 /**
  * provides mapping to dom elements
  */

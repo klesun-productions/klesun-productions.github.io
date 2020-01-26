@@ -3,6 +3,8 @@
 import {IShChannel, IChannel} from "../DataStructures";
 import {Tls} from "../utils/Tls";
 import {TableGenerator} from "../TableGenerator";
+import jQuery from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+const $: JQueryStatic = jQuery;
 
 // this module contains some object definitions
 // that do communication between UX and code

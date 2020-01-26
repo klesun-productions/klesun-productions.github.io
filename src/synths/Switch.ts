@@ -11,6 +11,7 @@ import {IChannel, IShChannel, IShmidusicChord} from "../DataStructures";
 import {IPresetList} from "../views/PresetList";
 import {SoundFontAdapter} from "./SoundFontAdapter";
 import {DenyaAdapter} from "./DenyaAdapter";
+import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
 
 export let Switch = function(
     dropdownEl: HTMLSelectElement,
@@ -43,7 +44,7 @@ export let Switch = function(
     Object.keys(synths).forEach(s => $(dropdownEl)
         .append($('<option></option>').val(s).html(s)));
 
-    $(dropdownEl).val('FluidSynth3').change(_ => {
+    $(dropdownEl).val('FluidSynth3').change(() => {
         let newValue = $(dropdownEl).val();
         $('body.withDenya').css('background-image', newValue === 'DenyaSynth' ? 'url(/imgs/denya_evil.png)' : 'url(/imgs/denya.png)');
         initSynth(synths[newValue]);

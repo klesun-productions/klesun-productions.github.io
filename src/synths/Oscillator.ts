@@ -6,6 +6,9 @@
 import {ISynth} from "./ISynth";
 import {IShChannel} from "../DataStructures";
 import {Tls} from "../utils/Tls";
+
+import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+
 type EWave = 'sine' | 'triangle' | 'sawtooth' | 'square';
 
 export function Oscillator(audioCtx: AudioContext): ISynth

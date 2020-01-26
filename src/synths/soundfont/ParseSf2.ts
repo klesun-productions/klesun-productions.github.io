@@ -7,13 +7,13 @@ import {dict_t} from "../../utils/SafeAccess";
 // overwrites global keys with local if any
 let updateGenerator = function(global: IGenerator, local: IGenerator): IGenerator
 {
-    return $.extend({}, global, local);
+    return Object.assign({}, global, local);
 };
 
 // adds the tuning semi-tones and cents; multiplies whatever needs to be multiplied
 let combineGenerators = function(global: IGenerator, local: IGenerator): IGenerator
 {
-    let result: IGenerator = $.extend({}, local);
+    let result: IGenerator = Object.assign({}, local);
     let dkr = {lo: 0, hi: 127};
 
     result.keyRange = {

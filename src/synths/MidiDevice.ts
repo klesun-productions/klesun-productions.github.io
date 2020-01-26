@@ -6,6 +6,7 @@ import MIDIOutput = WebMidi.MIDIOutput;
 import {ISynth} from "./ISynth";
 import {IShChannel} from "../DataStructures";
 import {Cls} from "../Cls";
+import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
 
 // following constants represent the X in bits of midi message
 // XXXX???? ???????? ????????
