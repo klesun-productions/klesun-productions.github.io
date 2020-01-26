@@ -24,7 +24,7 @@ interface iSounding {
     baseFrequency: number,
 };
 
-export let Fluid = Cls['Fluid'] = function(soundFont: ISoundFontAdapter): ISynth
+export let WebAudioSfSynth = function(soundFont: ISoundFontAdapter): ISynth
 {
     let audioCtx = Tls.audioCtx;
     let pitchShiftInput = <HTMLInputElement>$('<input type="number" step="0.5" value="0"/>')[0];

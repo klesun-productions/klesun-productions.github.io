@@ -22,7 +22,8 @@
     "no-undef": "error"
   ,"comma-dangle": ["warn", {
       "arrays": "always-multiline",
-      "objects": "always-multiline"
+      "objects": "always-multiline",
+      "exports": "always-multiline"
     }]
   },
   "globals": {
@@ -40,6 +41,9 @@
     "__dirname": false,
     "require": false,
 
-    "alert": false
+    "alert": false,
+    "DataView": false,
+    "ArrayBuffer": false,
+    "Uint8Array": false
   }
 }

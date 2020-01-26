@@ -4,7 +4,7 @@
 
 import {Oscillator} from "./Oscillator";
 import {MidiDevice} from "./MidiDevice";
-import {Fluid} from "./Fluid";
+import {WebAudioSfSynth} from "./WebAudioSfSynth";
 import {ISynth} from "./ISynth";
 import {Tls} from "../utils/Tls";
 import {IChannel, IShChannel, IShmidusicChord} from "../DataStructures";
@@ -27,9 +27,9 @@ export let Switch = function(
     let synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(Tls.audioCtx),
         midiDevice: MidiDevice(),
-        FluidSynth3: Fluid(SoundFontAdapter('/out/sf2parsed/fluid/')),
-        ZUNPet: Fluid(SoundFontAdapter('/out/sf2parsed/zunpet/')),
-        DenyaSynth: Fluid(DenyaAdapter()),
+        FluidSynth3: WebAudioSfSynth(SoundFontAdapter('/out/sf2parsed/fluid/')),
+        ZUNPet: WebAudioSfSynth(SoundFontAdapter('/out/sf2parsed/zunpet/')),
+        DenyaSynth: WebAudioSfSynth(DenyaAdapter()),
     };
 
     let initSynth = function(choosen: ISynth)
