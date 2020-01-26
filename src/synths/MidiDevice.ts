@@ -20,8 +20,7 @@ const SET_PITCH_BEND = 224;
 
 /** sends noteOn messages to a synth device rather than playing notes through speakers
   * Web MIDI is supported only by Chrome at the moment */
-export var MidiDevice = Cls['MidiDevice'] = function(): IMidiDevice
-{
+export var MidiDevice = (): IMidiDevice => {
     var volume = 110;
 
     var firstInit = true;

@@ -58,7 +58,7 @@ export function Player(control: IPlaybackControl)
             tune, channel, velocity, index
         ));
         return () => offList.forEach(release => release());
-    }
+    };
 
     let playChord = function(notes: IShNote[], tempo?: number, index?: number)
     {

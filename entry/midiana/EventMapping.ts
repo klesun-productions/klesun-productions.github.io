@@ -238,7 +238,7 @@ const EventMapping = ({control, gui, composeActions, painter, composePlayback}: 
         handleHashChange();
         subscribeToMidiEvents();
         gui.piano.onClick(composePlayback.handleMouseNoteClick);
-        subscribeToKeyboardEvents(gui.sheetMusictCont);
+        subscribeToKeyboardEvents(gui.sheetMusicCont);
 
         gui.configCont.querySelector('.holder.keySignature')
             .addEventListener('change', (e: any) => painter.setKeySignature(e.target.value));

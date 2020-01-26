@@ -87,7 +87,4 @@ interface Response extends Body {
 declare var fetch: (url: string, options: FetchOptions) => Promise<Response>;
 declare var fetch: (url: string) => Promise<Response>;
 
-declare module "https://*.js" {
-	const x: any;
-	export = x;
-}
+declare module '*.js';

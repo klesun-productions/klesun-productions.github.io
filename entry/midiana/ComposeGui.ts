@@ -10,13 +10,12 @@ import {ServApi} from "../../src/utils/ServApi";
 let $$ = (selector: string, el?: HTMLElement) =>
     <HTMLElement[]>Array.from((el || document).querySelectorAll(selector));
 
-import jQuery from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
-const $: JQueryStatic = jQuery;
+import {$} from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
 
 /**
  * provides mapping to dom elements
  */
-export let ComposeGui = function(cont: HTMLDivElement)
+export let ComposeGui = function(cont: HTMLDivElement, sf3Adapter: any = null)
 {
     let painter = SheetMusicPainter('sheetMusicDiv', $$('#visualConfigDiv', cont)[0]);
     painter.setEnabled(true);
@@ -72,7 +71,7 @@ export let ComposeGui = function(cont: HTMLDivElement)
         synthSwitch: Switch(
             <HTMLSelectElement>$$('#synthDropdown', cont)[0],
             <HTMLDivElement>$$('#synthControl', cont)[0],
-            channelListControl
+            channelListControl, sf3Adapter
         ),
         enableMidiInputFlag: <HTMLInputElement>$$('.enableMidiInputFlag')[0],
         enablePlayOnKeyDownFlag: <HTMLInputElement>$$('.enablePlayOnKeyDownFlag')[0],
@@ -80,6 +79,6 @@ export let ComposeGui = function(cont: HTMLDivElement)
         enableVisualizedPlaybackFlag: <HTMLInputElement>$$('.enableVisualizedPlaybackFlag')[0],
         inputChannelDropdown: inputChannelDropdown,
         configCont: $$('#playbackConfigDiv', cont)[0],
-        sheetMusictCont: sheetMusicCont,
+        sheetMusicCont: sheetMusicCont,
     };
 };

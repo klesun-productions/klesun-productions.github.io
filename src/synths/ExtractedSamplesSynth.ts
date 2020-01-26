@@ -27,7 +27,7 @@ interface iSounding {
 /**
  * unlike Sf3Synth, this one works with each sample as a _separate_ file on the internets
  */
-export let WebAudioSfSynth = function(soundFont: ISoundFontAdapter): ISynth
+export let ExtractedSamplesSynth = function(soundFont: ISoundFontAdapter): ISynth
 {
     let audioCtx = Tls.audioCtx;
     let pitchShiftInput = <HTMLInputElement>$('<input type="number" step="0.5" value="0"/>')[0];
@@ -44,7 +44,7 @@ export let WebAudioSfSynth = function(soundFont: ISoundFontAdapter): ISynth
     let pitchBendByChannel = S.range(0,16).map(i => 0);
     let volumeByChannel = S.range(0,16).map(i => 1);
 
-    let MAX_VOLUME = 0.15;
+    let MAX_VOLUME = 0.20;
 
     // used for ... suddenly fallback.
     // when new note is about to be played we need time to load it

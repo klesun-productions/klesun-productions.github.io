@@ -5,14 +5,23 @@ import {ComposeGui} from "./ComposeGui";
 import EventMapping from "./EventMapping";
 import ComposeActions from "./ComposeActions";
 import ComposePlayback from "./ComposePlayback";
-
+import {Tls} from "../../src/utils/Tls";
+import SfAdapter from '../../src/js/sfplayerjs/SfAdapter.js';
 
 /**
  * this function binds some events: midi/mouse/keyboard to the
  * SheetMusicPainter in other words, it allows to write the sheet music
  */
-const index = (cont: HTMLDivElement) => {
-    let gui = ComposeGui(cont);
+const index = async ({
+    cont, whenSfBuffer,
+}: {
+    cont: HTMLDivElement,
+    whenSfBuffer: Promise<ArrayBuffer>,
+}) => {
+    const sf3Adapter = await whenSfBuffer.then(async sfBuffer => {
+        return SfAdapter(sfBuffer, Tls.audioCtx, true);
+    });
+    let gui = ComposeGui(cont, sf3Adapter);
     let painter = gui.painter;
     let configCont = gui.configCont;
 
@@ -25,11 +34,18 @@ const index = (cont: HTMLDivElement) => {
         gui, control, composeActions,
     });
 
-    const main = () => {
+    const loadFluid = async () => {
+        let sfFluidUrl = 'https://dl.dropbox.com/s/dm2ocmb96nkl458/fluid.sf3?dl=0';
+        const sfBuffer = await fetch(sfFluidUrl, {}).then(rs => rs.arrayBuffer());
+        return SfAdapter(sfBuffer, Tls.audioCtx, true);
+    };
+
+    const main = async () => {
         EventMapping({
             control, gui, composeActions,
             painter, composePlayback,
         });
+        whenSfBuffer;
     };
 
     return main();

@@ -4,7 +4,7 @@
 
 import {Oscillator} from "./Oscillator";
 import {MidiDevice} from "./MidiDevice";
-import {WebAudioSfSynth} from "./WebAudioSfSynth";
+import {ExtractedSamplesSynth} from "./ExtractedSamplesSynth";
 import {ISynth} from "./ISynth";
 import {Tls} from "../utils/Tls";
 import {IChannel, IShChannel, IShmidusicChord} from "../DataStructures";
@@ -12,11 +12,13 @@ import {IPresetList} from "../views/PresetList";
 import {SoundFontAdapter} from "./SoundFontAdapter";
 import {DenyaAdapter} from "./DenyaAdapter";
 import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
+import WebAudioSfSynthWrapper from "./WebAudioSfSynthWrapper";
 
 export let Switch = function(
     dropdownEl: HTMLSelectElement,
     controlEl: HTMLDivElement,
-    presetListControl: IPresetList
+    presetListControl: IPresetList,
+    sf3Adapter: any = null
 ): ISwitch
 {
     let channels: {[c: number]: IShChannel} = Tls.range(0,16).map(i => 1 && {preset: 0});
@@ -27,9 +29,10 @@ export let Switch = function(
     let synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(Tls.audioCtx),
         midiDevice: MidiDevice(),
-        FluidSynth3: WebAudioSfSynth(SoundFontAdapter('/out/sf2parsed/fluid/')),
-        ZUNPet: WebAudioSfSynth(SoundFontAdapter('/out/sf2parsed/zunpet/')),
-        DenyaSynth: WebAudioSfSynth(DenyaAdapter()),
+        FluidSynth3: ExtractedSamplesSynth(SoundFontAdapter('/out/sf2parsed/fluid/')),
+        ZUNPet: ExtractedSamplesSynth(SoundFontAdapter('/out/sf2parsed/zunpet/')),
+        DenyaSynth: ExtractedSamplesSynth(DenyaAdapter()),
+        ...(!sf3Adapter ? {} : {sf3: WebAudioSfSynthWrapper(sf3Adapter)}),
     };
 
     let initSynth = function(choosen: ISynth)
