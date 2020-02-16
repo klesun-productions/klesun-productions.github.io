@@ -9,7 +9,6 @@ import {ISynth} from "./ISynth";
 import {Tls} from "../utils/Tls";
 import {IChannel, IShChannel, IShmidusicChord} from "../DataStructures";
 import {IPresetList} from "../views/PresetList";
-import {SoundFontAdapter} from "./SoundFontAdapter";
 import {DenyaAdapter} from "./DenyaAdapter";
 import $ from 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js';
 import WebAudioSfSynthWrapper from "./WebAudioSfSynthWrapper";
@@ -29,25 +28,23 @@ export let Switch = function(
     let synths: {[k: string]: ISynth} = {
         oscillator: Oscillator(Tls.audioCtx),
         midiDevice: MidiDevice(),
-        FluidSynth3: ExtractedSamplesSynth(SoundFontAdapter('/out/sf2parsed/fluid/')),
-        ZUNPet: ExtractedSamplesSynth(SoundFontAdapter('/out/sf2parsed/zunpet/')),
         DenyaSynth: ExtractedSamplesSynth(DenyaAdapter()),
         ...(!sf3Adapter ? {} : {sf3: WebAudioSfSynthWrapper(sf3Adapter)}),
     };
 
-    let initSynth = function(choosen: ISynth)
+    let initSynth = function(chosen: ISynth)
     {
-        choosen.init($(controlEl));
-        choosen.consumeConfig(channels);
+        chosen.init($(controlEl));
+        chosen.consumeConfig(channels);
 
-        Tls.fori(pitchBendByChannel, (chan, koef) => choosen.setPitchBend(koef, chan));
-        Tls.fori(volumeByChannel, (chan, koef) => choosen.setVolume(koef, chan));
+        Tls.fori(pitchBendByChannel, (chan, koef) => chosen.setPitchBend(koef, chan));
+        Tls.fori(volumeByChannel, (chan, koef) => chosen.setVolume(koef, chan));
     };
 
     Object.keys(synths).forEach(s => $(dropdownEl)
         .append($('<option></option>').val(s).html(s)));
 
-    $(dropdownEl).val('FluidSynth3').change(() => {
+    $(dropdownEl).val('sf3').change(() => {
         let newValue = $(dropdownEl).val();
         $('body.withDenya').css('background-image', newValue === 'DenyaSynth' ? 'url(/imgs/denya_evil.png)' : 'url(/imgs/denya.png)');
         initSynth(synths[newValue]);
