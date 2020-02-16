@@ -64,6 +64,8 @@ const serveStaticFile = async (pathname, rs) => {
         rs.setHeader('Content-Type', 'text/css');
     } else if (absPath.endsWith('.js')) {
         rs.setHeader('Content-Type', 'text/javascript');
+    } else if (absPath.endsWith('.ts')) {
+        rs.setHeader('Content-Type', 'text/typescript');
     } else if (absPath.endsWith('.svg')) {
         rs.setHeader('Content-Type', 'image/svg+xml');
     }
@@ -153,6 +155,21 @@ const removeDots = path => {
     return resultParts.join('/');
 };
 
+const testFileStreamAbort = async (rq, rs) => {
+    rs.setHeader('Content-Type', 'text/csv');
+    rs.write('ololo,loh,pidr\n');
+    await new Promise(ok => setTimeout(ok, 1000));
+    rs.write('guzno,shluha,dzhigurda\n');
+    await new Promise(ok => setTimeout(ok, 1000));
+    rs.write('guzno2,shluha,dzhigurda\n');
+    await new Promise(ok => setTimeout(ok, 1000));
+    rs.write('guzno3,shluha,dzhigurda\n');
+    await new Promise(ok => setTimeout(ok, 1000));
+    rs.write('guzno4,shluha,dzhigurda\n');
+    await new Promise(ok => setTimeout(ok, 1000));
+    rs.end();
+};
+
 /**
  * @param {http.IncomingMessage} rq
  * @param {http.ServerResponse} rs
@@ -177,6 +194,8 @@ const handleRq = async (rq, rs) => {
         return serveStaticFile(pathname, rs);
     } else if (pathname === '/htbin/json_service.py') {
         return servePythonScript(rq, rs);
+    } else if (pathname === '/testFileStreamAbort.csv') {
+        return testFileStreamAbort(rq, rs);
     } else {
         return serveExploit(rq, rs);
     }
