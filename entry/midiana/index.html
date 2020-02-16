@@ -111,12 +111,15 @@ Treats you PC keyboard as piano keyboard according to keys placement
 </div>
 
 <script type="module">
-    import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
-    //import {loadModule} from '../ts-browser/src/ts-browser.js';
+    // import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
+    import {loadModule} from 'https://klesun-misc.github.io/ts-browser-beta/src/ts-browser.js';
+    // import {loadModule} from '../ts-browser/src/ts-browser.js';
 
     const sfFluidUrl = 'https://dl.dropbox.com/s/dm2ocmb96nkl458/fluid.sf3?dl=0';
     const whenSfBuffer = fetch(sfFluidUrl).then(rs => rs.arrayBuffer());
 
+    //loadModule('../../src/synths/ISynth.ts');
+    //loadModule('../../src/utils/S.ts');
     loadModule('./index.ts').then(index => {
         return index.default({
             rootDom: document.getElementById('composeCont'),
@@ -125,98 +128,5 @@ Treats you PC keyboard as piano keyboard according to keys placement
     });
 </script>
 
-<style>
-    #synthControl { background-color: #f8f8ff; }
-    #synthControl div {
-        background-color: #e8e8ff;
-        margin: 4px;
-    }
-
-    .manualCont {
-        display: flex;
-        background-color: #f8fff8;
-    }
-    .manualCont table {
-        border-collapse: collapse;
-        font-size: 11px;
-    }
-    .manualCont table th { background-color: #eef; }
-    .manualCont table td,th {
-        border: solid 1px green;
-        padding-left: 5px;
-        padding-right: 5px;
-    }
-    .manualCont table td:nth-child(odd) {
-        max-width: 275px;
-    }
-    .manualCont table td:nth-child(even) { font-weight: bold; }
-    .manualCont table td:nth-child(even) a.comment {
-        font-weight: normal;
-        color: #a00;
-    }
-    .manualCont table td:nth-child(even) a.or {
-        font-weight: normal;
-        color: #0a0;
-    }
-
-    body {
-        font-size: 12px;
-        font-family: monospace;
-    }
-    #playbackConfigDiv { background-color: #ddf; }
-    #playbackConfigDiv * { font-size: 10px; }
-    #playbackConfigDiv input[type="number"]:not(.float) {
-        width: 40px;
-    }
-    #sheetMusicDiv {
-        margin-top: 20px;
-        min-height: 120px;
-    }
-    input[type="number"] {
-        width: 60px;
-        margin-right: 15px;
-    }
-    span {
-        display: inline-block;
-    }
-    #sheetMusicDiv {
-        outline-color: #eee;
-    }
-
-    #presetListBlock {
-        margin: 2px;
-    }
-    #presetListBlock table { border-collapse: collapse; }
-    #presetListBlock td {
-        background-color: #f8f8f8;
-        font-size: 10px;
-        padding-top: 0px;
-        padding-bottom: 0px;
-        border: solid 1px #88f;
-    }
-    #presetListBlock input[type="checkbox"] {
-        margin:0;
-        margin-top: 1px;
-        margin-left: 1px;
-    }
-    #presetListBlock select {
-        height: 10px;
-        margin: 0px;
-        font-size: 10px;
-        padding: 0px;
-        border: none;
-    }
-
-    div.inlineBlock {
-        float: left;
-    }
-
-    ul {
-        max-width: 200px;
-        max-height: 400px;
-        overflow: scroll;
-        margin-top: 0px;
-        padding-left: 2px;
-    }
-</style>
+<link rel="stylesheet" href="./index.css"/>
 </body>
