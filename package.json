@@ -7,16 +7,7 @@
   "dependencies": {
     "http-proxy": "^1.18.0",
     "python-shell": "^1.0.8",
-    "sf2-parser": "git+https://github.com/colinbdclark/sf2-parser.git#0451014a6e64c0495e61d9d08f9c9dde0c371876",
-    "soundfont-parser": "^0.1.1",
     "klesun-node-tools": "git+https://github.com/klesun-misc/klesun-node-tools.git#7fac60a8286dc88605b6e7218bbd70c5b0f38305",
-    "sqlite": "^3.0.3",
-    "typescript": "^3.7.4"
-  },
-  "scripts": {
-    "tsc": "tsc"
-  },
-  "devDependencies": {
-    "requirejs": "2.3.3"
+    "sqlite": "^3.0.3"
   }
 }
