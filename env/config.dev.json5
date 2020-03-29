@@ -1,0 +1,7 @@
+{
+  "dbEngine": "sqlite", // "mysql" or "sqlite"
+  "gmailAuth": {
+    "user": "robot.travel.hacks@gmail.com",
+    "pass": null, // "fake-qwerty-123"
+  },
+}

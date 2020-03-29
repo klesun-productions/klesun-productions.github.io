@@ -15,7 +15,7 @@ const main = async () => {
             const rootPath = __dirname;
             HandleHttpRequest({rq, rs, rootPath}).catch(exc => {
                 rs.statusCode = exc.httpStatusCode || 500;
-                rs.statusMessage = (exc + '').slice(0, 300);
+                rs.statusMessage = ((exc || {}).message || exc + '' || '(empty error)').slice(0, 300);
                 rs.end(JSON.stringify({error: exc + '', stack: exc.stack}));
                 const clientIp = rq.connection.remoteAddress
                     || rq.socket.remoteAddress

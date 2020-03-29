@@ -39,3 +39,4 @@ __pycache__
 /libs.bak/
 /tests/borrowed/
 /Thumbs.db
+/env/config.json5
