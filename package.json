@@ -7,7 +7,7 @@
   "dependencies": {
     "http-proxy": "^1.18.0",
     "python-shell": "^1.0.8",
-    "klesun-node-tools": "git+https://github.com/klesun-misc/klesun-node-tools.git#7fac60a8286dc88605b6e7218bbd70c5b0f38305",
+    "klesun-node-tools": "git+https://github.com/klesun-misc/klesun-node-tools.git#80591d75eb901f0c061cef3c487db878be588784",
     "sqlite": "^3.0.3"
   }
 }
