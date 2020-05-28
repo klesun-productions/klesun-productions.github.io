@@ -18,7 +18,7 @@ const notifyMeViaEmail = async (data) => {
     });
     return transporter.sendMail({
         from: '"' + data.ordererEmail + '" <app@klesun-productions.com>',
-        to: 'arturklesun@gmail.com',
+        to: 'dogzy123@gmail.com, arturklesun@gmail.com',
         subject: 'A new software order from ' + data.ordererEmail,
         text: data.freeFormDescription,
         html: Xml('div', {}, [
