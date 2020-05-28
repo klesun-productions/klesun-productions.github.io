@@ -56,7 +56,6 @@ const serveStaticFile = async (pathname, rs, rootPath) => {
     if ((await fs.lstat(absPath)).isDirectory()) {
         return redirect(rs, pathname + '/');
     }
-    const bytes = await fs.readFile(absPath);
     if (absPath.endsWith('.html')) {
         rs.setHeader('Content-Type', 'text/html');
     } else if (absPath.endsWith('.css')) {
@@ -68,7 +67,8 @@ const serveStaticFile = async (pathname, rs, rootPath) => {
     } else if (absPath.endsWith('.svg')) {
         rs.setHeader('Content-Type', 'image/svg+xml');
     }
-    rs.end(bytes);
+	fsSync.createReadStream(absPath).pipe(rs);
+    //rs.end(bytes);
 };
 
 /**
