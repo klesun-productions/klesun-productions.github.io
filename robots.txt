@@ -1,3 +1,5 @@
 # feel free to index my pages however you want, google
 User-agent: *
 Allow: /
+
+Sitemap: https://klesun-productions.com/entry/sitemap.xml
