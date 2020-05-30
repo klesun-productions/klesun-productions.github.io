@@ -1,0 +1,63 @@
+<html>
+<head>
+    <script src="https://cdn.rawgit.com/showdownjs/showdown/1.7.2/dist/showdown.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css">
+    <title>deep-assoc-completion vscode</title>
+    <link rel="shortcut icon" type="image/png" href="../../imgs/deep_16_ruby2.png"/>
+</head>
+<body>
+    <main>
+        <div class="header-holder">
+            <h2><img class="logo-icon" src="../../imgs/deep_16_ruby2.png"/>deep-assoc-completion vscode</h2>
+            <h6>a <a href="https://code.visualstudio.com/">vscode</a> plugin for associative array auto-completion inferred from assignment expressions and <a href="https://psalm.dev/docs/annotating_code/type_syntax/array_types/#object-like-arrays">PSALM</a> phpdoc</h6>
+            <a href="https://github.com/klesun/deep-assoc-completion-vscode">sources</a>
+            |
+            <a href="https://marketplace.visualstudio.com/items?itemName=klesun.deep-assoc-completion-vscode&ssr=false#overview">vscode repo page</a>
+            |
+            <a href="/">site home</a>
+        </div>
+        <div class="docs-markdown-holder">
+            Please, wait - markdown is being rendered... (or link is broken if you're still reading this)
+        </div>
+    </main>
+
+<script>
+(function(){
+    let http = function(url, then) {
+        var http = new XMLHttpRequest();
+        http.open('GET', url, true);
+        http.onload = () => then(http.responseText);
+        http.send(null);
+    };
+    let $$ = s => [...document.querySelectorAll(s)];
+    
+    let url = 'https://raw.githubusercontent.com/klesun/deep-assoc-completion-vscode/master/README.md';
+    http(url, (resp) => {
+        let html = new showdown.Converter().makeHtml(resp);
+        $$('.docs-markdown-holder')[0].innerHTML = html;
+    });
+}());
+</script>
+
+</body>
+
+<style>
+main {
+    padding: 16px;
+}
+.header-holder {
+    text-align: center;
+}
+.docs-markdown-holder {
+    margin: 32px;
+    padding: 32px;
+    border: solid grey 2px;
+}
+.logo-icon {
+    height: 48px;
+    margin-right: 24px;
+    image-rendering: optimizeSpeed; /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: pixelated; /* Chrome */
+}
+</style>
+</html>
