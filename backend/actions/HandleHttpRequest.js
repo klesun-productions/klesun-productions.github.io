@@ -67,7 +67,7 @@ const serveStaticFile = async (pathname, rs, rootPath) => {
     } else if (absPath.endsWith('.svg')) {
         rs.setHeader('Content-Type', 'image/svg+xml');
     }
-	fsSync.createReadStream(absPath).pipe(rs);
+    fsSync.createReadStream(absPath).pipe(rs);
     //rs.end(bytes);
 };
 
@@ -127,6 +127,10 @@ const setCorsHeaders = rs => {
 const apiRoutes = {
     '/api/orderSoftware': async (rq) => {
         const postStr = await readPost(rq);
+        if (!postStr) {
+            const msg = 'POST body missing, must be a JSON string';
+            return Rej.BadRequest(msg);
+        }
         const postData = JSON.parse(postStr);
         const sqlResult = await SoftwareOrders().insert({data: postData});
         // should probably send an email notification...
