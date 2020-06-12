@@ -28,8 +28,8 @@ const main = async () => {
         }
     };
     https.createServer({
-        key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey2.pem'),
-        cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert2.pem'),
+        key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey3.pem'),
+        cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert3.pem'),
     }, handleRq).listen(443, '0.0.0.0', () => {
         console.log('listening https://klesun-productions.com');
     });
