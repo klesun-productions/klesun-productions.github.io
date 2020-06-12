@@ -1,0 +1,92 @@
+<header>
+    <title>Trigonal Tiles Board Game</title>
+    <meta charset="utf8"/>
+</header>
+
+<body>
+
+<div>
+    <h2>Trilemma</h2>
+    <div style="overflow: auto">
+        <svg class="tile-map-holder"></svg>
+    </div>
+
+    <p>Ok, here it goes...</p>
+    <p>йо. помнишь ты предлагал сделать игру типа цивы? У меня тут одна идейка небольшая появилась...</p>
+    <img src="./docs/concept_art.jpg"/>
+    <p>знаешь как в циве клетки шестиугольные? Я такое в нескольких играх видел, но нигде ешё не видел _треугольных_ клеток</p>
+    <p>можно наверное особенный геймпелй на это накрутить</p>
+    <p>в настолках разве что видел...</p>
+    <p>типа обычно у тебя довольно прямолинейный выбор куда ходить: вперёд, назад, вверх вниз, а тут как бы варианты: назад, влево, вправо</p>
+    <p>это как минимум красиво будет, математично</p>
+    <p>а если ещё и уникальную механику удастся придумать, так вообще кайф</p>
+    <p>можно например что-то типа захвата территорий сделать на 3 игрока...</p>
+    <p>а, в poe кстати дерево талантов тоже треугольное...</p>
+    <p>можно сделать чтоб каждая клетка давала какой-то бонус, и чтоб постоянно приходилось выбирать: левый или правый...</p>
+    <p>например: бонус к какому-то из 3-х аттрибутов, и побеждает тот игрок, у которого в конце аттрибуты ближе всего по значению, или при перемножении дают самое большое число... (что по сути одно и тоже мне кажется)</p>
+<pre>
+21 + 3 + 1 = 25
+
+23 * 1 * 1 = 23
+8 * 8 * 9 = 64 * 9
+12 * 12 * 1 = 144
+</pre>
+    <p>завтра приеду, наверное обсудим, набросаю черновик игры...</p>
+    <p>и назвать игру: Newfags Can Triforce</p>
+    <p>Или Trilemma</p>
+    <p>а в рунете её будут сленгово называть "го в три ляма каточку"</p>
+    <p>Недоконца понял, это-таки стратегия с развитием как цива или что-то другое?</p>
+    <p>пока чёткой идеи нет, но больше склоняюсь к тому чтоб сделать как игру на игровой доске с матчами минут на 10</p>
+    <p>просто логическую</p>
+</div>
+
+<script type="module">
+import {Svg} from './src/Dom.js';
+
+(async () => {
+    const tileMapHolder = document.querySelector('.tile-map-holder');
+    const LEVELS = 8;
+    const TILE_WIDTH = 96;
+    const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
+    const BOARD_WIDTH_PX = LEVELS * TILE_WIDTH;
+    const BOARD_HEIGHT_PX = LEVELS * TILE_HEIGHT;
+    tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
+    tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
+
+    const makeTile = (x, y, scale = 1) => {
+        return Svg('polygon', {
+            points: [
+                {dx: -TILE_WIDTH / 2, dy: TILE_HEIGHT / 2},
+                {dx: +TILE_WIDTH / 2, dy: TILE_HEIGHT / 2},
+                {dx: 0, dy: -TILE_HEIGHT / 2},
+            ]   .map(({dx,dy}) => [x + dx * scale, y + dy * scale].join(','))
+                .join(' '),
+        });
+    };
+
+    for (let i = 0; i < LEVELS; ++i) {
+        for (let j = 0; j < i * 2 + 1; ++j) {
+            const x = j * TILE_WIDTH / 2 - i * TILE_WIDTH / 2;
+            const y = i * TILE_HEIGHT;
+            const scale = j % 2 ? -1 : 1;
+            //const scale = 1;
+            const poly = makeTile(BOARD_WIDTH_PX / 2 + x, TILE_HEIGHT / 2 + y, scale);
+            tileMapHolder.appendChild(poly);
+        }
+    }
+})();
+</script>
+
+<style>
+    polygon {
+        fill: #57b9ff;
+        stroke: white;
+        stroke-width: 1px;
+    }
+    polygon:hover {
+        fill: blue;
+        cursor: pointer;
+    }
+</style>
+
+</body>
