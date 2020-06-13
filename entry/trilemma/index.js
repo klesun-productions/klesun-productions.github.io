@@ -34,13 +34,22 @@ const getInput = () => new Promise((ok,err) => {
         }
         if (removeListener) {
             window.removeEventListener('keydown', listener);
+            evt.preventDefault();
+            return false;
+        } else {
+            return true;
         }
     };
     window.addEventListener('keydown', listener);
 });
 
 (async () => {
-    const tileMapHolder = document.querySelector('.tile-map-holder');
+    const gui = {
+        tileMapHolder: document.querySelector('.tile-map-holder'),
+        turnsLeftHolder: document.querySelector('.turns-left-holder'),
+        playerList: document.querySelector('.player-list'),
+    };
+
     const LEVELS = 14;
     const TILE_WIDTH = 60;
     const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
@@ -77,8 +86,8 @@ const getInput = () => new Promise((ok,err) => {
         let totalCells = 0;
         const matrix = [];
 
-        tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
-        tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
+        gui.tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
+        gui.tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
         for (let i = 0; i < LEVELS; ++i) {
             for (let j = 0; j < i * 2 + 1; ++j) {
@@ -92,7 +101,7 @@ const getInput = () => new Promise((ok,err) => {
                     ++totalCells;
                 }
 
-                tileMapHolder.appendChild(svgEl);
+                gui.tileMapHolder.appendChild(svgEl);
 
                 matrix[i] = matrix[i] || {};
                 matrix[i][j] = {
@@ -147,6 +156,14 @@ const getInput = () => new Promise((ok,err) => {
             }
         };
 
+        const updateStatsTable = (pendingPlayer) => {
+            for (const tr of gui.playerList.children) {
+                const trOwner = tr.getAttribute('data-owner');
+                const turnPending = trOwner === pendingPlayer.codeName;
+                tr.classList.toggle('turn-pending', turnPending);
+            }
+        };
+
         const players = [
             // TODO: calc positions dynamically based on board size
             {x: 8, y: 8, codeName: 'DARK'},
@@ -161,8 +178,10 @@ const getInput = () => new Promise((ok,err) => {
             tile.svgEl.setAttribute('data-stander', player.codeName);
         }
 
-        for (let i = 0; i < totalCells / 3 - 1; ++i) {
+        for (let turnsLeft = totalCells / 3 - 1; turnsLeft > 0; --turnsLeft) {
+            gui.turnsLeftHolder.textContent = turnsLeft;
             for (const player of players) {
+                updateStatsTable(player);
                 await processTurn(player);
             }
         }
