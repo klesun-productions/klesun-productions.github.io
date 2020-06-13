@@ -79,12 +79,14 @@ polygon.effects-overlay {
 }
 [data-owner="DARK"] .player-name-holder { color: magenta; }
 [data-stander="DARK"] polygon.effects-overlay { stroke: magenta; }
+
 [data-owner="LIGHT"] polygon.effects-overlay {
     fill: rgba(255,255,255,0.15);
-    stroke: #aed895;
+    stroke: #9ab55a;
 }
 [data-owner="LIGHT"] .player-name-holder { color: yellow; }
 [data-stander="LIGHT"] polygon.effects-overlay { stroke: yellow; }
+
 [data-owner="GREY"] polygon.effects-overlay {
     fill: rgba(127,127,127,0.25);
     stroke: #248faf;

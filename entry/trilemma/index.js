@@ -157,10 +157,31 @@ const getInput = () => new Promise((ok,err) => {
         };
 
         const updateStatsTable = (pendingPlayer) => {
+            const playerToResourceToSum = {};
+            for (const row of Object.values(matrix)) {
+                for (const tile of Object.values(row)) {
+                    const player = tile.svgEl.getAttribute('data-owner');
+                    const resource = tile.svgEl.getAttribute('data-resource');
+                    playerToResourceToSum[player] = playerToResourceToSum[player] || {};
+                    playerToResourceToSum[player][resource] = playerToResourceToSum[player][resource] || 0;
+                    playerToResourceToSum[player][resource] += 1;
+                }
+            }
             for (const tr of gui.playerList.children) {
                 const trOwner = tr.getAttribute('data-owner');
                 const turnPending = trOwner === pendingPlayer.codeName;
                 tr.classList.toggle('turn-pending', turnPending);
+                let multiplication = 1;
+                for (const td of tr.querySelectorAll('[data-resource]')) {
+                    const resource = td.getAttribute('data-resource');
+                    let sum = (playerToResourceToSum[trOwner] || {})[resource] || 0;
+                    sum += 1; // players start with 1, because otherwise they would need
+                              // to collect _each_ resource to at least _nominate_ for winning
+                              // and I like the idea of rare resource sources quantity being random
+                    multiplication *= sum;
+                    td.textContent = sum;
+                }
+                tr.querySelector('.score-holder').textContent = multiplication;
             }
         };
 
@@ -178,7 +199,7 @@ const getInput = () => new Promise((ok,err) => {
             tile.svgEl.setAttribute('data-stander', player.codeName);
         }
 
-        for (let turnsLeft = totalCells / 3 - 1; turnsLeft > 0; --turnsLeft) {
+        for (let turnsLeft = Math.floor(totalCells / 3) - 1; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
             for (const player of players) {
                 updateStatsTable(player);
