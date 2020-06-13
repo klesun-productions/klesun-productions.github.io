@@ -56,14 +56,23 @@ polygon.effects-overlay {
 }
 [data-owner="DARK"] polygon.effects-overlay {
     fill: rgba(0,0,0,0.25);
+    stroke: #6c12bf;
+}
+[data-stander="DARK"] polygon.effects-overlay {
     stroke: magenta;
 }
 [data-owner="LIGHT"] polygon.effects-overlay {
     fill: rgba(255,255,255,0.25);
+    stroke: #aed895;
+}
+[data-stander="LIGHT"] polygon.effects-overlay {
     stroke: yellow;
 }
 [data-owner="GREY"] polygon.effects-overlay {
     fill: rgba(127,127,127,0.25);
+    stroke: #248faf;
+}
+[data-stander="GREY"] polygon.effects-overlay {
     stroke: cyan;
 }
 
