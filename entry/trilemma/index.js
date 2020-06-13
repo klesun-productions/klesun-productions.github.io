@@ -9,17 +9,22 @@ import {Svg} from './src/Dom.js';
     const BOARD_WIDTH_PX = LEVELS * TILE_WIDTH;
     const BOARD_HEIGHT_PX = LEVELS * TILE_HEIGHT;
 
-    const SPACING_FACTOR = 0.1;
-
     const makeTile = (x, y, isEven) => {
-        let scale = isEven ? 1 : -1;
-        scale = scale * (1 - SPACING_FACTOR);
+        if (!isEven) {
+            y -= TILE_HEIGHT / 3;
+        }
         return Svg('polygon', {
+            'transform-origin': x + 'px ' + y + '0px',
             points: [
                 {dx: -TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
                 {dx: +TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
                 {dx: 0, dy: -TILE_HEIGHT * 2/3},
-            ]   .map(({dx,dy}) => [x + dx * scale, y + dy * scale - (isEven ? 0 : TILE_HEIGHT / 3)].map(n => n.toFixed(3)).join(','))
+            ]   .map(
+                    ({dx,dy}) => [
+                        x + dx,
+                        y + dy * (isEven ? 1 : -1),
+                    ].map(n => n.toFixed(3)).join(',')
+                )
                 .join(' '),
         });
     };

@@ -32,6 +32,7 @@ polygon {
     stroke: var(--triangle-border-color);
     stroke-width: 1px;
     transition: 0.15s ease-in-out;
+    transform: scale(0.9);
 }
 polygon[data-resource="WHEAT"] {
     fill: #366536;
