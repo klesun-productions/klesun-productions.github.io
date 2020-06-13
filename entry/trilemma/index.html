@@ -1,44 +1,127 @@
-<header>
+<head>
     <title>Trigonal Tiles Board Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;700&display=swap" rel="stylesheet">
     <meta charset="utf8"/>
-</header>
+    <style>
+        :root {
+            --main-game-bg: #151515;
+            --game-title-color: #b456cc;
+            --triangle-color: #313131;
+            --triangle-border-color: #b3b3b3;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--main-game-bg);
+            overflow-y: hidden;
+            box-shadow:
+                    inset 0 0 35px #000,
+                    inset -8px 0 275px #5a3d92,
+                    inset -18px 0 54px #1b151b,
+                    inset 6px 0 64px #5d085d,
+                    inset -20px 0 6px #171919,
+                    0 0 105px #fff,
+                    -10px 0 117px #541c54,
+                    10px 0 80px #364e4e;
+        }
+
+        polygon {
+            fill: var(--triangle-color);
+            stroke: var(--triangle-border-color);
+            stroke-width: 1px;
+            transition: 0.15s ease-in-out;
+        }
+
+        polygon:hover {
+            fill: blue;
+            cursor: pointer;
+            //transform: skew(-0.5deg) scale(1, 0.99);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .title-neon-wrap {
+            filter: brightness(170%);
+            margin: 48px 0;
+            animation: neon-glow;
+            animation-duration: 10s;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;
+        }
+
+        @keyframes neon-glow {
+            0% {
+                filter: brightness(150%);
+            }
+            44% {
+                filter: brightness(150%);
+            }
+            45% {
+                filter: brightness(250%);
+            }
+            47% {
+               filter: brightness(150%);
+            }
+            64% {
+                filter: brightness(150%);
+            }
+            65% {
+                filter: brightness(250%);
+            }
+            67% {
+                filter: brightness(150%);
+            }
+            100% {
+                filter: brightness(150%);
+            }
+        }
+
+        .game-title {
+            font-weight: 400;
+            font-size: 82px;
+            color: var(--game-title-color);
+            user-select: none;
+        }
+
+        .game-title:before {
+            content: 'Trilemma';
+            position: absolute;
+            mix-blend-mode: difference;
+            filter: blur(2px);
+        }
+
+        .game-wrapper {
+            display: flex;
+            justify-content: center;
+            overflow: auto;
+        }
+
+        .tile-map-holder {
+            margin-bottom: 82px;
+        }
+    </style>
+</head>
 <body>
-
-<div>
-    <h2>Trilemma</h2>
-    <div style="overflow: auto">
+<header class="header">
+    <div class="title-neon-wrap">
+        <h1 class="game-title">Trilemma</h1>
+    </div>
+    </header>
+<main class="main-game">
+    <div class="game-wrapper">
         <svg class="tile-map-holder"></svg>
     </div>
-
-    <p>Ok, here it goes...</p>
-    <p>йо. помнишь ты предлагал сделать игру типа цивы? У меня тут одна идейка небольшая появилась...</p>
-    <img src="./docs/concept_art.jpg"/>
-    <p>знаешь как в циве клетки шестиугольные? Я такое в нескольких играх видел, но нигде ешё не видел _треугольных_ клеток</p>
-    <p>можно наверное особенный геймпелй на это накрутить</p>
-    <p>в настолках разве что видел...</p>
-    <p>типа обычно у тебя довольно прямолинейный выбор куда ходить: вперёд, назад, вверх вниз, а тут как бы варианты: назад, влево, вправо</p>
-    <p>это как минимум красиво будет, математично</p>
-    <p>а если ещё и уникальную механику удастся придумать, так вообще кайф</p>
-    <p>можно например что-то типа захвата территорий сделать на 3 игрока...</p>
-    <p>а, в poe кстати дерево талантов тоже треугольное...</p>
-    <p>можно сделать чтоб каждая клетка давала какой-то бонус, и чтоб постоянно приходилось выбирать: левый или правый...</p>
-    <p>например: бонус к какому-то из 3-х аттрибутов, и побеждает тот игрок, у которого в конце аттрибуты ближе всего по значению, или при перемножении дают самое большое число... (что по сути одно и тоже мне кажется)</p>
-<pre>
-21 + 3 + 1 = 25
-
-23 * 1 * 1 = 23
-8 * 8 * 9 = 64 * 9
-12 * 12 * 1 = 144
-</pre>
-    <p>завтра приеду, наверное обсудим, набросаю черновик игры...</p>
-    <p>и назвать игру: Newfags Can Triforce</p>
-    <p>Или Trilemma</p>
-    <p>а в рунете её будут сленгово называть "го в три ляма каточку"</p>
-    <p>Недоконца понял, это-таки стратегия с развитием как цива или что-то другое?</p>
-    <p>пока чёткой идеи нет, но больше склоняюсь к тому чтоб сделать как игру на игровой доске с матчами минут на 10</p>
-    <p>просто логическую</p>
-</div>
+</main>
 
 <script type="module">
 import {Svg} from './src/Dom.js';
@@ -76,17 +159,5 @@ import {Svg} from './src/Dom.js';
     }
 })();
 </script>
-
-<style>
-    polygon {
-        fill: #57b9ff;
-        stroke: white;
-        stroke-width: 1px;
-    }
-    polygon:hover {
-        fill: blue;
-        cursor: pointer;
-    }
-</style>
 
 </body>
