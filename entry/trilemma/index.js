@@ -1,6 +1,20 @@
 
 import {Svg} from './src/Dom.js';
 
+const generateResource = () => {
+    const roll = Math.random();
+    if (roll < 0.04) {
+        return 'GOLD';
+    } else if (roll < 0.12) {
+        return 'OIL';
+    } else if (roll < 0.24) {
+        return 'WHEAT';
+    } else {
+        // empty tile
+        return null;
+    }
+};
+
 (async () => {
     const tileMapHolder = document.querySelector('.tile-map-holder');
     const LEVELS = 14;
@@ -47,8 +61,8 @@ import {Svg} from './src/Dom.js';
                 const y = i * TILE_HEIGHT;
                 const isEven = j % 2 === 0;
                 const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
-                if (Math.random() < 0.33) {
-                    const resource = ['WHEAT', 'OIL', 'GOLD'][Math.floor(Math.random() * 3)];
+                const resource = generateResource();
+                if (resource) {
                     svgEl.setAttribute('data-resource', resource);
                 }
 
@@ -76,6 +90,7 @@ import {Svg} from './src/Dom.js';
 
         for (const player of players) {
             const tile = tileMatrix[player.y][player.x];
+            tile.svgEl.removeAttribute('data-resource');
             tile.svgEl.setAttribute('data-owner', player.codeName);
             tile.svgEl.setAttribute('data-stander', player.codeName);
         }
