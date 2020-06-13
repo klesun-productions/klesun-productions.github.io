@@ -1,0 +1,107 @@
+
+:root {
+    --main-game-bg: #151515;
+    --game-title-color: #b456cc;
+    --triangle-color: #313131;
+    --triangle-border-color: #b3b3b3;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    background: var(--main-game-bg);
+    overflow-y: hidden;
+    box-shadow:
+            inset 0 0 35px #000,
+            inset -8px 0 275px #5a3d92,
+            inset -18px 0 54px #1b151b,
+            inset 6px 0 64px #5d085d,
+            inset -20px 0 6px #171919,
+            0 0 105px #fff,
+            -10px 0 117px #541c54,
+            10px 0 80px #364e4e;
+}
+
+polygon {
+    fill: var(--triangle-color);
+    stroke: var(--triangle-border-color);
+    stroke-width: 1px;
+    transition: 0.15s ease-in-out;
+}
+
+polygon:hover {
+    fill: blue;
+    cursor: pointer;
+//transform: skew(-0.5deg) scale(1, 0.99);
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.title-neon-wrap {
+    filter: brightness(170%);
+    margin: 48px 0;
+    animation: neon-glow;
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+
+@keyframes neon-glow {
+    0% {
+        filter: brightness(150%);
+    }
+    44% {
+        filter: brightness(150%);
+    }
+    45% {
+        filter: brightness(250%);
+    }
+    47% {
+        filter: brightness(150%);
+    }
+    64% {
+        filter: brightness(150%);
+    }
+    65% {
+        filter: brightness(250%);
+    }
+    67% {
+        filter: brightness(150%);
+    }
+    100% {
+        filter: brightness(150%);
+    }
+}
+
+.game-title {
+    font-weight: 400;
+    font-size: 82px;
+    color: var(--game-title-color);
+    user-select: none;
+}
+
+.game-title:before {
+    content: 'Trilemma';
+    position: absolute;
+    mix-blend-mode: difference;
+    filter: blur(2px);
+}
+
+.game-wrapper {
+    display: flex;
+    justify-content: center;
+    overflow: auto;
+}
+
+.tile-map-holder {
+    margin-bottom: 82px;
+}
