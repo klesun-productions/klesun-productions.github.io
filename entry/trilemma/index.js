@@ -50,33 +50,38 @@ const getInput = () => new Promise((ok,err) => {
         playerList: document.querySelector('.player-list'),
     };
 
-    const LEVELS = 14;
+    const LEVELS = 16;
     const TILE_WIDTH = 60;
     const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
     const BOARD_WIDTH_PX = LEVELS * TILE_WIDTH;
     const BOARD_HEIGHT_PX = LEVELS * TILE_HEIGHT;
 
     const makeTile = (x, y, isEven) => {
-        if (!isEven) {
-            y += TILE_HEIGHT / 3;
-        } else {
-            y += TILE_HEIGHT * 2 / 3;
-        }
-        const makePoly = (attrs) => Svg('polygon', {
-            'transform-origin': x + 'px ' + y + '0px',
-            points: [
-                {dx: -TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
-                {dx: +TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
-                {dx: 0, dy: -TILE_HEIGHT * 2/3},
-            ].map(
-                ({dx,dy}) => [
-                    x + dx,
-                    y + dy * (isEven ? 1 : -1),
-                ].map(n => n.toFixed(3)).join(',')
-            ).join(' '),
-            ...attrs,
-        });
-        return Svg('svg', {}, [
+        const makePoly = (attrs) => {
+            let relX = TILE_WIDTH / 2;
+            let relY = 0;
+
+            if (!isEven) {
+                relY += TILE_HEIGHT / 3;
+            } else {
+                relY += TILE_HEIGHT * 2 / 3;
+            }
+            return Svg('polygon', {
+                'transform-origin': relX + 'px ' + relY + '0px',
+                points: [
+                    {dx: -TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
+                    {dx: +TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
+                    {dx: 0, dy: -TILE_HEIGHT * 2 / 3},
+                ].map(
+                    ({dx, dy}) => [
+                        relX + dx,
+                        relY + dy * (isEven ? 1 : -1),
+                    ].map(n => n.toFixed(3)).join(',')
+                ).join(' '),
+                ...attrs,
+            });
+        };
+        return Svg('svg', {x, y}, [
             makePoly({class: 'base-tile'}),
             makePoly({class: 'effects-overlay'}),
         ]);
@@ -187,9 +192,9 @@ const getInput = () => new Promise((ok,err) => {
 
         const players = [
             // TODO: calc positions dynamically based on board size
-            {x: 8, y: 8, codeName: 'DARK'},
-            {x: 10, y: 9, codeName: 'GREY'},
-            {x: 8, y: 9, codeName: 'LIGHT'},
+            {x: 10, y: 10, codeName: 'DARK'},
+            {x: 12, y: 11, codeName: 'GREY'},
+            {x: 10, y: 11, codeName: 'LIGHT'},
         ];
 
         for (const player of players) {
