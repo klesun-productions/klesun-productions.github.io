@@ -44,11 +44,11 @@ polygon {
     fill: #982626;
 }
 polygon.effects-overlay {
-    fill: none;
-    stroke: none;
+    display: none;
 }
 [data-owner] polygon.effects-overlay {
     stroke-width: 4px;
+    display: unset;
 }
 [data-owner="DARK"] polygon.effects-overlay {
     fill: rgba(0,0,0,0.25);
@@ -63,7 +63,7 @@ polygon.effects-overlay {
     stroke: cyan;
 }
 
-polygon:hover {
+polygon.base-tile:hover {
     fill: #79fcff;
     cursor: pointer;
 //transform: skew(-0.5deg) scale(1, 0.99);

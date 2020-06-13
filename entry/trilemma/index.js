@@ -3,8 +3,8 @@ import {Svg} from './src/Dom.js';
 
 (async () => {
     const tileMapHolder = document.querySelector('.tile-map-holder');
-    const LEVELS = 8;
-    const TILE_WIDTH = 96;
+    const LEVELS = 14;
+    const TILE_WIDTH = 60;
     const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
     const BOARD_WIDTH_PX = LEVELS * TILE_WIDTH;
     const BOARD_HEIGHT_PX = LEVELS * TILE_HEIGHT;
@@ -47,8 +47,10 @@ import {Svg} from './src/Dom.js';
                 const y = i * TILE_HEIGHT;
                 const isEven = j % 2 === 0;
                 const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
-                const resource = ['WHEAT', 'OIL', 'GOLD'][Math.floor(Math.random() * 3)];
-                svgEl.setAttribute('data-resource', resource);
+                if (Math.random() < 0.33) {
+                    const resource = ['WHEAT', 'OIL', 'GOLD'][Math.floor(Math.random() * 3)];
+                    svgEl.setAttribute('data-resource', resource);
+                }
 
                 tileMapHolder.appendChild(svgEl);
 
@@ -67,9 +69,9 @@ import {Svg} from './src/Dom.js';
 
         const players = [
             // TODO: calc positions dynamically based on board size
-            {x: 4, y: 4, codeName: 'DARK'},
-            {x: 4, y: 5, codeName: 'LIGHT'},
-            {x: 6, y: 5, codeName: 'GREY'},
+            {x: 8, y: 8, codeName: 'DARK'},
+            {x: 8, y: 9, codeName: 'LIGHT'},
+            {x: 10, y: 9, codeName: 'GREY'},
         ];
 
         for (const player of players) {
