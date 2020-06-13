@@ -11,22 +11,28 @@ import {Svg} from './src/Dom.js';
 
     const makeTile = (x, y, isEven) => {
         if (!isEven) {
-            y -= TILE_HEIGHT / 3;
+            y += TILE_HEIGHT / 3;
+        } else {
+            y += TILE_HEIGHT * 2 / 3;
         }
-        return Svg('polygon', {
+        const makePoly = (attrs) => Svg('polygon', {
             'transform-origin': x + 'px ' + y + '0px',
             points: [
                 {dx: -TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
                 {dx: +TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
                 {dx: 0, dy: -TILE_HEIGHT * 2/3},
-            ]   .map(
-                    ({dx,dy}) => [
-                        x + dx,
-                        y + dy * (isEven ? 1 : -1),
-                    ].map(n => n.toFixed(3)).join(',')
-                )
-                .join(' '),
+            ].map(
+                ({dx,dy}) => [
+                    x + dx,
+                    y + dy * (isEven ? 1 : -1),
+                ].map(n => n.toFixed(3)).join(',')
+            ).join(' '),
+            ...attrs,
         });
+        return Svg('svg', {}, [
+            makePoly({class: 'base-tile'}),
+            makePoly({class: 'effects-overlay'}),
+        ]);
     };
 
     const initMatrix = () => {
@@ -40,7 +46,7 @@ import {Svg} from './src/Dom.js';
                 const x = j * TILE_WIDTH / 2 - i * TILE_WIDTH / 2;
                 const y = i * TILE_HEIGHT;
                 const isEven = j % 2 === 0;
-                const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, TILE_HEIGHT * 2 / 3 + y, isEven);
+                const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
                 const resource = ['WHEAT', 'OIL', 'GOLD'][Math.floor(Math.random() * 3)];
                 svgEl.setAttribute('data-resource', resource);
 
@@ -61,9 +67,9 @@ import {Svg} from './src/Dom.js';
 
         const players = [
             // TODO: calc positions dynamically based on board size
-            {x: 5, y: 5, codeName: 'DARK'},
-            {x: 5, y: 6, codeName: 'LIGHT'},
-            {x: 7, y: 6, codeName: 'GREY'},
+            {x: 4, y: 4, codeName: 'DARK'},
+            {x: 4, y: 5, codeName: 'LIGHT'},
+            {x: 6, y: 5, codeName: 'GREY'},
         ];
 
         for (const player of players) {

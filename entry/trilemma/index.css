@@ -34,14 +34,33 @@ polygon {
     transition: 0.15s ease-in-out;
     transform: scale(0.9);
 }
-polygon[data-resource="WHEAT"] {
+[data-resource="WHEAT"] polygon.base-tile {
     fill: #366536;
 }
-polygon[data-resource="OIL"] {
+[data-resource="OIL"] polygon.base-tile {
     fill: #2b2b65;
 }
-polygon[data-resource="GOLD"] {
+[data-resource="GOLD"] polygon.base-tile {
     fill: #982626;
+}
+polygon.effects-overlay {
+    fill: none;
+    stroke: none;
+}
+[data-owner] polygon.effects-overlay {
+    stroke-width: 4px;
+}
+[data-owner="DARK"] polygon.effects-overlay {
+    fill: rgba(0,0,0,0.25);
+    stroke: magenta;
+}
+[data-owner="LIGHT"] polygon.effects-overlay {
+    fill: rgba(255,255,255,0.25);
+    stroke: yellow;
+}
+[data-owner="GREY"] polygon.effects-overlay {
+    fill: rgba(127,127,127,0.25);
+    stroke: cyan;
 }
 
 polygon:hover {
