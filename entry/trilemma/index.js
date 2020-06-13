@@ -8,16 +8,18 @@ import {Svg} from './src/Dom.js';
     const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
     const BOARD_WIDTH_PX = LEVELS * TILE_WIDTH;
     const BOARD_HEIGHT_PX = LEVELS * TILE_HEIGHT;
-    tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
-    tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
-    const makeTile = (x, y, scale = 1) => {
+    const SPACING_FACTOR = 0.1;
+
+    const makeTile = (x, y, isEven) => {
+        let scale = isEven ? 1 : -1;
+        scale = scale * (1 - SPACING_FACTOR);
         return Svg('polygon', {
             points: [
-                {dx: -TILE_WIDTH / 2, dy: TILE_HEIGHT / 2},
-                {dx: +TILE_WIDTH / 2, dy: TILE_HEIGHT / 2},
-                {dx: 0, dy: -TILE_HEIGHT / 2},
-            ]   .map(({dx,dy}) => [x + dx * scale, y + dy * scale].join(','))
+                {dx: -TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
+                {dx: +TILE_WIDTH / 2, dy: TILE_HEIGHT / 3},
+                {dx: 0, dy: -TILE_HEIGHT * 2/3},
+            ]   .map(({dx,dy}) => [x + dx * scale, y + dy * scale - (isEven ? 0 : TILE_HEIGHT / 3)].map(n => n.toFixed(3)).join(','))
                 .join(' '),
         });
     };
@@ -25,13 +27,15 @@ import {Svg} from './src/Dom.js';
     const initMatrix = () => {
         const matrix = [];
 
+        tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
+        tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
+
         for (let i = 0; i < LEVELS; ++i) {
             for (let j = 0; j < i * 2 + 1; ++j) {
                 const x = j * TILE_WIDTH / 2 - i * TILE_WIDTH / 2;
                 const y = i * TILE_HEIGHT;
                 const isEven = j % 2 === 0;
-                const scale = isEven ? 1 : -1;
-                const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, TILE_HEIGHT / 2 + y, scale);
+                const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, TILE_HEIGHT * 2 / 3 + y, isEven);
                 const resource = ['WHEAT', 'OIL', 'GOLD'][Math.floor(Math.random() * 3)];
                 svgEl.setAttribute('data-resource', resource);
 
