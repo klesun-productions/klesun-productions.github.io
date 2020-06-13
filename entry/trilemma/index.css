@@ -33,9 +33,18 @@ polygon {
     stroke-width: 1px;
     transition: 0.15s ease-in-out;
 }
+polygon[data-resource="WHEAT"] {
+    fill: #366536;
+}
+polygon[data-resource="OIL"] {
+    fill: #2b2b65;
+}
+polygon[data-resource="GOLD"] {
+    fill: #982626;
+}
 
 polygon:hover {
-    fill: blue;
+    fill: #79fcff;
     cursor: pointer;
 //transform: skew(-0.5deg) scale(1, 0.99);
 }

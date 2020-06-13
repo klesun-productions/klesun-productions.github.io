@@ -22,14 +22,47 @@ import {Svg} from './src/Dom.js';
         });
     };
 
-    for (let i = 0; i < LEVELS; ++i) {
-        for (let j = 0; j < i * 2 + 1; ++j) {
-            const x = j * TILE_WIDTH / 2 - i * TILE_WIDTH / 2;
-            const y = i * TILE_HEIGHT;
-            const scale = j % 2 ? -1 : 1;
-            //const scale = 1;
-            const poly = makeTile(BOARD_WIDTH_PX / 2 + x, TILE_HEIGHT / 2 + y, scale);
-            tileMapHolder.appendChild(poly);
+    const initMatrix = () => {
+        const matrix = [];
+
+        for (let i = 0; i < LEVELS; ++i) {
+            for (let j = 0; j < i * 2 + 1; ++j) {
+                const x = j * TILE_WIDTH / 2 - i * TILE_WIDTH / 2;
+                const y = i * TILE_HEIGHT;
+                const isEven = j % 2 === 0;
+                const scale = isEven ? 1 : -1;
+                const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, TILE_HEIGHT / 2 + y, scale);
+                const resource = ['WHEAT', 'OIL', 'GOLD'][Math.floor(Math.random() * 3)];
+                svgEl.setAttribute('data-resource', resource);
+
+                tileMapHolder.appendChild(svgEl);
+
+                matrix[i] = matrix[i] || {};
+                matrix[i][j] = {
+                    svgEl: svgEl,
+                };
+            }
         }
-    }
+
+        return matrix;
+    };
+
+    const main = () => {
+        const tileMatrix = initMatrix();
+
+        const players = [
+            // TODO: calc positions dynamically based on board size
+            {x: 5, y: 5, codeName: 'DARK'},
+            {x: 5, y: 6, codeName: 'LIGHT'},
+            {x: 7, y: 6, codeName: 'GREY'},
+        ];
+
+        for (const player of players) {
+            const tile = tileMatrix[player.y][player.x];
+            tile.svgEl.setAttribute('data-owner', player.codeName);
+            tile.svgEl.setAttribute('data-stander', player.codeName);
+        }
+    };
+
+    return main();
 })();
