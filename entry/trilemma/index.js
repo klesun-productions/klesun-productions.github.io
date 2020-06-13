@@ -3,11 +3,11 @@ import {Svg} from './src/Dom.js';
 
 const generateResource = () => {
     const roll = Math.random();
-    if (roll < 0.04) {
+    if (roll < 0.02) {
         return 'GOLD';
-    } else if (roll < 0.12) {
+    } else if (roll < 0.08) {
         return 'OIL';
-    } else if (roll < 0.24) {
+    } else if (roll < 0.26) {
         return 'WHEAT';
     } else {
         // empty tile
