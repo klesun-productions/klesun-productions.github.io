@@ -43,6 +43,10 @@ polygon {
 [data-resource="GOLD"] polygon.base-tile {
     fill: #982626;
 }
+[data-resource="DEAD_SPACE"] polygon.base-tile {
+    fill: transparent;
+    stroke: transparent;
+}
 polygon.effects-overlay {
     display: none;
 }

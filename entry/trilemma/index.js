@@ -9,6 +9,8 @@ const generateResource = () => {
         return 'OIL';
     } else if (roll < 0.26) {
         return 'WHEAT';
+    } else if (roll < 0.35) {
+        return 'DEAD_SPACE';
     } else {
         // empty tile
         return null;
