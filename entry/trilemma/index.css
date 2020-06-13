@@ -15,7 +15,6 @@
 body {
     font-family: 'Quicksand', sans-serif;
     background: var(--main-game-bg);
-    overflow-y: hidden;
     box-shadow:
             inset 0 0 35px #000,
             inset -8px 0 275px #5a3d92,
@@ -26,6 +25,23 @@ body {
             -10px 0 117px #541c54,
             10px 0 80px #364e4e;
 }
+.stats-block * {
+    color: white;
+}
+.stats-block table {
+    border-collapse: collapse;
+}
+.stats-block th {
+    min-width: 30px;
+    padding: 2px;
+}
+.stats-block td {
+    border: solid 1px grey;
+    text-align: center;
+}
+tr.turn-pending {
+    background-color: #213b5d;
+}
 
 polygon {
     fill: var(--triangle-color);
@@ -34,12 +50,15 @@ polygon {
     transition: 0.15s ease-in-out;
     transform: scale(0.9);
 }
+[data-resource="WHEAT"] { color: #4da04d; }
 [data-resource="WHEAT"] polygon.base-tile {
     fill: #366536;
 }
+[data-resource="OIL"] { color: #4d5bff; }
 [data-resource="OIL"] polygon.base-tile {
     fill: #2b2b65;
 }
+[data-resource="GOLD"] { color: #e44a4a; }
 [data-resource="GOLD"] polygon.base-tile {
     fill: #982626;
 }
@@ -58,23 +77,20 @@ polygon.effects-overlay {
     fill: rgba(0,0,0,0.25);
     stroke: #6c12bf;
 }
-[data-stander="DARK"] polygon.effects-overlay {
-    stroke: magenta;
-}
+[data-owner="DARK"] .player-name-holder { color: magenta; }
+[data-stander="DARK"] polygon.effects-overlay { stroke: magenta; }
 [data-owner="LIGHT"] polygon.effects-overlay {
-    fill: rgba(255,255,255,0.25);
+    fill: rgba(255,255,255,0.15);
     stroke: #aed895;
 }
-[data-stander="LIGHT"] polygon.effects-overlay {
-    stroke: yellow;
-}
+[data-owner="LIGHT"] .player-name-holder { color: yellow; }
+[data-stander="LIGHT"] polygon.effects-overlay { stroke: yellow; }
 [data-owner="GREY"] polygon.effects-overlay {
     fill: rgba(127,127,127,0.25);
     stroke: #248faf;
 }
-[data-stander="GREY"] polygon.effects-overlay {
-    stroke: cyan;
-}
+[data-owner="GREY"] .player-name-holder { color: cyan; }
+[data-stander="GREY"] polygon.effects-overlay { stroke: cyan; }
 
 polygon.base-tile:hover {
     fill: #79fcff;

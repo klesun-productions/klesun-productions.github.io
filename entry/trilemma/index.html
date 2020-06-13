@@ -9,10 +9,59 @@
     <div class="title-neon-wrap">
         <h1 class="game-title">Trilemma</h1>
     </div>
-    </header>
+</header>
 <main class="main-game">
     <div class="game-wrapper">
         <svg class="tile-map-holder"></svg>
+        <div class="stats-block">
+            <span>Turns Left: <span class="turns-left-holder">9999</span></span>
+            <table>
+                <thead>
+                <tr>
+                    <th>Player</th>
+                    <th data-resource="WHEAT">Wheat</th>
+                    <th>*</th>
+                    <th data-resource="OIL">Oil</th>
+                    <th>*</th>
+                    <th data-resource="GOLD">Gold</th>
+                    <th>=</th>
+                    <th>Score</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-owner="DARK" class="turn-pending">
+                    <td class="player-name-holder">Dark</td>
+                    <td data-resource="WHEAT">1</td>
+                    <td>*</td>
+                    <td data-resource="OIL">1</td>
+                    <td>*</td>
+                    <td data-resource="GOLD">1</td>
+                    <td>=</td>
+                    <td>1</td>
+                </tr>
+                <tr data-owner="GREY">
+                    <td class="player-name-holder">Grey</td>
+                    <td data-resource="WHEAT">1</td>
+                    <td>*</td>
+                    <td data-resource="OIL">1</td>
+                    <td>*</td>
+                    <td data-resource="GOLD">1</td>
+                    <td>=</td>
+                    <td>1</td>
+                </tr>
+                <tr data-owner="LIGHT">
+                    <td class="player-name-holder">Light</td>
+                    <td data-resource="WHEAT">1</td>
+                    <td>*</td>
+                    <td data-resource="OIL">1</td>
+                    <td>*</td>
+                    <td data-resource="GOLD">1</td>
+                    <td>=</td>
+                    <td>1</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </main>
 
