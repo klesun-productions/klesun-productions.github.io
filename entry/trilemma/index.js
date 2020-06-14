@@ -1,7 +1,7 @@
 
 import GenerateBoard from "./src/GenerateBoard.js";
 import TileMapDisplay from "./src/TileMapDisplay.js";
-import {PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
+import {BUFF_SKIP_TURN, NO_RES_DEAD_SPACE, PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
 import GetTurnInput from "./src/client/GetTurnInput.js";
 
 const gui = {
@@ -99,7 +99,7 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
                     : {x: initialTile.col - 1, y: initialTile.row - 1},
             ].map(getTile).filter( (tile) => {
                 return tile
-                    && tile.svgEl.getAttribute('data-resource') !== 'DEAD_SPACE'
+                    && tile.svgEl.getAttribute('data-resource') !== NO_RES_DEAD_SPACE
                     && !tile.svgEl.getAttribute('data-stander');
             } );
             possibleTurns.forEach( (tile) => {
@@ -115,7 +115,7 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
 
                 const prevOwner = newTile.svgEl.getAttribute('data-owner');
                 if (prevOwner && prevOwner !== player.codeName) {
-                    playerToBuffs[player.codeName].add('SKIP_TURN');
+                    playerToBuffs[player.codeName].add(BUFF_SKIP_TURN);
                 }
                 newTile.svgEl.setAttribute('data-owner', player.codeName);
                 newTile.svgEl.setAttribute('data-stander', player.codeName);
@@ -142,8 +142,8 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
         for (let turnsLeft = boardConfig.totalTurns; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
             for (const player of players) {
-                if (playerToBuffs[player.codeName].has('SKIP_TURN')) {
-                    playerToBuffs[player.codeName].delete('SKIP_TURN');
+                if (playerToBuffs[player.codeName].has(BUFF_SKIP_TURN)) {
+                    playerToBuffs[player.codeName].delete(BUFF_SKIP_TURN);
                     continue;
                 }
                 const playerResources = collectPlayerResources(matrix);

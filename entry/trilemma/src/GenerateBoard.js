@@ -1,4 +1,13 @@
-import {PLAYER_DARK, PLAYER_GREY, PLAYER_LIGHT, RES_GOLD, RES_OIL, RES_WHEAT} from "./Constants.js";
+import {
+    NO_RES_DEAD_SPACE,
+    NO_RES_EMPTY,
+    PLAYER_DARK,
+    PLAYER_GREY,
+    PLAYER_LIGHT,
+    RES_GOLD,
+    RES_OIL,
+    RES_WHEAT
+} from "./Constants.js";
 
 /** @see https://stackoverflow.com/a/2117523/2750743 */
 function uuidv4() {
@@ -40,7 +49,7 @@ const GenerateBoard = ({
                 .find(pos => pos.row === row && pos.col === col);
             let resource, owner;
             if (stander) {
-                resource = 'EMPTY';
+                resource = NO_RES_EMPTY;
                 owner = stander.codeName;
             } else {
                 resource = generateResource();
@@ -49,7 +58,7 @@ const GenerateBoard = ({
             tiles.push({row, col, resource, owner});
         }
     }
-    const totalCells = tiles.filter(t => t !== 'DEAD_SPACE').length;
+    const totalCells = tiles.filter(t => t !== NO_RES_DEAD_SPACE).length;
     return {
         uuid: uuid,
         totalRows: totalRows,
