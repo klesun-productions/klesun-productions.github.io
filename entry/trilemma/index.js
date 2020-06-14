@@ -23,7 +23,7 @@ const mouseInput = {
     get: () => ({x: mouseInput.x, y: mouseInput.y})
 };
 
-const getInput = () => new Promise((ok,err) => {
+const getInput = (initialTile) => new Promise((ok,err) => {
     const listener = (evt) => {
         let removeListener = true;
         if (evt.key === 'ArrowDown') {
@@ -51,7 +51,7 @@ const getInput = () => new Promise((ok,err) => {
     const mouseListener = e => {
         const pos = mouseInput.get();
         if (pos) {
-            ok({dx: pos.x, dy: pos.y, fullCords: true})
+            ok({dx: pos.x - initialTile.col - (pos.y - initialTile.row), dy: pos.y - initialTile.row})
         }
         window.removeEventListener('click', mouseListener);
         return false;
@@ -152,20 +152,15 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
                 tile.svgEl.onclick = e => mouseInput.set({x: tile.col, y: tile.row});
             } );
             while (true) {
-                const input = await getInput().catch(exc => null);
-                let newPos = {};
+                const input = await getInput(initialTile).catch(exc => null);
                 if (!input) {
                     break; // player skipped turn with Esc button
                 }
-                const {dx, dy, fullCords} = input;
-
-                if (!fullCords) {
-                    newPos.x = initialTile.col + dx + dy;
-                    newPos.y = initialTile.row + dy;
-                } else {
-                    newPos.x = dx;
-                    newPos.y = dy;
-                }
+                const {dx, dy} = input;
+                const newPos = {
+                    x: initialTile.col + dx + dy,
+                    y: initialTile.row + dy,
+                };
 
                 const newTile = possibleTurns.find(tile => tile.col === newPos.x && tile.row === newPos.y);
                 if (!newTile) {
