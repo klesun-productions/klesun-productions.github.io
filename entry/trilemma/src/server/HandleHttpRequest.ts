@@ -2,20 +2,27 @@
 import * as url from 'url';
 import * as fsSync from 'fs';
 import MapGenerator from "../MapGenerator.js";
+import * as http from "http";
 
 const fs = fsSync.promises;
 
 const Rej = require('klesun-node-tools/src/Rej.js');
 const {getMimeByExt, removeDots, setCorsHeaders} = require('klesun-node-tools/src/Utils/HttpUtil.js');
 
-const redirect = (rs, url) => {
+export interface HandleHttpParams {
+    rq: http.IncomingMessage,
+    rs: http.ServerResponse,
+    rootPath: string,
+}
+
+const redirect = (rs: http.ServerResponse, url: string) => {
     rs.writeHead(302, {
         'Location': url,
     });
     rs.end();
 };
 
-const serveStaticFile = async (pathname, rs, rootPath) => {
+const serveStaticFile = async (pathname: string, rs: http.ServerResponse, rootPath: string) => {
     pathname = decodeURIComponent(pathname);
     let absPath = rootPath + pathname;
     if (absPath.endsWith('/')) {
@@ -36,19 +43,19 @@ const serveStaticFile = async (pathname, rs, rootPath) => {
     //rs.end(bytes);
 };
 
-const apiRoutes = {
+const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<any>> = {
     '/api/getBoardConfig': async (rq) => {
         return MapGenerator();
     },
 };
 
-/**
- * @param {http.IncomingMessage} rq
- * @param {http.ServerResponse} rs
- */
-const HandleHttpRequest = async ({rq, rs, rootPath}) => {
+const HandleHttpRequest = async ({rq, rs, rootPath}: HandleHttpParams) => {
+    if (!rq.url) {
+        const msg = 'Missing rq.url - action only valid for request obtained from http.Server';
+        return Rej.BadRequest(msg);
+    }
     const parsedUrl = url.parse(rq.url);
-    const pathname = removeDots(parsedUrl.pathname);
+    const pathname: string = removeDots(parsedUrl.pathname);
 
     const apiAction = apiRoutes[pathname];
 

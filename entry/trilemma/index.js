@@ -68,7 +68,14 @@ const getBoardConfiguration = async () => {
     if (HOT_SEAT) {
         return MapGenerator();
     } else {
-        return fetch('./api/getBoardConfig').then(rs => rs.json());
+        return fetch('./api/getBoardConfig')
+            .then(rs => rs.status !== 200
+                ? Promise.reject(rs.statusText)
+                : rs.json())
+            .catch(exc => {
+                alert('Failed to fetch data from server. Falling back to hot-seat board. ' + exc);
+                return MapGenerator();
+            });
     }
 };
 
