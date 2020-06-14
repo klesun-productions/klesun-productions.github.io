@@ -172,13 +172,13 @@ const getInput = () => new Promise((ok,err) => {
                 {x: player.x + 1, y: player.y},
                 {x: player.x - 1, y: player.y},
                 {x: isEven ? player.x + 1 : player.x - 1, y: isEven ? player.y + 1 : player.y - 1},
-            ];
-            possibleTurns.forEach( p => {
-                const possibleTurn = getTile(p);
-                if (possibleTurn && possibleTurn.svgEl.getAttribute('data-resource') !== 'DEAD_SPACE') {
-                    possibleTurn.svgEl.setAttribute('data-possible-turn', player.codeName);
-                }
-            } );
+            ].map(pt => ({...pt, tile: getTile(pt)}))
+                .filter( ({tile}) => {
+                    return tile
+                        && tile.svgEl.getAttribute('data-resource') !== 'DEAD_SPACE'
+                        && !tile.svgEl.getAttribute('data-stander');
+                } );
+            possibleTurns.forEach( ({tile}) => tile.svgEl.setAttribute('data-possible-turn', player.codeName) );
             while (true) {
                 const input = await getInput().catch(exc => {
                     alert('Input Rejected - ' + exc);
@@ -197,18 +197,15 @@ const getInput = () => new Promise((ok,err) => {
                     x: player.x + dx + dy,
                     y: player.y + dy,
                 };
-                const newTile = getTile(newPos);
-                if (!newTile || newTile.svgEl.getAttribute('data-resource') === 'DEAD_SPACE') {
+                const newTile = possibleTurns
+                    .filter(pt => pt.x === newPos.x && pt.y === newPos.y)
+                    .map(pt => pt.tile)[0];
+                if (!newTile) {
                     // ignore input if player tries to go on a tile that does not exist
                     continue;
                 }
                 // remove possible turns from last player
-                possibleTurns.forEach( p => {
-                    const possibleTurn = getTile(p);
-                    if (possibleTurn) {
-                        possibleTurn.svgEl.removeAttribute('data-possible-turn');
-                    }
-                } );
+                possibleTurns.forEach( ({tile}) => tile.svgEl.removeAttribute('data-possible-turn') );
                 // TODO: check that other players are not standing on this tile
                 getTile(player).svgEl.removeAttribute('data-stander');
                 newTile.svgEl.setAttribute('data-owner', player.codeName);
