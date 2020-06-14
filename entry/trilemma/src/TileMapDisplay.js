@@ -79,19 +79,19 @@ const TileMapDisplay = (boardConfig, tileMapHolder) => {
     tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
     tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
-    for (const {row, col, resource, owner} of boardConfig.tiles) {
+    for (const {row, col, modifier, owner} of boardConfig.tiles) {
         const x = (col  - row - 1) * TILE_WIDTH / 2;
         const y = row * TILE_HEIGHT;
         const isEven = col % 2 === 0;
         const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
-        const svgResource = resourceSvgs[resource];
+        const svgResource = resourceSvgs[modifier];
 
         // assign svg icon to resource tile
         if (svgResource) {
             svgEl.appendChild(svgResource(isEven));
         }
 
-        svgEl.setAttribute('data-resource', resource);
+        svgEl.setAttribute('data-resource', modifier);
         if (owner) {
             svgEl.setAttribute('data-owner', owner);
         }

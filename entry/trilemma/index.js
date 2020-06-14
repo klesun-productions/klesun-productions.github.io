@@ -3,6 +3,7 @@ import GenerateBoard from "./src/GenerateBoard.js";
 import TileMapDisplay from "./src/TileMapDisplay.js";
 import {BUFF_SKIP_TURN, NO_RES_DEAD_SPACE, PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
 import GetTurnInput from "./src/client/GetTurnInput.js";
+import Api from "./src/client/Api.js";
 
 const gui = {
     tileMapHolder: document.querySelector('.tile-map-holder'),
@@ -10,7 +11,7 @@ const gui = {
     playerList: document.querySelector('.player-list'),
 };
 
-const HOT_SEAT = false;
+const HOT_SEAT = true;
 
 const audios = [
     new Audio('./tile_move.aac'),
@@ -18,17 +19,20 @@ const audios = [
     new Audio('./tile_move3.aac')
 ];
 
-const getBoardConfiguration = async () => {
+const api = Api();
+
+const getBoardState = async () => {
     if (HOT_SEAT) {
-        return GenerateBoard();
+        return {...GenerateBoard(), hotSeat: true};
     } else {
         return fetch('./api/getBoardState')
             .then(rs => rs.status !== 200
                 ? Promise.reject(rs.statusText)
                 : rs.json())
+            .then(config => ({...config, hotSeat: false}))
             .catch(exc => {
                 alert('Failed to fetch data from server. Falling back to hot-seat board. ' + exc);
-                return GenerateBoard();
+                return {...GenerateBoard(), hotSeat: true};
             });
     }
 };
@@ -127,20 +131,37 @@ const drawTable = () => {
 };
 
 (async () => {
-    const boardConfig = await getBoardConfiguration();
+    let boardState = await getBoardState();
 
     const table = drawTable();
     const main = async () => {
-        const matrix = TileMapDisplay(boardConfig, gui.tileMapHolder);
+        const matrix = TileMapDisplay(boardState, gui.tileMapHolder);
 
         const getTile = ({col, row}) => {
             return (matrix[row] || {})[col] || null;
         };
 
-        const playerToBuffs = {};
-        for (const codeName of PLAYER_CODE_NAMES) {
-            playerToBuffs[codeName] = new Set();
-        }
+        const makeTurn = async (codeName, newTile) => {
+            if (!boardState.hotSeat) {
+                /** @type {MakeTurnParams} */
+                const params = {
+                    uuid: boardState.uuid,
+                    codeName: codeName,
+                    col: newTile.col,
+                    row: newTile.row,
+                };
+                return api.makeTurn(params);
+            } else {
+                const prevOwner = newTile.svgEl.getAttribute('data-owner');
+                if (prevOwner && prevOwner !== codeName) {
+                    boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
+                }
+                const pos = boardState.playerToPosition[codeName];
+                pos.col = newTile.col;
+                pos.row = newTile.row;
+                return boardState;
+            }
+        };
 
         const processTurn = async (codeName) => {
             const audioIndex = Math.floor(Math.random() * 3);
@@ -171,17 +192,23 @@ const drawTable = () => {
                     // ignore input if player tries to go on a tile that does not exist
                     continue;
                 }
-                svgEl.removeAttribute('data-stander');
-
-                const prevOwner = newTile.svgEl.getAttribute('data-owner');
-                if (prevOwner && prevOwner !== codeName) {
-                    playerToBuffs[codeName].add(BUFF_SKIP_TURN);
+                const newState = await makeTurn(codeName, newTile).catch(exc => {
+                    alert('Failed to make this turn - ' + exc);
+                    return null;
+                });
+                if (!newState) {
+                    continue;
                 }
-                newTile.svgEl.setAttribute('data-owner', codeName);
-                newTile.svgEl.setAttribute('data-stander', codeName);
+                svgEl.removeAttribute('data-stander');
+                boardState = newState;
+
+                const effectivePos = boardState.playerToPosition[codeName];
+                const effectiveTile = getTile(effectivePos);
+                effectiveTile.svgEl.setAttribute('data-owner', codeName);
+                effectiveTile.svgEl.setAttribute('data-stander', codeName);
 
                 tileMoveSound.currentTime = 0;
-                tileMoveSound.volume = audioIndex === 0 ? 1 : 0.75;
+                tileMoveSound.volume = (audioIndex === 0 ? 1 : 0.75) * 0.05;
                 await tileMoveSound.play();
                 break;
             }
@@ -189,17 +216,19 @@ const drawTable = () => {
             possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
         };
 
-        for (const {col, row, codeName} of boardConfig.playerStartPositions) {
+        for (const [codeName, {col, row}] of Object.entries(boardState.playerToPosition)) {
             const tile = getTile({col, row});
             tile.svgEl.setAttribute('data-stander', codeName);
         }
 
 
-        for (let turnsLeft = boardConfig.totalTurns; turnsLeft > 0; --turnsLeft) {
+        for (let turnsLeft = boardState.totalTurns; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
             for (const codeName of PLAYER_CODE_NAMES) {
-                if (playerToBuffs[codeName].has(BUFF_SKIP_TURN)) {
-                    playerToBuffs[codeName].delete(BUFF_SKIP_TURN);
+                // TODO: on server as well!
+                const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
+                if (buffIdx > -1) {
+                    boardState.playerToBuffs[codeName].splice(buffIdx, 1);
                     continue;
                 }
                 const playerResources = collectPlayerResources(matrix);

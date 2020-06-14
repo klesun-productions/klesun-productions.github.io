@@ -1,6 +1,6 @@
 import {
     NO_RES_DEAD_SPACE,
-    NO_RES_EMPTY,
+    NO_RES_EMPTY, PLAYER_CODE_NAMES,
     PLAYER_DARK,
     PLAYER_GREY,
     PLAYER_LIGHT,
@@ -17,7 +17,7 @@ function uuidv4() {
     });
 }
 
-const generateResource = () => {
+const generateTileModifier = () => {
     const roll = Math.random();
     if (roll < 0.02) {
         return RES_GOLD;
@@ -37,26 +37,33 @@ const GenerateBoard = ({
     totalRows = 16,
 } = {}) => {
     const uuid = uuidv4();
-    const playerStartPositions = [
+    const playerToPosition = {
         // TODO: calc positions dynamically based on board size
-        {col:  9, row: 10, codeName: PLAYER_DARK},
-        {col: 11, row: 10, codeName: PLAYER_GREY},
-        {col: 11, row: 11, codeName: PLAYER_LIGHT},
-    ];
+        [PLAYER_DARK]: {col: 9, row: 10},
+        [PLAYER_GREY]: {col: 11, row: 10},
+        [PLAYER_LIGHT]: {col: 11, row: 11},
+    };
+    const playerToBuffs = {};
+    for (const codeName of PLAYER_CODE_NAMES) {
+        playerToBuffs[codeName] = [];
+    }
     const tiles = [];
     for (let row = 0; row < totalRows; ++row) {
         for (let col = 0; col < row * 2 + 1; ++col) {
-            const stander = playerStartPositions
-                .find(pos => pos.row === row && pos.col === col);
-            let resource, owner;
+            const stander = Object.keys(playerToPosition)
+                .find(k => {
+                    return playerToPosition[k].row === row
+                        && playerToPosition[k].col === col;
+                });
+            let modifier, owner;
             if (stander) {
-                resource = NO_RES_EMPTY;
-                owner = stander.codeName;
+                modifier = NO_RES_EMPTY;
+                owner = stander;
             } else {
-                resource = generateResource();
+                modifier = generateTileModifier();
                 owner = null;
             }
-            tiles.push({row, col, resource, owner});
+            tiles.push({row, col, modifier, owner});
         }
     }
     const totalCells = tiles.filter(t => t !== NO_RES_DEAD_SPACE).length;
@@ -64,7 +71,10 @@ const GenerateBoard = ({
         uuid: uuid,
         totalRows: totalRows,
         totalTurns: Math.floor(totalCells / 3) - 1,
-        playerStartPositions: playerStartPositions,
+
+        turnPlayersLeft: [...PLAYER_CODE_NAMES],
+        playerToBuffs: playerToBuffs,
+        playerToPosition: playerToPosition,
         tiles: tiles,
     };
 };
