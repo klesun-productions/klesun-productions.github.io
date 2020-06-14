@@ -76,6 +76,37 @@ const getInput = () => new Promise((ok,err) => {
     window.addEventListener('keydown', listener);
 });
 
+const TILE_WIDTH = 60;
+const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
+
+const initHotseatBoardConfig = () => {
+    const totalRows = 16;
+    const tiles = [];
+    for (let row = 0; row < totalRows; ++row) {
+        for (let col = 0; col < row * 2 + 1; ++col) {
+            const resource = generateResource();
+            tiles.push({row, col, resource});
+        }
+    }
+    let totalCells = tiles.filter(t => t !== 'DEAD_SPACE').length;
+    return {
+        totalRows: totalRows,
+        totalTurns: Math.floor(totalCells / 3) - 1,
+        playerStartPositions: [
+            // TODO: calc positions dynamically based on board size
+            {col: 9, row: 10},
+            {col: 11, row: 10},
+            {col: 11, row: 11},
+        ],
+        tiles: tiles,
+    };
+};
+
+const getBoardConfiguration = async () => {
+    const hotseatConfig = initHotseatBoardConfig();
+    return hotseatConfig;
+};
+
 (async () => {
     const gui = {
         tileMapHolder: document.querySelector('.tile-map-holder'),
@@ -83,18 +114,18 @@ const getInput = () => new Promise((ok,err) => {
         playerList: document.querySelector('.player-list'),
     };
 
-    const LEVELS = 16;
-    const TILE_WIDTH = 60;
-    const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
-    const BOARD_WIDTH_PX = LEVELS * TILE_WIDTH;
-    const BOARD_HEIGHT_PX = LEVELS * TILE_HEIGHT;
+    const boardConfig = await getBoardConfiguration();
 
-    const players = [
-        // TODO: calc positions dynamically based on board size
-        {x: 9, y: 10, codeName: 'DARK'},
-        {x: 11, y: 10, codeName: 'GREY'},
-        {x: 11, y: 11, codeName: 'LIGHT'},
-    ];
+    const ROWS = boardConfig.totalRows;
+    const BOARD_WIDTH_PX = ROWS * TILE_WIDTH;
+    const BOARD_HEIGHT_PX = ROWS * TILE_HEIGHT;
+
+    const players = ['DARK', 'GREY', 'LIGHT'].map((codeName, i) => ({
+        x: boardConfig.playerStartPositions[i].col,
+        y: boardConfig.playerStartPositions[i].row,
+        codeName: codeName,
+
+    }));
 
     const makeTile = (x, y, isEven) => {
         const makePoly = (attrs) => {
@@ -128,43 +159,36 @@ const getInput = () => new Promise((ok,err) => {
     };
 
     const initMatrix = () => {
-        let totalCells = 0;
         const matrix = [];
 
         gui.tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
         gui.tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
-        for (let row = 0; row < LEVELS; ++row) {
-            for (let col = 0; col < row * 2 + 1; ++col) {
-                const x = (col  - row - 1) * TILE_WIDTH / 2;
-                const y = row * TILE_HEIGHT;
-                const isEven = col % 2 === 0;
-                const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
-                const resource = generateResource();
-                const svgResource = resourceSvgs[resource];
+        for (const {row, col, resource} of boardConfig.tiles) {
+            const x = (col  - row - 1) * TILE_WIDTH / 2;
+            const y = row * TILE_HEIGHT;
+            const isEven = col % 2 === 0;
+            const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
+            const svgResource = resourceSvgs[resource];
 
-                // assign svg icon to resource tile
-                if (svgResource) {
-                    svgEl.appendChild(svgResource(isEven));
-                }
-
-                svgEl.setAttribute('data-resource', resource);
-                if (resource !== 'DEAD_SPACE') {
-                    ++totalCells;
-                }
-
-                gui.tileMapHolder.appendChild(svgEl);
-
-                matrix[row] = matrix[row] || {};
-                matrix[row][col] = {row, col, svgEl};
+            // assign svg icon to resource tile
+            if (svgResource) {
+                svgEl.appendChild(svgResource(isEven));
             }
+
+            svgEl.setAttribute('data-resource', resource);
+
+            gui.tileMapHolder.appendChild(svgEl);
+
+            matrix[row] = matrix[row] || {};
+            matrix[row][col] = {row, col, svgEl};
         }
 
-        return {totalCells, matrix};
+        return matrix;
     };
 
     const main = async () => {
-        const {totalCells, matrix} = initMatrix();
+        const matrix = initMatrix();
 
         const getTile = ({x, y}) => {
             return (matrix[y] || {})[x] || null;
@@ -286,7 +310,7 @@ const getInput = () => new Promise((ok,err) => {
             tile.svgEl.setAttribute('data-stander', player.codeName);
         }
 
-        for (let turnsLeft = Math.floor(totalCells / 3) - 1; turnsLeft > 0; --turnsLeft) {
+        for (let turnsLeft = boardConfig.totalTurns; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
             for (const player of players) {
                 if (playerToBuffs[player.codeName].has('SKIP_TURN')) {
