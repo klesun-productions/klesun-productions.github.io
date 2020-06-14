@@ -162,12 +162,15 @@ const getBoardConfiguration = async () => {
         }
 
         const processTurn = async (player) => {
+            const initialTile = getTile(player);
             const isEven = player.x % 2 === 0;
             // glow possible turns
             const possibleTurns = [
-                {x: player.x + 1, y: player.y},
-                {x: player.x - 1, y: player.y},
-                {x: isEven ? player.x + 1 : player.x - 1, y: isEven ? player.y + 1 : player.y - 1},
+                {x: initialTile.col + 1, y: initialTile.row},
+                {x: initialTile.col - 1, y: initialTile.row},
+                isEven
+                    ? {x: initialTile.col + 1, y: initialTile.row + 1}
+                    : {x: initialTile.col - 1, y: initialTile.row - 1},
             ].map(getTile).filter( (tile) => {
                 return tile
                     && tile.svgEl.getAttribute('data-resource') !== 'DEAD_SPACE'
@@ -184,8 +187,8 @@ const getBoardConfiguration = async () => {
                 }
                 const {dx, dy} = input;
                 const newPos = {
-                    x: player.x + dx + dy,
-                    y: player.y + dy,
+                    x: initialTile.col + dx + dy,
+                    y: initialTile.row + dy,
                 };
                 const newTile = possibleTurns
                     .filter(tile => tile.col === newPos.x && tile.row === newPos.y)[0];
@@ -195,7 +198,7 @@ const getBoardConfiguration = async () => {
                 }
                 // remove possible turns from last player
                 possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
-                getTile(player).svgEl.removeAttribute('data-stander');
+                initialTile.svgEl.removeAttribute('data-stander');
 
                 const prevOwner = newTile.svgEl.getAttribute('data-owner');
                 if (prevOwner && prevOwner !== player.codeName) {
