@@ -200,7 +200,6 @@ const getBoardConfiguration = async () => {
                 }
                 // remove possible turns from last player
                 possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
-                // TODO: check that other players are not standing on this tile
                 getTile(player).svgEl.removeAttribute('data-stander');
 
                 const prevOwner = newTile.svgEl.getAttribute('data-owner');
