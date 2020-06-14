@@ -25,20 +25,60 @@ body {
             -10px 0 117px #541c54,
             10px 0 80px #364e4e;
 }
+.stats-block {
+    position: absolute;
+    right: 130px;
+}
+
+.resource-svg {
+    pointer-events: none;
+    transform: scale(0.05);
+}
+
+.wheat-resource-svg {
+    fill: #608e60;
+}
+
+.oil-resource-svg {
+    fill: #6a6d96;
+}
+
+.gold-resource-svg {
+    transform: scale(0.45);
+    fill: #efcf82;
+}
+
 .stats-block * {
     color: white;
+}
+.stats-block > span {
+    margin-bottom: 12px;
+    display: block;
+    padding-left: 8px;
 }
 .stats-block table {
     border-collapse: collapse;
 }
 .stats-block th {
     min-width: 30px;
-    padding: 2px;
+    padding: 4px 8px;
 }
 .stats-block td {
-    border: solid 1px grey;
+    border: solid 1px rgba(236, 190, 249, 0.16);
     text-align: center;
+    padding: 4px 8px;
+    border-right: none;
+    border-left: none;
 }
+
+.stats-block tr:first-child td {
+    border-top: none;
+}
+
+.stats-block tr:last-child td {
+    border-bottom: none;
+}
+
 tr.turn-pending {
     background-color: #213b5d;
 }
@@ -52,15 +92,15 @@ polygon {
 }
 [data-resource="WHEAT"] { color: #4da04d; }
 [data-resource="WHEAT"] polygon.base-tile {
-    fill: #366536;
+    //fill: #366536;
 }
-[data-resource="OIL"] { color: #4d5bff; }
+[data-resource="OIL"] { color: #8c90d0; }
 [data-resource="OIL"] polygon.base-tile {
-    fill: #2b2b65;
+    //fill: #2b2b65;
 }
-[data-resource="GOLD"] { color: #e44a4a; }
+[data-resource="GOLD"] { color: #e4c579; }
 [data-resource="GOLD"] polygon.base-tile {
-    fill: #982626;
+    //fill: #982626;
 }
 [data-resource="DEAD_SPACE"] polygon.base-tile {
     fill: transparent;
@@ -69,30 +109,70 @@ polygon {
 polygon.effects-overlay {
     display: none;
 }
+[data-possible-turn] polygon{
+    stroke-width: 3px;
+}
+[data-possible-turn="DARK"] polygon:first-child {
+    stroke: #e4a3e4;
+}
+[data-possible-turn="LIGHT"] polygon:first-child {
+    stroke: #eaea9b;
+}
+[data-possible-turn="GREY"] polygon:first-child {
+    stroke: #a6e2e2;
+}
+[data-possible-turn="DARK"] polygon.effects-overlay {
+    stroke: #e4a3e4 !important;
+    stroke-width: 3px !important;
+}
+[data-possible-turn="LIGHT"] polygon.effects-overlay {
+    stroke: #eaea9b !important;
+    stroke-width: 3px !important;
+}
+[data-possible-turn="GREY"] polygon.effects-overlay {
+    stroke: #a6e2e2 !important;
+    stroke-width: 3px !important;
+}
+[data-owner] path.resource-svg {
+    fill: #313131;
+}
+
 [data-owner] polygon.effects-overlay {
-    stroke-width: 4px;
+    stroke-width: 1px;
     display: unset;
 }
 [data-owner="DARK"] polygon.effects-overlay {
-    fill: rgba(0,0,0,0.25);
-    stroke: #6c12bf;
+    fill: #9c70c3;
+    stroke: #484848;
 }
 [data-owner="DARK"] .player-name-holder { color: magenta; }
-[data-stander="DARK"] polygon.effects-overlay { stroke: magenta; }
+[data-stander="DARK"] polygon.effects-overlay {
+    stroke: #f3aff3;
+    fill: magenta;
+    stroke-width: 4px;
+}
 
 [data-owner="LIGHT"] polygon.effects-overlay {
-    fill: rgba(255,255,255,0.15);
-    stroke: #9ab55a;
+    fill: rgb(152, 167, 119);
+    stroke: #484848;
 }
 [data-owner="LIGHT"] .player-name-holder { color: yellow; }
-[data-stander="LIGHT"] polygon.effects-overlay { stroke: yellow; }
+[data-stander="LIGHT"] polygon.effects-overlay {
+    fill: yellow;
+    stroke: #f3f3c8;
+    stroke-width: 4px;
+}
 
 [data-owner="GREY"] polygon.effects-overlay {
-    fill: rgba(127,127,127,0.25);
-    stroke: #248faf;
+    fill: #597b86;
+    stroke: #484848;
 }
 [data-owner="GREY"] .player-name-holder { color: cyan; }
-[data-stander="GREY"] polygon.effects-overlay { stroke: cyan; }
+[data-stander="GREY"] polygon.effects-overlay {
+    fill: cyan;
+    stroke: #dbffff;
+    stroke-width: 4px;
+}
 
 polygon.base-tile:hover {
     fill: #79fcff;
@@ -156,6 +236,26 @@ polygon.base-tile:hover {
     filter: blur(2px);
 }
 
+.stats-title-block {
+    filter: brightness(170%);
+}
+
+.stats-title {
+    font-weight: 400;
+    font-size: 64px;
+    color: var(--game-title-color);
+    user-select: none;
+    display: flex;
+    justify-content: center;
+}
+
+.stats-title:before {
+    content: 'Stats';
+    position: absolute;
+    mix-blend-mode: difference;
+    filter: blur(2px);
+}
+
 .game-wrapper {
     display: flex;
     justify-content: center;
@@ -164,4 +264,5 @@ polygon.base-tile:hover {
 
 .tile-map-holder {
     margin-bottom: 82px;
+    position: relative;
 }
