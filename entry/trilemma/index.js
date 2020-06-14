@@ -180,6 +180,7 @@ const drawTable = () => {
                 newTile.svgEl.setAttribute('data-owner', codeName);
                 newTile.svgEl.setAttribute('data-stander', codeName);
 
+                tileMoveSound.currentTime = 0;
                 tileMoveSound.volume = audioIndex === 0 ? 1 : 0.75;
                 await tileMoveSound.play();
                 break;
