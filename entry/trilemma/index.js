@@ -58,23 +58,72 @@ const calcScore = (resourceToSum) => {
     return multiplication;
 };
 
-const updateStatsTable = (pendingPlayer, playerResources) => {
-    for (const tr of gui.playerList.children) {
-        const trOwner = tr.getAttribute('data-owner');
-        const turnPending = trOwner === pendingPlayer.codeName;
-        tr.classList.toggle('turn-pending', turnPending);
-        const resourceToSum = playerResources[trOwner];
-        for (const td of tr.querySelectorAll('[data-resource]')) {
-            const resource = td.getAttribute('data-resource');
-            td.textContent = resourceToSum[resource];
+const drawTable = () => {
+    const tableBody = document.querySelector('.player-list');
+    const rows = [];
+
+    for (let player of PLAYER_CODE_NAMES) {
+        const cols = [];
+        const row = document.createElement('tr');
+        row.setAttribute('data-owner', player);
+        row.classList.add('turn-pending');
+
+        const nameCol = document.createElement('td');
+        nameCol.classList.add('player-name-holder');
+        nameCol.innerHTML = player;
+        cols.push(nameCol);
+
+        for (let res of RESOURCES) {
+            const resCol = document.createElement('td');
+            const actionCol = document.createElement('td');
+
+            resCol.setAttribute('data-resource', res);
+            resCol.innerHTML = "1";
+            actionCol.innerHTML = res === RESOURCES[RESOURCES.length - 1] ? "=" : "x";
+            cols.push(resCol, actionCol);
         }
-        tr.querySelector('.score-holder').textContent = calcScore(resourceToSum);
+
+        const scoreCol = document.createElement('td');
+        scoreCol.classList.add('score-holder');
+        scoreCol.innerHTML = "1";
+        cols.push(scoreCol);
+
+        cols.forEach( col => row.appendChild(col) );
+        rows.push(row);
     }
+
+    const _redraw = (pendingPlayer, playerResources) => {
+        for (const tr of rows) {
+            const trOwner = tr.getAttribute('data-owner');
+            const turnPending = trOwner === pendingPlayer.codeName;
+            tr.classList.toggle('turn-pending', turnPending);
+            const resourceToSum = playerResources[trOwner];
+            const totalScore = calcScore(resourceToSum);
+            for (const td of tr.querySelectorAll('[data-resource]')) {
+                const resource = td.getAttribute('data-resource');
+                td.textContent = resourceToSum[resource];
+            }
+            tr.querySelector('.score-holder').textContent = totalScore.toString();
+        }
+
+        tableBody.innerHTML = "";
+        rows
+            .sort( (a, b) => {
+                const getScore = el => +el.querySelector('.score-holder').textContent;
+                return getScore(b) - getScore(a);
+            } )
+            .forEach( row => tableBody.appendChild(row) );
+    };
+
+    return {
+        redraw: _redraw,
+    };
 };
 
 (async () => {
     const boardConfig = await getBoardConfiguration();
 
+    const table = drawTable();
     const main = async () => {
         const matrix = TileMapDisplay(boardConfig, gui.tileMapHolder);
 
@@ -147,7 +196,7 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
                     continue;
                 }
                 const playerResources = collectPlayerResources(matrix);
-                updateStatsTable(player, playerResources);
+                table.redraw(player, playerResources);
                 await processTurn(player);
             }
         }
