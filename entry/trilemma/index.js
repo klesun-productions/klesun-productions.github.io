@@ -163,8 +163,7 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
         }));
 
         for (const player of players) {
-            const tile = matrix[player.y][player.x];
-            tile.svgEl.removeAttribute('data-resource');
+            const tile = getTile(player);
             tile.svgEl.setAttribute('data-owner', player.codeName);
             tile.svgEl.setAttribute('data-stander', player.codeName);
         }
