@@ -129,7 +129,7 @@ const getInput = () => new Promise((ok,err) => {
 
         for (let i = 0; i < LEVELS; ++i) {
             for (let j = 0; j < i * 2 + 1; ++j) {
-                const x = j * TILE_WIDTH / 2 - i * TILE_WIDTH / 2;
+                const x = (j  - i - 1) * TILE_WIDTH / 2;
                 const y = i * TILE_HEIGHT;
                 const isEven = j % 2 === 0;
                 const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
@@ -251,9 +251,9 @@ const getInput = () => new Promise((ok,err) => {
 
         const players = [
             // TODO: calc positions dynamically based on board size
-            {x: 10, y: 10, codeName: 'DARK'},
-            {x: 12, y: 11, codeName: 'GREY'},
-            {x: 10, y: 11, codeName: 'LIGHT'},
+            {x: 9, y: 10, codeName: 'DARK'},
+            {x: 11, y: 10, codeName: 'GREY'},
+            {x: 11, y: 11, codeName: 'LIGHT'},
         ];
 
         for (const player of players) {
