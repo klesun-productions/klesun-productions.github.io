@@ -92,10 +92,10 @@ const drawTable = () => {
         rows.push(row);
     }
 
-    const _redraw = (pendingPlayer, playerResources) => {
+    const _redraw = (codeName, playerResources) => {
         for (const tr of rows) {
             const trOwner = tr.getAttribute('data-owner');
-            const turnPending = trOwner === pendingPlayer.codeName;
+            const turnPending = trOwner === codeName;
             tr.classList.toggle('turn-pending', turnPending);
             const resourceToSum = playerResources[trOwner];
             const totalScore = calcScore(resourceToSum);
@@ -127,8 +127,8 @@ const drawTable = () => {
     const main = async () => {
         const matrix = TileMapDisplay(boardConfig, gui.tileMapHolder);
 
-        const getTile = ({x, y}) => {
-            return (matrix[y] || {})[x] || null;
+        const getTile = ({col, row}) => {
+            return (matrix[row] || {})[col] || null;
         };
 
         const playerToBuffs = {};
@@ -136,40 +136,41 @@ const drawTable = () => {
             playerToBuffs[codeName] = new Set();
         }
 
-        const processTurn = async (player) => {
-            const initialTile = getTile(player);
-            const isEven = initialTile.col % 2 === 0;
+        const processTurn = async (codeName) => {
+            const svgEl = gui.tileMapHolder.querySelector(`[data-stander=${codeName}]`);
+            const col = +svgEl.getAttribute('data-col');
+            const row = +svgEl.getAttribute('data-row');
+
+            const isEven = col % 2 === 0;
             // glow possible turns
             const possibleTurns = [
-                {x: initialTile.col + 1, y: initialTile.row},
-                {x: initialTile.col - 1, y: initialTile.row},
+                {col: col + 1, row: row},
+                {col: col - 1, row: row},
                 isEven
-                    ? {x: initialTile.col + 1, y: initialTile.row + 1}
-                    : {x: initialTile.col - 1, y: initialTile.row - 1},
+                    ? {col: col + 1, row: row + 1}
+                    : {col: col - 1, row: row - 1},
             ].map(getTile).filter( (tile) => {
                 return tile
                     && tile.svgEl.getAttribute('data-resource') !== NO_RES_DEAD_SPACE
                     && !tile.svgEl.getAttribute('data-stander');
             } );
             possibleTurns.forEach( (tile) => {
-                tile.svgEl.setAttribute('data-possible-turn', player.codeName);
+                tile.svgEl.setAttribute('data-possible-turn', codeName);
             } );
             while (true) {
-                const newTile = await GetTurnInput(initialTile, possibleTurns).catch(exc => null);
+                const newTile = await GetTurnInput({col, row}, possibleTurns).catch(exc => null);
                 if (!newTile) {
                     // ignore input if player tries to go on a tile that does not exist
                     continue;
                 }
-                initialTile.svgEl.removeAttribute('data-stander');
+                svgEl.removeAttribute('data-stander');
 
                 const prevOwner = newTile.svgEl.getAttribute('data-owner');
-                if (prevOwner && prevOwner !== player.codeName) {
-                    playerToBuffs[player.codeName].add(BUFF_SKIP_TURN);
+                if (prevOwner && prevOwner !== codeName) {
+                    playerToBuffs[codeName].add(BUFF_SKIP_TURN);
                 }
-                newTile.svgEl.setAttribute('data-owner', player.codeName);
-                newTile.svgEl.setAttribute('data-stander', player.codeName);
-                player.x = newTile.col;
-                player.y = newTile.row;
+                newTile.svgEl.setAttribute('data-owner', codeName);
+                newTile.svgEl.setAttribute('data-stander', codeName);
 
                 break;
             }
@@ -177,27 +178,22 @@ const drawTable = () => {
             possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
         };
 
-        const players = PLAYER_CODE_NAMES.map((codeName, i) => ({
-            x: boardConfig.playerStartPositions[i].col,
-            y: boardConfig.playerStartPositions[i].row,
-            codeName: boardConfig.playerStartPositions[i].codeName,
-        }));
-
-        for (const player of players) {
-            const tile = getTile(player);
-            tile.svgEl.setAttribute('data-stander', player.codeName);
+        for (const {col, row, codeName} of boardConfig.playerStartPositions) {
+            const tile = getTile({col, row});
+            tile.svgEl.setAttribute('data-stander', codeName);
         }
+
 
         for (let turnsLeft = boardConfig.totalTurns; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
-            for (const player of players) {
-                if (playerToBuffs[player.codeName].has(BUFF_SKIP_TURN)) {
-                    playerToBuffs[player.codeName].delete(BUFF_SKIP_TURN);
+            for (const codeName of PLAYER_CODE_NAMES) {
+                if (playerToBuffs[codeName].has(BUFF_SKIP_TURN)) {
+                    playerToBuffs[codeName].delete(BUFF_SKIP_TURN);
                     continue;
                 }
                 const playerResources = collectPlayerResources(matrix);
-                table.redraw(player, playerResources);
-                await processTurn(player);
+                table.redraw(codeName, playerResources);
+                await processTurn(codeName);
             }
         }
 
