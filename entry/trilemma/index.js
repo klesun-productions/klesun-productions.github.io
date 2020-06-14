@@ -68,6 +68,12 @@ const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
 const PLAYER_CODE_NAMES = ['DARK', 'GREY', 'LIGHT'];
 const HOT_SEAT = true;
 
+const gui = {
+    tileMapHolder: document.querySelector('.tile-map-holder'),
+    turnsLeftHolder: document.querySelector('.turns-left-holder'),
+    playerList: document.querySelector('.player-list'),
+};
+
 const getBoardConfiguration = async () => {
     if (HOT_SEAT) {
         return MapGenerator();
@@ -107,12 +113,21 @@ const calcScore = (resourceToSum) => {
     return multiplication;
 };
 
+const updateStatsTable = (pendingPlayer, playerResources) => {
+    for (const tr of gui.playerList.children) {
+        const trOwner = tr.getAttribute('data-owner');
+        const turnPending = trOwner === pendingPlayer.codeName;
+        tr.classList.toggle('turn-pending', turnPending);
+        const resourceToSum = playerResources[trOwner];
+        for (const td of tr.querySelectorAll('[data-resource]')) {
+            const resource = td.getAttribute('data-resource');
+            td.textContent = resourceToSum[resource];
+        }
+        tr.querySelector('.score-holder').textContent = calcScore(resourceToSum);
+    }
+};
+
 (async () => {
-    const gui = {
-        tileMapHolder: document.querySelector('.tile-map-holder'),
-        turnsLeftHolder: document.querySelector('.turns-left-holder'),
-        playerList: document.querySelector('.player-list'),
-    };
 
     const boardConfig = await getBoardConfiguration();
 
@@ -244,21 +259,6 @@ const calcScore = (resourceToSum) => {
             }
         };
 
-        const updateStatsTable = (pendingPlayer) => {
-            const playerToResourceToSum = collectPlayerResources(matrix);
-            for (const tr of gui.playerList.children) {
-                const trOwner = tr.getAttribute('data-owner');
-                const turnPending = trOwner === pendingPlayer.codeName;
-                tr.classList.toggle('turn-pending', turnPending);
-                const resourceToSum = playerToResourceToSum[trOwner];
-                for (const td of tr.querySelectorAll('[data-resource]')) {
-                    const resource = td.getAttribute('data-resource');
-                    td.textContent = resourceToSum[resource];
-                }
-                tr.querySelector('.score-holder').textContent = calcScore(resourceToSum);
-            }
-        };
-
         const players = PLAYER_CODE_NAMES.map((codeName, i) => ({
             x: boardConfig.playerStartPositions[i].col,
             y: boardConfig.playerStartPositions[i].row,
@@ -279,7 +279,8 @@ const calcScore = (resourceToSum) => {
                     playerToBuffs[player.codeName].delete('SKIP_TURN');
                     continue;
                 }
-                updateStatsTable(player);
+                const playerResources = collectPlayerResources(matrix);
+                updateStatsTable(player, playerResources);
                 await processTurn(player);
             }
         }
