@@ -78,6 +78,7 @@ const getInput = () => new Promise((ok,err) => {
 
 const TILE_WIDTH = 60;
 const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
+const HOT_SEAT = true;
 
 const initHotseatBoardConfig = () => {
     const totalRows = 16;
@@ -103,8 +104,11 @@ const initHotseatBoardConfig = () => {
 };
 
 const getBoardConfiguration = async () => {
-    const hotseatConfig = initHotseatBoardConfig();
-    return hotseatConfig;
+    if (HOT_SEAT) {
+        return initHotseatBoardConfig();
+    } else {
+        return fetch('/api/get-board-config').then(rs => rs.json());
+    }
 };
 
 (async () => {
