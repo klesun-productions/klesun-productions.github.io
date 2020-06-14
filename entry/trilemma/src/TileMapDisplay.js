@@ -1,4 +1,4 @@
-import {Svg} from "./Dom.js";
+import {Svg} from "./client/Dom.js";
 
 const TILE_WIDTH = 60;
 const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
@@ -67,6 +67,7 @@ const makeTile = (x, y, isEven) => {
     ]);
 };
 
+/** TODO: move to /client/ (not doing now, because conflicts) */
 const TileMapDisplay = (boardConfig, tileMapHolder) => {
     const matrix = [];
 
