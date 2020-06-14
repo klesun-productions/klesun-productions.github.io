@@ -212,7 +212,7 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
 
         const processTurn = async (player) => {
             const initialTile = getTile(player);
-            const isEven = player.x % 2 === 0;
+            const isEven = initialTile.col % 2 === 0;
             // glow possible turns
             const possibleTurns = [
                 {x: initialTile.col + 1, y: initialTile.row},
@@ -227,12 +227,9 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
             } );
             possibleTurns.forEach( (tile) => tile.svgEl.setAttribute('data-possible-turn', player.codeName) );
             while (true) {
-                const input = await getInput().catch(exc => {
-                    alert('Input Rejected - ' + exc);
-                    return null;
-                });
+                const input = await getInput().catch(exc => null);
                 if (!input) {
-                    return;
+                    break; // player skipped turn with Esc button
                 }
                 const {dx, dy} = input;
                 const newPos = {
@@ -245,8 +242,6 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
                     // ignore input if player tries to go on a tile that does not exist
                     continue;
                 }
-                // remove possible turns from last player
-                possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
                 initialTile.svgEl.removeAttribute('data-stander');
 
                 const prevOwner = newTile.svgEl.getAttribute('data-owner');
@@ -260,6 +255,8 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
 
                 break;
             }
+            // remove possible turns from last player
+            possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
         };
 
         const players = PLAYER_CODE_NAMES.map((codeName, i) => ({
