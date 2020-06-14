@@ -32,6 +32,7 @@ const generateResource = () => {
     }
 };
 
+/** @return {Board} */
 const GenerateBoard = ({
     totalRows = 16,
 } = {}) => {

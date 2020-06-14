@@ -8,7 +8,7 @@ export const RES_OIL = 'OIL';
 export const RES_GOLD = 'GOLD';
 
 export const NO_RES_EMPTY = 'EMPTY';
-export const NO_RES_DEAD_SPACE = '';
+export const NO_RES_DEAD_SPACE = 'DEAD_SPACE';
 
 export const BUFF_SKIP_TURN = 'SKIP_TURN';
 

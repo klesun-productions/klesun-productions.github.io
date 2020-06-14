@@ -3,6 +3,7 @@ import * as url from 'url';
 import * as fsSync from 'fs';
 import GenerateBoard from "../GenerateBoard.js";
 import * as http from "http";
+import {PLAYER_DARK, PLAYER_GREY, PLAYER_LIGHT} from "../Constants";
 
 const fs = fsSync.promises;
 
@@ -16,6 +17,17 @@ export interface HandleHttpParams {
     rq: http.IncomingMessage,
     rs: http.ServerResponse,
     rootPath: string,
+}
+
+type BoardUuid = string;
+type PlayerCodeName = typeof PLAYER_DARK | typeof PLAYER_GREY | typeof PLAYER_LIGHT;
+
+interface Board {
+    uuid: BoardUuid,
+    totalRows: number,
+    totalTurns: number,
+    playerStartPositions: {col: number, row: number, codeName: PlayerCodeName}[],
+    tiles: any[],
 }
 
 const redirect = (rs: http.ServerResponse, url: string) => {
@@ -46,33 +58,41 @@ const serveStaticFile = async (pathname: string, rs: http.ServerResponse, rootPa
     //rs.end(bytes);
 };
 
-let boards: {}[] = [];
+let uuidToBoard: Record<BoardUuid, Board> = {};
+
+const setupBoard = () => {
+    const board = GenerateBoard();
+    uuidToBoard[board.uuid] = board;
+    return board;
+};
 
 const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData> | SerialData> = {
     '/api/getBoardState': (rq) => {
-        if (boards.length === 0) {
-            boards.push(GenerateBoard());
+        const urlObj = new URL('https://zhopa.com' + rq.url).searchParams;
+        const uuid = urlObj.get('uuid');
+        if (uuid) {
+            if (uuidToBoard[uuid]) {
+                return uuidToBoard[uuid];
+            } else {
+                return Rej.NotFound('Board ' + uuid + ' not found');
+            }
         }
-        // eventually should identify them somehow to
-        // allow multiple matches simultaneously...
-        return boards[0];
+        const firstBoard = Object.values(uuidToBoard)[0];
+        if (firstBoard) {
+            return firstBoard;
+        } else {
+            return setupBoard();
+        }
     },
     '/api/setupBoard': async (rq) => {
-        boards.shift(); // if any
-        const board = GenerateBoard();
-        boards.unshift(board);
-        return board;
+        return setupBoard();
     },
-    '/api/getBoardList': async (rq) => ({boards}),
+    '/api/getBoardList': async (rq) => ({boards: uuidToBoard}),
     '/api/makeTurn': async (rq) => Rej.NotImplemented('Not implemented yet: /api/makeTurn'),
 };
 
 const HandleHttpRequest = async ({rq, rs, rootPath}: HandleHttpParams) => {
-    if (!rq.url) {
-        const msg = 'Missing rq.url - action only valid for request obtained from http.Server';
-        return Rej.BadRequest(msg);
-    }
-    const parsedUrl = url.parse(rq.url);
+    const parsedUrl = url.parse(<string>rq.url);
     const pathname: string = removeDots(parsedUrl.pathname);
 
     const apiAction = apiRoutes[pathname];
