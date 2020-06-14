@@ -65,7 +65,7 @@ const getInput = () => new Promise((ok,err) => {
 const TILE_WIDTH = 60;
 const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
 const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
-const PLAYERS = ['DARK', 'GREY', 'LIGHT'];
+const PLAYER_CODE_NAMES = ['DARK', 'GREY', 'LIGHT'];
 const HOT_SEAT = true;
 
 const getBoardConfiguration = async () => {
@@ -88,13 +88,6 @@ const getBoardConfiguration = async () => {
     const ROWS = boardConfig.totalRows;
     const BOARD_WIDTH_PX = ROWS * TILE_WIDTH;
     const BOARD_HEIGHT_PX = ROWS * TILE_HEIGHT;
-
-    const players = PLAYERS.map((codeName, i) => ({
-        x: boardConfig.playerStartPositions[i].col,
-        y: boardConfig.playerStartPositions[i].row,
-        codeName: codeName,
-
-    }));
 
     const makeTile = (x, y, isEven) => {
         const makePoly = (attrs) => {
@@ -164,8 +157,8 @@ const getBoardConfiguration = async () => {
         };
 
         const playerToBuffs = {};
-        for (const player of players) {
-            playerToBuffs[player.codeName] = new Set();
+        for (const codeName of PLAYER_CODE_NAMES) {
+            playerToBuffs[codeName] = new Set();
         }
 
         const processTurn = async (player) => {
@@ -219,13 +212,13 @@ const getBoardConfiguration = async () => {
 
         const collectPlayerResources = () => {
             const playerToResourceToSum = {};
-            for (const player of players) {
+            for (const codeName of PLAYER_CODE_NAMES) {
                 // players start with 1, because otherwise they would need
                 // to collect _each_ resource to at least _nominate_ for winning
                 // and I like the idea of rare resource sources quantity being random
-                playerToResourceToSum[player.codeName] = {};
+                playerToResourceToSum[codeName] = {};
                 for (const resource of RESOURCES) {
-                    playerToResourceToSum[player.codeName][resource] = 1;
+                    playerToResourceToSum[codeName][resource] = 1;
                 }
             }
             for (const row of Object.values(matrix)) {
@@ -263,6 +256,12 @@ const getBoardConfiguration = async () => {
             }
         };
 
+        const players = PLAYER_CODE_NAMES.map((codeName, i) => ({
+            x: boardConfig.playerStartPositions[i].col,
+            y: boardConfig.playerStartPositions[i].row,
+            codeName: codeName,
+        }));
+
         for (const player of players) {
             const tile = matrix[player.y][player.x];
             tile.svgEl.removeAttribute('data-resource');
@@ -285,7 +284,7 @@ const getBoardConfiguration = async () => {
         const playerResources = collectPlayerResources();
         const bestScore = Object.values(playerResources)
             .map(calcScore).sort((a,b) => b - a)[0];
-        const winners = PLAYERS.filter(p => calcScore(playerResources[p]) === bestScore);
+        const winners = PLAYER_CODE_NAMES.filter(p => calcScore(playerResources[p]) === bestScore);
         alert('The winner is ' + winners.join(' and '));
     };
 
