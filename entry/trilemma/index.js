@@ -64,6 +64,8 @@ const getInput = () => new Promise((ok,err) => {
 
 const TILE_WIDTH = 60;
 const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
+const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
+const PLAYERS = ['DARK', 'GREY', 'LIGHT'];
 const HOT_SEAT = true;
 
 const getBoardConfiguration = async () => {
@@ -87,7 +89,7 @@ const getBoardConfiguration = async () => {
     const BOARD_WIDTH_PX = ROWS * TILE_WIDTH;
     const BOARD_HEIGHT_PX = ROWS * TILE_HEIGHT;
 
-    const players = ['DARK', 'GREY', 'LIGHT'].map((codeName, i) => ({
+    const players = PLAYERS.map((codeName, i) => ({
         x: boardConfig.playerStartPositions[i].col,
         y: boardConfig.playerStartPositions[i].row,
         codeName: codeName,
@@ -214,9 +216,6 @@ const getBoardConfiguration = async () => {
                 break;
             }
         };
-
-        const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
-        const PLAYERS = ['DARK', 'GREY', 'LIGHT'];
 
         const collectPlayerResources = () => {
             const playerToResourceToSum = {};
