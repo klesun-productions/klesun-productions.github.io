@@ -6,6 +6,7 @@ const url = require('url');
 const fsSync = require('fs');
 const fs = require('fs').promises;
 const {PythonShell} = require('python-shell');
+const {getMimeByExt, removeDots, setCorsHeaders} = require('klesun-node-tools/src/Utils/HttpUtil.js');
 
 const readPost = (rq) => new Promise((ok, err) => {
     if (rq.method === 'POST') {
@@ -56,16 +57,10 @@ const serveStaticFile = async (pathname, rs, rootPath) => {
     if ((await fs.lstat(absPath)).isDirectory()) {
         return redirect(rs, pathname + '/');
     }
-    if (absPath.endsWith('.html')) {
-        rs.setHeader('Content-Type', 'text/html');
-    } else if (absPath.endsWith('.css')) {
-        rs.setHeader('Content-Type', 'text/css');
-    } else if (absPath.endsWith('.js')) {
-        rs.setHeader('Content-Type', 'text/javascript');
-    } else if (absPath.endsWith('.ts')) {
-        rs.setHeader('Content-Type', 'text/typescript');
-    } else if (absPath.endsWith('.svg')) {
-        rs.setHeader('Content-Type', 'image/svg+xml');
+    const ext = absPath.replace(/^.*\./, '');
+    const mime = getMimeByExt(ext);
+    if (mime) {
+        rs.setHeader('Content-Type', mime);
     }
     fsSync.createReadStream(absPath).pipe(rs);
     //rs.end(bytes);
@@ -117,13 +112,6 @@ const serveExploit = (rq, rs) => {
     console.warn(JSON.stringify(record));
 };
 
-const setCorsHeaders = rs => {
-    rs.setHeader('Access-Control-Allow-Origin', '*');
-    rs.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-    rs.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    rs.setHeader('Access-Control-Allow-Credentials', true);
-};
-
 const apiRoutes = {
     '/api/orderSoftware': async (rq) => {
         const postStr = await readPost(rq);
@@ -140,28 +128,6 @@ const apiRoutes = {
 const redirects = {
     '/': '/entry/',
     '/entry/main/': '/entry/',
-};
-
-/**
- * @param path = '/entry/midiana/../../secret/ololo.pem'
- * @return {String} '/secret/ololo.pem'
- */
-const removeDots = path => {
-    const parts = path.split('/');
-    const resultParts = [];
-    for (const part of parts) {
-        if (part === '..' && resultParts.slice(-1)[0] !== '..') {
-            while (resultParts.slice(-1)[0] === '.') resultParts.pop();
-            if (resultParts.length > 0) {
-                resultParts.pop();
-            } else {
-                resultParts.push('..');
-            }
-        } else if (part !== '.') {
-            resultParts.push(part);
-        }
-    }
-    return resultParts.join('/');
 };
 
 const testFileStreamAbort = async (rq, rs) => {

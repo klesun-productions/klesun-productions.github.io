@@ -62,13 +62,13 @@ const getInput = (initialTile) => new Promise((ok,err) => {
 
 const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
 const PLAYER_CODE_NAMES = ['DARK', 'GREY', 'LIGHT'];
-const HOT_SEAT = true;
+const HOT_SEAT = false;
 
 const getBoardConfiguration = async () => {
     if (HOT_SEAT) {
         return MapGenerator();
     } else {
-        return fetch('/api/get-board-config').then(rs => rs.json());
+        return fetch('./api/getBoardConfig').then(rs => rs.json());
     }
 };
 
