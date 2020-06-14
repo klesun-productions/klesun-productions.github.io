@@ -41,6 +41,7 @@ const getInput = () => new Promise((ok,err) => {
         }
         if (removeListener) {
             window.removeEventListener('keydown', listener);
+            window.removeEventListener('click', mouseListener);
             evt.preventDefault();
             return false;
         } else {
