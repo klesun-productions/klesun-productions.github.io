@@ -12,6 +12,12 @@ const gui = {
 
 const HOT_SEAT = false;
 
+const audios = [
+    new Audio('./tile_move.aac'),
+    new Audio('./tile_move2.aac'),
+    new Audio('./tile_move3.aac')
+];
+
 const getBoardConfiguration = async () => {
     if (HOT_SEAT) {
         return GenerateBoard();
@@ -137,6 +143,8 @@ const drawTable = () => {
         }
 
         const processTurn = async (codeName) => {
+            const audioIndex = Math.floor(Math.random() * 3);
+            const tileMoveSound = audios[audioIndex];
             const svgEl = gui.tileMapHolder.querySelector(`[data-stander=${codeName}]`);
             const col = +svgEl.getAttribute('data-col');
             const row = +svgEl.getAttribute('data-row');
@@ -172,6 +180,8 @@ const drawTable = () => {
                 newTile.svgEl.setAttribute('data-owner', codeName);
                 newTile.svgEl.setAttribute('data-stander', codeName);
 
+                tileMoveSound.volume = audioIndex === 0 ? 1 : 0.75;
+                await tileMoveSound.play();
                 break;
             }
             // remove possible turns from last player
