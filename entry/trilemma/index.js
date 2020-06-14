@@ -1,5 +1,4 @@
 
-import {Svg} from './src/Dom.js';
 import MapGenerator from "./src/MapGenerator.js";
 import TileMapDisplay from "./src/TileMapDisplay.js";
 
@@ -36,8 +35,6 @@ const getInput = () => new Promise((ok,err) => {
     window.addEventListener('keydown', listener);
 });
 
-const TILE_WIDTH = 60;
-const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
 const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
 const PLAYER_CODE_NAMES = ['DARK', 'GREY', 'LIGHT'];
 const HOT_SEAT = true;
