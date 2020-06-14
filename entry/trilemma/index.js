@@ -8,6 +8,21 @@ const gui = {
     playerList: document.querySelector('.player-list'),
 };
 
+const mouseInput = {
+    x: null,
+    y: null,
+    set: ({x,y}) => {
+        mouseInput.x = x;
+        mouseInput.y = y;
+
+        setTimeout( () => {
+            mouseInput.x = null;
+            mouseInput.y = null;
+        }, 500)
+    },
+    get: () => ({x: mouseInput.x, y: mouseInput.y})
+};
+
 const getInput = () => new Promise((ok,err) => {
     const listener = (evt) => {
         let removeListener = true;
@@ -32,7 +47,16 @@ const getInput = () => new Promise((ok,err) => {
             return true;
         }
     };
+    const mouseListener = e => {
+        const pos = mouseInput.get();
+        if (pos) {
+            ok({dx: pos.x, dy: pos.y, fullCords: true})
+        }
+        window.removeEventListener('click', mouseListener);
+        return false;
+    };
     window.addEventListener('keydown', listener);
+    window.addEventListener('click', mouseListener);
 });
 
 const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
@@ -122,19 +146,27 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
                     && tile.svgEl.getAttribute('data-resource') !== 'DEAD_SPACE'
                     && !tile.svgEl.getAttribute('data-stander');
             } );
-            possibleTurns.forEach( (tile) => tile.svgEl.setAttribute('data-possible-turn', player.codeName) );
+            possibleTurns.forEach( (tile) => {
+                tile.svgEl.setAttribute('data-possible-turn', player.codeName);
+                tile.svgEl.onclick = e => mouseInput.set({x: tile.col, y: tile.row});
+            } );
             while (true) {
                 const input = await getInput().catch(exc => null);
+                let newPos = {};
                 if (!input) {
                     break; // player skipped turn with Esc button
                 }
-                const {dx, dy} = input;
-                const newPos = {
-                    x: initialTile.col + dx + dy,
-                    y: initialTile.row + dy,
-                };
-                const newTile = possibleTurns
-                    .filter(tile => tile.col === newPos.x && tile.row === newPos.y)[0];
+                const {dx, dy, fullCords} = input;
+
+                if (!fullCords) {
+                    newPos.x = initialTile.col + dx + dy;
+                    newPos.y = initialTile.row + dy;
+                } else {
+                    newPos.x = dx;
+                    newPos.y = dy;
+                }
+
+                const newTile = possibleTurns.find(tile => tile.col === newPos.x && tile.row === newPos.y);
                 if (!newTile) {
                     // ignore input if player tries to go on a tile that does not exist
                     continue;

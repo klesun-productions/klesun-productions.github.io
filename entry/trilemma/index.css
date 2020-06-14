@@ -112,6 +112,15 @@ polygon.effects-overlay {
 [data-possible-turn] polygon{
     stroke-width: 3px;
 }
+[data-possible-turn="DARK"] polygon.base-tile:hover {
+    fill: #945694;
+}
+[data-possible-turn="GREY"] polygon.base-tile:hover {
+    fill: #68b2ca;
+}
+[data-possible-turn="LIGHT"] polygon.base-tile:hover {
+    fill: #b5b547;
+}
 [data-possible-turn="DARK"] polygon:first-child {
     stroke: #e4a3e4;
 }
