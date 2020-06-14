@@ -89,6 +89,13 @@ const getInput = () => new Promise((ok,err) => {
     const BOARD_WIDTH_PX = LEVELS * TILE_WIDTH;
     const BOARD_HEIGHT_PX = LEVELS * TILE_HEIGHT;
 
+    const players = [
+        // TODO: calc positions dynamically based on board size
+        {x: 9, y: 10, codeName: 'DARK'},
+        {x: 11, y: 10, codeName: 'GREY'},
+        {x: 11, y: 11, codeName: 'LIGHT'},
+    ];
+
     const makeTile = (x, y, isEven) => {
         const makePoly = (attrs) => {
             let relX = TILE_WIDTH / 2;
@@ -163,6 +170,11 @@ const getInput = () => new Promise((ok,err) => {
             return (matrix[y] || {})[x] || null;
         };
 
+        const playerToBuffs = {};
+        for (const player of players) {
+            playerToBuffs[player.codeName] = new Set();
+        }
+
         const processTurn = async (player) => {
             const isEven = player.x % 2 === 0;
             // glow possible turns
@@ -204,6 +216,11 @@ const getInput = () => new Promise((ok,err) => {
                 possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
                 // TODO: check that other players are not standing on this tile
                 getTile(player).svgEl.removeAttribute('data-stander');
+
+                const prevOwner = newTile.svgEl.getAttribute('data-owner');
+                if (prevOwner && prevOwner !== player.codeName) {
+                    playerToBuffs[player.codeName].add('SKIP_TURN');
+                }
                 newTile.svgEl.setAttribute('data-owner', player.codeName);
                 newTile.svgEl.setAttribute('data-stander', player.codeName);
                 player.x = newPos.x;
@@ -212,13 +229,6 @@ const getInput = () => new Promise((ok,err) => {
                 break;
             }
         };
-
-        const players = [
-            // TODO: calc positions dynamically based on board size
-            {x: 9, y: 10, codeName: 'DARK'},
-            {x: 11, y: 10, codeName: 'GREY'},
-            {x: 11, y: 11, codeName: 'LIGHT'},
-        ];
 
         const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
         const PLAYERS = ['DARK', 'GREY', 'LIGHT'];
@@ -279,6 +289,10 @@ const getInput = () => new Promise((ok,err) => {
         for (let turnsLeft = Math.floor(totalCells / 3) - 1; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
             for (const player of players) {
+                if (playerToBuffs[player.codeName].has('SKIP_TURN')) {
+                    playerToBuffs[player.codeName].delete('SKIP_TURN');
+                    continue;
+                }
                 updateStatsTable(player);
                 await processTurn(player);
             }
