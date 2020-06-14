@@ -188,11 +188,6 @@ const getBoardConfiguration = async () => {
                     return;
                 }
                 const {dx, dy} = input;
-                if (dy < 0 && isEven || dy > 0 && !isEven) {
-                    // when tip of current til is facing down, user can't
-                    // go down, and when it's facing up he can't go up
-                    continue;
-                }
                 const newPos = {
                     x: player.x + dx + dy,
                     y: player.y + dy,
