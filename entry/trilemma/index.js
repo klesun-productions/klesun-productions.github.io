@@ -213,41 +213,61 @@ const getInput = () => new Promise((ok,err) => {
             }
         };
 
-        const updateStatsTable = (pendingPlayer) => {
-            const playerToResourceToSum = {};
-            for (const row of Object.values(matrix)) {
-                for (const tile of Object.values(row)) {
-                    const player = tile.svgEl.getAttribute('data-owner');
-                    const resource = tile.svgEl.getAttribute('data-resource');
-                    playerToResourceToSum[player] = playerToResourceToSum[player] || {};
-                    playerToResourceToSum[player][resource] = playerToResourceToSum[player][resource] || 0;
-                    playerToResourceToSum[player][resource] += 1;
-                }
-            }
-            for (const tr of gui.playerList.children) {
-                const trOwner = tr.getAttribute('data-owner');
-                const turnPending = trOwner === pendingPlayer.codeName;
-                tr.classList.toggle('turn-pending', turnPending);
-                let multiplication = 1;
-                for (const td of tr.querySelectorAll('[data-resource]')) {
-                    const resource = td.getAttribute('data-resource');
-                    let sum = (playerToResourceToSum[trOwner] || {})[resource] || 0;
-                    sum += 1; // players start with 1, because otherwise they would need
-                              // to collect _each_ resource to at least _nominate_ for winning
-                              // and I like the idea of rare resource sources quantity being random
-                    multiplication *= sum;
-                    td.textContent = sum;
-                }
-                tr.querySelector('.score-holder').textContent = multiplication;
-            }
-        };
-
         const players = [
             // TODO: calc positions dynamically based on board size
             {x: 9, y: 10, codeName: 'DARK'},
             {x: 11, y: 10, codeName: 'GREY'},
             {x: 11, y: 11, codeName: 'LIGHT'},
         ];
+
+        const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
+        const PLAYERS = ['DARK', 'GREY', 'LIGHT'];
+
+        const collectPlayerResources = () => {
+            const playerToResourceToSum = {};
+            for (const player of players) {
+                // players start with 1, because otherwise they would need
+                // to collect _each_ resource to at least _nominate_ for winning
+                // and I like the idea of rare resource sources quantity being random
+                playerToResourceToSum[player.codeName] = {};
+                for (const resource of RESOURCES) {
+                    playerToResourceToSum[player.codeName][resource] = 1;
+                }
+            }
+            for (const row of Object.values(matrix)) {
+                for (const tile of Object.values(row)) {
+                    const player = tile.svgEl.getAttribute('data-owner');
+                    const resource = tile.svgEl.getAttribute('data-resource');
+                    if (player && RESOURCES.includes(resource)) {
+                        playerToResourceToSum[player][resource] += 1;
+                    }
+                }
+            }
+            return playerToResourceToSum;
+        };
+
+        const calcScore = (resourceToSum) => {
+            let multiplication = 1;
+            for (const resource of RESOURCES) {
+                multiplication *= resourceToSum[resource];
+            }
+            return multiplication;
+        };
+
+        const updateStatsTable = (pendingPlayer) => {
+            const playerToResourceToSum = collectPlayerResources();
+            for (const tr of gui.playerList.children) {
+                const trOwner = tr.getAttribute('data-owner');
+                const turnPending = trOwner === pendingPlayer.codeName;
+                tr.classList.toggle('turn-pending', turnPending);
+                const resourceToSum = playerToResourceToSum[trOwner];
+                for (const td of tr.querySelectorAll('[data-resource]')) {
+                    const resource = td.getAttribute('data-resource');
+                    td.textContent = resourceToSum[resource];
+                }
+                tr.querySelector('.score-holder').textContent = calcScore(resourceToSum);
+            }
+        };
 
         for (const player of players) {
             const tile = matrix[player.y][player.x];
@@ -256,13 +276,19 @@ const getInput = () => new Promise((ok,err) => {
             tile.svgEl.setAttribute('data-stander', player.codeName);
         }
 
-        for (let turnsLeft = Math.floor(totalCells / 3) - 1; turnsLeft > 0; --turnsLeft) {
+        for (let turnsLeft = Math.floor(totalCells / 21) - 1; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
             for (const player of players) {
                 updateStatsTable(player);
                 await processTurn(player);
             }
         }
+
+        const playerResources = collectPlayerResources();
+        const bestScore = Object.values(playerResources)
+            .map(calcScore).sort((a,b) => b - a)[0];
+        const winners = PLAYERS.filter(p => calcScore(playerResources[p]) === bestScore);
+        alert('The winner is ' + winners.join(' and '));
     };
 
     return main();
