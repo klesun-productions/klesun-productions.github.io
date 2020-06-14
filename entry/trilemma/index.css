@@ -123,12 +123,31 @@ polygon.effects-overlay {
 }
 [data-possible-turn="DARK"] polygon:first-child {
     stroke: #e4a3e4;
+    animation: blink-possible-turn 1.5s ease-in-out infinite;
 }
 [data-possible-turn="LIGHT"] polygon:first-child {
     stroke: #eaea9b;
+    animation: blink-possible-turn 1.5s ease-in-out infinite;
 }
 [data-possible-turn="GREY"] polygon:first-child {
     stroke: #a6e2e2;
+    animation: blink-possible-turn 1.5s ease-in-out infinite;
+}
+[data-possible-turn="DARK"] polygon.effects-overlay {
+    cursor: pointer;
+    stroke: #e4a3e4;
+    animation: blink-possible-turn 1.5s ease-in-out infinite;
+}
+[data-possible-turn="LIGHT"] polygon.effects-overlay {
+    cursor: pointer;
+    stroke: #eaea9b;
+    animation: blink-possible-turn 1.5s ease-in-out infinite;
+}
+
+[data-possible-turn="GREY"] polygon.effects-overlay {
+    cursor: pointer;
+    stroke: #a6e2e2;
+    animation: blink-possible-turn 1.5s ease-in-out infinite;
 }
 [data-possible-turn="DARK"] polygon.effects-overlay {
     stroke: #e4a3e4 !important;
@@ -278,4 +297,16 @@ polygon.base-tile:hover {
 .tile-map-holder {
     margin-bottom: 82px;
     position: relative;
+}
+
+@keyframes blink-possible-turn {
+    0% {
+        opacity: 1;
+    }
+    45%, 55% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
 }
