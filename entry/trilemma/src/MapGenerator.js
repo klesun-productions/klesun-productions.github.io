@@ -27,10 +27,17 @@ const MapGenerator = ({
     const tiles = [];
     for (let row = 0; row < totalRows; ++row) {
         for (let col = 0; col < row * 2 + 1; ++col) {
-            const hasStander = playerStartPositions
-                .some(pos => pos.row === row && pos.col === col);
-            const resource = hasStander ? 'EMPTY' : generateResource();
-            tiles.push({row, col, resource});
+            const stander = playerStartPositions
+                .find(pos => pos.row === row && pos.col === col);
+            let resource, owner;
+            if (stander) {
+                resource = 'EMPTY';
+                owner = stander.codeName;
+            } else {
+                resource = generateResource();
+                owner = null;
+            }
+            tiles.push({row, col, resource, owner});
         }
     }
     let totalCells = tiles.filter(t => t !== 'DEAD_SPACE').length;
@@ -39,8 +46,6 @@ const MapGenerator = ({
         totalTurns: Math.floor(totalCells / 3) - 1,
         playerStartPositions: playerStartPositions,
         tiles: tiles,
-        // {x, y}
-        turnsHistory: [],
     };
 };
 
