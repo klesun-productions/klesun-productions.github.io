@@ -127,11 +127,11 @@ const getInput = () => new Promise((ok,err) => {
         gui.tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
         gui.tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
-        for (let i = 0; i < LEVELS; ++i) {
-            for (let j = 0; j < i * 2 + 1; ++j) {
-                const x = (j  - i - 1) * TILE_WIDTH / 2;
-                const y = i * TILE_HEIGHT;
-                const isEven = j % 2 === 0;
+        for (let row = 0; row < LEVELS; ++row) {
+            for (let col = 0; col < row * 2 + 1; ++col) {
+                const x = (col  - row - 1) * TILE_WIDTH / 2;
+                const y = row * TILE_HEIGHT;
+                const isEven = col % 2 === 0;
                 const svgEl = makeTile(BOARD_WIDTH_PX / 2 + x, y, isEven);
                 const resource = generateResource();
                 const svgResource = resourceSvgs[resource];
@@ -148,10 +148,8 @@ const getInput = () => new Promise((ok,err) => {
 
                 gui.tileMapHolder.appendChild(svgEl);
 
-                matrix[i] = matrix[i] || {};
-                matrix[i][j] = {
-                    svgEl: svgEl,
-                };
+                matrix[row] = matrix[row] || {};
+                matrix[row][col] = {row, col, svgEl};
             }
         }
 
@@ -172,13 +170,12 @@ const getInput = () => new Promise((ok,err) => {
                 {x: player.x + 1, y: player.y},
                 {x: player.x - 1, y: player.y},
                 {x: isEven ? player.x + 1 : player.x - 1, y: isEven ? player.y + 1 : player.y - 1},
-            ].map(pt => ({...pt, tile: getTile(pt)}))
-                .filter( ({tile}) => {
-                    return tile
-                        && tile.svgEl.getAttribute('data-resource') !== 'DEAD_SPACE'
-                        && !tile.svgEl.getAttribute('data-stander');
-                } );
-            possibleTurns.forEach( ({tile}) => tile.svgEl.setAttribute('data-possible-turn', player.codeName) );
+            ].map(getTile).filter( (tile) => {
+                return tile
+                    && tile.svgEl.getAttribute('data-resource') !== 'DEAD_SPACE'
+                    && !tile.svgEl.getAttribute('data-stander');
+            } );
+            possibleTurns.forEach( (tile) => tile.svgEl.setAttribute('data-possible-turn', player.codeName) );
             while (true) {
                 const input = await getInput().catch(exc => {
                     alert('Input Rejected - ' + exc);
@@ -198,14 +195,13 @@ const getInput = () => new Promise((ok,err) => {
                     y: player.y + dy,
                 };
                 const newTile = possibleTurns
-                    .filter(pt => pt.x === newPos.x && pt.y === newPos.y)
-                    .map(pt => pt.tile)[0];
+                    .filter(tile => tile.col === newPos.x && tile.row === newPos.y)[0];
                 if (!newTile) {
                     // ignore input if player tries to go on a tile that does not exist
                     continue;
                 }
                 // remove possible turns from last player
-                possibleTurns.forEach( ({tile}) => tile.svgEl.removeAttribute('data-possible-turn') );
+                possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
                 // TODO: check that other players are not standing on this tile
                 getTile(player).svgEl.removeAttribute('data-stander');
                 newTile.svgEl.setAttribute('data-owner', player.codeName);
