@@ -1,5 +1,6 @@
 
 import {Svg} from './src/Dom.js';
+import MapGenerator from "./src/MapGenerator.js";
 
 const resourceSvgs = {
     WHEAT: (isEven) => Svg('path',{
@@ -34,21 +35,6 @@ const resourceSvgs = {
     }),
 };
 
-const generateResource = () => {
-    const roll = Math.random();
-    if (roll < 0.02) {
-        return 'GOLD';
-    } else if (roll < 0.08) {
-        return 'OIL';
-    } else if (roll < 0.26) {
-        return 'WHEAT';
-    } else if (roll < 0.35) {
-        return 'DEAD_SPACE';
-    } else {
-        return 'EMPTY';
-    }
-};
-
 const getInput = () => new Promise((ok,err) => {
     const listener = (evt) => {
         let removeListener = true;
@@ -80,32 +66,9 @@ const TILE_WIDTH = 60;
 const TILE_HEIGHT = Math.sqrt(3) * TILE_WIDTH / 2;
 const HOT_SEAT = true;
 
-const initHotseatBoardConfig = () => {
-    const totalRows = 16;
-    const tiles = [];
-    for (let row = 0; row < totalRows; ++row) {
-        for (let col = 0; col < row * 2 + 1; ++col) {
-            const resource = generateResource();
-            tiles.push({row, col, resource});
-        }
-    }
-    let totalCells = tiles.filter(t => t !== 'DEAD_SPACE').length;
-    return {
-        totalRows: totalRows,
-        totalTurns: Math.floor(totalCells / 3) - 1,
-        playerStartPositions: [
-            // TODO: calc positions dynamically based on board size
-            {col: 9, row: 10},
-            {col: 11, row: 10},
-            {col: 11, row: 11},
-        ],
-        tiles: tiles,
-    };
-};
-
 const getBoardConfiguration = async () => {
     if (HOT_SEAT) {
-        return initHotseatBoardConfig();
+        return MapGenerator();
     } else {
         return fetch('/api/get-board-config').then(rs => rs.json());
     }
