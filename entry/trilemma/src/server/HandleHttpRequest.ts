@@ -9,6 +9,9 @@ const fs = fsSync.promises;
 const Rej = require('klesun-node-tools/src/Rej.js');
 const {getMimeByExt, removeDots, setCorsHeaders} = require('klesun-node-tools/src/Utils/HttpUtil.js');
 
+type Primitive = number | string | boolean;
+type SerialData = Primitive | {[k: string]: SerialData} | {[k: number]: SerialData};
+
 export interface HandleHttpParams {
     rq: http.IncomingMessage,
     rs: http.ServerResponse,
@@ -43,12 +46,24 @@ const serveStaticFile = async (pathname: string, rs: http.ServerResponse, rootPa
     //rs.end(bytes);
 };
 
-const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<any>> = {
-    '/api/getBoardState': async (rq) => {
-        return MapGenerator();
+let boards: {}[] = [];
+
+const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData> | SerialData> = {
+    '/api/getBoardState': (rq) => {
+        if (boards.length === 0) {
+            boards.push(MapGenerator());
+        }
+        // eventually should identify them somehow to
+        // allow multiple matches simultaneously...
+        return boards[0];
     },
-    '/api/setupBoard': async (rq) => Rej.NotImplemented('Not implemented yet: /api/setupBoard'),
-    '/api/getBoardList': async (rq) => Rej.NotImplemented('Not implemented yet: /api/getBoardList'),
+    '/api/setupBoard': async (rq) => {
+        boards.shift(); // if any
+        const board = MapGenerator();
+        boards.unshift(board);
+        return board;
+    },
+    '/api/getBoardList': async (rq) => ({boards}),
     '/api/makeTurn': async (rq) => Rej.NotImplemented('Not implemented yet: /api/makeTurn'),
 };
 
@@ -68,11 +83,13 @@ const HandleHttpRequest = async ({rq, rs, rootPath}: HandleHttpParams) => {
         rs.write('CORS ok');
         rs.end();
     } else if (apiAction) {
-        return apiAction(rq).then(result => {
-            rs.setHeader('Content-Type', 'application/json');
-            rs.statusCode = 200;
-            rs.end(JSON.stringify(result));
-        });
+        return Promise.resolve(rq)
+            .then(apiAction)
+            .then(result => {
+                rs.setHeader('Content-Type', 'application/json');
+                rs.statusCode = 200;
+                rs.end(JSON.stringify(result));
+            });
     } else if (pathname.startsWith('/')) {
         return serveStaticFile(pathname, rs, rootPath);
     } else {
