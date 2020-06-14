@@ -175,9 +175,13 @@ polygon.effects-overlay {
 }
 
 polygon.base-tile:hover {
-    fill: #79fcff;
+    fill: #b7b7b7;
     cursor: pointer;
-//transform: skew(-0.5deg) scale(1, 0.99);
+}
+
+[data-resource="DEAD_SPACE"] polygon.base-tile:hover {
+    fill: transparent;
+    cursor: default;
 }
 
 .header {
