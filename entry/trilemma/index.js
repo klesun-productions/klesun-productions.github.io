@@ -276,7 +276,7 @@ const getInput = () => new Promise((ok,err) => {
             tile.svgEl.setAttribute('data-stander', player.codeName);
         }
 
-        for (let turnsLeft = Math.floor(totalCells / 21) - 1; turnsLeft > 0; --turnsLeft) {
+        for (let turnsLeft = Math.floor(totalCells / 3) - 1; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
             for (const player of players) {
                 updateStatsTable(player);
