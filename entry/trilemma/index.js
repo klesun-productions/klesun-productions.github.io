@@ -130,12 +130,29 @@ const drawTable = () => {
     };
 };
 
+let soundEnabled = true;
+
 (async () => {
     let boardState = await getBoardState();
 
     const table = drawTable();
     const main = async () => {
         const matrix = TileMapDisplay(boardState, gui.tileMapHolder);
+
+        const enabledSvg = document.getElementById('sound-svg-enabled');
+        const disabledSvg = document.getElementById('sound-svg-disabled');
+
+        enabledSvg.onclick = e => {
+            enabledSvg.style.display = "none";
+            disabledSvg.style.display = "block";
+            soundEnabled = false;
+        };
+
+        disabledSvg.onclick = e => {
+            disabledSvg.style.display = "none";
+            enabledSvg.style.display = "block";
+            soundEnabled = true;
+        };
 
         const getTile = ({col, row}) => {
             return (matrix[row] || {})[col] || null;
@@ -165,7 +182,6 @@ const drawTable = () => {
 
         const processTurn = async (codeName) => {
             const audioIndex = Math.floor(Math.random() * 3);
-            const tileMoveSound = audios[audioIndex];
             const svgEl = gui.tileMapHolder.querySelector(`[data-stander=${codeName}]`);
             const col = +svgEl.getAttribute('data-col');
             const row = +svgEl.getAttribute('data-row');
@@ -207,9 +223,13 @@ const drawTable = () => {
                 effectiveTile.svgEl.setAttribute('data-owner', codeName);
                 effectiveTile.svgEl.setAttribute('data-stander', codeName);
 
-                tileMoveSound.currentTime = 0;
-                tileMoveSound.volume = (audioIndex === 0 ? 1 : 0.75) * 0.05;
-                await tileMoveSound.play();
+                if (soundEnabled) {
+                    const tileMoveSound = audios[audioIndex];
+                    tileMoveSound.currentTime = 0;
+                    tileMoveSound.volume = (audioIndex === 0 ? 1 : 0.75) * 0.05;
+                    await tileMoveSound.play();
+                }
+
                 break;
             }
             // remove possible turns from last player

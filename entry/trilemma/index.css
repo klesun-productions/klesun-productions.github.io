@@ -48,6 +48,51 @@ body {
     fill: #fbbe5c;
 }
 
+.sound-switch-block {
+    display: flex;
+    position: absolute;
+    left: 64px;
+    top: 50%;
+    transform: translateY(-50%);
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.sound-switch-block svg {
+    width: 36px;
+    height: 36px;
+    margin-left: 8px;
+    fill: #8d549c;
+    cursor: pointer;
+}
+
+.sound-switch-block:after {
+    content: '';
+    width: 36px;
+    height: 36px;
+    background: #8d549c;
+    filter: blur(5px);
+    position: absolute;
+    right: 0;
+    opacity: 0;
+    border-radius: 50%;
+    transition: 0.15s ease-in-out;
+    user-select: none;
+    pointer-events: none;
+}
+
+.sound-switch-block:hover:after {
+    opacity: 0.4;
+    cursor: pointer;
+}
+
+.sound-title {
+    color: #8d549c;
+    font-weight: 400;
+    font-size: 28px;
+}
+
 .stats-block * {
     color: white;
 }
@@ -216,6 +261,7 @@ polygon.base-tile:hover {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    position: relative;
 }
 
 .title-neon-wrap {
