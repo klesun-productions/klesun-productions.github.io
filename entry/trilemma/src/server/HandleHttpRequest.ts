@@ -44,9 +44,12 @@ const serveStaticFile = async (pathname: string, rs: http.ServerResponse, rootPa
 };
 
 const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<any>> = {
-    '/api/getBoardConfig': async (rq) => {
+    '/api/getBoardState': async (rq) => {
         return MapGenerator();
     },
+    '/api/setupBoard': async (rq) => Rej.NotImplemented('Not implemented yet: /api/setupBoard'),
+    '/api/getBoardList': async (rq) => Rej.NotImplemented('Not implemented yet: /api/getBoardList'),
+    '/api/makeTurn': async (rq) => Rej.NotImplemented('Not implemented yet: /api/makeTurn'),
 };
 
 const HandleHttpRequest = async ({rq, rs, rootPath}: HandleHttpParams) => {

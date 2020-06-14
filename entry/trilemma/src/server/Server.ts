@@ -15,7 +15,7 @@ const handleRq = ({rq, rs, rootPath}: HandleHttpParams) => {
 /** @param rootPath - file system path matching the root of the website hosting this request */
 const Server = async (rootPath: string) => {
     http.createServer((rq, rs) => handleRq({rq, rs, rootPath})).listen(23183, '0.0.0.0', () => {
-        console.log('listening trilemma requests at https://klesun-productions.com:23183');
+        console.log('listening trilemma requests on :23183');
     });
 };
 

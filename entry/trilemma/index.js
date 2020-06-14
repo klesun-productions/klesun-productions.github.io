@@ -8,56 +8,62 @@ const gui = {
     playerList: document.querySelector('.player-list'),
 };
 
-const mouseInput = {
-    x: null,
-    y: null,
-    set: ({x,y}) => {
-        mouseInput.x = x;
-        mouseInput.y = y;
+const getInput = (initialTile, possibleTurns) => new Promise((resolve, reject) => {
+    const cleanup = () => {
+        window.removeEventListener('keydown', listener);
+        tileCleanups.forEach(cleanup => cleanup());
+    };
 
-        setTimeout( () => {
-            mouseInput.x = null;
-            mouseInput.y = null;
-        }, 500)
-    },
-    get: () => ({x: mouseInput.x, y: mouseInput.y})
-};
+    const tryDelta = ({dx, dy}) => {
+        const newPos = {
+            x: initialTile.col + dx + dy,
+            y: initialTile.row + dy,
+        };
+        const newTile = possibleTurns.find(tile => {
+            return tile.col === newPos.x
+                && tile.row === newPos.y;
+        });
+        if (newTile) {
+            resolve(newTile);
+            return true;
+        } else {
+            return false;
+        }
+    };
 
-const getInput = (initialTile) => new Promise((ok,err) => {
     const listener = (evt) => {
         let removeListener = true;
         if (evt.key === 'ArrowDown') {
-            ok({dx: 0, dy: 1});
+            removeListener = tryDelta({dx: 0, dy: 1});
         } else if (evt.key === 'ArrowUp') {
-            ok({dx: 0, dy: -1});
+            removeListener = tryDelta({dx: 0, dy: -1});
         } else if (evt.key === 'ArrowLeft') {
-            ok({dx: -1, dy: 0});
+            removeListener = tryDelta({dx: -1, dy: 0});
         } else if (evt.key === 'ArrowRight') {
-            ok({dx: 1, dy: 0});
+            removeListener = tryDelta({dx: 1, dy: 0});
         } else if (evt.key === 'Escape') {
-            err(new Error('Player cancelled his turn'));
+            reject(new Error('Player cancelled his turn'));
         } else {
             removeListener = false;
         }
         if (removeListener) {
-            window.removeEventListener('keydown', listener);
-            window.removeEventListener('click', mouseListener);
+            cleanup();
             evt.preventDefault();
             return false;
         } else {
             return true;
         }
     };
-    const mouseListener = e => {
-        const pos = mouseInput.get();
-        if (pos) {
-            ok({dx: pos.x - initialTile.col - (pos.y - initialTile.row), dy: pos.y - initialTile.row})
-        }
-        window.removeEventListener('click', mouseListener);
-        return false;
-    };
+    const tileCleanups = possibleTurns.map(tile => {
+        const mouseListener = e => {
+            resolve(tile);
+            cleanup();
+        };
+
+        tile.svgEl.addEventListener('click', mouseListener);
+        return () => tile.svgEl.addEventListener('click', mouseListener);
+    });
     window.addEventListener('keydown', listener);
-    window.addEventListener('click', mouseListener);
 });
 
 const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
@@ -68,7 +74,7 @@ const getBoardConfiguration = async () => {
     if (HOT_SEAT) {
         return MapGenerator();
     } else {
-        return fetch('./api/getBoardConfig')
+        return fetch('./api/getBoardState')
             .then(rs => rs.status !== 200
                 ? Promise.reject(rs.statusText)
                 : rs.json())
@@ -156,20 +162,9 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
             } );
             possibleTurns.forEach( (tile) => {
                 tile.svgEl.setAttribute('data-possible-turn', player.codeName);
-                tile.svgEl.onclick = e => mouseInput.set({x: tile.col, y: tile.row});
             } );
             while (true) {
-                const input = await getInput(initialTile).catch(exc => null);
-                if (!input) {
-                    break; // player skipped turn with Esc button
-                }
-                const {dx, dy} = input;
-                const newPos = {
-                    x: initialTile.col + dx + dy,
-                    y: initialTile.row + dy,
-                };
-
-                const newTile = possibleTurns.find(tile => tile.col === newPos.x && tile.row === newPos.y);
+                const newTile = await getInput(initialTile, possibleTurns).catch(exc => null);
                 if (!newTile) {
                     // ignore input if player tries to go on a tile that does not exist
                     continue;
@@ -182,8 +177,8 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
                 }
                 newTile.svgEl.setAttribute('data-owner', player.codeName);
                 newTile.svgEl.setAttribute('data-stander', player.codeName);
-                player.x = newPos.x;
-                player.y = newPos.y;
+                player.x = newTile.col;
+                player.y = newTile.row;
 
                 break;
             }
