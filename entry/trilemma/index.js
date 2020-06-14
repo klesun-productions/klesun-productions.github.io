@@ -1,6 +1,7 @@
 
 import MapGenerator from "./src/MapGenerator.js";
 import TileMapDisplay from "./src/TileMapDisplay.js";
+import {PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
 
 const gui = {
     tileMapHolder: document.querySelector('.tile-map-holder'),
@@ -66,8 +67,6 @@ const getInput = (initialTile, possibleTurns) => new Promise((resolve, reject) =
     window.addEventListener('keydown', listener);
 });
 
-const RESOURCES = ['WHEAT', 'OIL', 'GOLD'];
-const PLAYER_CODE_NAMES = ['DARK', 'GREY', 'LIGHT'];
 const HOT_SEAT = false;
 
 const getBoardConfiguration = async () => {
@@ -189,7 +188,7 @@ const updateStatsTable = (pendingPlayer, playerResources) => {
         const players = PLAYER_CODE_NAMES.map((codeName, i) => ({
             x: boardConfig.playerStartPositions[i].col,
             y: boardConfig.playerStartPositions[i].row,
-            codeName: codeName,
+            codeName: boardConfig.playerStartPositions[i].codeName,
         }));
 
         for (const player of players) {

@@ -1,12 +1,13 @@
+import {PLAYER_DARK, PLAYER_GREY, PLAYER_LIGHT, RES_GOLD, RES_OIL, RES_WHEAT} from "./Constants.js";
 
 const generateResource = () => {
     const roll = Math.random();
     if (roll < 0.02) {
-        return 'GOLD';
+        return RES_GOLD;
     } else if (roll < 0.08) {
-        return 'OIL';
+        return RES_OIL;
     } else if (roll < 0.26) {
-        return 'WHEAT';
+        return RES_WHEAT;
     } else if (roll < 0.35) {
         return 'DEAD_SPACE';
     } else {
@@ -19,9 +20,9 @@ const MapGenerator = ({
 } = {}) => {
     const playerStartPositions = [
         // TODO: calc positions dynamically based on board size
-        {col: 9, row: 10},
-        {col: 11, row: 10},
-        {col: 11, row: 11},
+        {col:  9, row: 10, codeName: PLAYER_DARK},
+        {col: 11, row: 10, codeName: PLAYER_GREY},
+        {col: 11, row: 11, codeName: PLAYER_LIGHT},
     ];
     const tiles = [];
     for (let row = 0; row < totalRows; ++row) {
@@ -38,6 +39,8 @@ const MapGenerator = ({
         totalTurns: Math.floor(totalCells / 3) - 1,
         playerStartPositions: playerStartPositions,
         tiles: tiles,
+        // {x, y}
+        turnsHistory: [],
     };
 };
 
