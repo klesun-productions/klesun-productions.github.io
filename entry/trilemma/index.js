@@ -11,7 +11,7 @@ const gui = {
     playerList: document.querySelector('.player-list'),
 };
 
-const HOT_SEAT = true;
+const HOT_SEAT = false;
 
 const audios = [
     new Audio('./tile_move.aac'),
@@ -173,10 +173,22 @@ let soundEnabled = true;
                 if (prevOwner && prevOwner !== codeName) {
                     boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
                 }
-                const pos = boardState.playerToPosition[codeName];
-                pos.col = newTile.col;
-                pos.row = newTile.row;
-                return boardState;
+
+                boardState.playerToPosition[codeName].col = newTile.col;
+                boardState.playerToPosition[codeName].row = newTile.row;
+
+                if (boardState.turnPlayersLeft.length === 0) {
+                    for (const codeName of PLAYER_CODE_NAMES) {
+                        const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
+                        if (buffIdx > -1) {
+                            boardState.playerToBuffs[codeName].splice(buffIdx, 1);
+                        } else {
+                            boardState.turnPlayersLeft.push(codeName);
+                        }
+                    }
+                }
+
+                return Promise.resolve(boardState);
             }
         };
 
@@ -244,13 +256,7 @@ let soundEnabled = true;
 
         for (let turnsLeft = boardState.totalTurns; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
-            for (const codeName of PLAYER_CODE_NAMES) {
-                // TODO: on server as well!
-                const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
-                if (buffIdx > -1) {
-                    boardState.playerToBuffs[codeName].splice(buffIdx, 1);
-                    continue;
-                }
+            for (const codeName of boardState.turnPlayersLeft) {
                 const playerResources = collectPlayerResources(matrix);
                 table.redraw(codeName, playerResources);
                 await processTurn(codeName);

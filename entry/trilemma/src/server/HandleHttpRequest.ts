@@ -14,6 +14,7 @@ import {
     RES_OIL,
     RES_WHEAT
 } from "../Constants";
+import Fight from "../Fight";
 
 const fs = fsSync.promises;
 
@@ -35,7 +36,7 @@ type Resource = typeof RES_WHEAT | typeof RES_OIL | typeof RES_GOLD;
 type TileModifier = Resource | typeof NO_RES_DEAD_SPACE | typeof NO_RES_EMPTY;
 type PlayerBuff = typeof BUFF_SKIP_TURN;
 
-interface Board {
+interface BoardState {
     uuid: BoardUuid,
     totalRows: number,
     totalTurns: number,
@@ -86,7 +87,7 @@ const serveStaticFile = async (pathname: string, rs: http.ServerResponse, rootPa
     //rs.end(bytes);
 };
 
-let uuidToBoard: Record<BoardUuid, Board> = {};
+let uuidToBoard: Record<BoardUuid, BoardState> = {};
 
 const setupBoard = () => {
     const board = GenerateBoard();
@@ -111,69 +112,14 @@ const makeTurn = async (rq: http.IncomingMessage) => {
         const msg = 'POST body missing, must be a JSON string';
         return Rej.BadRequest(msg);
     }
-    const {uuid, codeName, ...newPos}: MakeTurnParams = JSON.parse(postStr);
+    const {uuid, ...turnParams}: MakeTurnParams = JSON.parse(postStr);
     const boardState = uuidToBoard[uuid];
     if (!boardState) {
         return Rej.NotFound('Board ' + uuid + ' not found');
     }
-    const getTile = ({col, row}: {col: number, row: number}) => {
-        // TODO: optimize - store as matrix!
-        return boardState.tiles.find(t => t.col == col && t.row == row);
-    };
+    const fight = Fight({boardState, Rej});
 
-    const getPossibleTurns = (oldPos: {col: number, row: number}) => {
-        return [
-            {col: oldPos.col + 1, row: oldPos.row},
-            {col: oldPos.col - 1, row: oldPos.row},
-            isEven
-                ? {col: oldPos.col + 1, row: oldPos.row + 1}
-                : {col: oldPos.col - 1, row: oldPos.row - 1},
-        ].filter(
-            turnPos => !Object.values(boardState.playerToPosition)
-                .some(playerPos => {
-                    return playerPos.col == turnPos.col
-                        && playerPos.row == turnPos.row;
-                })
-        ).flatMap(pos => {
-            const tile = getTile(pos);
-            return tile ? [tile] : [];
-        }).filter(tile => {
-            return tile.modifier !== NO_RES_DEAD_SPACE;
-        })
-    };
-
-    // TODO: add auth token validation
-    const oldPos = boardState.playerToPosition[codeName];
-    if (!oldPos) {
-        return Rej.NotFound('Player ' + codeName + ' not found on the board');
-    }
-    const isEven = oldPos.col % 2 === 0;
-    const possibleTurns = getPossibleTurns(oldPos);
-    const newTile = possibleTurns.find(tile => {
-        return tile.col === newPos.col
-            && tile.row === newPos.row;
-    });
-    if (!newTile) {
-        return Rej.Locked('Chosen tile is not in the list of available options');
-    }
-    const turnPlayerIdx = boardState.turnPlayersLeft.indexOf(codeName);
-    if (turnPlayerIdx < 0) {
-        return Rej.TooEarly('It is not your turn yet - please wait for other players');
-    }
-    boardState.turnPlayersLeft.splice(turnPlayerIdx, 1);
-
-    if (newTile.owner && newTile.owner !== codeName) {
-        boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
-    }
-    newTile.owner = codeName;
-    boardState.playerToPosition[codeName].row = newTile.row;
-    boardState.playerToPosition[codeName].col = newTile.col;
-
-    if (boardState.turnPlayersLeft.length === 0) {
-        boardState.turnPlayersLeft.push(...<PlayerCodeName[]>PLAYER_CODE_NAMES);
-    }
-
-    return boardState;
+    return fight.makeTurn(turnParams)
 };
 
 const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData> | SerialData> = {
