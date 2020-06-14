@@ -1,7 +1,7 @@
 
 import * as url from 'url';
 import * as fsSync from 'fs';
-import MapGenerator from "../MapGenerator.js";
+import GenerateBoard from "../GenerateBoard.js";
 import * as http from "http";
 
 const fs = fsSync.promises;
@@ -51,7 +51,7 @@ let boards: {}[] = [];
 const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData> | SerialData> = {
     '/api/getBoardState': (rq) => {
         if (boards.length === 0) {
-            boards.push(MapGenerator());
+            boards.push(GenerateBoard());
         }
         // eventually should identify them somehow to
         // allow multiple matches simultaneously...
@@ -59,7 +59,7 @@ const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData
     },
     '/api/setupBoard': async (rq) => {
         boards.shift(); // if any
-        const board = MapGenerator();
+        const board = GenerateBoard();
         boards.unshift(board);
         return board;
     },

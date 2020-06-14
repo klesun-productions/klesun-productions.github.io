@@ -1,5 +1,13 @@
 import {PLAYER_DARK, PLAYER_GREY, PLAYER_LIGHT, RES_GOLD, RES_OIL, RES_WHEAT} from "./Constants.js";
 
+/** @see https://stackoverflow.com/a/2117523/2750743 */
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 const generateResource = () => {
     const roll = Math.random();
     if (roll < 0.02) {
@@ -15,9 +23,10 @@ const generateResource = () => {
     }
 };
 
-const MapGenerator = ({
+const GenerateBoard = ({
     totalRows = 16,
 } = {}) => {
+    const uuid = uuidv4();
     const playerStartPositions = [
         // TODO: calc positions dynamically based on board size
         {col:  9, row: 10, codeName: PLAYER_DARK},
@@ -40,8 +49,9 @@ const MapGenerator = ({
             tiles.push({row, col, resource, owner});
         }
     }
-    let totalCells = tiles.filter(t => t !== 'DEAD_SPACE').length;
+    const totalCells = tiles.filter(t => t !== 'DEAD_SPACE').length;
     return {
+        uuid: uuid,
         totalRows: totalRows,
         totalTurns: Math.floor(totalCells / 3) - 1,
         playerStartPositions: playerStartPositions,
@@ -49,4 +59,4 @@ const MapGenerator = ({
     };
 };
 
-export default MapGenerator;
+export default GenerateBoard;

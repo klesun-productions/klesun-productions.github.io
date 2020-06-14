@@ -1,5 +1,5 @@
 
-import MapGenerator from "./src/MapGenerator.js";
+import GenerateBoard from "./src/GenerateBoard.js";
 import TileMapDisplay from "./src/TileMapDisplay.js";
 import {PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
 import GetTurnInput from "./src/client/GetTurnInput.js";
@@ -14,7 +14,7 @@ const HOT_SEAT = false;
 
 const getBoardConfiguration = async () => {
     if (HOT_SEAT) {
-        return MapGenerator();
+        return GenerateBoard();
     } else {
         return fetch('./api/getBoardState')
             .then(rs => rs.status !== 200
@@ -22,7 +22,7 @@ const getBoardConfiguration = async () => {
                 : rs.json())
             .catch(exc => {
                 alert('Failed to fetch data from server. Falling back to hot-seat board. ' + exc);
-                return MapGenerator();
+                return GenerateBoard();
             });
     }
 };
