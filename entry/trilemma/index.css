@@ -34,10 +34,13 @@ body {
 .stats-block * {
     color: white;
 }
+.lobby-list-block * {
+    color: white;
+}
 .game-rules {
     margin: 12px;
 }
-.game-rules * {
+.game-rules {
     color: white;
 }
 .game-rules ul {
@@ -158,6 +161,26 @@ body {
 
 .stats-block tr:last-child td {
     border-bottom: none;
+}
+.lobby-list-block {
+    margin-top: 48px;
+}
+.lobby-list-block table {
+    border-collapse: collapse;
+}
+.lobby-list-block th, .lobby-list-block td {
+    padding: 4px;
+    text-align: center;
+}
+.lobby-list-block button {
+    color: #7f1515;
+    font-weight: bold;
+    padding: 3px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.lobby-list-block button:hover {
+    background-color: #7ec7c9;
 }
 
 tr.turn-pending {
