@@ -46,6 +46,7 @@ body {
 .game-rules li {
     margin: 6px;
 }
+/* a trick to make it look as if this triangular board has a margin */
 .game-rules li:nth-child(1) { margin-right: -360px; }
 .game-rules li:nth-child(2) { margin-right: -315px; }
 .game-rules li:nth-child(3) { margin-right: -270px; }
@@ -53,6 +54,7 @@ body {
 .game-rules li:nth-child(5) { margin-right: -180px; }
 .game-rules li:nth-child(6) { margin-right: -135px; }
 .game-rules li:nth-child(7) { margin-right: -90px; }
+.game-rules li:nth-child(8) { margin-right: -45px; }
 
 .flex-parent {
     display: flex;

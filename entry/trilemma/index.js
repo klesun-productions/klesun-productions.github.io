@@ -15,10 +15,13 @@ const gui = {
 const ONLY_HOT_SEAT = false;
 
 const audios = [
-    new Audio('./tile_move.aac'),
-    new Audio('./tile_move2.aac'),
-    new Audio('./tile_move3.aac')
+    new Audio('./assets/audio/tile_move.aac'),
+    new Audio('./assets/audio/tile_move2.aac'),
+    new Audio('./assets/audio/tile_move3.aac'),
 ];
+
+const firstBloodAudio = new Audio('./assets/audio/ALLYOURBASEAREBELONGTOUS.mp3');
+firstBloodAudio.volume = 0.1;
 
 const api = Api();
 
@@ -132,6 +135,7 @@ const drawTable = () => {
     };
 };
 
+let firstBloodSpilled = false;
 let soundEnabled = true;
 
 (async () => {
@@ -223,11 +227,16 @@ let soundEnabled = true;
                         continue;
                     }
                 }
+                const lastOwner = newTile.svgEl.getAttribute('data-owner');
                 try {
                     boardState = await makeTurn(codeName, newTile);
                 } catch (exc) {
                     alert('Failed to make this turn - ' + exc);
                     continue;
+                }
+                if (lastOwner && lastOwner !== codeName && !firstBloodSpilled) {
+                    firstBloodSpilled = true;
+                    firstBloodAudio.play();
                 }
 
                 if (soundEnabled) {
