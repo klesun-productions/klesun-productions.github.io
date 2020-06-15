@@ -45,7 +45,10 @@ const FightSession = ({boardState, Rej = FallbackRej}) => {
     };
 
     const checkOnPlayerTurnEnd = () => {
-        if (boardState.turnPlayersLeft.length === 0) {
+        if (boardState.turnPlayersLeft.length === 0 &&
+            boardState.turnsLeft > 0
+        ) {
+            --boardState.turnsLeft;
             for (const codeName of PLAYER_CODE_NAMES) {
                 const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
                 if (buffIdx > -1) {

@@ -71,7 +71,7 @@ const calcScore = (resourceToSum) => {
 };
 
 const drawTable = () => {
-    const tableBody = document.querySelector('.player-list');
+    const tableBody = gui.playerList;
     const rows = [];
 
     for (let player of PLAYER_CODE_NAMES) {
@@ -251,18 +251,17 @@ let soundEnabled = true;
                 releaseInput();
             }, 1000);
 
-            for (let turnsLeft = boardState.totalTurns; turnsLeft > 0; --turnsLeft) {
-                gui.turnsLeftHolder.textContent = turnsLeft;
-                while (boardState.turnPlayersLeft.length > 0) {
-                    const codeName = boardState.turnPlayersLeft[0];
-                    TileMapDisplay.updateTilesState(matrix, boardState);
-                    const playerResources = collectPlayerResources(matrix);
-                    table.redraw(codeName, playerResources);
-                    await processTurn(codeName).catch(exc => {
-                        alert('Unexpected failure while processing turn - ' + exc);
-                        throw exc;
-                    });
-                }
+            while (boardState.turnPlayersLeft.length > 0) {
+                gui.turnsLeftHolder.textContent = boardState.turnsLeft;
+                const codeName = boardState.turnPlayersLeft[0];
+                TileMapDisplay.updateTilesState(matrix, boardState);
+                const playerResources = collectPlayerResources(matrix);
+                table.redraw(codeName, playerResources);
+
+                await processTurn(codeName).catch(exc => {
+                    alert('Unexpected failure while processing turn - ' + exc);
+                    throw exc;
+                });
             }
 
             const playerResources = collectPlayerResources(matrix);

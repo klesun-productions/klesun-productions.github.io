@@ -67,11 +67,13 @@ const GenerateBoard = ({
         }
     }
     const totalCells = tiles.filter(t => t !== NO_RES_DEAD_SPACE).length;
+    const totalTurns = Math.floor(totalCells / 3) - 1;
     return {
         uuid: uuid,
         totalRows: totalRows,
-        totalTurns: Math.floor(totalCells / 3) - 1,
+        totalTurns: totalTurns,
 
+        turnsLeft: totalTurns,
         turnPlayersLeft: [...PLAYER_CODE_NAMES],
         playerToBuffs: playerToBuffs,
         playerToPosition: playerToPosition,

@@ -41,6 +41,7 @@ interface BoardState {
     totalRows: number,
     totalTurns: number,
 
+    turnsLeft: number,
     turnPlayersLeft: PlayerCodeName[],
     playerToPosition: Record<PlayerCodeName, {col: number, row: number}>,
     playerToBuffs: Record<PlayerCodeName, PlayerBuff[]>,
