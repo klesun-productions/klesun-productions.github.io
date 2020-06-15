@@ -3,7 +3,7 @@
     --main-game-bg: #151515;
     --game-title-color: #b456cc;
     --triangle-color: #313131;
-    --triangle-border-color: #b3b3b3;
+    --triangle-border-color: #868686;
 }
 
 * {
@@ -47,7 +47,6 @@ body {
     transform: scale(0.45);
     fill: #fbbe5c;
 }
-
 .sound-switch-block {
     display: flex;
     position: absolute;
@@ -100,6 +99,8 @@ body {
     margin-bottom: 12px;
     display: block;
     padding-left: 8px;
+    text-align: center;
+    font-size: 22px;
 }
 .stats-block table {
     border-collapse: collapse;
@@ -231,7 +232,7 @@ polygon.effects-overlay {
     display: unset;
 }
 [data-owner="DARK"] polygon.effects-overlay {
-    fill: #9c70c3;
+    fill: #bd7abd;
     stroke: #484848;
 }
 [data-owner="DARK"] .player-name-holder { color: magenta; }
@@ -242,7 +243,7 @@ polygon.effects-overlay {
 }
 
 [data-owner="LIGHT"] polygon.effects-overlay {
-    fill: rgb(152, 167, 119);
+    fill: rgb(146, 146, 99);
     stroke: #484848;
 }
 [data-owner="LIGHT"] .player-name-holder { color: yellow; }
