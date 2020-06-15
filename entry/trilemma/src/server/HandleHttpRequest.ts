@@ -125,12 +125,12 @@ const getFight = async (rq: http.IncomingMessage) => {
 
 const makeTurn = async (rq: http.IncomingMessage) => {
     const {fight, actionParams} = await getFight(rq);
-    return fight.makeTurn(actionParams)
+    return fight.makeTurn(actionParams);
 };
 
 const skipTurn = async (rq: http.IncomingMessage) => {
     const {fight, actionParams} = await getFight(rq);
-    return fight.skipTurn(actionParams)
+    return fight.skipTurn(actionParams);
 };
 
 const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData> | SerialData> = {
@@ -146,10 +146,13 @@ const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData
         }
         const firstBoard = Object.values(uuidToBoard)[0];
         if (firstBoard) {
-            return firstBoard;
-        } else {
-            return setupBoard();
+            if (firstBoard.turnsLeft <= 0) {
+                delete uuidToBoard[firstBoard.uuid];
+            } else {
+                return firstBoard;
+            }
         }
+        return setupBoard();
     },
     '/api/setupBoard': setupBoard,
     '/api/getBoardList': async (rq) => ({boards: uuidToBoard}),

@@ -45,16 +45,16 @@ const FightSession = ({boardState, Rej = FallbackRej}) => {
     };
 
     const checkOnPlayerTurnEnd = () => {
-        if (boardState.turnPlayersLeft.length === 0 &&
-            boardState.turnsLeft > 0
-        ) {
+        if (boardState.turnPlayersLeft.length === 0) {
             --boardState.turnsLeft;
-            for (const codeName of PLAYER_CODE_NAMES) {
-                const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
-                if (buffIdx > -1) {
-                    boardState.playerToBuffs[codeName].splice(buffIdx, 1);
-                } else if (getPossibleTurns(codeName).length > 0) {
-                    boardState.turnPlayersLeft.push(codeName);
+            if (boardState.turnsLeft > 0) {
+                for (const codeName of PLAYER_CODE_NAMES) {
+                    const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
+                    if (buffIdx > -1) {
+                        boardState.playerToBuffs[codeName].splice(buffIdx, 1);
+                    } else if (getPossibleTurns(codeName).length > 0) {
+                        boardState.turnPlayersLeft.push(codeName);
+                    }
                 }
             }
         }
@@ -94,6 +94,8 @@ const FightSession = ({boardState, Rej = FallbackRej}) => {
             }
 
             if (newTile.owner && newTile.owner !== codeName) {
+                // skip 2 turns
+                boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
                 boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
             }
             newTile.owner = codeName;
