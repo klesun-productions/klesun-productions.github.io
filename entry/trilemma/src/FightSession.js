@@ -75,6 +75,12 @@ const FightSession = ({boardState, Rej = FallbackRej}) => {
         /** @param {MakeTurnParams} params */
         makeTurn: (params) => {
             const {codeName, ...newPos} = params;
+            const turnPlayerIdx = boardState.turnPlayersLeft.indexOf(codeName);
+            if (turnPlayerIdx < 0) {
+                const msg = 'It is not your turn yet, ' + codeName +
+                    ', please wait for other players: ' + boardState.turnPlayersLeft.join(', ');
+                return Rej.TooEarly(msg);
+            }
             const possibleTurns = getPossibleTurns(codeName);
             const newTile = possibleTurns.find(tile => {
                 return tile.col === newPos.col
@@ -82,12 +88,6 @@ const FightSession = ({boardState, Rej = FallbackRej}) => {
             });
             if (!newTile) {
                 return Rej.Locked('Chosen tile is not in the list of available options');
-            }
-            const turnPlayerIdx = boardState.turnPlayersLeft.indexOf(codeName);
-            if (turnPlayerIdx < 0) {
-                const msg = 'It is not your turn yet, ' + codeName +
-                    ', please wait for other players: ' + boardState.turnPlayersLeft.join(', ');
-                return Rej.TooEarly(msg);
             }
 
             if (newTile.owner && newTile.owner !== codeName) {

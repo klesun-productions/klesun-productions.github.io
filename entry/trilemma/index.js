@@ -187,6 +187,8 @@ let soundEnabled = true;
             }
         };
 
+        let releaseInput = () => {};
+
         const processTurn = async (codeName) => {
             const audioIndex = Math.floor(Math.random() * 3);
             const svgEl = gui.tileMapHolder.querySelector(`[data-stander=${codeName}]`);
@@ -201,7 +203,17 @@ let soundEnabled = true;
                 tile.svgEl.setAttribute('data-possible-turn', codeName);
             } );
             while (true) {
-                const newTile = await GetTurnInput({col, row}, possibleTurns).catch(exc => null);
+                const input = GetTurnInput({col, row, possibleTurns});
+                releaseInput = input.cancel;
+                let newTile = null;
+                try {
+                    newTile = await input.whenTile;
+                } catch (exc) {
+                    // TODO: programmatic!
+                    if (exc === 'OLOLO_CANCELLED_BY_GAME') {
+                        break;
+                    }
+                }
                 if (!newTile) {
                     try {
                         boardState = await skipTurn(codeName);
@@ -231,26 +243,38 @@ let soundEnabled = true;
             possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
         };
 
-
-        for (let turnsLeft = boardState.totalTurns; turnsLeft > 0; --turnsLeft) {
-            gui.turnsLeftHolder.textContent = turnsLeft;
-            while (boardState.turnPlayersLeft.length > 0) {
-                const codeName = boardState.turnPlayersLeft[0];
-                const playerResources = collectPlayerResources(matrix);
-                table.redraw(codeName, playerResources);
+        const startGame = async () => {
+            // TODO: websockets
+            const intervalId = setInterval(async () => {
+                boardState = await api.getBoardState({uuid: boardState.uuid});
                 TileMapDisplay.updateTilesState(matrix, boardState);
-                await processTurn(codeName).catch(exc => {
-                    alert('Unexpected failure while processing turn - ' + exc);
-                    throw exc;
-                });
-            }
-        }
+                releaseInput();
+            }, 1000);
 
-        const playerResources = collectPlayerResources(matrix);
-        const bestScore = Object.values(playerResources)
-            .map(calcScore).sort((a,b) => b - a)[0];
-        const winners = PLAYER_CODE_NAMES.filter(p => calcScore(playerResources[p]) === bestScore);
-        alert('The winner is ' + winners.join(' and '));
+            for (let turnsLeft = boardState.totalTurns; turnsLeft > 0; --turnsLeft) {
+                gui.turnsLeftHolder.textContent = turnsLeft;
+                while (boardState.turnPlayersLeft.length > 0) {
+                    const codeName = boardState.turnPlayersLeft[0];
+                    TileMapDisplay.updateTilesState(matrix, boardState);
+                    const playerResources = collectPlayerResources(matrix);
+                    table.redraw(codeName, playerResources);
+                    await processTurn(codeName).catch(exc => {
+                        alert('Unexpected failure while processing turn - ' + exc);
+                        throw exc;
+                    });
+                }
+            }
+
+            const playerResources = collectPlayerResources(matrix);
+            const bestScore = Object.values(playerResources)
+                .map(calcScore).sort((a,b) => b - a)[0];
+            const winners = PLAYER_CODE_NAMES.filter(p => calcScore(playerResources[p]) === bestScore);
+
+            alert('The winner is ' + winners.join(' and '));
+            clearInterval(intervalId);
+        };
+
+        await startGame();
     };
 
     return main();
