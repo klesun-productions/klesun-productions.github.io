@@ -80,7 +80,7 @@ const TileMapDisplay = (boardConfig, tileMapHolder) => {
     tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
     // fade animation for rows
-    for (let i = 0; i < ROWS; i++) {
+    /*for (let i = 0; i < ROWS; i++) {
         const css = document.styleSheets[1];
         if (i > 0) {
             css.insertRule(`
@@ -90,7 +90,7 @@ const TileMapDisplay = (boardConfig, tileMapHolder) => {
                 }
             `, css.cssRules.length);
         }
-    }
+    }*/
 
     for (const {row, col, modifier, owner} of boardConfig.tiles) {
         const x = (col  - row - 1) * TILE_WIDTH / 2;

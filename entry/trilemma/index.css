@@ -135,12 +135,12 @@ polygon {
     transition: 0.15s ease-in-out;
     transform: scale(0.9);
 }
-[data-row] {
+/*[data-row] {
     opacity: 0;
 }
 [data-row="0"] {
     animation: fadeRow 0.1s ease-in forwards;
-}
+}*/
 
 @keyframes fadeRow {
     0% {
