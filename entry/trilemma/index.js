@@ -193,7 +193,6 @@ let soundEnabled = true;
             const col = +svgEl.getAttribute('data-col');
             const row = +svgEl.getAttribute('data-row');
 
-            const isEven = col % 2 === 0;
             // glow possible turns
             const possibleTurns = FightSession({boardState})
                 .getPossibleTurns(codeName)
@@ -204,29 +203,26 @@ let soundEnabled = true;
             while (true) {
                 const newTile = await GetTurnInput({col, row}, possibleTurns).catch(exc => null);
                 if (!newTile) {
-                    boardState = await skipTurn(codeName);
-                    break;
+                    try {
+                        boardState = await skipTurn(codeName);
+                        break;
+                    } catch (exc) {
+                        alert('Failed to skip this turn - ' + exc);
+                        continue;
+                    }
                 }
-                const newState = await makeTurn(codeName, newTile).catch(exc => {
+                try {
+                    boardState = await makeTurn(codeName, newTile);
+                } catch (exc) {
                     alert('Failed to make this turn - ' + exc);
-                    return null;
-                });
-                if (!newState) {
                     continue;
                 }
-                svgEl.removeAttribute('data-stander');
-                boardState = newState;
-
-                const effectivePos = boardState.playerToPosition[codeName];
-                const effectiveTile = getTile(effectivePos);
-                effectiveTile.svgEl.setAttribute('data-owner', codeName);
-                effectiveTile.svgEl.setAttribute('data-stander', codeName);
 
                 if (soundEnabled) {
                     const tileMoveSound = audios[audioIndex];
                     tileMoveSound.currentTime = 0;
                     tileMoveSound.volume = (audioIndex === 0 ? 1 : 0.75) * 0.05;
-                    await tileMoveSound.play();
+                    tileMoveSound.play();
                 }
 
                 break;
@@ -235,11 +231,6 @@ let soundEnabled = true;
             possibleTurns.forEach( (tile) => tile.svgEl.removeAttribute('data-possible-turn') );
         };
 
-        for (const [codeName, {col, row}] of Object.entries(boardState.playerToPosition)) {
-            const tile = getTile({col, row});
-            tile.svgEl.setAttribute('data-stander', codeName);
-        }
-
 
         for (let turnsLeft = boardState.totalTurns; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
@@ -247,6 +238,7 @@ let soundEnabled = true;
                 const codeName = boardState.turnPlayersLeft[0];
                 const playerResources = collectPlayerResources(matrix);
                 table.redraw(codeName, playerResources);
+                TileMapDisplay.updateTilesState(matrix, boardState);
                 await processTurn(codeName).catch(exc => {
                     alert('Unexpected failure while processing turn - ' + exc);
                     throw exc;

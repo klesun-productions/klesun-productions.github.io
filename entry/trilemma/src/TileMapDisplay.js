@@ -82,9 +82,32 @@ const fadeInRows = (ROWS) => {
     }
 };
 
+/** @param {BoardState} boardState */
+const updateTilesState = (svgMatrix, boardState) => {
+    for (const {row, col, modifier, owner} of boardState.tiles) {
+        const svgEl = svgMatrix[row][col].svgEl;
+        svgEl.setAttribute('data-resource', modifier);
+        if (owner) {
+            svgEl.setAttribute('data-owner', owner);
+        } else {
+            svgEl.removeAttribute('data-owner');
+        }
+        const stander = Object.keys(boardState.playerToPosition)
+            .find(k => {
+                return boardState.playerToPosition[k].row === row
+                    && boardState.playerToPosition[k].col === col;
+            });
+        if (stander) {
+            svgEl.setAttribute('data-stander', stander);
+        } else {
+            svgEl.removeAttribute('data-stander');
+        }
+    }
+};
+
 /** TODO: move to /client/ (not doing now, because conflicts) */
 const TileMapDisplay = (boardConfig, tileMapHolder) => {
-    const matrix = [];
+    const matrix = {};
 
     const ROWS = boardConfig.totalRows;
     const BOARD_WIDTH_PX = ROWS * TILE_WIDTH;
@@ -108,10 +131,6 @@ const TileMapDisplay = (boardConfig, tileMapHolder) => {
             svgEl.appendChild(svgResource(isEven));
         }
 
-        svgEl.setAttribute('data-resource', modifier);
-        if (owner) {
-            svgEl.setAttribute('data-owner', owner);
-        }
         svgEl.setAttribute('data-col', col);
         svgEl.setAttribute('data-row', row);
 
@@ -120,8 +139,11 @@ const TileMapDisplay = (boardConfig, tileMapHolder) => {
         matrix[row] = matrix[row] || {};
         matrix[row][col] = {row, col, svgEl};
     }
+    updateTilesState(matrix, boardConfig);
 
     return matrix;
 };
+
+TileMapDisplay.updateTilesState = updateTilesState;
 
 export default TileMapDisplay;
