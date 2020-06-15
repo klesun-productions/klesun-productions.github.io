@@ -68,6 +68,20 @@ const makeTile = (x, y, isEven) => {
     ]);
 };
 
+const fadeInRows = (ROWS) => {
+    for (let i = 0; i < ROWS; i++) {
+        const css = document.styleSheets[1];
+        if (i > 0) {
+            css.insertRule(`
+                [data-row="${i}"] {
+                    animation: fadeRow 0.1s ease-in forwards;
+                    animation-delay: ${i / 10}s;
+                }
+            `, css.cssRules.length);
+        }
+    }
+};
+
 /** TODO: move to /client/ (not doing now, because conflicts) */
 const TileMapDisplay = (boardConfig, tileMapHolder) => {
     const matrix = [];
@@ -79,18 +93,8 @@ const TileMapDisplay = (boardConfig, tileMapHolder) => {
     tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
     tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
-    // fade animation for rows
-    /*for (let i = 0; i < ROWS; i++) {
-        const css = document.styleSheets[1];
-        if (i > 0) {
-            css.insertRule(`
-                [data-row="${i}"] {
-                    animation: fadeRow 0.1s ease-in forwards;
-                    animation-delay: ${i / 10}s;
-                }
-            `, css.cssRules.length);
-        }
-    }*/
+    // commented because it delays page reload time
+    //fadeInRows(ROWS);
 
     for (const {row, col, modifier, owner} of boardConfig.tiles) {
         const x = (col  - row - 1) * TILE_WIDTH / 2;
