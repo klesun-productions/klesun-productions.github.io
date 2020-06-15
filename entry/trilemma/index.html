@@ -7,9 +7,11 @@
 </head>
 <body>
 <header class="header">
-    <div class="sound-switch-block">
-        <span class="sound-title">Sound: </span>
-        <svg id="sound-svg-disabled" style="display: none" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 60 60" enable-background="new 0 0 60 60" xml:space="preserve">
+    <div class="flex-remainder flex-parent">
+        <!-- I think these svg images should better be included as separate files with <img/> -->
+        <div class="sound-switch-block">
+            <span class="sound-title">Sound: </span>
+            <svg id="sound-svg-disabled" style="display: none" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 60 60" enable-background="new 0 0 60 60" xml:space="preserve">
             <path d="M51.213,8.78C39.517-2.917,20.484-2.916,8.787,8.78C3.121,14.446,0,21.98,0,29.993S3.121,45.54,8.787,51.206
                     c5.848,5.849,13.531,8.772,21.213,8.772s15.365-2.924,21.213-8.772C62.91,39.509,62.91,20.477,51.213,8.78z M10.201,10.194
                     C15.66,4.736,22.83,2.007,30,2.007c6.858,0,13.713,2.504,19.074,7.498L42,16.579v-6.479c0-1.127-0.584-2.134-1.563-2.693
@@ -23,8 +25,8 @@
                     c0.166,0,0.329,0.037,0.479,0.109L37.148,51.43c0.053,0.05,0.112,0.094,0.174,0.131c0.492,0.289,1.033,0.434,1.574,0.434
                     c0.529,0,1.058-0.138,1.541-0.415C41.416,51.02,42,50.013,42,48.887V19.407l8.488-8.488C60.704,21.884,60.479,39.112,49.799,49.792z"
             />
-        </svg>
-        <svg id="sound-svg-enabled" viewBox="0 0 60 60" enable-background="new 0 0 60 60" xml:space="preserve">
+            </svg>
+            <svg id="sound-svg-enabled" viewBox="0 0 60 60" enable-background="new 0 0 60 60" xml:space="preserve">
             <path d="M34.437,7.413c-0.979-0.561-2.143-0.553-3.115,0.019c-0.063,0.037-0.121,0.081-0.174,0.131L17.906,19.891
 		C17.756,19.963,17.593,20,17.427,20H9.104C7.392,20,6,21.393,6,23.104v12.793C6,37.607,7.392,39,9.104,39h8.324
 		c0.166,0,0.329,0.037,0.479,0.109l13.242,12.328c0.053,0.05,0.112,0.094,0.174,0.131c0.492,0.289,1.033,0.434,1.574,0.434
@@ -33,30 +35,75 @@
 		C18.522,37.147,17.979,37,17.427,37H9.104C8.495,37,8,36.505,8,35.896V23.104C8,22.495,8.495,22,9.104,22h8.324
 		c0.551,0,1.095-0.147,1.572-0.428c0.063-0.036,0.122-0.08,0.176-0.131l13.244-12.33c0.465-0.226,0.868-0.053,1.025,0.037
 		C33.611,9.244,34,9.529,34,10.106V48.894z"/>
-            <path d="M41.833,17.293c-0.391,0.391-0.391,1.023,0,1.414c6.238,6.238,6.238,16.39,0,22.628c-0.391,0.391-0.391,1.023,0,1.414
+                <path d="M41.833,17.293c-0.391,0.391-0.391,1.023,0,1.414c6.238,6.238,6.238,16.39,0,22.628c-0.391,0.391-0.391,1.023,0,1.414
 		c0.195,0.195,0.451,0.293,0.707,0.293s0.512-0.098,0.707-0.293c7.018-7.019,7.018-18.438,0-25.456
 		C42.857,16.902,42.224,16.902,41.833,17.293z"/>
-            <path d="M39.707,20.293c-0.391-0.391-1.023-0.391-1.414,0s-0.391,1.023,0,1.414c4.297,4.297,4.297,11.289,0,15.586
+                <path d="M39.707,20.293c-0.391-0.391-1.023-0.391-1.414,0s-0.391,1.023,0,1.414c4.297,4.297,4.297,11.289,0,15.586
 		c-0.391,0.391-0.391,1.023,0,1.414C38.488,38.902,38.744,39,39,39s0.512-0.098,0.707-0.293
 		C44.784,33.63,44.784,25.37,39.707,20.293z"/>
-            <path d="M30,0C13.458,0,0,13.458,0,30s13.458,30,30,30s30-13.458,30-30S46.542,0,30,0z M30,58C14.561,58,2,45.439,2,30
+                <path d="M30,0C13.458,0,0,13.458,0,30s13.458,30,30,30s30-13.458,30-30S46.542,0,30,0z M30,58C14.561,58,2,45.439,2,30
 		S14.561,2,30,2s28,12.561,28,28S45.439,58,30,58z"/>
-        </svg>
+            </svg>
+        </div>
+        <div class="flex-remainder"></div>
     </div>
     <div class="title-neon-wrap">
         <h1 class="game-title">Trilemma</h1>
     </div>
+    <div class="flex-remainder"></div>
 </header>
 <main class="main-game">
     <div class="game-wrapper">
-        <svg class="tile-map-holder"></svg>
-        <div class="stats-block">
-            <div class="stats-title-block">
-                <span class="stats-title">Stats</span>
+        <div class="flex-remainder">
+            <div class="game-rules">
+                <h3>Game Rules</h3>
+                <ul>
+                    <!-- may be updated/rephrased -->
+                    <li>There are three players, codenamed
+                        <span data-owner="GREY"><span class="player-name-holder">GREY</span></span>,
+                        <span data-owner="DARK"><span class="player-name-holder">DARK</span></span> and
+                        <span data-owner="LIGHT"><span class="player-name-holder">LIGHT</span></span>,
+                        each starts at one of the three tiles in the center of the board
+                    </li>
+                    <li>Every turn each player chooses one of up to three directions to move his triangular
+                        representation or skips his turn by pressing Esc. If player is blocked from all
+                        three ways and there is nowhere to go, turn is skipped automatically
+                    </li>
+                    <li>Stepping on any tile makes you it's owner, coloring it with your color, slowing down
+                        enemies stepping on it and increasing your respective resource quantity if it yields one
+                    </li>
+                    <li>There are three kinds of resources randomly placed on some tiles:
+                        <span data-resource="WHEAT">Wheat</span>,
+                        <span data-resource="OIL">Oil</span> and
+                        <span data-resource="GOLD">Gold</span>.
+                        Owned resources form your total score by formula:
+                        <span data-resource="WHEAT">Wheat</span> x
+                        <span data-resource="OIL">Oil</span> x
+                        <span data-resource="GOLD">Gold</span>.
+                        Each player starts with 1 permanent unit of each resource.
+                        Here is an example: if you captured
+                        2 tiles of <span data-resource="WHEAT">Wheat</span> (3 units in total),
+                        2 tiles of <span data-resource="OIL">Oil</span> (3 units in total) and
+                        2 tiles of <span data-resource="GOLD">Gold</span> (3 units in total), your total score is
+                        <code>3 x 3 x 3 = 27</code>
+                    </li>
+                    <li>When there are no more turns left, the player with the greatest total score becomes the winner</li>
+                    <li>You can step on an enemy owned tile, this will make it belong to you, but you skip 2 turns after that as a penalty</li>
+                    <li>You can not step on a tile on which another player is currently standing. You can neither
+                        step on <i>Dead Space</i> randomly placed in place of some tiles on the board
+                    </li>
+                </ul>
             </div>
-            <span class="turns-left-span">Turns Left: <span class="turns-left-holder">9999</span></span>
-            <table>
-                <thead>
+        </div>
+        <svg class="tile-map-holder"></svg>
+        <div class="flex-remainder">
+            <div class="stats-block">
+                <div class="stats-title-block">
+                    <span class="stats-title">Stats</span>
+                </div>
+                <span class="turns-left-span">Turns Left: <span class="turns-left-holder">9999</span></span>
+                <table>
+                    <thead>
                     <tr>
                         <th>Player</th>
                         <th data-resource="WHEAT">Wheat</th>
@@ -67,9 +114,10 @@
                         <th>=</th>
                         <th>Score</th>
                     </tr>
-                </thead>
-                <tbody class="player-list"></tbody>
-            </table>
+                    </thead>
+                    <tbody class="player-list"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>

@@ -26,8 +26,39 @@ body {
             10px 0 80px #364e4e;
 }
 .stats-block {
-    position: absolute;
-    right: 130px;
+    /* please avoid absolute positioning if possible when you'll be updating markup after my changes */
+    /*position: absolute;*/
+    /*right: 130px;*/
+}
+
+.stats-block * {
+    color: white;
+}
+.game-rules {
+    margin: 12px;
+}
+.game-rules * {
+    color: white;
+}
+.game-rules ul {
+    padding: 24px;
+}
+.game-rules li {
+    margin: 6px;
+}
+.game-rules li:nth-child(1) { margin-right: -360px; }
+.game-rules li:nth-child(2) { margin-right: -315px; }
+.game-rules li:nth-child(3) { margin-right: -270px; }
+.game-rules li:nth-child(4) { margin-right: -225px; }
+.game-rules li:nth-child(5) { margin-right: -180px; }
+.game-rules li:nth-child(6) { margin-right: -135px; }
+.game-rules li:nth-child(7) { margin-right: -90px; }
+
+.flex-parent {
+    display: flex;
+}
+.flex-remainder {
+    flex: 1;
 }
 
 .resource-svg {
@@ -49,13 +80,16 @@ body {
 }
 .sound-switch-block {
     display: flex;
-    position: absolute;
-    left: 64px;
-    top: 50%;
-    transform: translateY(-50%);
+    margin: 20px;
+    /* please avoid absolute positioning */
+    /*position: absolute;*/
+    /*left: 64px;*/
+    /*top: 50%;*/
+    /*transform: translateY(-50%);*/
     justify-content: center;
     align-items: center;
-    z-index: 1;
+    /* please avoid z-index */
+    /*z-index: 1;*/
 }
 
 .sound-switch-block svg {
@@ -70,10 +104,12 @@ body {
     content: '';
     width: 36px;
     height: 36px;
+    margin-left: -36px;
     background: #8d549c;
     filter: blur(5px);
-    position: absolute;
-    right: 0;
+    /* I think here it works ok without absolute positioning, but please correct me if I'm wrong */
+    /*position: absolute;*/
+    /*right: 0;*/
     opacity: 0;
     border-radius: 50%;
     transition: 0.15s ease-in-out;
@@ -92,9 +128,6 @@ body {
     font-size: 28px;
 }
 
-.stats-block * {
-    color: white;
-}
 .stats-block > span {
     margin-bottom: 12px;
     display: block;
