@@ -79,6 +79,19 @@ const TileMapDisplay = (boardConfig, tileMapHolder) => {
     tileMapHolder.style.width = BOARD_WIDTH_PX + 'px';
     tileMapHolder.style.height = BOARD_HEIGHT_PX + 'px';
 
+    // fade animation for rows
+    for (let i = 0; i < ROWS; i++) {
+        const css = document.styleSheets[1];
+        if (i > 0) {
+            css.insertRule(`
+                [data-row="${i}"] {
+                    animation: fadeRow 0.1s ease-in forwards;
+                    animation-delay: ${i / 10}s;
+                }
+            `, css.cssRules.length);
+        }
+    }
+
     for (const {row, col, modifier, owner} of boardConfig.tiles) {
         const x = (col  - row - 1) * TILE_WIDTH / 2;
         const y = row * TILE_HEIGHT;
