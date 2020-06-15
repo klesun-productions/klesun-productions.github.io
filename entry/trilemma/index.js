@@ -4,7 +4,7 @@ import TileMapDisplay from "./src/TileMapDisplay.js";
 import {PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
 import GetTurnInput from "./src/client/GetTurnInput.js";
 import Api from "./src/client/Api.js";
-import Fight from "./src/Fight.js";
+import FightSession from "./src/FightSession.js";
 
 const gui = {
     tileMapHolder: document.querySelector('.tile-map-holder'),
@@ -171,7 +171,7 @@ let soundEnabled = true;
             if (!boardState.hotSeat) {
                 return api.makeTurn(params);
             } else {
-                return Fight({boardState}).makeTurn(params);
+                return FightSession({boardState}).makeTurn(params);
             }
         };
 
@@ -183,7 +183,7 @@ let soundEnabled = true;
             if (!boardState.hotSeat) {
                 return api.skipTurn(params);
             } else {
-                return Fight({boardState}).skipTurn(params);
+                return FightSession({boardState}).skipTurn(params);
             }
         };
 
@@ -195,7 +195,7 @@ let soundEnabled = true;
 
             const isEven = col % 2 === 0;
             // glow possible turns
-            const possibleTurns = Fight({boardState})
+            const possibleTurns = FightSession({boardState})
                 .getPossibleTurns(codeName)
                 .map(getTile);
             possibleTurns.forEach( (tile) => {

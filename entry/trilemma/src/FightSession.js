@@ -6,8 +6,12 @@ const FallbackRej = {
     TooEarly: msg => Promise.reject(msg + ' - TooEarly'),
 };
 
-/** @param {boardState} boardState */
-const Fight = ({boardState, Rej = FallbackRej}) => {
+/**
+ * actual game logic is located here
+ *
+ * @param {boardState} boardState
+ */
+const FightSession = ({boardState, Rej = FallbackRej}) => {
 
     const getTile = ({col, row}) => {
         // TODO: optimize - store as matrix!
@@ -58,7 +62,9 @@ const Fight = ({boardState, Rej = FallbackRej}) => {
         skipTurn: ({codeName}) => {
             const turnPlayerIdx = boardState.turnPlayersLeft.indexOf(codeName);
             if (turnPlayerIdx < 0) {
-                return Rej.TooEarly('It is not your turn yet, ' + codeName + ', please wait for other players: ' + boardState.turnPlayersLeft.join(', '));
+                const msg = 'It is not your turn yet, ' + codeName +
+                    ', please wait for other players: ' + boardState.turnPlayersLeft.join(', ');
+                return Rej.TooEarly(msg);
             }
 
             boardState.turnPlayersLeft.splice(turnPlayerIdx, 1);
@@ -79,7 +85,9 @@ const Fight = ({boardState, Rej = FallbackRej}) => {
             }
             const turnPlayerIdx = boardState.turnPlayersLeft.indexOf(codeName);
             if (turnPlayerIdx < 0) {
-                return Rej.TooEarly('It is not your turn yet, ' + codeName + ', please wait for other players: ' + boardState.turnPlayersLeft.join(', '));
+                const msg = 'It is not your turn yet, ' + codeName +
+                    ', please wait for other players: ' + boardState.turnPlayersLeft.join(', ');
+                return Rej.TooEarly(msg);
             }
 
             if (newTile.owner && newTile.owner !== codeName) {
@@ -97,4 +105,4 @@ const Fight = ({boardState, Rej = FallbackRej}) => {
     };
 };
 
-export default Fight;
+export default FightSession;

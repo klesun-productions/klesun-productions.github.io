@@ -14,7 +14,7 @@ import {
     RES_OIL,
     RES_WHEAT
 } from "../Constants";
-import Fight from "../Fight";
+import FightSession from "../FightSession";
 
 const fs = fsSync.promises;
 
@@ -117,7 +117,7 @@ const getFight = async (rq: http.IncomingMessage) => {
     if (!boardState) {
         return Rej.NotFound('Board ' + uuid + ' not found');
     }
-    const fight = Fight({boardState, Rej});
+    const fight = FightSession({boardState, Rej});
 
     return {fight, actionParams};
 };
