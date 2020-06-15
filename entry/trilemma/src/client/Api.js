@@ -20,6 +20,7 @@ const Api = () => {
         getBoardState: ({uuid = ''}) => get('/api/getBoardState', {uuid}),
         /** @param {MakeTurnParams} params */
         makeTurn: (params) => post('/api/makeTurn', params),
+        skipTurn: (params) => post('/api/skipTurn', params),
     };
 };
 

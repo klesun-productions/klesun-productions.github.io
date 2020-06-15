@@ -40,8 +40,32 @@ const Fight = ({boardState, Rej = FallbackRej}) => {
         })
     };
 
+    const checkOnPlayerTurnEnd = () => {
+        if (boardState.turnPlayersLeft.length === 0) {
+            for (const codeName of PLAYER_CODE_NAMES) {
+                const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
+                if (buffIdx > -1) {
+                    boardState.playerToBuffs[codeName].splice(buffIdx, 1);
+                } else if (getPossibleTurns(codeName).length > 0) {
+                    boardState.turnPlayersLeft.push(codeName);
+                }
+            }
+        }
+    };
+
     return {
         getPossibleTurns: getPossibleTurns,
+        skipTurn: ({codeName}) => {
+            const turnPlayerIdx = boardState.turnPlayersLeft.indexOf(codeName);
+            if (turnPlayerIdx < 0) {
+                return Rej.TooEarly('It is not your turn yet, ' + codeName + ', please wait for other players: ' + boardState.turnPlayersLeft.join(', '));
+            }
+
+            boardState.turnPlayersLeft.splice(turnPlayerIdx, 1);
+            checkOnPlayerTurnEnd();
+
+            return Promise.resolve(boardState);
+        },
         /** @param {MakeTurnParams} params */
         makeTurn: (params) => {
             const {codeName, ...newPos} = params;
@@ -55,9 +79,8 @@ const Fight = ({boardState, Rej = FallbackRej}) => {
             }
             const turnPlayerIdx = boardState.turnPlayersLeft.indexOf(codeName);
             if (turnPlayerIdx < 0) {
-                return Rej.TooEarly('It is not your turn yet - please wait for other players');
+                return Rej.TooEarly('It is not your turn yet, ' + codeName + ', please wait for other players: ' + boardState.turnPlayersLeft.join(', '));
             }
-            boardState.turnPlayersLeft.splice(turnPlayerIdx, 1);
 
             if (newTile.owner && newTile.owner !== codeName) {
                 boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
@@ -66,16 +89,8 @@ const Fight = ({boardState, Rej = FallbackRej}) => {
             boardState.playerToPosition[codeName].row = newTile.row;
             boardState.playerToPosition[codeName].col = newTile.col;
 
-            if (boardState.turnPlayersLeft.length === 0) {
-                for (const codeName of PLAYER_CODE_NAMES) {
-                    const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
-                    if (buffIdx > -1) {
-                        boardState.playerToBuffs[codeName].splice(buffIdx, 1);
-                    } else {
-                        boardState.turnPlayersLeft.push(codeName);
-                    }
-                }
-            }
+            boardState.turnPlayersLeft.splice(turnPlayerIdx, 1);
+            checkOnPlayerTurnEnd();
 
             return Promise.resolve(boardState);
         },

@@ -1,9 +1,10 @@
 
 import GenerateBoard from "./src/GenerateBoard.js";
 import TileMapDisplay from "./src/TileMapDisplay.js";
-import {BUFF_SKIP_TURN, NO_RES_DEAD_SPACE, PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
+import {PLAYER_CODE_NAMES, RESOURCES} from "./src/Constants.js";
 import GetTurnInput from "./src/client/GetTurnInput.js";
 import Api from "./src/client/Api.js";
+import Fight from "./src/Fight.js";
 
 const gui = {
     tileMapHolder: document.querySelector('.tile-map-holder'),
@@ -11,7 +12,7 @@ const gui = {
     playerList: document.querySelector('.player-list'),
 };
 
-const HOT_SEAT = false;
+const ONLY_HOT_SEAT = false;
 
 const audios = [
     new Audio('./tile_move.aac'),
@@ -21,8 +22,9 @@ const audios = [
 
 const api = Api();
 
+/** @return {BoardState} */
 const getBoardState = async () => {
-    if (HOT_SEAT) {
+    if (ONLY_HOT_SEAT) {
         return {...GenerateBoard(), hotSeat: true};
     } else {
         return fetch('./api/getBoardState')
@@ -159,36 +161,29 @@ let soundEnabled = true;
         };
 
         const makeTurn = async (codeName, newTile) => {
+            /** @type {MakeTurnParams} */
+            const params = {
+                uuid: boardState.uuid,
+                codeName: codeName,
+                col: newTile.col,
+                row: newTile.row,
+            };
             if (!boardState.hotSeat) {
-                /** @type {MakeTurnParams} */
-                const params = {
-                    uuid: boardState.uuid,
-                    codeName: codeName,
-                    col: newTile.col,
-                    row: newTile.row,
-                };
                 return api.makeTurn(params);
             } else {
-                const prevOwner = newTile.svgEl.getAttribute('data-owner');
-                if (prevOwner && prevOwner !== codeName) {
-                    boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
-                }
+                return Fight({boardState}).makeTurn(params);
+            }
+        };
 
-                boardState.playerToPosition[codeName].col = newTile.col;
-                boardState.playerToPosition[codeName].row = newTile.row;
-
-                if (boardState.turnPlayersLeft.length === 0) {
-                    for (const codeName of PLAYER_CODE_NAMES) {
-                        const buffIdx = boardState.playerToBuffs[codeName].indexOf(BUFF_SKIP_TURN);
-                        if (buffIdx > -1) {
-                            boardState.playerToBuffs[codeName].splice(buffIdx, 1);
-                        } else {
-                            boardState.turnPlayersLeft.push(codeName);
-                        }
-                    }
-                }
-
-                return Promise.resolve(boardState);
+        const skipTurn = async (codeName) => {
+            const params = {
+                uuid: boardState.uuid,
+                codeName: codeName,
+            };
+            if (!boardState.hotSeat) {
+                return api.skipTurn(params);
+            } else {
+                return Fight({boardState}).skipTurn(params);
             }
         };
 
@@ -200,25 +195,17 @@ let soundEnabled = true;
 
             const isEven = col % 2 === 0;
             // glow possible turns
-            const possibleTurns = [
-                {col: col + 1, row: row},
-                {col: col - 1, row: row},
-                isEven
-                    ? {col: col + 1, row: row + 1}
-                    : {col: col - 1, row: row - 1},
-            ].map(getTile).filter( (tile) => {
-                return tile
-                    && tile.svgEl.getAttribute('data-resource') !== NO_RES_DEAD_SPACE
-                    && !tile.svgEl.getAttribute('data-stander');
-            } );
+            const possibleTurns = Fight({boardState})
+                .getPossibleTurns(codeName)
+                .map(getTile);
             possibleTurns.forEach( (tile) => {
                 tile.svgEl.setAttribute('data-possible-turn', codeName);
             } );
             while (true) {
                 const newTile = await GetTurnInput({col, row}, possibleTurns).catch(exc => null);
                 if (!newTile) {
-                    // ignore input if player tries to go on a tile that does not exist
-                    continue;
+                    boardState = await skipTurn(codeName);
+                    break;
                 }
                 const newState = await makeTurn(codeName, newTile).catch(exc => {
                     alert('Failed to make this turn - ' + exc);
@@ -256,10 +243,14 @@ let soundEnabled = true;
 
         for (let turnsLeft = boardState.totalTurns; turnsLeft > 0; --turnsLeft) {
             gui.turnsLeftHolder.textContent = turnsLeft;
-            for (const codeName of boardState.turnPlayersLeft) {
+            while (boardState.turnPlayersLeft.length > 0) {
+                const codeName = boardState.turnPlayersLeft[0];
                 const playerResources = collectPlayerResources(matrix);
                 table.redraw(codeName, playerResources);
-                await processTurn(codeName);
+                await processTurn(codeName).catch(exc => {
+                    alert('Unexpected failure while processing turn - ' + exc);
+                    throw exc;
+                });
             }
         }
 

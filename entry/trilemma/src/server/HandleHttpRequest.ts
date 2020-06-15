@@ -106,20 +106,30 @@ const readPost = (rq: http.IncomingMessage) => new Promise<string>((ok, err) => 
     }
 });
 
-const makeTurn = async (rq: http.IncomingMessage) => {
+const getFight = async (rq: http.IncomingMessage) => {
     const postStr = await readPost(rq);
     if (!postStr) {
         const msg = 'POST body missing, must be a JSON string';
         return Rej.BadRequest(msg);
     }
-    const {uuid, ...turnParams}: MakeTurnParams = JSON.parse(postStr);
+    const {uuid, ...actionParams} = JSON.parse(postStr);
     const boardState = uuidToBoard[uuid];
     if (!boardState) {
         return Rej.NotFound('Board ' + uuid + ' not found');
     }
     const fight = Fight({boardState, Rej});
 
-    return fight.makeTurn(turnParams)
+    return {fight, actionParams};
+};
+
+const makeTurn = async (rq: http.IncomingMessage) => {
+    const {fight, actionParams} = await getFight(rq);
+    return fight.makeTurn(actionParams)
+};
+
+const skipTurn = async (rq: http.IncomingMessage) => {
+    const {fight, actionParams} = await getFight(rq);
+    return fight.skipTurn(actionParams)
 };
 
 const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData> | SerialData> = {
@@ -143,6 +153,7 @@ const apiRoutes: Record<string, (rq: http.IncomingMessage) => Promise<SerialData
     '/api/setupBoard': setupBoard,
     '/api/getBoardList': async (rq) => ({boards: uuidToBoard}),
     '/api/makeTurn': makeTurn,
+    '/api/skipTurn': skipTurn,
 };
 
 const HandleHttpRequest = async ({rq, rs, rootPath}: HandleHttpParams) => {

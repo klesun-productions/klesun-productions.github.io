@@ -18,7 +18,7 @@ const GetTurnInput = (initialTile, possibleTurns) => new Promise((resolve, rejec
             resolve(newTile);
             return true;
         } else {
-            return false;
+            return false; // ignore input if player tries to go on a tile that does not exist
         }
     };
 
