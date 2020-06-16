@@ -55,81 +55,86 @@
 <main class="main-game">
     <div class="game-wrapper">
         <div class="flex-remainder">
-            <div class="game-rules">
-                <h3>Game Rules</h3>
-                <ul>
-                    <!-- may be updated/rephrased -->
-                    <li>There are three players, codenamed
-                        <span data-owner="GREY"><span class="player-name-holder">GREY</span></span>,
-                        <span data-owner="DARK"><span class="player-name-holder">DARK</span></span> and
-                        <span data-owner="LIGHT"><span class="player-name-holder">LIGHT</span></span>,
-                        each starts at one of the three tiles in the center of the board
-                    </li>
-                    <li>Every turn each player chooses one of up to three directions to move his triangular
-                        representation or skips his turn by pressing Esc. If player is blocked from all
-                        three ways and there is nowhere to go, turn is skipped automatically
-                    </li>
-                    <li>Stepping on any tile makes you it's owner, coloring it with your color, slowing down
-                        enemies stepping on it and increasing your respective resource quantity if it yields one
-                    </li>
-                    <li>There are three kinds of resources randomly placed on some tiles:
-                        <span data-resource="WHEAT">Wheat</span>,
-                        <span data-resource="OIL">Oil</span> and
-                        <span data-resource="GOLD">Gold</span>.
-                        Owned resources form your total score by formula:
-                        <span data-resource="WHEAT">Wheat</span> x
-                        <span data-resource="OIL">Oil</span> x
-                        <span data-resource="GOLD">Gold</span>.
-                        Each player starts with 1 permanent unit of each resource.
-                        Here is an example: if you captured
-                        2 tiles of <span data-resource="WHEAT">Wheat</span> (3 units in total),
-                        2 tiles of <span data-resource="OIL">Oil</span> (3 units in total) and
-                        2 tiles of <span data-resource="GOLD">Gold</span> (3 units in total), your total score is
-                        <code>3 x 3 x 3 = 27</code>
-                    </li>
-                    <li>When there are no more turns left, the player with the greatest total score becomes the winner</li>
-                    <li>You can step on an enemy owned tile, this will make it belong to you, but you skip 2 turns after that as a penalty</li>
-                    <li>You can not step on a tile on which another player is currently standing. You can neither
-                        step on <i>Dead Space</i> randomly placed in place of some tiles on the board
-                    </li>
-                </ul>
+            <div class="flex-remainder-wrap">
+                <div class="game-rules">
+                    <div class="title-block">
+                        <span class="title game-rules-title">Game Rules</span>
+                    </div>
+                    <ul>
+                        <!-- may be updated/rephrased -->
+                        <li>There are three players, codenamed
+                            <span data-owner="GREY"><span class="player-name-holder">GREY</span></span>,
+                            <span data-owner="DARK"><span class="player-name-holder">DARK</span></span> and
+                            <span data-owner="LIGHT"><span class="player-name-holder">LIGHT</span></span>,
+                            each starts at one of the three tiles in the center of the board
+                        </li>
+                        <li>Every turn each player chooses one of up to three directions to move his triangular
+                            representation or skips his turn by pressing Esc. If player is blocked from all
+                            three ways and there is nowhere to go, turn is skipped automatically
+                        </li>
+                        <li>Stepping on any tile makes you it's owner, coloring it with your color, slowing down
+                            enemies stepping on it and increasing your respective resource quantity if it yields one
+                        </li>
+                        <li>There are three kinds of resources randomly placed on some tiles:
+                            <span data-resource="WHEAT">Wheat</span>,
+                            <span data-resource="OIL">Oil</span> and
+                            <span data-resource="GOLD">Gold</span>.
+                            Owned resources form your total score by formula:
+                            <span data-resource="WHEAT">Wheat</span> x
+                            <span data-resource="OIL">Oil</span> x
+                            <span data-resource="GOLD">Gold</span>.
+                            Each player starts with 1 permanent unit of each resource.
+                            Here is an example: if you captured
+                            2 tiles of <span data-resource="WHEAT">Wheat</span> (3 units in total),
+                            2 tiles of <span data-resource="OIL">Oil</span> (3 units in total) and
+                            2 tiles of <span data-resource="GOLD">Gold</span> (3 units in total), your total score is
+                            <code>3 x 3 x 3 = 27</code>
+                        </li>
+                        <li>When there are no more turns left, the player with the greatest total score becomes the winner</li>
+                        <li>You can step on an enemy owned tile, this will make it belong to you, but you skip 2 turns after that as a penalty</li>
+                        <li>You can not step on a tile on which another player is currently standing. You can neither
+                            step on <i>Dead Space</i> randomly placed in place of some tiles on the board
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
         <svg class="tile-map-holder"></svg>
         <div class="flex-remainder">
-            <div class="stats-block">
-                <div class="stats-title-block">
-                    <span class="stats-title">Stats</span>
+            <div class="flex-remainder-wrap">
+                <div class="stats-block">
+                    <div class="title-block">
+                        <span class="title stats-title">Stats</span>
+                    </div>
+                    <span class="turns-left-span">Turns Left: <span class="turns-left-holder">9999</span></span>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th data-resource="WHEAT">Wheat</th>
+                            <th>x</th>
+                            <th data-resource="OIL">Oil</th>
+                            <th>x</th>
+                            <th data-resource="GOLD">Gold</th>
+                            <th>=</th>
+                            <th>Score</th>
+                        </tr>
+                        </thead>
+                        <tbody class="player-list"></tbody>
+                    </table>
                 </div>
-                <span class="turns-left-span">Turns Left: <span class="turns-left-holder">9999</span></span>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Player</th>
-                        <th data-resource="WHEAT">Wheat</th>
-                        <th>x</th>
-                        <th data-resource="OIL">Oil</th>
-                        <th>x</th>
-                        <th data-resource="GOLD">Gold</th>
-                        <th>=</th>
-                        <th>Score</th>
-                    </tr>
-                    </thead>
-                    <tbody class="player-list"></tbody>
-                </table>
-            </div>
-            <div class="lobby-list-block">
-                <h3>Lobby List</h3>
-                <table>
-                    <thead>
+                <div class="lobby-list-block">
+                    <h3>Lobby List</h3>
+                    <table>
+                        <thead>
                         <tr>
                             <th>uuid</th>
                             <th data-owner="DARK"><span class="player-name-holder">DARK</span></th>
                             <th data-owner="GREY"><span class="player-name-holder">GREY</span></th>
                             <th data-owner="LIGHT"><span class="player-name-holder">LIGHT</span></th>
                         </tr>
-                    </thead>
-                    <tbody class="lobby-list">
+                        </thead>
+                        <tbody class="lobby-list">
                         <tr>
                             <td>12ddb37c</td>
                             <td>Vasya</td>
@@ -148,8 +153,9 @@
                             <td><button onclick="alert('TODO: implement!')">Join</button></td>
                             <td>Anonymous</td>
                         </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

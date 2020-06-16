@@ -31,17 +31,46 @@ body {
     /*right: 130px;*/
 }
 
+.title-block {
+    filter: brightness(170%);
+}
+
+.title-block .title {
+    font-weight: 400;
+    font-size: 48px;
+    color: var(--game-title-color);
+    user-select: none;
+    display: flex;
+    justify-content: center;
+}
+
+.title-block .title:before {
+    content: '';
+    position: absolute;
+    mix-blend-mode: difference;
+    filter: blur(2px);
+}
+
+.title-block .title.stats-title:before {
+    content: 'Stats';
+}
+
+.title-block .title.game-rules-title:before {
+    content: 'Game Rules';
+}
+
 .stats-block * {
     color: white;
 }
 .lobby-list-block * {
     color: white;
 }
-.game-rules {
-    margin: 12px;
+.flex-remainder-wrap {
+    padding: 12px;
 }
 .game-rules {
     color: white;
+    transition: 0.2s ease-in;
 }
 .game-rules ul {
     padding: 24px;
