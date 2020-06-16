@@ -11,6 +11,8 @@ const main = async () => {
         const pathname = url.parse(rq.url).pathname;
         if (['travelaci.com', 'the-travel-hacks.com'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:30186'});
+        } else if ('trilemma.online' === rq.headers.host) {
+            proxy.web(rq, rs, {target: 'http://localhost:23183'});
         } else {
             const rootPath = __dirname;
             HandleHttpRequest({rq, rs, rootPath}).catch(exc => {
@@ -28,8 +30,10 @@ const main = async () => {
         }
     };
     https.createServer({
-        key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey3.pem'),
-        cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert3.pem'),
+        //key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey3.pem'),
+        //cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert3.pem'),
+        key: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com/privkey.pem'),
+        cert: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com/cert.pem'),
     }, handleRq).listen(443, '0.0.0.0', () => {
         console.log('listening https://klesun-productions.com');
     });
