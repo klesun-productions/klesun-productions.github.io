@@ -367,6 +367,14 @@ polygon.base-tile:hover {
     justify-content: center;
     position: relative;
 }
+footer {
+    color: #46bbab;
+    text-align: right;
+    padding: 12px;
+}
+footer .authorship-text {
+    color: #8cb7a9;
+}
 
 .title-neon-wrap {
     filter: brightness(170%);
