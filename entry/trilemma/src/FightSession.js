@@ -94,8 +94,6 @@ const FightSession = ({boardState, Rej = FallbackRej}) => {
             }
 
             if (newTile.owner && newTile.owner !== codeName) {
-                // skip 2 turns
-                boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
                 boardState.playerToBuffs[codeName].push(BUFF_SKIP_TURN);
             }
             newTile.owner = codeName;
