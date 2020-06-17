@@ -11,7 +11,7 @@ const main = async () => {
         const pathname = url.parse(rq.url).pathname;
         if (['travelaci.com', 'the-travel-hacks.com'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:30186'});
-        } else if ('trilemma.online' === rq.headers.host) {
+        } else if (['trilemma.online', 'trilema.online'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:23183'});
         } else {
             const rootPath = __dirname;
@@ -39,7 +39,8 @@ const main = async () => {
     });
     http.createServer((rq, rs) => {
         // force https
-        rs.writeHead(301, {'Location': 'https://' + rq.headers.host + rq.url});
+        const host = rq.headers.host === 'trilema.online' ? 'trilemma.online' : rq.headers.host;
+        rs.writeHead(301, {'Location': 'https://' + host + rq.url});
         rs.end();
     }).listen(80, '0.0.0.0', () => {
         console.log('listening http://klesun-productions.com');
