@@ -27,23 +27,58 @@
 	<script src="https://dogzy123.github.io/klesun-productions/dist/kp.js"></script>
 <script>
     window.__klesun_productions_init__();
+
+    const Dom = (tagName, attributes = {}, children = []) => {
+        const dom = document.createElement(tagName);
+        for (const [name, value] of Object.entries(attributes)) {
+            if (['string', 'number'].includes(typeof value)) {
+                dom.setAttribute(name, value);
+            } else {
+                dom[name] = value;
+            }
+        }
+        if (['string', 'number'].includes(typeof children)) {
+            dom.textContent = children;
+        } else {
+            for (const child of children) {
+                dom.appendChild(child);
+            }
+        }
+        return dom;
+    };
+
+    // monkey-patching the generated page, because oldfags can't react
+    [...document.querySelectorAll('.project-icons-denisbook')].forEach(icon => {
+        let parent = icon.parentElement;
+        while (parent && parent.tagName.toLowerCase() !== 'li') {
+            parent = parent.parentElement;
+        }
+        if (parent) {
+            // temporary using in-house frontend url, as ssl expired ;c
+            [...parent.querySelectorAll('a')]
+                .filter(a => (a.getAttribute('href') || '').startsWith('https://denisbook.com'))
+                .forEach(a => a.setAttribute('href', 'https://klesun-productions.com/entry/denisbook'));
+        }
+    });
+    [...document.querySelectorAll('.main-module-popularProjectsContainer > ul')].forEach(ul => {
+        const li = Dom('li', {}, [
+            Dom('span', {class: 'main-module-projectIcon'}, [
+                Dom('span', {class: 'main-module-projectIconImage project-icons-trilemma'}),
+            ]),
+            Dom('a', {href: 'https://trilemma.online/'}, 'trilemma.online'),
+            Dom('span', {}, [
+                Dom('span', {}, '('),
+                Dom('a', {href: 'https://github.com/klesun/trilemma.online'}, 'src'),
+                Dom('span', {}, ')'),
+            ]),
+        ]);
+        ul.insertBefore(li, ul.children[0]);
+    });
 </script>
 </body>
 
 
 <style>
-/*
-body {
-    margin: 0px;
-    display: flex;
-    overflow: hidden;
-    border: none;
-	height: 100%;
-}
-*/
-iframe {
-    border: none;
-}
 
 /* overriding injected styles */
 .main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects .main-module-projectIconImage.project-icons-starveGame {
@@ -66,6 +101,10 @@ iframe {
     background-image: url(https://cdn.myanimelist.net/images/userimages/5675548.jpg?t=1590795600);
     image-rendering: unset;
 }
+.main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects .main-module-projectIconImage.project-icons-trilemma {
+    background-image: url(https://trilemma.online/favicon.ico);
+    image-rendering: unset;
+}
 /* javascript */
 .main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects li:nth-child(2) svg.main-module-projectIconImage {
     filter: hue-rotate(-185deg);
@@ -78,7 +117,7 @@ iframe {
 .main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects li:nth-child(4) svg.main-module-projectIconImage {
     filter: hue-rotate(-130deg);
 }
-.main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects .main-module-projectIconImage {
+.main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects .main-module-projectIconImage:not(.project-icons-trilemma) {
     border-radius: 12px;
 }
 .main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects .main-module-projectIcon {
