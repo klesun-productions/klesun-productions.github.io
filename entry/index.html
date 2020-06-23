@@ -63,6 +63,20 @@
     [...document.querySelectorAll('.main-module-popularProjectsContainer > ul')].forEach(ul => {
         const li = Dom('li', {}, [
             Dom('span', {class: 'main-module-projectIcon'}, [
+                Dom('span', {class: 'main-module-projectIconImage project-icons-tsBrowser'}),
+            ]),
+            Dom('a', {href: 'https://github.com/klesun/ts-browser'}, 'ts-browser'),
+            Dom('span', {}, [
+                Dom('span', {}, '('),
+                Dom('a', {href: 'https://github.com/klesun/ts-browser'}, 'src'),
+                Dom('span', {}, ')'),
+            ]),
+        ]);
+        ul.insertBefore(li, ul.children[0]);
+    });
+    [...document.querySelectorAll('.main-module-popularProjectsContainer > ul')].forEach(ul => {
+        const li = Dom('li', {}, [
+            Dom('span', {class: 'main-module-projectIcon'}, [
                 Dom('span', {class: 'main-module-projectIconImage project-icons-trilemma'}),
             ]),
             Dom('a', {href: 'https://trilemma.online/'}, 'trilemma.online'),
@@ -103,6 +117,10 @@
 }
 .main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects .main-module-projectIconImage.project-icons-trilemma {
     background-image: url(https://trilemma.online/favicon.ico);
+    image-rendering: unset;
+}
+.main-module-mainSection .main-module-introSection .main-module-introSectionColumns .main-module-popularProjects .main-module-projectIconImage.project-icons-tsBrowser {
+    background-image: url(https://raw.githubusercontent.com/klesun/ts-browser/master/docs/ts-browser.svg);
     image-rendering: unset;
 }
 /* javascript */
