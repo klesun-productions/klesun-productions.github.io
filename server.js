@@ -12,7 +12,9 @@ const main = async () => {
         if (['travelaci.com', 'the-travel-hacks.com'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:30186'});
         } else if (['trilemma.online', 'trilema.online'].includes(rq.headers.host)) {
-            proxy.web(rq, rs, {target: 'http://localhost:23183'});
+            proxy.web(rq, rs, {target: 'http://localhost:23183'}, exc => {
+				console.error('ololo proxy error', exc);
+			});
         } else {
             const rootPath = __dirname;
             HandleHttpRequest({rq, rs, rootPath}).catch(exc => {
