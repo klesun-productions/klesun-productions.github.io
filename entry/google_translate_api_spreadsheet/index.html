@@ -1,0 +1,117 @@
+<head>
+    <meta charset="utf-8"/>
+</head>
+<body>
+<p>GOOGLETRANSLATE() in spreadsheet is shit, it does not preserve html tags and translated text quality is very poor</p>
+<p>So use this page which translates through actual google API</p>
+<p>You should use this from <a href="https://www.torproject.org/download/">Tor Browser</a>, with <a href="https://addons.mozilla.org/en-US/firefox/addon/cors-everywhere/">CORS Everywhere</a> extension installed and <code>cookieBehavior</code> fields set to 0/false in about:config</p>
+<form onsubmit="alert('Wait for js to load!')">
+    <div>
+        <label>
+            <span><code>window.TKK</code> value from https://translate.google.ru/</span>
+            <input name="tkkHourlySalt" type="string" value="443659.1100698392"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <span>Delay between calls in ms (be too gready, and proxy ip gets banned ;c)</span>
+            <input name="delayBetweenCallsMs" type="number" value="5000"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <span>Source Language</span>
+            <input name="srcLang" type="text" value="en"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <span>Target Languages</span>
+            <input name="targetLangs" type="text" value="zh-CN,ja,ko,es,ru,pt,it"/>
+        </label>
+    </div>
+    <div>
+        <label>
+            <span>Skipped Languages (speed up)</span>
+            <input name="skippedLangs" type="text" value="ko,pt,it"/>
+        </label>
+    </div>
+    <div>
+        <textarea wrap="off" name="inputLangCsv" cols="200" rows="20" placeholder="Copy english cells you want to translate here..."></textarea>
+    </div>
+    <div>
+        <button>Translate!</button>
+    </div>
+    <div>
+        <textarea wrap="off" name="outputLangCsv" cols="200" rows="20" placeholder="The translated output will go here"></textarea>
+    </div>
+</form>
+
+<script src="./dist/main.js"></script>
+
+<script>
+(() => {
+    const mainForm = document.forms[0];
+    const translate = async () => {
+        const inputCsv = mainForm['inputLangCsv'].value;
+        if (!inputCsv) {
+            throw new Error('Enter some text yopta');
+        }
+
+        mainForm['outputLangCsv'].value = '';
+
+        const sourceLang = mainForm['srcLang'].value;
+        const targetLangs = mainForm['targetLangs'].value.split(',');
+        const excluded = mainForm['skippedLangs'].value.split(',');
+        // const TKK = '443658.3451255544'; // take from window.TKK on google translate page
+        const tkkHourlySalt = mainForm['tkkHourlySalt'].value;
+        const delayBetweenCallsMs = mainForm['delayBetweenCallsMs'].value;
+
+        for (const line of inputCsv.trim().split('\n')) {
+            for (let i = 0; i < targetLangs.length; ++i) {
+                const targetLang = targetLangs[i];
+                let translated;
+                const skipped = excluded.includes(targetLang);
+                if (skipped) {
+                    translated = '';
+                } else {
+                    const url = 'https://translate.google.com/translate_a/single?client=gtx&sl=' + sourceLang + '&tl=' + targetLang +
+                        '&hl=' + targetLang + '&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&otf=1&ssel=0&tsel=0&kc=7&q=' + encodeURIComponent(line) + '&tk=29979.29979';
+                    // const response = await fetch(url, {"mode": "cors", "credentials": "include"}).then(rs => rs.json());
+                    const query = [...new URLSearchParams({
+                        "client": "webapp",
+                        "sl": sourceLang, // source language
+                        "tl": targetLang, // target language
+                        "hl": targetLang, // dunno
+                        "dt": "t", // mandatory it seems
+                        "tk": window.hujtoken_webapp(line, tkkHourlySalt),
+                        "q": line, // text to translate
+                    }).entries()].map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
+                    const response = await fetch("https://translate.google.ru/translate_a/single?" + query, {
+                        "method": "GET", "mode": "cors", "credentials": "include"
+                    }).then(rs => rs.json());
+                    const [sentences, , srcLang] = response;
+                    translated = sentences.map(([result, src]) => result).join('');
+                    //translated = response[0][0][0];
+                    // const response = await translate(line, {from: 'en', to: lang});
+                    // translated = response.text;
+                }
+                const delim = i < targetLangs.length - 1 ? '\t' : '\n';
+                mainForm['outputLangCsv'].value += translated + delim;
+                if (!skipped) {
+                    await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * delayBetweenCallsMs)));
+                }
+            }
+        }
+    };
+    mainForm.onsubmit = async (evt) => {
+        evt.preventDefault();
+        translate()
+            .catch(exc => {
+                console.error('Failed to translate', exc);
+                alert('zhopa ' + exc);
+            });
+    };
+})()
+</script>
+</body>
