@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 
 /** yu */
 var addSalt = function(a, salt) {
@@ -48,4 +46,4 @@ var makeToken = function(srcText, TKK) {
     return hashMajor + "." + (hashMajor ^ TKK);
 };
 
-exports.default = makeToken;
+export default makeToken;

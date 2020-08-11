@@ -48,9 +48,9 @@
     </div>
 </form>
 
-<script src="./dist/main.js"></script>
+<script type="module">
+import GoogleTranslateTk from './src/GoogleTranslateTk.js';
 
-<script>
 (() => {
     const mainForm = document.forms[0];
     const translate = async () => {
@@ -85,7 +85,7 @@
                         "tl": targetLang, // target language
                         "hl": targetLang, // dunno
                         "dt": "t", // mandatory it seems
-                        "tk": window.hujtoken_webapp(line, tkkHourlySalt),
+                        "tk": GoogleTranslateTk(line, tkkHourlySalt),
                         "q": line, // text to translate
                     }).entries()].map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
                     const response = await fetch("https://translate.google.ru/translate_a/single?" + query, {
