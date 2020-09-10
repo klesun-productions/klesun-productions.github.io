@@ -15,7 +15,7 @@
 		</td></tr>
 		<tr><td> github        </td><td> <a href="https://github.com/klesun?tab=repositories">klesun</a>                 </td></tr>
 		<tr><td> stackoverflow </td><td> <a href="https://stackoverflow.com/users/2750743/artur-klesun">artur-klesun</a> </td></tr>
-		<tr><td> Web-Site      </td><td> <a href="https://midiana.lv">midiana.lv</a>                                     </td></tr>
+		<tr><td> Web-Site      </td><td> <a href="https://klesun-productions.com/entry/">klesun-productions.com</a>      </td></tr>
 		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
 		<tr><td> Location      </td><td>Riga, Latvia, Center                                                             </td></tr>
 	</table></td>
