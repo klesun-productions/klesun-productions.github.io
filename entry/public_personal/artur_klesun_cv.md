@@ -25,7 +25,7 @@
  Work Experience
 ----------------
 
-- 2014 - present time (5 years)<br/><br/>
+- 2014 - 2020 (6 years)<br/><br/>
     Backend Developer at "[ASAP Tickets](https://www.asaptickets.com/)" travel agency.<br/>
     [GDS](https://en.wikipedia.org/wiki/Global_distribution_system) integration department.
     
@@ -57,8 +57,8 @@
  Skills
 --------
 Languages:
-- Russian: fluent
 - English: technical fluent
+- Russian: fluent
 - Javascript: native
 - Latvian: average
 
