@@ -7,7 +7,7 @@
 		<tr><td colspan="2">
 			<a href="https://github.com/klesun/riddle-needle">C#</a> |
 			<a href="https://github.com/klesun/deep-assoc-completion">Java</a> |
-			<a href="https://github.com/klesun/trilemma.online">js/node.js</a> |
+			<a href="https://github.com/klesun/trilemma.online">node.js</a> |
 			<a href="https://github.com/klesun/deep-js-completion">Scala</a> |
 			<a href="https://github.com/klesun/midiana.lv/tree/master/htbin">Python</a> |
 			<a href="https://github.com/klesun/green-envy-xmas-defense">Lua</a> |
@@ -59,7 +59,7 @@
 Languages:
 - English: technical fluent
 - Russian: fluent
-- Javascript: native
+- ECMAScript: native
 - Latvian: average
 
 Programming:
