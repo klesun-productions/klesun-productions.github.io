@@ -38,9 +38,8 @@
     etc... usually via [SOAP XML](https://en.wikipedia.org/wiki/SOAP) protocol and did various fin tech operations through these systems.
 
     The aim of the project was to make life of travel agents easier.
-    I gave them a single terminal GUI that provides access to all systems we support 
-    at once. That involved a airline terminal text parsing; a lot of work with 
-    [MySQL](https://www.mysql.com/) databases; arranging 
+    I gave them a single terminal GUI that provided access to all systems we supported 
+    at once unifying them into single syntax. That involved airline terminal text parsing; arranging 
     hundreds cron jobs for parallel data processing with [Redis](https://redis.io/); implementing various interesting ideas our travel business guys 
     request... Most of the code was always covered with [mocha](https://github.com/mochajs/mocha) tests.
     My job also involved 
