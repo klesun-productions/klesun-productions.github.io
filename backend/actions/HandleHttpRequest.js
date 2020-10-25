@@ -98,7 +98,7 @@ const servePythonScript = (rq, rs) => {
     });
 };
 
-const serveExploit = (rq, rs) => {
+const serveProbableExploit = (rq, rs) => {
     const clientIp = rq.connection.remoteAddress
         || rq.socket.remoteAddress
         || (rq.connection.socket || {}).remoteAddress;
@@ -112,6 +112,8 @@ const serveExploit = (rq, rs) => {
     console.warn(JSON.stringify(record));
 };
 
+const testPostbacks = [];
+
 const apiRoutes = {
     '/api/orderSoftware': async (rq) => {
         const postStr = await readPost(rq);
@@ -124,6 +126,13 @@ const apiRoutes = {
         // should probably send an email notification...
         return {status: 'success', sqlResult};
     },
+    '/api/test-postback': async (rq) => {
+		testPostbacks.push({dt: new Date().toISOString(), url: rq.url});
+		return {status: 'success'};
+	},
+	'/api/list-test-postbacks': async (rq) => {
+		return testPostbacks;
+	},
 };
 const redirects = {
     '/': '/entry/',
@@ -176,7 +185,7 @@ const HandleHttpRequest = async ({rq, rs, rootPath}) => {
     } else if (pathname === '/testFileStreamAbort.csv') {
         return testFileStreamAbort(rq, rs);
     } else {
-        return serveExploit(rq, rs);
+        return serveProbableExploit(rq, rs);
     }
 };
 
