@@ -26,6 +26,7 @@ const isStaticFile = pathname => {
         || pathname.startsWith('/out/')
         || pathname.startsWith('/imgs/')
         || pathname.startsWith('/unv/hosted/')
+        || pathname.startsWith('/h/')
         || pathname.startsWith('/unv/imagesFromWeb/')
         || pathname.startsWith('/tests/')
         || pathname.startsWith('/Dropbox/web/')

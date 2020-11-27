@@ -44,3 +44,5 @@ __pycache__
 /tests/svgedit
 /imgs/klesun-productions.png
 /entry/denisbook
+
+.DS_Store

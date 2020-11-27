@@ -33,7 +33,7 @@ const main = async () => {
             proxy.web(rq, rs, {target: 'http://localhost:23183'}, exc => {
 				console.error('ololo trilemma proxy error', exc);
 			});
-        } else if (['kunkka-torrent.online'].includes(rq.headers.host)) {
+        } else if (['kunkka-torrent.online', 'trutracker.club'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36865'}, exc => {
 				console.error('ololo kunkka-torrent proxy error', exc);
 			});
