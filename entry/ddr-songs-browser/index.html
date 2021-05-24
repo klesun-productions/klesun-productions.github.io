@@ -1,0 +1,60 @@
+<head>
+    <title>DDR Songs Browser</title>
+</head>
+
+<body>
+    <div class="header-message">
+        <h2>DDR Songs Browser</h2>
+        <p>Hello. <a href="https://search.stepmaniaonline.net/">stepmaniaonline</a> rocks, but it does not have much filter criteria, does not show author, difficulty, etc.. and it's relatively slow</p>
+        <p>Here you can find a mirror of it's database which is supposedly easier to navigate to find interesting stuff</p>
+    </div>
+
+    <div id="pack_list"></div>
+    <script src="./index.js" type="module"></script>
+</body>
+
+<style>
+    body {
+        background-color: #232323;
+    }
+    .header-message {
+        color: white;
+    }
+    .pack-name-holder {
+        font-weight: bold;
+        font-size: 14px;
+        text-align: center;
+        max-width: 180px;
+    }
+    .pack-item {
+        margin: 6px;
+        display: inline-block;
+        vertical-align: top;
+        border: solid #89ccf3 2px;
+        background-color: white;
+    }
+    .packed-content {
+        display: flex;
+        flex-direction: column;
+    }
+    .packed-content {
+        text-align: center;
+    }
+    .packed-content img {
+        max-width: 180px;
+    }
+    .song-list {
+        margin: 6px;
+        margin-right: 0px;
+        max-height: 400px;
+        overflow-y: auto;
+        text-align: left;
+        max-width: 180px;
+        overflow-x: hidden;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+    .content-retrieval-error {
+        color: red;
+    }
+</style>
