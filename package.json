@@ -8,6 +8,7 @@
     "http-proxy": "^1.18.0",
     "json5": "^2.1.2",
     "klesun-node-tools": "git+https://github.com/klesun-misc/klesun-node-tools.git#bf555291e0aab4f42ce2f65769b1a6246189dc69",
+    "SMParse": "https://github.com/klesun-misc/SMParse/tarball/7738f570a599637d79858e951349eb9b0427779d",
     "nodemailer": "^6.4.6",
     "python-shell": "^1.0.8",
     "sqlite": "^3.0.3"
