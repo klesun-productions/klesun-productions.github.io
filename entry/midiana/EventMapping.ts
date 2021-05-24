@@ -208,7 +208,7 @@ const EventMapping = ({control, gui, composeActions, painter, composePlayback}: 
         // request MIDI access
         if (navigator.requestMIDIAccess) {
             navigator.requestMIDIAccess()
-                .then(gotMidi, (e: any) => console.error("Failed To Access Midi, Even Though Your Browser Has The Method...", e));
+                .then(gotMidi, (e: unknown) => console.error("Failed To Access Midi, Even Though Your Browser Has The Method... May happen on linux", e));
         } else {
             console.log("No MIDI support in your browser.");
         }
