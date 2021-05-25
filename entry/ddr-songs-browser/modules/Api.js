@@ -99,9 +99,6 @@ const Api = ({
     };
 
     return {
-        getPackNames: () => get('/api/getPackNames'),
-        getPackDetails: ({packName}) => get('/api/getPackDetails', {packName}),
-        getSongFiles: ({packName, subdir, songName}) => get('/api/getSongFiles', {packName, subdir, songName}),
     };
 };
 

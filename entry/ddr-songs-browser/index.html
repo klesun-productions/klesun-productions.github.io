@@ -3,19 +3,31 @@
 </head>
 
 <body>
-    <div class="header-message">
-        <h2>DDR Songs Browser</h2>
-        <p>Hello. <a href="https://search.stepmaniaonline.net/">stepmaniaonline</a> rocks, but it does not have much filter criteria, does not show author, difficulty, etc.. and it's relatively slow</p>
-        <p>Here you can find a mirror of it's database which is supposedly easier to navigate to find interesting stuff</p>
+    <div style="display: flex; flex-direction: column">
+        <div style="display: flex">
+            <audio id="active_song_player" controls="controls" style="flex: 1"></audio>
+        </div>
+        <div id="active_song_details" style="color: white"></div>
     </div>
+    <div style="overflow-y: auto; flex: 1">
+        <div class="header-message">
+            <h2>DDR Songs Browser</h2>
+            <p>Hello. <a href="https://search.stepmaniaonline.net/">stepmaniaonline</a> rocks, but it does not have much filter criteria, does not show author, difficulty, etc.. and it's relatively slow</p>
+            <p>Here you can find a mirror of it's database which is supposedly easier to navigate to find interesting stuff</p>
+        </div>
 
-    <div id="pack_list"></div>
+        <div id="pack_list"></div>
+    </div>
     <script src="./index.js" type="module"></script>
 </body>
 
 <style>
     body {
         background-color: #232323;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        margin: 0;
     }
     .header-message {
         color: white;
@@ -46,7 +58,7 @@
     .song-list {
         margin: 6px;
         margin-right: 0px;
-        max-height: 400px;
+        max-height: 600px;
         overflow-y: auto;
         text-align: left;
         max-width: 180px;
@@ -56,5 +68,33 @@
     }
     .content-retrieval-error {
         color: red;
+    }
+    img.song-banner,
+    img.pack-banner {
+        width: 256px;
+        height: 80px;
+        background-color: #3e3e3e;
+    }
+    img.song-banner:not([src]),
+    img.pack-banner:not([src]) {
+        display: none;
+    }
+    .play-song-item-btn {
+        margin-right: 3px;
+        cursor: pointer;
+        color: green;
+        border: solid 1px green;
+        border-radius: 50%;
+        padding-left: 3px;
+        padding-right: 1px;
+    }
+    .play-song-item-btn:hover {
+        color: cyan;
+    }
+    .song-details-item-list {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .song-details-item-list > * {
+        margin-right: 6px;
     }
 </style>

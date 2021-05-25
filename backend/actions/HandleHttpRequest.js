@@ -58,11 +58,16 @@ const serveStaticFile = async (pathname, rs, rootPath) => {
     if ((await fs.lstat(absPath)).isDirectory()) {
         return redirect(rs, pathname + '/');
     }
-    const ext = absPath.replace(/^.*\./, '');
+    const ext = absPath.replace(/^.*\./, '').toLowerCase();
     let mime = getMimeByExt(ext);
     if (pathname === '/entry/ddr-songs-browser/data/indexed_packs.json.gz') {
         rs.setHeader('content-encoding', 'gzip');
         mime = 'application/json';
+    }
+    if (ext === 'ogg') {
+        mime = 'audio/ogg';
+    } else if (ext === 'mp3') {
+        mime = 'audio/mp3';
     }
     if (mime) {
         rs.setHeader('Content-Type', mime);
@@ -119,8 +124,6 @@ const serveProbableExploit = (rq, rs) => {
 
 const testPostbacks = [];
 
-const DDR_PACKS_PATH = __dirname + '/../../entry/ddr-songs-browser/data/packs';
-
 const apiRoutes = {
     '/api/orderSoftware': async (rq) => {
         const postStr = await readPost(rq);
@@ -140,56 +143,6 @@ const apiRoutes = {
 	'/api/list-test-postbacks': async (rq) => {
 		return testPostbacks;
 	},
-    /** note, names are URL-encoded */
-    '/ddr-songs-browser/api/getPackNames': rq => fs.readdir(DDR_PACKS_PATH),
-    '/ddr-songs-browser/api/getPackDetails': async rq => {
-        const packName = url.parse(rq.url, true).query['packName'];
-        if (!packName || packName.includes('/')) {
-            return Rej.BadRequest('GET packName missing or invalid');
-        }
-        const packPath = DDR_PACKS_PATH + '/' + packName;
-        const rootFiles = await fs.readdir(packPath, {withFileTypes: true});
-        const subdirs = rootFiles
-            .filter(f => f.isDirectory())
-            .map(f => f.name)
-            .filter(n => n !== 'Additional Content (Courses etc)');
-        if (subdirs.length === 0) {
-            return Rej.NoContent('Pack ' + packName + ' directory is empty');
-        }
-        const decodedPackName = decodeURIComponent(packName.replace(/\.zip(?:\.\d+)?$/, ''));
-        const exactMatch = subdirs
-            .find(s => s.startsWith(decodedPackName) || decodedPackName.startsWith(s));
-        const subdir = exactMatch || subdirs[0];
-        if (!exactMatch && subdirs.length > 1) {
-            console.warn('ololo, no exact match for:\n' + decodeURIComponent(packName) + ', taking first:\n' + subdir);
-        }
-        const mixedContent = await fs.readdir(packPath + '/' + subdir, {withFileTypes: true});
-
-        return {
-            subdir: subdir,
-            imgFileName: mixedContent
-                .filter(f => !f.isDirectory())
-                .map(f => f.name)
-                .find(n => n.match(/\.(png|je?pg|bmp|gif)$/i)),
-            songNames: mixedContent
-                .filter(f => f.isDirectory())
-                .map(f => f.name),
-        };
-    },
-    '/ddr-songs-browser/api/getSongFiles': async rq => {
-        const queryParams = url.parse(rq.url, true).query;
-        const {packName, subdir, songName} = queryParams;
-        if (!packName || packName.includes('/')) {
-            return Rej.BadRequest('GET packName missing or invalid');
-        }
-        if (!subdir || subdir.includes('/')) {
-            return Rej.BadRequest('GET subdir missing or invalid');
-        }
-        if (!songName) {
-            return Rej.BadRequest('GET songName missing');
-        }
-        return fs.readdir(DDR_PACKS_PATH + '/' + packName + '/' + subdir + '/' + songName);
-    },
 };
 const redirects = {
     '/': '/entry/',
