@@ -4,7 +4,7 @@
  */
 const JsExport = function($var, $margin, inlineLimit) {
     "use strict";
-    var ind = '    ';
+    var ind = '  ';
     $margin = $margin || '';
     inlineLimit = inlineLimit || 64;
 
@@ -21,8 +21,8 @@ const JsExport = function($var, $margin, inlineLimit) {
             ? '{\n'
                 + Object.keys($var).map(k => $margin + ind + JSON.stringify(k) + ': ' + JsExport($var[k], $margin + ind, inlineLimit)).join(',\n')
                 + '\n' + $margin + '}'
-        : (typeof $var === 'string' && $var.indexOf('\n') > -1)
-            ? JsExport($var.split('\n'), $margin) + '.join("\\n")'
+        // : (typeof $var === 'string' && $var.indexOf('\n') > -1)
+        //     ? JsExport($var.split('\n'), $margin) + '.join("\\n")'
         : JSON.stringify($var);
 };
 

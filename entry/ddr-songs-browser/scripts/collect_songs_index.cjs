@@ -37,12 +37,12 @@ const collectSongIndex = async ({ packName, subdir, songName, i }) => {
 
     let parsed;
     try {
-        parsed = new SMParse(smDataStr);
+        parsed = new SMParse(smDataStr.replace(/\r\n?/g, '\n'));
     } catch (error) {
         return { format: 'MALFORMED_SM_FILE', songName, smFileName };
     }
     const { raw, charts } = parsed;
-    const { BGCHANGES, BPMS, STOPS, DESCRIPTION, DIFFICULTY, METER, NOTEDATA, NOTES, RADARVALUES, STEPSTYPE, ...headers } = raw;
+    const { FGCHANGES, BGCHANGES, BGCHANGES2, BPMS, STOPS, DESCRIPTION, DIFFICULTY, METER, NOTEDATA, NOTES, RADARVALUES, STEPSTYPE, ...headers } = raw;
     for (const [k, v] of Object.entries(headers)) {
         if (!v || Array.isArray(v) && (v.length === 0 || v.length === 1 && v[0] === '')) {
             delete headers[k];
@@ -119,15 +119,15 @@ const collectPackIndex = async (packName) => {
         .filter(f => f.isDirectory())
         .map(f => f.name)
         .filter(n => n !== 'Additional Content (Courses etc)');
-    if (subdirs.length === 0) {
-        return { format: 'EMPTY_DIRECTORY', packName };
-    }
     const allOptions = await Promise.all(
         subdirs.map(subdir => collectSubdirIndex(packName, subdir))
     );
     const options = allOptions
         .filter(option => option.songs
             .some(song => song.format !== 'MISSING_SM_FILE'));
+    if (options.length === 0) {
+        return { format: 'EMPTY_DIRECTORY', packName };
+    }
     if (options.length > 1) {
         console.warn('ololo, no exact match for:\n' + decodeURIComponent(packName) + ', taking first:\n' + options[0].subdir);
     }
