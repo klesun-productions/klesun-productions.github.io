@@ -7,6 +7,7 @@ const fsSync = require('fs');
 const fs = require('fs').promises;
 const {PythonShell} = require('python-shell');
 const {getMimeByExt, removeDots, setCorsHeaders} = require('klesun-node-tools/src/Utils/HttpUtil.js');
+const tar = require('tar');
 
 const readPost = (rq) => new Promise((ok, err) => {
     if (rq.method === 'POST') {
@@ -43,7 +44,35 @@ const redirect = (rs, url) => {
     rs.end();
 };
 
-const serveStaticFile = async (pathname, rs, rootPath) => {
+const serveRange = async (absPath, range, rs) => {
+    const match = range.match(/^bytes=(\d+)-(\d*)/);
+    if (!match) {
+        throw Rej.BadRequest('Malformed "range" header: ' + range).exc;
+    }
+    let [_, start, rqEnd] = match.map(n => +n);
+    const stats = await fs.stat(absPath);
+    const total = stats.size;
+    rqEnd = rqEnd || total - 1;
+    // I take it that this works as a buffering size...
+    const chunkSize = Math.min(rqEnd - start + 1, 512 * 1024);
+    const end = start + chunkSize - 1;
+    rs.writeHead(206, {
+        'Content-Range': 'bytes ' + start + '-' + end + '/' + total,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+    });
+    const stream = fsSync.createReadStream(absPath, {start, end})
+        .on('open', () => stream.pipe(rs))
+        .on('error', err => {
+            console.error('Error while streaming mkv file\n' + absPath + '\n', err);
+            rs.end(err);
+        });
+};
+
+const serveStaticFile = async (rq, rs, rootPath) => {
+    const parsedUrl = url.parse(rq.url);
+    let pathname = removeDots(parsedUrl.pathname);
+
     pathname = decodeURIComponent(pathname);
     let absPath = rootPath + pathname;
     if (absPath.endsWith('/')) {
@@ -64,16 +93,21 @@ const serveStaticFile = async (pathname, rs, rootPath) => {
         rs.setHeader('content-encoding', 'gzip');
         mime = 'application/json';
     }
-    if (ext === 'ogg') {
-        mime = 'audio/ogg';
-    } else if (ext === 'mp3') {
-        mime = 'audio/mp3';
+    const mediaMimes = {
+        ogg: 'audio/ogg',
+        mp3: 'audio/mp3',
+    };
+    if (ext in mediaMimes) {
+        mime = mediaMimes[ext];
     }
     if (mime) {
         rs.setHeader('Content-Type', mime);
     }
-    fsSync.createReadStream(absPath).pipe(rs);
-    //rs.end(bytes);
+    if (rq.headers.range) {
+        await serveRange(absPath, rq.headers.range, rs);
+    } else {
+        fsSync.createReadStream(absPath).pipe(rs);
+    }
 };
 
 /**
@@ -120,6 +154,31 @@ const serveProbableExploit = (rq, rs) => {
     rq.destroy();
     rs.end();
     console.warn(JSON.stringify(record));
+};
+
+const serveDdrPack = (rq, rs) => {
+    const {json} = url.parse(rq.url, true).query;
+    const {packName, subdir, songNames} = JSON.parse(json);
+    if (!packName || packName.includes('/')) {
+        return Rej.BadRequest('GET packName invalid or missing');
+    }
+    if (!subdir || subdir.includes('/')) {
+        return Rej.BadRequest('GET subdir invalid or missing');
+    }
+    const packPath = __dirname + '/../../entry/ddr-songs-browser/data/packs/' + packName;
+    const paths = songNames.map(songName => {
+        if (!songName || songName.includes('/')) {
+            throw Rej.BadRequest('GET subdir invalid or missing').exc;
+        }
+        return subdir + '/' + songName;
+    });
+    rs.setHeader('content-type', 'application/x-tar');
+    // hope JSON will escape all weird stuff that could make header invalid
+    rs.setHeader('content-disposition', 'attachment; filename=' + JSON.stringify(decodeURIComponent(packName.replace(/\.zip(\.\d+)?$/, '')) + '_pack_inside.tar'));
+    return tar.create({
+        gzip: false,
+        cwd: packPath,
+    }, paths).pipe(rs);
 };
 
 const testPostbacks = [];
@@ -196,13 +255,15 @@ const HandleHttpRequest = async ({rq, rs, rootPath}) => {
             rs.end(JSON.stringify(result));
         });
     } else if (isStaticFile(pathname)) {
-        return serveStaticFile(pathname, rs, rootPath);
+        return serveStaticFile(rq, rs, rootPath);
     } else if (pathname === '/htbin/json_service.py') {
         return servePythonScript(rq, rs);
     } else if (pathname === '/testFileStreamAbort.csv') {
         return testFileStreamAbort(rq, rs);
     } else if (pathname === '/izumrudnij-huj') {
         return izumrudnijHuj(rq, rs);
+    } else if (pathname === '/ddr-songs-browser/ftp/pack.tar') {
+        return serveDdrPack(rq, rs);
     } else {
         return serveProbableExploit(rq, rs);
     }

@@ -7,7 +7,12 @@
         <div style="display: flex">
             <audio id="active_song_player" controls="controls" style="flex: 1"></audio>
         </div>
-        <div id="active_song_details" style="color: white"></div>
+        <div style="display: flex; justify-content: space-between">
+            <div id="active_song_details" style="color: white"></div>
+            <div>
+                <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
+            </div>
+        </div>
     </div>
     <div style="overflow-y: auto; flex: 1">
         <div class="header-message">

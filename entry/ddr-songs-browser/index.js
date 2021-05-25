@@ -3,42 +3,51 @@ import Dom from "./modules/utils/Dom.js";
 
 const gui = {
     pack_list: document.getElementById('pack_list'),
+    /** @type {HTMLAudioElement} */
     active_song_player: document.getElementById('active_song_player'),
     active_song_details: document.getElementById('active_song_details'),
+    play_random_song_btn: document.getElementById('play_random_song_btn'),
 };
 
 const api = Api();
 
 const DATA_DIR_URL = '/entry/ddr-songs-browser/data';
 
-const playSong = (subdirUrl, song) => {
-    const { smModifiedAt, totalBars, charts } = song;
+const playSong = (pack, song) => {
+    const { smModifiedAt, totalBars, charts, restFileNames, smMd5 } = song;
     const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
-    const songDirUrl = subdirUrl + '/' + encodeURIComponent(song.songName);
+    const songDirUrl = DATA_DIR_URL + '/packs/' +
+        encodeURIComponent(pack.packName) + '/' +
+        encodeURIComponent(pack.subdir) + '/' +
+        encodeURIComponent(song.songName);
     gui.active_song_details.innerHTML = '';
     gui.active_song_details.appendChild(Dom('div', {class: 'song-details-item-list'}, [
-        Dom('span', {}, TITLE),
-        Dom('span', {}, SUBTITLE),
-        Dom('span', {}, 'by' + ARTIST),
-        Dom('span', {}, smModifiedAt),
+        Dom('span', {}, TITLE ? ' ' + TITLE : ''),
+        Dom('span', {}, SUBTITLE ? ' ' + SUBTITLE : ''),
+        Dom('span', {}, ARTIST ? ' by ' + ARTIST : ''),
+        Dom('span', {}, ' ' + smModifiedAt),
+        Dom('span', {}, ' ' + smMd5),
         Dom('span', {}, JSON.stringify(rest)),
     ]));
-    gui.active_song_player.src = songDirUrl + '/' + encodeURIComponent(MUSIC);
-    console.log(songDirUrl + '/' + encodeURIComponent(BACKGROUND));
-    document.body.style.backgroundImage = 'url("' + songDirUrl + '/' + encodeURIComponent(BACKGROUND) + '")';
+    const songFileName = restFileNames.find(n => n.toLowerCase() === MUSIC.toLowerCase()) ||
+        restFileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
+    gui.active_song_player.src = songDirUrl + '/' + encodeURIComponent(songFileName);
+    const bgFileName = BACKGROUND || restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
+    document.body.style.backgroundImage = !bgFileName ? 'none' :
+        'url("' + songDirUrl + '/' + encodeURIComponent(bgFileName) + '")';
     gui.active_song_player.play();
 };
 
 const main = async () => {
-    let indexedPacks = await fetch(DATA_DIR_URL + '/indexed_packs.json.gz')
+    let packs = await fetch(DATA_DIR_URL + '/indexed_packs.json.gz')
         .then(rs => rs.json());
-    indexedPacks = indexedPacks.filter(p => !p.format);
-    indexedPacks.sort((a, b) => {
+    packs = packs.filter(p => !p.format);
+    packs.sort((a, b) => {
         return new Date(a.subdirModifiedAt) - new Date(b.subdirModifiedAt);
     });
 
     const smMd5ToPackNames = new Map();
-    indexedPacks = indexedPacks.filter(pack => {
+    packs = packs.filter(pack => {
         pack.songs = pack.songs.filter(song => {
             if (song.format) {
                 return true;
@@ -62,23 +71,46 @@ const main = async () => {
         });
         return pack.songs.length > 0;
     });
-    indexedPacks.sort((a, b) => Math.max(3, Math.min(b.songs.length, 40)) - Math.max(4, Math.min(a.songs.length, 40)));
+    packs.sort((a, b) => Math.max(3, Math.min(b.songs.length, 40)) - Math.max(4, Math.min(a.songs.length, 40)));
+
+    const havingValidSong = packs.filter(p => p.songs.some(s => !s.format));
+
+    const playRandomSong = () => {
+        const pack = havingValidSong[Math.floor(Math.random() * havingValidSong.length)];
+        const validSongs = pack.songs.filter(s => !s.format);
+        const song = validSongs[Math.floor(Math.random() * validSongs.length)];
+        playSong(pack, song);
+        gui.active_song_player.onended = playRandomSong;
+    };
+
+    gui.play_random_song_btn.onclick = playRandomSong;
 
     let i = 0;
-    for (const pack of indexedPacks) {
+    for (const pack of packs) {
         const packDetailsPanel = Dom('div', {class: 'packed-content'}, []);
+        const {imgFileName, subdir, packName} = pack;
         const decodedPackName = decodeURIComponent(
-            pack.packName.replace(/\.zip(?:\.\d+)?$/, '')
+            packName.replace(/\.zip(?:\.\d+)?$/, '')
         );
         const packDom = Dom('div', {class: 'pack-item'}, [
             Dom('div', {}, pack.subdirModifiedAt),
-            Dom('div', {class: 'pack-name-holder'}, decodedPackName),
+            Dom('div', {class: 'pack-name-holder'}, [
+                Dom('span', {}, decodedPackName),
+                Dom('a', {
+                    href: '/ddr-songs-browser/ftp/pack.tar?' + new URLSearchParams({
+                        json: JSON.stringify({
+                            packName: pack.packName,
+                            subdir: subdir,
+                            songNames: pack.songs.map(s => s.songName),
+                        }),
+                    }),
+                }, ' link'),
+            ]),
             packDetailsPanel,
         ]);
 
-        const {imgFileName, subdir} = pack;
         const subdirUrl = DATA_DIR_URL + '/packs/' +
-            encodeURIComponent(pack.packName) + '/' +
+            encodeURIComponent(packName) + '/' +
             encodeURIComponent(subdir);
         const contentDom = Dom('div', {}, [
             ...!imgFileName ? [] : [
@@ -103,7 +135,7 @@ const main = async () => {
                         ...song.format ? [] : [
                             Dom('span', {
                                 class: 'play-song-item-btn',
-                                onclick: () => playSong(subdirUrl, song),
+                                onclick: () => playSong(pack, song),
                             }, '▶'),
                         ],
                         Dom('span', {}, song.songName),
@@ -118,12 +150,10 @@ const main = async () => {
         packDetailsPanel.appendChild(contentDom);
 
         gui.pack_list.appendChild(packDom);
-        if (++i % 50 === 0) {
-            await new Promise(_ => setTimeout(_, 400));
+        if (++i % 10 === 0) {
+            await new Promise(_ => setTimeout(_, 100));
         }
     }
-
-    console.log('smMd5ToPackNames', smMd5ToPackNames);
 };
 
 main().catch(error => {
