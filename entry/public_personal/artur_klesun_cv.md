@@ -79,7 +79,7 @@ Programming:
 - Had a lot of experience with SQL at my present work, tried hundreds things with alive DB with billions of
 records in search of optimization tricks, choosing right indexes and stuff. Later started working with Redis.
 - Capable of maintaining a [Unix sever](https://klesun-productions.com) on either node or Apache, around 7 years of experience of devopsing personal projects.
-- Academically familliar with: C, C++, Pascal
+- Academically familiar with: C, C++, Pascal
 - My forte is recursive algorithms. Most people can't easily understand them, but I can. I wrote numerous beautiful things starting from [Hanoi Tower resolver](https://github.com/klesun/Progmeistars_tasks/tree/master/Sem5_PointersRecursions_Vlad/e11) in school and ending with my present [php semi-compiler](https://github.com/klesun/deep-assoc-completion/blob/master/src/org/klesun/deep_assoc_completion/resolvers/DirectTypeResolver.java) for [IDEA](https://github.com/JetBrains/intellij-community).
 
  Personal Projects
