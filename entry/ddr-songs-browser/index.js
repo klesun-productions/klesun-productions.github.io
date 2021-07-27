@@ -13,29 +13,62 @@ const api = Api();
 
 const DATA_DIR_URL = '/entry/ddr-songs-browser/data';
 
-const playSong = (pack, song) => {
+const playSong = ({pack, song, startAtSample = false}) => {
     const { smModifiedAt, totalBars, charts, restFileNames, smMd5 } = song;
     const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
     const songDirUrl = DATA_DIR_URL + '/packs/' +
         encodeURIComponent(pack.packName) + '/' +
         encodeURIComponent(pack.subdir) + '/' +
         encodeURIComponent(song.songName);
-    gui.active_song_details.innerHTML = '';
-    gui.active_song_details.appendChild(Dom('div', {class: 'song-details-item-list'}, [
+
+    const errorHolder = Dom('span', {style: 'color: red'});
+    const items = [
         Dom('span', {}, TITLE ? ' ' + TITLE : ''),
         Dom('span', {}, SUBTITLE ? ' ' + SUBTITLE : ''),
         Dom('span', {}, ARTIST ? ' by ' + ARTIST : ''),
         Dom('span', {}, ' ' + smModifiedAt),
         Dom('span', {}, ' ' + smMd5),
         Dom('span', {}, JSON.stringify(rest)),
-    ]));
+        errorHolder,
+    ];
+    if (CDTITLE) {
+        items.unshift(Dom('img', {
+            src: songDirUrl + '/' + encodeURIComponent(CDTITLE),
+        }));
+    }
+    if (BANNER) {
+        items.unshift(Dom('img', {
+            src: songDirUrl + '/' + encodeURIComponent(BANNER),
+        }));
+    }
+    if (pack.imgFileName) {
+        items.unshift(Dom('img', {
+            src: DATA_DIR_URL + '/packs/' +
+                encodeURIComponent(pack.packName) + '/' +
+                encodeURIComponent(pack.subdir) + '/' +
+                encodeURIComponent(pack.imgFileName),
+        }));
+    }
+
+    gui.active_song_details.innerHTML = '';
+    gui.active_song_details.appendChild(
+        Dom('div', {class: 'song-details-item-list'}, items),
+    );
     const songFileName = restFileNames.find(n => n.toLowerCase() === MUSIC.toLowerCase()) ||
         restFileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
-    gui.active_song_player.src = songDirUrl + '/' + encodeURIComponent(songFileName);
-    const bgFileName = BACKGROUND || restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
+    if (!songFileName) {
+        errorHolder.textContent = 'Missing song file in ' + restFileNames.join(', ');
+    } else {
+        gui.active_song_player.src = songDirUrl + '/' + encodeURIComponent(songFileName);
+        gui.active_song_player.play();
+    }
+    const bgFileName = BACKGROUND && restFileNames.find(n => n.toLowerCase() === BACKGROUND.toLowerCase()) ||
+        restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
     document.body.style.backgroundImage = !bgFileName ? 'none' :
         'url("' + songDirUrl + '/' + encodeURIComponent(bgFileName) + '")';
-    gui.active_song_player.play();
+    if (startAtSample && SAMPLESTART) {
+        gui.active_song_player.currentTime = +SAMPLESTART;
+    }
 };
 
 const main = async () => {
@@ -43,7 +76,7 @@ const main = async () => {
         .then(rs => rs.json());
     packs = packs.filter(p => !p.format);
     packs.sort((a, b) => {
-        return new Date(a.subdirModifiedAt) - new Date(b.subdirModifiedAt);
+        return new Date(b.subdirModifiedAt) - new Date(a.subdirModifiedAt);
     });
 
     const smMd5ToPackNames = new Map();
@@ -79,7 +112,7 @@ const main = async () => {
         const pack = havingValidSong[Math.floor(Math.random() * havingValidSong.length)];
         const validSongs = pack.songs.filter(s => !s.format);
         const song = validSongs[Math.floor(Math.random() * validSongs.length)];
-        playSong(pack, song);
+        playSong({pack, song, startAtSample: true});
         gui.active_song_player.onended = playRandomSong;
     };
 
@@ -135,7 +168,7 @@ const main = async () => {
                         ...song.format ? [] : [
                             Dom('span', {
                                 class: 'play-song-item-btn',
-                                onclick: () => playSong(pack, song),
+                                onclick: () => playSong({pack, song, startAtSample: true}),
                             }, '▶'),
                         ],
                         Dom('span', {}, song.songName),
