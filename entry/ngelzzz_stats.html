@@ -1,0 +1,72 @@
+<head>
+    <title>Muramasa Translation Progress</title>
+</head>
+
+<body>
+    <p>This page should show up-to-date count of translated words directly <a href="https://github.com/klesun/muramasa-vn-translation/blob/master/public/assets/md_devil_route/rec2/human_translation.txt">from github</a></p>
+    <div>
+        <span>Status: <span id="status_message_holder" data-status="LOADING_DATA">Loading Data...</span></span>
+    </div>
+    <div>
+        <table>
+            <tbody>
+            <tr>
+                <td>Total words:</td>
+                <td><span id="total_words_holder">?</span></td>
+            </tr>
+            <tr>
+                <td>Total earned:</td>
+                <td>$<span id="total_earned_holder">?</span></td>
+            </tr>
+            <tr>
+                <td>Total funded: (may be outdated)</td>
+                <td><span>$700</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <textarea id="counted_words_holder" rows="40" cols="40"></textarea>
+    </div>
+</body>
+
+<script type="module">
+(async () => {
+    const transUrl = 'https://raw.githubusercontent.com/klesun/muramasa-vn-translation/master/public/assets/md_devil_route/rec2/human_translation.txt';
+    const transResponse = await fetch(transUrl);
+    if (transResponse.status !== 200) {
+        throw new Error('Failed to retrieve translation from github - status code ' + transResponse.status);
+    }
+    const transText = await transResponse.text();
+    if (transText.length < 250000) {
+        throw new Error('Failed to fully fetch translation file from github - text too short ' + transText.length + ', must be longer than 250000 characters');
+    }
+    const lines = transText.split('\n\n')
+        .filter(b => b.trim().split('\n').length > 1)
+        .map(b => b.trimStart().split('\n').slice(1).join('\n').trimEnd());
+    const words = lines.flatMap(line => line.split(/\s+/)).filter(w => w.trim() !== '');
+
+    document.getElementById('total_words_holder').textContent = words.length;
+    document.getElementById('total_earned_holder').textContent = 2 * words.length / 100;
+    document.getElementById('counted_words_holder').value = words.map((w, i) => {
+        return ('       ' + i).slice(-6) + ' ' + w;
+    }).join('\n');
+    document.getElementById('status_message_holder').textContent = 'Data Load Completed';
+    document.getElementById('status_message_holder').setAttribute('data-status', 'DATA_LOADED');
+})().catch(error => {
+    document.getElementById('status_message_holder').setAttribute('data-status', 'ERROR');
+    alert('Failed to initialize data - ' + error);
+});
+</script>
+
+<style>
+#status_message_holder[data-status="LOADING_DATA"] {
+    color: orange;
+}
+#status_message_holder[data-status="DATA_LOADED"] {
+    color: green;
+}
+#status_message_holder[data-status="ERROR"] {
+    color: red;
+}
+</style>
