@@ -110,9 +110,12 @@ Treats you PC keyboard as piano keyboard according to keys placement
     </div>
 </div>
 
+<script>
+    window.startMs = Date.now();
+</script>
 <script type="module">
-    import {loadModule} from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
-    //import {loadModule} from 'https://klesun-misc.github.io/ts-browser-beta/src/ts-browser.js';
+    // import {loadModule} from 'https://klesunn.github.io/ts-browser/src/ts-browser.js';
+    import {loadModule} from 'https://klesun-misc.github.io/ts-browser-beta/src/ts-browser.js';
     // import {loadModule} from '../ts-browser/src/ts-browser.js';
 
     const sfFluidUrl = 'https://dl.dropbox.com/s/dm2ocmb96nkl458/fluid.sf3?dl=0';
@@ -120,14 +123,16 @@ Treats you PC keyboard as piano keyboard according to keys placement
 
     //loadModule('../../src/synths/ISynth.ts');
     //loadModule('../../src/utils/S.ts');
-    const startMs = Date.now();
-    loadModule('./index.ts').then(index => {
-        console.log('Loaded index file in ' + (Date.now() - startMs));
-        return index.default({
-            rootDom: document.getElementById('composeCont'),
-            whenSfBuffer: whenSfBuffer,
+    // import('https://klesun-misc.github.io/ts-browser-beta/src/ts-browser.js')
+    import('https://klesun.github.io/ts-browser/src/ts-browser.js')
+        .then(tsBrowser => tsBrowser.loadModule('./index.ts'))
+        .then(index => {
+            console.log('Loaded index file in ' + (Date.now() - window.startMs));
+            return index.default({
+                rootDom: document.getElementById('composeCont'),
+                whenSfBuffer: whenSfBuffer,
+            });
         });
-    });
 </script>
 
 <link rel="stylesheet" href="./index.css"/>

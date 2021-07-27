@@ -31,7 +31,11 @@ const main = async () => {
             proxy.web(rq, rs, {target: 'http://localhost:23183'}, exc => {
 				console.error('ololo trilemma proxy error', exc);
 			});
-        } else if (['kunkka-torrent.online', 'trutracker.club'].includes(rq.headers.host)) {
+        } else if (['parsiql.app'].includes(rq.headers.host)) {
+            proxy.web(rq, rs, {target: 'http://localhost:13514'}, exc => {
+				console.error('ololo parsiql-runtime proxy error', exc);
+			});
+        } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36865'}, exc => {
 				console.error('ololo kunkka-torrent proxy error', exc);
 			});
@@ -51,7 +55,9 @@ const main = async () => {
             HandleHttpRequest({rq, rs, rootPath}).catch(exc => {
                 const pathname = url.parse(rq.url).pathname;
                 rs.statusCode = exc.httpStatusCode || exc.statusCode || 500;
-                rs.statusMessage = ((exc || {}).message || exc + '' || '(empty error)').slice(0, 300);
+                rs.statusMessage = ((exc || {}).message || exc + '' || '(empty error)')
+                    // sanitize, as statusMessage seems to not allow special characters
+                    .slice(0, 300).replace(/[^ -~]/g, '?');
                 rs.end(JSON.stringify({error: exc + '', stack: exc.stack}));
                 const clientIp = rq.connection.remoteAddress
                     || rq.socket.remoteAddress
@@ -66,11 +72,8 @@ const main = async () => {
         }
     };
     https.createServer({
-        //key: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/privkey3.pem'),
-        //cert: await fs.readFile('/etc/letsencrypt/archive/klesun-productions.com/cert3.pem'),
-        key: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0001/privkey.pem'),
-        //cert: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com/cert.pem'),
-        cert: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0001/fullchain.pem'),
+        key: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0002/privkey.pem'),
+        cert: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0002/fullchain.pem'),
     }, handleRq).listen(443, '0.0.0.0', () => {
         console.log('listening https://klesun-productions.com');
     });
