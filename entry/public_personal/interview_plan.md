@@ -29,7 +29,32 @@
       0000000000000000
     ```
 
-    Ожидаемое время выполнения (по-простому): 15 минут
+    Ожидаемое время выполнения (по-простому): 15 минут. Пример кода:
+    ```javascript
+    function printGWithStars(height) {
+        if (height <= 0 || height % pattern.length !== 0) {
+            const message = "Invalid height parameter supplied: " +
+                height + ", must be a multiple of " + pattern.length;
+            console.error(message);
+            throw new Error(message);
+        }
+        const scale = height / pattern.length;
+    
+        const outputRows = [];
+        for (const patternRow of pattern) {
+            let scaledRow = patternRow
+                .split("")
+                .map(c => c.repeat(scale))
+                .join("");
+            for (let i = 0; i < scale; ++i) {
+                outputRows.push(scaledRow);
+            }
+        }
+        console.log(outputRows.join("\n"));
+    }
+    
+    printGWithStars(10);
+    ```
 
     В ходе задания желательно проверить:
 
