@@ -38,7 +38,7 @@
             console.error(message);
             throw new Error(message);
         }
-        // pattern holds the string value of height=5 example output from the plan
+        // pattern var holds the string value of height=5 example output from the plan
         const scale = height / pattern.length;    
         for (const patternRow of pattern) {
             let scaledRow = patternRow
