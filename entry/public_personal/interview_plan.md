@@ -38,19 +38,16 @@
             console.error(message);
             throw new Error(message);
         }
-        const scale = height / pattern.length;
-    
-        const outputRows = [];
+        const scale = height / pattern.length;    
         for (const patternRow of pattern) {
             let scaledRow = patternRow
                 .split("")
                 .map(c => c.repeat(scale))
                 .join("");
             for (let i = 0; i < scale; ++i) {
-                outputRows.push(scaledRow);
+                console.log(scaledRow);
             }
         }
-        console.log(outputRows.join("\n"));
     }
     
     printGWithStars(10);
