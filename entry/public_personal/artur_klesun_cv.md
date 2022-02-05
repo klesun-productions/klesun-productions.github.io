@@ -98,18 +98,25 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
     5000+ active users currently, 4.8 rating. Written in Java. [Source Code](https://github.com/klesun/deep-assoc-completion)
 
     ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
-- ### [trilemma.online]()
+
+- ### [ts-browser](https://github.com/klesun/ts-browser)
+    Typescript on-the-fly compilation runtime
+
+- ### [https://trilem.me/](https://trilem.me/)
     A trigonal tile turn-based multiplayer game somewhat inspired by civ 5. Server on nodejs, with web sockets: nice and responsive.
-    [Source Code](https://github.com/klesun/trilemma.online)
+    [Source Code](https://github.com/klesun/trilem.me)
 	
     ![image](https://user-images.githubusercontent.com/5202330/93859827-d37b0380-fcc6-11ea-8523-b00a4566f770.png)
 
-- ### [midiana](http://midiana.lv/entry/compose/)
+- ### [muramasa-vn-translation](https://github.com/klesun/muramasa-vn-translation)
+    A set of text-analisys tools for semi-automatic translation of japanese [visual novels](https://en.wikipedia.org/wiki/Visual_novel)
+
+- ### [midiana](https://klesun-productions.com/entry/midiana/)
     Browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
     [Source Code](https://github.com/klesun/midiana.lv)
     ![alt tag](https://github.com/klesun/midiana.lv/raw/master/screenshot_compose.png)
 
-- ### [starve_game](http://midiana.lv/entry/starve_game/)
+- ### [starve_game](https://klesun-productions.com/entry/starve_game/)
     A word game where you have to come up with a word meaning a food starting with a specific letter. 
     To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 
     The data processing part was written in python.
