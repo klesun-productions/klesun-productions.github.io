@@ -19,14 +19,22 @@
 		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
 		<tr><td> Location      </td><td>Riga, Latvia, Center                                                             </td></tr>
 	</table></td>
-	<td><img src="https://user-images.githubusercontent.com/5202330/59568034-bcca1380-9064-11e9-8e99-7fec3025c6d0.jpg" align="right" width="65%"/></td>
+	<td><img src="https://user-images.githubusercontent.com/5202330/152647058-0590a18a-ba7c-4c2b-8456-3e1b0649f600.png" align="right" height="300"/></td>
 </tr></table>
 
  Work Experience
 ----------------
 
-- 2019 - 2020 (1 year)<br/><br/>
-    Full Stack developer at [blockchaincuties.com](http://blockchaincuties.com/) gacha-like [dapp](https://en.wikipedia.org/wiki/Decentralized_application) web game.<br/>
+- 2021 - present<br><br/>
+    Back to [Blockchain Cuties](http://blockchaincuties.com/) =D
+
+- 2020 - 2021<br/><br/>
+    Software Developer at [Parsiq](https://parsiq.net/) blockchain events monitoring system<br/>
+        
+	I was mostly involved in development of the ParsiQL language: helping in designing language syntax and semantics, implementing compiler, runtime engine, etc... I also write some code for UX for the in-browser IDE, like code completion.
+	
+- 2019 - 2020<br/><br/>
+    Full Stack developer at [Blockchain Cuties](http://blockchaincuties.com/) gacha-like [dapp](https://en.wikipedia.org/wiki/Decentralized_application) web game.<br/>
 	
 	This was a short, but an enjoyable experience with really cool teammates and a lot of blockchain-related work. Long story short, the idea of the project was that content players create (through so-called [genome breeding](https://wiki.blockchaincuties.com/Attributes)) is stored on blockchain [smart contracts](https://en.wikipedia.org/wiki/Smart_contract) as [Non-Fungible Tokens](https://en.wikipedia.org/wiki/Non-fungible_token). The intent was to give player "true" ownership over the character: it could be transferred outside of the game - traded on independent resources like [OpenSea](https://opensea.io/).
 
@@ -74,7 +82,7 @@ Languages:
 - Latvian: average
 
 Programming:
-- Actively worked (at least 10k lines of code each) with: C#, Java, node/js, Scala, Python, Lua, PHP
+- Actively worked (at least 10k lines of code each) with: C# (Unity), Java, node/js, Scala, Python, Lua, PHP
 (see "[Personal Projects](#user-content-personal-projects)" below)
 - Had a lot of experience with SQL at my present work, tried hundreds things with alive DB with billions of
 records in search of optimization tricks, choosing right indexes and stuff. Later started working with Redis.
