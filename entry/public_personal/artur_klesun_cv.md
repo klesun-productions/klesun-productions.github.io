@@ -121,7 +121,7 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
     [Source Code](https://github.com/klesun/green-envy-xmas-defense)
     ![alt tag](https://steamuserimages-a.akamaihd.net/ugc/867368888873667911/D53C89CC75A47AC50C09409D0BFBA4CF97242F80/)
 
-- ### [riddle-needle](https://github.com/klesun/riddle-needle)
+- ### [iron-lady-bug](https://github.com/klesun/riddle-needle)
     A Unity game written in C#. Temporarily on hiatus, but great job was done nevertheless.
     ![alt tag](https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true)
 
