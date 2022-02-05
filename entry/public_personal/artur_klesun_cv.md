@@ -17,7 +17,7 @@
 		<tr><td> stackoverflow </td><td> <a href="https://stackoverflow.com/users/2750743/artur-klesun">artur-klesun</a> </td></tr>
 		<tr><td> Web-Site      </td><td> <a href="https://klesun-productions.com/entry/">klesun-productions.com</a>      </td></tr>
 		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
-		<tr><td> Location      </td><td>Riga, Latvia, Center                                                             </td></tr>
+		<tr><td> Location      </td><td>Riga, Latvia                                                                     </td></tr>
 	</table></td>
 	<td><img src="https://user-images.githubusercontent.com/5202330/152647058-0590a18a-ba7c-4c2b-8456-3e1b0649f600.png" align="right" height="300"/></td>
 </tr></table>
