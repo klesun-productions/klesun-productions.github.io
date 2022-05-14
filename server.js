@@ -23,11 +23,14 @@ const checkObviousExploit = (rq, rs) => {
 };
 
 const main = async () => {
-    const proxy = httpProxy.createProxy();
+    const agent = new http.Agent();
+    const proxy = httpProxy.createProxy({ xfwd: true, agent: agent });
     const handleRq = (rq, rs) => {
         if (checkObviousExploit(rq, rs)) {
             // burn in hell, fag!
-        } else if (['trilemma.online', 'trilema.online'].includes(rq.headers.host)) {
+            return;
+        }
+        if (['trilem.me'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:23183'}, exc => {
 				console.error('ololo trilemma proxy error', exc);
 			});
@@ -38,6 +41,10 @@ const main = async () => {
         } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36865'}, exc => {
 				console.error('ololo kunkka-torrent proxy error', exc);
+			});
+        } else if (['reibai.info'].includes(rq.headers.host)) {
+            proxy.web(rq, rs, {target: 'http://localhost:36418'}, exc => {
+				console.error('ololo reibai.info proxy error', exc);
 			});
         } else if (['sirual.site'].includes(rq.headers.host)) {
             const pathname = url.parse(rq.url).pathname;
@@ -71,12 +78,13 @@ const main = async () => {
             });
         }
     };
-    https.createServer({
-        key: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0002/privkey.pem'),
-        cert: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0002/fullchain.pem'),
+    const server = https.createServer({
+        key: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0004/privkey.pem'),
+        cert: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0004/fullchain.pem'),
     }, handleRq).listen(443, '0.0.0.0', () => {
         console.log('listening https://klesun-productions.com');
     });
+    server.keepAliveTimeout = 3 * 60 * 1000; // 3 minutes, for fast browsing
     http.createServer((rq, rs) => {
         // force https
         const host = rq.headers.host === 'trilema.online' ? 'trilemma.online' : rq.headers.host;
