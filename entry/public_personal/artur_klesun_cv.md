@@ -17,16 +17,24 @@
 		<tr><td> stackoverflow </td><td> <a href="https://stackoverflow.com/users/2750743/artur-klesun">artur-klesun</a> </td></tr>
 		<tr><td> Web-Site      </td><td> <a href="https://klesun-productions.com/entry/">klesun-productions.com</a>      </td></tr>
 		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
-		<tr><td> Location      </td><td>Riga, Latvia, Center                                                             </td></tr>
+		<tr><td> Location      </td><td>Riga, Latvia                                                                     </td></tr>
 	</table></td>
-	<td><img src="https://user-images.githubusercontent.com/5202330/59568034-bcca1380-9064-11e9-8e99-7fec3025c6d0.jpg" align="right" width="65%"/></td>
+	<td><img src="https://user-images.githubusercontent.com/5202330/152647058-0590a18a-ba7c-4c2b-8456-3e1b0649f600.png" align="right" height="300"/></td>
 </tr></table>
 
  Work Experience
 ----------------
 
-- 2019 - 2020 (1 year)<br/><br/>
-    Full Stack developer at [blockchaincuties.com](http://blockchaincuties.com/) gacha-like [dapp](https://en.wikipedia.org/wiki/Decentralized_application) web game.<br/>
+- 2021 - present<br><br/>
+    Back to [Blockchain Cuties](http://blockchaincuties.com/) =D
+
+- 2020 - 2021<br/><br/>
+    Software Developer at [Parsiq](https://parsiq.net/) blockchain events monitoring system<br/>
+        
+	I was mostly involved in development of the ParsiQL language: helping in designing language syntax and semantics, implementing compiler, runtime engine, etc... I also write some code for UX for the in-browser IDE, like code completion.
+	
+- 2019 - 2020<br/><br/>
+    Full Stack developer at [Blockchain Cuties](http://blockchaincuties.com/) gacha-like [dapp](https://en.wikipedia.org/wiki/Decentralized_application) web game.<br/>
 	
 	This was a short, but an enjoyable experience with really cool teammates and a lot of blockchain-related work. Long story short, the idea of the project was that content players create (through so-called [genome breeding](https://wiki.blockchaincuties.com/Attributes)) is stored on blockchain [smart contracts](https://en.wikipedia.org/wiki/Smart_contract) as [Non-Fungible Tokens](https://en.wikipedia.org/wiki/Non-fungible_token). The intent was to give player "true" ownership over the character: it could be transferred outside of the game - traded on independent resources like [OpenSea](https://opensea.io/).
 
@@ -74,7 +82,7 @@ Languages:
 - Latvian: average
 
 Programming:
-- Actively worked (at least 10k lines of code each) with: C#, Java, node/js, Scala, Python, Lua, PHP
+- Actively worked (at least 10k lines of code each) with: C# (Unity), Java, node/js, Scala, Python, Lua, PHP
 (see "[Personal Projects](#user-content-personal-projects)" below)
 - Had a lot of experience with SQL at my present work, tried hundreds things with alive DB with billions of
 records in search of optimization tricks, choosing right indexes and stuff. Later started working with Redis.
@@ -90,18 +98,25 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
     5000+ active users currently, 4.8 rating. Written in Java. [Source Code](https://github.com/klesun/deep-assoc-completion)
 
     ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
-- ### [trilemma.online]()
+
+- ### [ts-browser](https://github.com/klesun/ts-browser)
+    Typescript on-the-fly compilation runtime
+
+- ### [https://trilem.me/](https://trilem.me/)
     A trigonal tile turn-based multiplayer game somewhat inspired by civ 5. Server on nodejs, with web sockets: nice and responsive.
-    [Source Code](https://github.com/klesun/trilemma.online)
+    [Source Code](https://github.com/klesun/trilem.me)
 	
     ![image](https://user-images.githubusercontent.com/5202330/93859827-d37b0380-fcc6-11ea-8523-b00a4566f770.png)
 
-- ### [midiana](http://midiana.lv/entry/compose/)
+- ### [muramasa-vn-translation](https://github.com/klesun/muramasa-vn-translation)
+    A set of text-analisys tools for semi-automatic translation of japanese [visual novels](https://en.wikipedia.org/wiki/Visual_novel)
+
+- ### [midiana](https://klesun-productions.com/entry/midiana/)
     Browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
     [Source Code](https://github.com/klesun/midiana.lv)
     ![alt tag](https://github.com/klesun/midiana.lv/raw/master/screenshot_compose.png)
 
-- ### [starve_game](http://midiana.lv/entry/starve_game/)
+- ### [starve_game](https://klesun-productions.com/entry/starve_game/)
     A word game where you have to come up with a word meaning a food starting with a specific letter. 
     To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 
     The data processing part was written in python.
@@ -113,7 +128,7 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
     [Source Code](https://github.com/klesun/green-envy-xmas-defense)
     ![alt tag](https://steamuserimages-a.akamaihd.net/ugc/867368888873667911/D53C89CC75A47AC50C09409D0BFBA4CF97242F80/)
 
-- ### [riddle-needle](https://github.com/klesun/riddle-needle)
+- ### [iron-lady-bug](https://github.com/klesun/riddle-needle)
     A Unity game written in C#. Temporarily on hiatus, but great job was done nevertheless.
     ![alt tag](https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true)
 
