@@ -31,7 +31,7 @@
 - 2020 - 2021<br/><br/>
     Software Developer at [Parsiq](https://parsiq.net/) blockchain events monitoring system<br/>
         
-	I was mostly involved in development of the ParsiQL language: helping in designing language syntax and semantics, implementing compiler, runtime engine, etc... I also write some code for UX for the in-browser IDE, like code completion.
+	I was mostly involved in development of the ParsiQL language: helping in designing language syntax and semantics, implementing compiler, runtime engine, etc... I also wrote some code for UX for the in-browser IDE, like code completion.
 	
 - 2019 - 2020<br/><br/>
     Full Stack developer at [Blockchain Cuties](http://blockchaincuties.com/) gacha-like [dapp](https://en.wikipedia.org/wiki/Decentralized_application) web game.<br/>
@@ -42,7 +42,7 @@
 	
 	Among blockchain-related tasks I had, the one most worth mentioning is integrating our game with [Samsung Blockchain Keystore](https://developer.samsung.com/blockchain/keystore/understanding-keystore/keystore-introduction.html) Hardware Wallet in [this](https://galaxystore.samsung.com/detail/com.wecangames.blockchaincutiesuniverse) android apk for [Tron](https://en.wikipedia.org/wiki/TRON_(cryptocurrency)) blockchain. The task involved quite an amount of research, generating raw blockchain transaction, finding the right hashing algorithm, messing with protobuf - the documentation was scarce, but we made it.
 	
-	One unique thing I got at this job was the ability to talk directly to our users, via public chat - [t.me/blockchaincuties_en](https://t.me/blockchaincuties_en) listening for their feedback and bug reports and reacting right away. You may drop there and ask whether Klesun was a cool dude, I think many of the people there will say "yes" ;)
+	One unique thing I got at this job was the ability to talk directly to our users, via public chat - [t.me/blockchaincuties_en](https://t.me/blockchaincuties_en) listening to their feedback and bug reports and reacting right away. You may drop there and ask whether Klesun was a cool dude, I think many of the people there will say "yes" ;)
 
 - 2014 - 2019 (5 years)<br/><br/>
     Backend Developer at [ASAP Tickets](https://www.asaptickets.com/) travel agency.<br/>
