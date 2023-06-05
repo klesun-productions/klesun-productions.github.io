@@ -3,7 +3,7 @@ A site with some midi music that can be played with Fluid soundfont player imple
 Just press "Play Random" button and feel the pleasure.<br/>
 ![alt tag](/screenshot.png)
 
-# [https://klesun.github.io/entry/midiana/](https://klesun.github.io/entry/midiana/#songUrl=/unv/gits/riddle-needle/Assets/Audio/midjs/./opus71_IrakliyIrakliy.mid.json)
+# [https://klesun.github.io/entry/midiana/](https://klesun.github.io/entry/midiana/)
 Oh, yes, there is also an indy composing applet
 ![alt tag](/screenshot_compose.png)
 
