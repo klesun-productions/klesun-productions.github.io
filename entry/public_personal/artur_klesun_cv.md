@@ -57,7 +57,7 @@
     [Amadeus](http://www.amadeus.com/web/amadeus/ru_1A-corporate/Hotels/Our-portfolio/Connect/Distribute-&-sell-through-more-channels/Hotels_Product_AmadeusGDS/1319572127006-Solution_C-AMAD_ProductDetailPpal-1319578304458?industrySegment=1259068355773&level2=1319608960115&level3=1319610649867), 
     [Hertz](https://www.hertz.com/rentacar/reservation/), 
     [Delpaso](https://www.delpasocarhire.com/), 
-    etc... usually via [SOAP XML](https://en.wikipedia.org/wiki/SOAP) protocol and did various fin tech operations through these systems.
+    etc... usually via [SOAP XML](https://en.wikipedia.org/wiki/SOAP) protocol and did various fin tech automatizations through these systems.
 
     The aim of the project was to make life of travel agents easier.
     I gave them a single terminal GUI that provided access to all systems we supported 
@@ -91,15 +91,15 @@ Programming:
 (see "[Personal Projects](#user-content-personal-projects)" below)
 - Worked a lot with different SQL databases, messaging queues (RabbitMQ, ActiveMQ) and Redis, had opportunities to experience firsthand the impact of my optimizations on the databases with billions of
 records, some of my tweaks resulted in 100x reduction of database load from particular operations and reduced overall server load several times.
-- Capable of maintaining a [Unix sever](https://klesun.net) on either node or Apache, around 7 years of experience of devopsing personal projects. In later years migrated some of the projects to AWS and Google Cloud through Kubernetes.
+- Capable of setting up and maintaining a [Unix sever](https://klesun.net) on either node.js, Nginx or Apache, around 7 years of experience of devopsing personal projects. In later years migrated some of the projects to Google Cloud and AWS through Kubernetes.
 - Academically familiar with: C, C++, Pascal
 - I'm really good with recursive algorithms. I wrote [this](https://github.com/klesun/Progmeistars_tasks/tree/master/Sem5_PointersRecursions_Vlad/e11) in 2012 and the state of art [this](https://github.com/klesun/deep-assoc-completion/blob/master/src/org/klesun/deep_assoc_completion/resolvers/DirectTypeResolver.java) in 2018. And I only get better ever since.
 
-I take big pride in the quality of the products I develop and I take as a must to fully comprehend the consequences of every line of code in my application.
+I take big pride in the quality of the products I develop and I take as a must for a developer to fully comprehend the consequences of every line of code in their application.
 
 I'm a fanatic about efficiency, strict typing and pure functional programming because that's obviously the clean and beautiful way to code.
 
- Personal Projects
+ Public Projects I Authored
 -------------------
 <table>
   <tr>
