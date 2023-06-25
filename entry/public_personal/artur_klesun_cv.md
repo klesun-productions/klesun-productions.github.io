@@ -94,10 +94,18 @@ I'm a fanatic about efficiency, strict typing and pure functional programming be
 <table>
   <tr>
     <td>
+
 <h3><a href="https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion">deep-assoc-completion</a></h3>
 An <a href="https://www.jetbrains.com/idea/">Intellij IDEA</a> plugin that adds type inference based completion in PHP code.<br/>
+
+It's basically a semi-[interpreter](https://en.wikipedia.org/wiki/Interpreter_(computing)) of the php language implemented in Java.
+
+To provide the completion, the plugin analyzes all sources and outcomes of the code you are editing to provide quality contextual completion.
+
+Developing this system involved heavy usage of [lazy computations](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html) and [dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming) due to recursive and duplicative nature of the processed data.
+
 <a href="https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion">5000+</a> active users currently, 4.9 rating, 31 reviews.<br/>
-Written in Java. <a href="https://github.com/klesun/deep-assoc-completion">Source Code</a><br/>
+<a href="https://github.com/klesun/deep-assoc-completion">Source Code</a><br/>
 
 <img src="https://raw.githubusercontent.com/klesun/deep-assoc-completion/274b5054ab65ecd23d51d1ab405c646d2988c589/resources/META-INF/pluginIcon.svg"/>
 </td>
@@ -201,7 +209,11 @@ An adventure/puzzle Unity game written in C#, additionally with multiplayer mode
 
 ### [kunkka-tor.rent](https://github.com/klesun/kunkka-tor.rent)
 
-A web app that allows playing video/music from torrents directly in the browser, without downloading to PC
+A web app that allows browsing all existing torrent files on the web and playing the video/music and viewing images directly in the browser, without downloading to PC.
+
+Using databases from [thepiratebay.org](https://thepiratebay.org), [rutracker](https://rutracker.org), [nyaa.si](https://nyaa.si), [rarbg](https://rarbg.to), [DHT](https://en.wikipedia.org/wiki/Distributed_hash_table) Crawling and other sources...
+
+A challenging part was efficiently integrating with [ffmpeg](https://en.wikipedia.org/wiki/FFmpeg) to support codecs like [hevc](https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding) and solving other content specific problems.
     </td>
     <td><img src="https://user-images.githubusercontent.com/5202330/92304972-87705500-ef8b-11ea-84c6-ad305c70b045.png"/></td>
   </tr>
