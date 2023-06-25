@@ -118,7 +118,7 @@ Developing this system involved heavy usage of [lazy computations](https://docs.
     <td>
 <h3><a href="https://github.com/klesun/ts-browser">ts-browser</a></h3>
 	    
-<a href="https://www.typescriptlang.org/">Typescript</a> on-the-fly compilation runtime
+<a href="https://www.typescriptlang.org/">Typescript</a> on-the-fly compilation runtime. It implements import dependency graph resolution, transpiles ts modules to js using [typescriptServices.js](https://stackoverflow.com/a/59874612/2750743) and [web-workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) for parallel processing, caches by checksum and evaluates the code when time comes. A decent solution for hosting a small-scale static typescript web site without the requirement for the build step in the pipeline.
 <a href="https://github.com/klesun/ts-browser">Source Code</a>
 
 <img src="https://raw.githubusercontent.com/klesun/ts-browser/master/docs/ts-browser.svg"/>
