@@ -6,11 +6,11 @@
 
 <a href="https://github.com/klesun/trilemma.online">node.js</a> |
 <a href="https://github.com/klesun/riddle-needle">C#</a> |
+<a href="https://github.com/klesun/hardsub-ocr-by-font">Rust</a> |
 <a href="https://github.com/klesun/deep-assoc-completion">Java</a> |
 <a href="https://github.com/klesun/deep-js-completion">Scala</a> |
 <a href="https://github.com/klesun/midiana.lv/tree/master/htbin">Python</a> |
-<a href="https://github.com/klesun/green-envy-xmas-defense">Lua</a> |
-<a href="https://www.asaptickets.com/">PHP</a><br/>
+<a href="https://github.com/klesun/green-envy-xmas-defense">Lua</a><br/>
 (programming for life for 9+ years)
 
 <a href="https://github.com/klesun?tab=repositories&q=&type=&language=&sort=stargazers">github.com/klesun</a><br/>
@@ -85,13 +85,19 @@ Languages:
 - Latvian: average
 
 Programming:
-- Actively worked (at least 10k lines of code each) with: C# (Unity), Java, node/js, Scala, Python, Lua, PHP
+- I don't consider that programmer is defined by a particular language, an experienced programmer can master any new language syntax and specifics within a week, but just for the sake of numbers:
+  - Highly profficient (at least 70k lines of code each) in: [typescript](https://github.com/klesun/ts-browser)/[node.js](https://github.com/klesun/kunkka-tor.rent), [Java](https://github.com/klesun/deep-assoc-completion)
+  - Actively worked (at least 10k lines of code each) with: [C#](https://github.com/klesun/iron-ladybug), [Scala](https://github.com/klesun/deep-js-completion), [Python](https://github.com/klesun/deep-dict-completion), [Lua](https://github.com/klesun/green-envy-xmas-defense), [Rust](https://github.com/klesun/hardsub-ocr-by-font), [PHP](https://asaptickets.com/)
 (see "[Personal Projects](#user-content-personal-projects)" below)
-- Had a lot of experience with SQL at my present work, tried hundreds things with alive DB with billions of
-records in search of optimization tricks, choosing right indexes and stuff. Later started working with Redis.
-- Capable of maintaining a [Unix sever](https://klesun-productions.com) on either node or Apache, around 7 years of experience of devopsing personal projects.
+- Worked a lot with different SQL databases, messaging queues (RabbitMQ, ActiveMQ) and Redis, had opportunities to experience firsthand the impact of my optimizations on the databases with billions of
+records, some of my tweaks resulted in 100x reduction of database load from particular operations and reduced overall server load several times.
+- Capable of maintaining a [Unix sever](https://klesun.net) on either node or Apache, around 7 years of experience of devopsing personal projects. In later years migrated some of the projects to AWS and Google Cloud through Kubernetes.
 - Academically familiar with: C, C++, Pascal
-- My forte is recursive algorithms. Most people can't easily understand them, but I can. I wrote numerous beautiful things starting from [Hanoi Tower resolver](https://github.com/klesun/Progmeistars_tasks/tree/master/Sem5_PointersRecursions_Vlad/e11) in school and ending with my present [php semi-compiler](https://github.com/klesun/deep-assoc-completion/blob/master/src/org/klesun/deep_assoc_completion/resolvers/DirectTypeResolver.java) for [IDEA](https://github.com/JetBrains/intellij-community).
+- I'm really good with recursive algorithms. I wrote [this](https://github.com/klesun/Progmeistars_tasks/tree/master/Sem5_PointersRecursions_Vlad/e11) in 2012 and the state of art [this](https://github.com/klesun/deep-assoc-completion/blob/master/src/org/klesun/deep_assoc_completion/resolvers/DirectTypeResolver.java) in 2018. And I only get better ever since.
+
+I take big pride in the quality of the products I develop and I take as a must to fully comprehend the consequences of every line of code in my application.
+
+I'm a fanatic about efficiency, strict typing and pure functional programming because that's obviously the clean and beautiful way to code.
 
  Personal Projects
 -------------------
@@ -156,11 +162,15 @@ Using these tools we translated:
   <tr>
     <td>
 
-### [midiana](https://klesun-productions.com/entry/midiana/)
-Browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
-[Source Code](https://github.com/klesun/midiana.lv)
+### [midiana](https://klesun.net/entry/midiana/)
+A webapp to compose sheet music using either a [MIDI-keyboard](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess) or your pc keyboard.
+
+The sheet music you'll see in form of scores and notes is actually a MIDI file under the hood.
+
+Can be exported, imported, edited and played back.
+[Source Code](https://github.com/klesun-productions/klesun-productions.github.io/tree/master/entry/midiana)
     </td>
-    <td><img src="https://github.com/klesun-productions/klesun-productions.github.io/assets/5202330/07ef179c-4921-41b2-b5de-d1d67a3f587a"/></td>
+    <td><img src="https://github.com/klesun-productions/klesun-productions.github.io/assets/5202330/d23a70be-21e0-4fca-ab74-08579a359cc3" height="300"/></td>
   </tr>
 </table>
 
@@ -185,12 +195,12 @@ The data processing part was written in python.
   <tr>
     <td>
 
-### [iron-lady-bug](https://github.com/klesun/riddle-needle)
-A Unity game written in C#. Temporarily on hiatus, but great job was done nevertheless.
+### [iron-lady-bug](https://github.com/klesun/iron-ladybug)
+An adventure/puzzle Unity game written in C#, additionally with multiplayer mode.
     </td>
     <td>
 
-![alt tag](https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true)
+<img src="https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true" height="300"/>
     </td>
   </tr>
 </table>
@@ -212,12 +222,12 @@ A web app that allows playing video/music from torrents directly in the browser,
     <td>
 
 ### [green-envy-xmas-defense](https://steamcommunity.com/sharedfiles/filedetails/?id=1170060197)
-A mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
+A custom game mod for Dota 2 that I wrote with my friend for a contest. Written in Lua.
 [Source Code](https://github.com/klesun/green-envy-xmas-defense)
     </td>
     <td>
 
-![alt tag](https://github.com/klesun-productions/klesun-productions.github.io/assets/5202330/e1400697-ad7e-434f-8104-af7d6333d261)
+<img src="https://github.com/klesun-productions/klesun-productions.github.io/assets/5202330/e1400697-ad7e-434f-8104-af7d6333d261" height="300"/>
     </td>
   </tr>
 </table>
@@ -233,6 +243,6 @@ A mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
 ------
 
 Most of my skills are programming related. But I also have some valuable experience in Image/Video editing 
-software like Adobe Photoshop, After Effects, Gimp. In my schools years I was a lead of a school TV team 
+software like Adobe Photoshop, After Effects, Gimp. In my school years I was a lead of a school TV team 
 and learned a lot of special effect tricks like chroma-keying, motion capture, etc...:
 https://www.youtube.com/watch?v=xlgqaG2gFfs
