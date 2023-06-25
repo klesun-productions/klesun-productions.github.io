@@ -2,10 +2,7 @@
 [//]: # (You can look at rendered version of this document at https://github.com/klesun/midiana.lv/blob/master/entry/public_personal/artur_klesun_cv.md)
 
 <table><tr>
-	<td></td>
-	<td></td>
-	<td></td>
-	<td></td>
+	<td><img src="https://user-images.githubusercontent.com/5202330/152647058-0590a18a-ba7c-4c2b-8456-3e1b0649f600.png" align="right" height="300"/></td>
 	<td>Artur Klesun, a Backend Developer
 
 <a href="https://github.com/klesun/trilemma.online">node.js</a> |
@@ -26,11 +23,6 @@
 <a href="https://klesun.net/entry/">klesun.net</a> | arturklesun@gmail.com<br/>
 (Best quality in best time)
 	</td>
-	<td><img src="https://user-images.githubusercontent.com/5202330/152647058-0590a18a-ba7c-4c2b-8456-3e1b0649f600.png" align="right" height="300"/></td>
-	<td></td>
-	<td></td>
-	<td></td>
-	<td></td>
 </tr></table>
 
  Work Experience
