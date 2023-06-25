@@ -51,7 +51,7 @@
     Backend Developer at [ASAP Tickets](https://www.asaptickets.com/) travel agency.<br/>
     [GDS](https://en.wikipedia.org/wiki/Global_distribution_system) integration department.
     
-    I created and maintained a node.js project that connected to different distribution systems, like
+    I created and maintained a node.js application that connected to different distribution systems, like
     [Galileo (United Airlines)](https://en.wikipedia.org/wiki/Galileo_GDS), 
     [Sabre (American Airlines)](https://www.sabre.com/about/), 
     [Amadeus](http://www.amadeus.com/web/amadeus/ru_1A-corporate/Hotels/Our-portfolio/Connect/Distribute-&-sell-through-more-channels/Hotels_Product_AmadeusGDS/1319572127006-Solution_C-AMAD_ProductDetailPpal-1319578304458?industrySegment=1259068355773&level2=1319608960115&level3=1319610649867), 
