@@ -39,13 +39,13 @@
 - 2019 - 2020<br/><br/>
     Full Stack developer at [Blockchain Cuties](http://blockchaincuties.com/) gacha-like [dapp](https://en.wikipedia.org/wiki/Decentralized_application) web game.<br/>
 	
-	This was a short, but an enjoyable experience with really cool teammates and a lot of blockchain-related work. Long story short, the idea of the project was that content players create (through so-called [genome breeding](https://wiki.blockchaincuties.com/Attributes)) is stored on blockchain [smart contracts](https://en.wikipedia.org/wiki/Smart_contract) as [Non-Fungible Tokens](https://en.wikipedia.org/wiki/Non-fungible_token). The intent was to give player "true" ownership over the character: it could be transferred outside of the game - traded on independent resources like [OpenSea](https://opensea.io/).
+	This was a short, but an enjoyable experience with really cool teammates and a lot of blockchain-related work. It was one of the first projects in the [Non-Fungible Tokens](https://en.wikipedia.org/wiki/Non-fungible_token) industry. The intent was to give player "true" ownership over the character endorsed by [smart contracts](https://en.wikipedia.org/wiki/Smart_contract), the characters were "minted" through so-called [genome breeding](https://wiki.blockchaincuties.com/Attributes) and could be transferred outside of the game - traded on independent resources like [OpenSea](https://opensea.io/).
 
-	In this project I was primarily oriented towards writing the server code. I did various game mechanics like tournaments, game market, crafting. Did a lot of optimisation, test coverage and just improved the quality of the code left from previous maintaners. The greatest success was finding a query with sub-selects that constantly caused 100% db CPU load for months, before I fixed it, we had to restart the server every few days because game became unplayable.
+	In this project I primarily wrote the server code. I was implementing various mechanisms on backend, like payments, tournaments, game market, crafting, dungeons... I did a lot of optimisation, test coverage and just improved the quality of the code left from previous maintaners. Before I joined, the web site had [PageSpeed Insights score](blockchaincuties.com/login) of **6%** (yes, the web page literally took 20+ seconds to load), today it's **69%** on the login page and up to 97% on individual pages (now pages load within a second from most parts of the world).
 	
-	Among blockchain-related tasks I had, the one most worth mentioning is integrating our game with [Samsung Blockchain Keystore](https://developer.samsung.com/blockchain/keystore/understanding-keystore/keystore-introduction.html) Hardware Wallet in [this](https://galaxystore.samsung.com/detail/com.wecangames.blockchaincutiesuniverse) android apk for [Tron](https://en.wikipedia.org/wiki/TRON_(cryptocurrency)) blockchain. The task involved quite an amount of research, generating raw blockchain transaction, finding the right hashing algorithm, messing with protobuf - the documentation was scarce, but we made it.
+	One of my tasks was integrating our game with [Samsung Blockchain Keystore](https://developer.samsung.com/blockchain/keystore/understanding-keystore/keystore-introduction.html) Hardware Wallet in [this](https://galaxystore.samsung.com/detail/com.wecangames.blockchaincutiesuniverse) android apk for [Tron](https://en.wikipedia.org/wiki/TRON_(cryptocurrency)) blockchain. This involved quite an amount of research, generating raw blockchain transaction, finding the right hashing algorithm, messing with protobuf - the documentation was scarce, but we made it.
 	
-	One unique thing I got at this job was the ability to talk directly to our users, via public chat - [t.me/blockchaincuties_en](https://t.me/blockchaincuties_en) listening to their feedback and bug reports and reacting right away. You may drop there and ask whether Klesun was a cool dude, I think many of the people there will say "yes" ;)
+	One unique opportunity I had at this job was to talk directly with our app users via public chat - [t.me/blockchaincuties_en](https://t.me/blockchaincuties_en) listening to their feedback and bug reports and reacting right away. You may drop there and ask whether Klesun was a cool dude, I think many will answer "yes" ;)
 
 - 2014 - 2019 (5 years)<br/><br/>
     Backend Developer at [ASAP Tickets](https://www.asaptickets.com/) travel agency.<br/>
@@ -59,18 +59,8 @@
     [Delpaso](https://www.delpasocarhire.com/), 
     etc... usually via [SOAP XML](https://en.wikipedia.org/wiki/SOAP) protocol and did various fin tech automatizations through these systems.
 
-    The aim of the project was to make life of travel agents easier.
-    I gave them a single terminal GUI that provided access to all systems we supported 
-    at once unifying them into single syntax. That involved airline terminal text parsing; arranging 
-    hundreds cron jobs for parallel data processing with [Redis](https://redis.io/); implementing various interesting ideas our travel business guys 
-    request... Most of the code was always covered with [mocha](https://github.com/mochajs/mocha) tests.
-    My job also involved 
-    developing frontend stuff occasionally.
+    The aim of the project was to improve the performance of our sales agents by providing them a set of tools to find the best multi-segment flights and fares in shortest times.
 
-    In years of co-operation with my colleagues I learned both good practices and how not to not repeat their mistakes.
-    I write clean code, keeping files small, yet not too numerous, making commits atomic,
-    delivering basic functionality quickly and extending it according to client wishes after they have something to click...<br/>
-    <br/>
     If you track history of ITN, you could tell that the 2014 was the start a golden age for 
     this company. Before I started developing it, it was just a relatively small travel agency. 
     Now it shows on the first pages in google and has [mostly very positive ratings by customers](https://www.trustpilot.com/review/www.asaptickets.com).
