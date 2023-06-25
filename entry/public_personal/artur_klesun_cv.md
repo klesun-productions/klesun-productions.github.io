@@ -225,8 +225,8 @@ A custom game mod for Dota 2 that I wrote with my friend for a contest. Written 
  Education
 -----------
 
+- 9+ years of heavy self-education.
 - "[Progmeistars](http://progmeistars.lv/index.php?lang=ru&act=aboutseniors)" courses: 5 main semesters, 3 spec-courses: OOP (Delphi), C (low-level programming), Java
-- A lot of programming related self-study.
 - Riga secondary school No. 65, 12 years.
 
  Misc
