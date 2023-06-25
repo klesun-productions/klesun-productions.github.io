@@ -2,23 +2,25 @@
 [//]: # (You can look at rendered version of this document at https://github.com/klesun/midiana.lv/blob/master/entry/public_personal/artur_klesun_cv.md)
 
 <table><tr>
-	<td><table>
-		<tr><td> Backend Developer  </td><td> Artur Klesun                                                               </td></tr>
-		<tr><td colspan="2">
-			<a href="https://github.com/klesun/riddle-needle">C#</a> |
-			<a href="https://github.com/klesun/deep-assoc-completion">Java</a> |
-			<a href="https://github.com/klesun/trilemma.online">node.js</a> |
-			<a href="https://github.com/klesun/deep-js-completion">Scala</a> |
-			<a href="https://github.com/klesun/midiana.lv/tree/master/htbin">Python</a> |
-			<a href="https://github.com/klesun/green-envy-xmas-defense">Lua</a> |
-			<a href="https://www.asaptickets.com/">PHP</a>
-		</td></tr>
-		<tr><td> github        </td><td> <a href="https://github.com/klesun?tab=repositories">klesun</a>                 </td></tr>
-		<tr><td> stackoverflow </td><td> <a href="https://stackoverflow.com/users/2750743/artur-klesun">artur-klesun</a> </td></tr>
-		<tr><td> Web-Site      </td><td> <a href="https://klesun-productions.com/entry/">klesun-productions.com</a>      </td></tr>
-		<tr><td> E-mail        </td><td> arturklesun@gmail.com                                                           </td></tr>
-		<tr><td> Location      </td><td>Riga, Latvia                                                                     </td></tr>
-	</table></td>
+	<td>Artur Klesun, a Backend Developer
+
+<a href="https://github.com/klesun/trilemma.online">node.js</a> |
+<a href="https://github.com/klesun/riddle-needle">C#</a> |
+<a href="https://github.com/klesun/deep-assoc-completion">Java</a> |
+<a href="https://github.com/klesun/deep-js-completion">Scala</a> |
+<a href="https://github.com/klesun/midiana.lv/tree/master/htbin">Python</a> |
+<a href="https://github.com/klesun/green-envy-xmas-defense">Lua</a> |
+<a href="https://www.asaptickets.com/">PHP</a><br/>
+(programming for life for 9 years)
+
+<a href="https://github.com/klesun?tab=repositories&q=&type=&language=&sort=stargazers">github.com/klesun</a><br/>
+(~374 stars)
+
+<a href="https://stackoverflow.com/users/2750743/artur-klesun">stackoverflow.com/users/2750743/klesun</a><br/>
+(12,093 reputation)
+
+<a href="https://klesun.net/entry/">klesun.net</a> | arturklesun@gmail.com
+	</td>
 	<td><img src="https://user-images.githubusercontent.com/5202330/152647058-0590a18a-ba7c-4c2b-8456-3e1b0649f600.png" align="right" height="300"/></td>
 </tr></table>
 
@@ -26,7 +28,7 @@
 ----------------
 
 - 2021 - present<br><br/>
-    Back to [Blockchain Cuties](http://blockchaincuties.com/) =D
+    Back to [Blockchain Cuties](http://blockchaincuties.com/) ^_^
 
 - 2020 - 2021<br/><br/>
     Software Developer at [Parsiq](https://parsiq.net/) blockchain events monitoring system<br/>
