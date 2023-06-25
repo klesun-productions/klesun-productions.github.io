@@ -11,7 +11,7 @@
 <a href="https://github.com/klesun/midiana.lv/tree/master/htbin">Python</a> |
 <a href="https://github.com/klesun/green-envy-xmas-defense">Lua</a> |
 <a href="https://www.asaptickets.com/">PHP</a><br/>
-(programming for life for 9 years)
+(programming for life for 9+ years)
 
 <a href="https://github.com/klesun?tab=repositories&q=&type=&language=&sort=stargazers">github.com/klesun</a><br/>
 (~374 stars)
@@ -19,7 +19,8 @@
 <a href="https://stackoverflow.com/users/2750743/artur-klesun">stackoverflow.com/users/2750743/klesun</a><br/>
 (12,093 reputation)
 
-<a href="https://klesun.net/entry/">klesun.net</a> | arturklesun@gmail.com
+<a href="https://klesun.net/entry/">klesun.net</a> | arturklesun@gmail.com<br/>
+(Best quality in best time)
 	</td>
 	<td><img src="https://user-images.githubusercontent.com/5202330/152647058-0590a18a-ba7c-4c2b-8456-3e1b0649f600.png" align="right" height="300"/></td>
 </tr></table>
@@ -94,45 +95,132 @@ records in search of optimization tricks, choosing right indexes and stuff. Late
 
  Personal Projects
 -------------------
+<table>
+  <tr>
+    <td>
+<h3><a href="https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion">deep-assoc-completion</a></h3>
+An <a href="https://www.jetbrains.com/idea/">Intellij IDEA</a> plugin that adds type inference based completion in PHP code.<br/>
+<a href="https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion">5000+</a> active users currently, 4.9 rating, 31 reviews.<br/>
+Written in Java. <a href="https://github.com/klesun/deep-assoc-completion">Source Code</a><br/>
 
-- ### [deep-assoc-completion](https://plugins.jetbrains.com/plugin/9927-deep-assoc-completion)
-    [Intellij IDEA](https://www.jetbrains.com/idea/) plugin that adds type inference based completion in PHP code. 
-    5000+ active users currently, 4.8 rating. Written in Java. [Source Code](https://github.com/klesun/deep-assoc-completion)
+<img src="https://raw.githubusercontent.com/klesun/deep-assoc-completion/274b5054ab65ecd23d51d1ab405c646d2988c589/resources/META-INF/pluginIcon.svg"/>
+</td>
+    <td><img src="https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png"/></td>
+  </tr>
+</table>
 
-    ![alt tag](https://raw.githubusercontent.com/klesun/phpstorm-deep-keys/master/imgs/screenshot.png)
+<table>
+  <tr>
+    <td>
+<h3><a href="https://github.com/klesun/ts-browser">ts-browser</a></h3>
+	    
+<a href="https://www.typescriptlang.org/">Typescript</a> on-the-fly compilation runtime
+<a href="https://github.com/klesun/ts-browser">Source Code</a>
 
-- ### [ts-browser](https://github.com/klesun/ts-browser)
-    Typescript on-the-fly compilation runtime
+<img src="https://raw.githubusercontent.com/klesun/ts-browser/master/docs/ts-browser.svg"/>
+    </td>
+  </tr>
+</table>
 
-- ### [https://trilem.me/](https://trilem.me/)
-    A trigonal tile turn-based multiplayer game somewhat inspired by civ 5. Server on nodejs, with web sockets: nice and responsive.
-    [Source Code](https://github.com/klesun/trilem.me)
-	
-    ![image](https://user-images.githubusercontent.com/5202330/93859827-d37b0380-fcc6-11ea-8523-b00a4566f770.png)
+<table>
+  <tr>
+    <td>
+<h3><a href="https://github.com/klesun/trilem.me">trilem.me</a></h3>
 
-- ### [muramasa-vn-translation](https://github.com/klesun/muramasa-vn-translation)
-    A set of text-analisys tools for semi-automatic translation of japanese [visual novels](https://en.wikipedia.org/wiki/Visual_novel)
+A trigonal tile turn-based multiplayer game somewhat inspired by civ 5. Server on nodejs, with web sockets: nice and responsive.
+<a href="https://github.com/klesun/trilem.me">Source Code</a>
 
-- ### [midiana](https://klesun-productions.com/entry/midiana/)
-    Browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
-    [Source Code](https://github.com/klesun/midiana.lv)
-    ![alt tag](https://github.com/klesun/midiana.lv/raw/master/screenshot_compose.png)
+<img src="https://raw.githubusercontent.com/klesun/trilem.me/master/favicon.ico"/>
+    </td>
+    <td><img src="https://user-images.githubusercontent.com/5202330/93859827-d37b0380-fcc6-11ea-8523-b00a4566f770.png"/></td>
+  </tr>
+</table>
 
-- ### [starve_game](https://klesun-productions.com/entry/starve_game/)
-    A word game where you have to come up with a word meaning a food starting with a specific letter. 
-    To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 
-    The data processing part was written in python.
-    [Source Code](https://github.com/klesun/midiana.lv/blob/master/htbin/scr/wiki_dump/hell_wrapper.py)
+<table>
+  <tr>
+    <td>
+	    
+### [vn-translation-tools](https://github.com/klesun/muramasa-vn-translation)
+A set of text-analysis tools for semi-automatic translation of japanese [visual novels](https://www.youtube.com/watch?v=w0ddsF5r1TI&list=PLFvE9Kp-Kt12zJkrRm5vAEPXU-cpi9WHR) and [manga](https://mangatoto.com/user/870835/klesun) with tight use of machine learning for OCR and contextual MTL
+
+Using these tools we translated:
+- a full walkthrough of the [Soukou Akki Muramasa](https://github.com/klesun/muramasa-vn-translation) visual novel (70 hours read)
+- a full walkthrough of the [Kusarihime](https://github.com/klesun/kusarihime-translation) visual novel (16 hours read)
+- 15 out of 20 volumes of the [Honto ni Atta! Reibai Sensei](https://github.com/klesun/reibai-sensei-translation) 4-coma manga
+    </td>
+    <td><img src="https://github.com/klesun-productions/klesun-productions.github.io/assets/5202330/cee2cbf0-b593-4590-8d3c-718f4529b931"/></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td>
+
+### [midiana](https://klesun-productions.com/entry/midiana/)
+Browser sheet music editor using [connected MIDI device](https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess). Written in pure javascript. 
+[Source Code](https://github.com/klesun/midiana.lv)
+    </td>
+    <td><img src="https://github.com/klesun-productions/klesun-productions.github.io/assets/5202330/07ef179c-4921-41b2-b5de-d1d67a3f587a"/></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td>
+
+### [starve_game](https://klesun-productions.com/entry/starve_game/)
+A word game where you have to come up with a word meaning a food starting with a specific letter. 
+To generate food word database I processed all existing Wikipedia articles (dozens of GiB) with a lexical analysis algorithm I invented. 
+The data processing part was written in python.
+[Source Code](https://github.com/klesun/midiana.lv/blob/master/htbin/scr/wiki_dump/hell_wrapper.py)
+    </td>
+    <td>
+
 ![alt tag](https://cloud.githubusercontent.com/assets/5202330/26429290/babeb7f2-40ee-11e7-98e0-ab4b04306c41.png)
+    </td>
+  </tr>
+</table>
 
-- ### [green-envy-xmas-defense](https://steamcommunity.com/sharedfiles/filedetails/?id=1170060197)
-    A mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
-    [Source Code](https://github.com/klesun/green-envy-xmas-defense)
-    ![alt tag](https://steamuserimages-a.akamaihd.net/ugc/867368888873667911/D53C89CC75A47AC50C09409D0BFBA4CF97242F80/)
+<table>
+  <tr>
+    <td>
 
-- ### [iron-lady-bug](https://github.com/klesun/riddle-needle)
-    A Unity game written in C#. Temporarily on hiatus, but great job was done nevertheless.
-    ![alt tag](https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true)
+### [iron-lady-bug](https://github.com/klesun/riddle-needle)
+A Unity game written in C#. Temporarily on hiatus, but great job was done nevertheless.
+    </td>
+    <td>
+
+![alt tag](https://github.com/klesun/riddle-needle/blob/master/screenshots/village.png?raw=true)
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td>
+
+### [kunkka-tor.rent](https://github.com/klesun/kunkka-tor.rent)
+
+A web app that allows playing video/music from torrents directly in the browser, without downloading to PC
+    </td>
+    <td><img src="https://user-images.githubusercontent.com/5202330/92304972-87705500-ef8b-11ea-84c6-ad305c70b045.png"/></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td>
+
+### [green-envy-xmas-defense](https://steamcommunity.com/sharedfiles/filedetails/?id=1170060197)
+A mod for Dota 2 I wrote with my friend for a contest. Written in Lua.
+[Source Code](https://github.com/klesun/green-envy-xmas-defense)
+    </td>
+    <td>
+
+![alt tag](https://github.com/klesun-productions/klesun-productions.github.io/assets/5202330/e1400697-ad7e-434f-8104-af7d6333d261)
+    </td>
+  </tr>
+</table>
 
  Education
 -----------
