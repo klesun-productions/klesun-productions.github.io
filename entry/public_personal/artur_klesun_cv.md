@@ -76,8 +76,8 @@ Languages:
 
 Programming:
 - I don't consider that programmer is defined by a particular language, an experienced programmer can master any new language syntax and specifics within a week, but just for the sake of numbers:
-  - Highly profficient (at least 70k lines of code each) in: [typescript](https://github.com/klesun/ts-browser)/[node.js](https://github.com/klesun/kunkka-tor.rent), [Java](https://github.com/klesun/deep-assoc-completion)
-  - Actively worked (at least 10k lines of code each) with: [C#](https://github.com/klesun/iron-ladybug), [Scala](https://github.com/klesun/deep-js-completion), [Python](https://github.com/klesun/deep-dict-completion), [Lua](https://github.com/klesun/green-envy-xmas-defense), [Rust](https://github.com/klesun/hardsub-ocr-by-font), [PHP](https://asaptickets.com/)
+  - Highly profficient (at least 150k LoC each) in: [typescript](https://github.com/klesun/ts-browser)/[node.js](https://github.com/klesun/kunkka-tor.rent), [Java](https://github.com/klesun/deep-assoc-completion)
+  - Actively worked (at least 30k LoC each) with: [C#](https://github.com/klesun/iron-ladybug), [Scala](https://github.com/klesun/deep-js-completion), [Python](https://github.com/klesun/deep-dict-completion), [Lua](https://github.com/klesun/green-envy-xmas-defense), [Rust](https://github.com/klesun/hardsub-ocr-by-font), [PHP](https://asaptickets.com/)
 (see "[Personal Projects](#user-content-personal-projects)" below)
 - Worked a lot with different SQL databases, messaging queues (RabbitMQ, ActiveMQ) and Redis, had opportunities to experience firsthand the impact of my optimizations on the databases with billions of
 records, some of my tweaks resulted in 100x reduction of database load from particular operations and reduced overall server load several times.
