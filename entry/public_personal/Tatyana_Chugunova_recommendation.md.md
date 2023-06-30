@@ -4,7 +4,7 @@ Tanya is a result-oriented person, rational, very responsible and organized whic
 
 Her art is beautiful, it was the primary selling of the project. Though she tends to critize and underestimate her own work a lot.
 
-Tanya is well technically-versed, she even mastered manually coding SVG animations, which saved devs a lot of work!
+Tanya is well technically-versed, she even mastered the way of manually coding animations inside SVG images, which saved devs a lot of work!
 
 She is also a big animal lover, which I think is a good measurement of one's character.
 
