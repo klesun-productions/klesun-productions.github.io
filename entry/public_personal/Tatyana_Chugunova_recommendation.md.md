@@ -9,3 +9,6 @@ Tanya is well technically-versed, she even mastered the way of manually coding a
 She is also a big animal lover, which I think is a good measurement of one's character.
 
 ...to be continued
+
+
+By Artur Klesun, a Senior Software Engineer at MHC Aviation
