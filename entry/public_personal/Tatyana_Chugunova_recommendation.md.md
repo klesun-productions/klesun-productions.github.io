@@ -2,7 +2,7 @@ I had the pleasure of working together with Tanya during 2019-2023 on the blockc
 
 Tanya is a result-oriented person, rational, very responsible and organized which I recon is a really rare trait for her trade.
 
-Her art is beautiful, it was the primary selling of the project. Though she tends to critize and underestimate her own work a lot.
+Her art is beautiful, it was the primary selling point of the project. Though she tends to critize and underestimate her own work a lot.
 
 Tanya is well technically-versed, she even mastered the way of manually coding animations inside SVG images, which saved devs a lot of work!
 
