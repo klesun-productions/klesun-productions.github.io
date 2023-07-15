@@ -28,7 +28,12 @@
  Work Experience
 ----------------
 
-- 2021 - present<br><br/>
+- 2023 - present<br><br/>
+    CTO at MHC Aviation<br/>
+        
+	I am responsible for all software development related business communication as well as development itself. We provide HR services to airlines with primary focus on finding, onboarding and renumerating contractors for aircraft operation: pilots, mechanics, crew members.
+        
+- 2021 - 2023<br><br/>
     Back to [Blockchain Cuties](http://blockchaincuties.com/) ^_^
 
 - 2020 - 2021<br/><br/>
