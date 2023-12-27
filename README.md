@@ -20,3 +20,4 @@ I have a DB of myanimelist. You can access it through that page.
 At the bottom of the page you may see list of anime ordered by a _true_ score - so called "Personal Average". Long story short, it nullifies scores of people that score everything as `10, masterpiece` in favor of people that have informative scores.
 
 ![alt tag](https://cloud.githubusercontent.com/assets/5202330/26429288/baba9f8c-40ee-11e7-933c-b0cc1bfa3f4a.png)
+
