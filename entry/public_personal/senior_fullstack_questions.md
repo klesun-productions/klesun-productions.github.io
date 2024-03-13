@@ -5,9 +5,13 @@
 
 This document is to be used as a reference for the interviewing Full Stack Developer position candidates to measure their knowledge/competence.
 
-For general programming questions refer to https://github.com/klesun-productions/klesun-productions.github.io/blob/master/entry/public_personal/interview_plan_junior_frontend.md
+It should be made clear to the applicant that they are not expected to answer all of the questions, they should just try to answer as many questions they know answer to as possible, but it's ok if they don't have an answer for any of them.
 
-## Javascrpt questions
+## Introduction
+
+- Can you tell us a bit about yourself?
+
+## Javascrpt questions (14 questions)
 
 - What is WebSockets?
   - Expected answer: a protocol used in browsers that allows sending messages from server to client, contrary to http where requests can only be sent from client to server.
@@ -17,6 +21,8 @@ For general programming questions refer to https://github.com/klesun-productions
 
 - What is the difference between POST and GET HTTP methods?
   - Expected answer: GET requests normally don't include the payload body and are cacheable on CDNs
+
+- What is the OPTIONS method preflight request?
 
 - What is the difference between http and https?
   - https uses ssl certificates to encrypt and sign requests and responses therefore protecting the contents of communication between server and client from ISPs
@@ -42,10 +48,16 @@ For general programming questions refer to https://github.com/klesun-productions
 - What is canvas? How do you operate on it?
   - Canvas is an element in html from which you can take a drawing context in javascript. Using drawing context, you can imperatively draw lines, shapes, image files.
 
-- Let's say you have a large data set of 20000 rows. You need to display them as a table on the page. Would you display all 20000 of them in one big piece or would you rather use pagination and why?
-  - You would use pagination since rendering a table with so many rows will cause freezes.
+- What is innerHTML property in DOM elements? Would you use innerHTML to insert a text content in an html element and how?
+  - Expected answer: either "I would rather use textContent" or "I would escape html entities first" because injection
 
-## CSS questions
+- What is the most common cause of "Maximum call stack size exceeded" error, also known as "Stack Overflow"
+  - Infinite recursion
+
+- Could you explain what is the purpose of frameworks like React, Vue, Angular?
+  - Coding using these frameworks lets you declaratively express the dependency of displayed elements on the data state of the application, so you only need to write code that will render html for a given variable values instead of imperatively updating every component when data it depends on changes.
+
+## CSS questions (6 questions)
 
 - What is flex?
   - Flex is a relatively new way to describe positioning of elements in CSS that is all about stretching, centering, aligning elements around x/y axis and filling remaining space.
@@ -59,13 +71,12 @@ For general programming questions refer to https://github.com/klesun-productions
 - Could you describe some of the filter attribute properties?
   - Greyscale makes element greyscale, hue shifts colors, brightness changes brightness, sepia makes all yellow, drop-shadow makes a nice glow.
 
-- What does margin:auto do?
-  - Centers the element.
+- What is the difference between margin and padding?
 
 - What are advantages of using separate stylesheets and styling classes rather than inline styling directly in html?
   - Separate stylesheets allow you the separate content from appearance rules which arguably makes code management easier. It also allows you to reuse same styles for more than one element.
 
-## Typescript questions
+## Typescript questions (5 questions)
 
 - What is the difference between any and unknown?
   - Any is a non-type-safe hack, whereas unknown is type safe.
@@ -73,7 +84,7 @@ For general programming questions refer to https://github.com/klesun-productions
 - What are the advantages of strict=true parameter in tsconfig?
   - Without strict=true you lose a lot of type safety: implicit any in functions does not get reported and null checks are not enforced.
 
-- How do you make class implement an interface in typescript?
+- How do you make a class implement an interface in typescript?
   - You can explicitly add "implements IInterfaceName", but that is not mandatory: in typescript any object that has all fields described in the interface will implicitly considered valid implementation of that interface.
 
 - Do types exist at runtime.
@@ -81,3 +92,48 @@ For general programming questions refer to https://github.com/klesun-productions
 
 - What is the difference between type union and type intersection ("or" and "and" types)?
   - Union broadens the type, allowing it to be either of the elements in the union, whereas intersection narrows the type, limiting allowed values to only those that match every condition of the intersection.
+
+
+
+Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
+
+## General programming questions (13 questions)
+
+- What is the difference between data structures: Set and List?
+  - List does not store duplicate values and provides methods to check for presence of an element in constant time
+
+- What is Binary Search?
+  - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
+
+- What is the difference between data structures: Queue and Stack?
+  - Queue: first-in-first-out, Stack: last-in-first-out
+
+- What is Garbage Collector?
+  - A mechanism that releases memory that was reserved for variables that are not referenced by the code anymore. It's contrary to manual memory allocation used in C and Rust where programmer has to allocate and release memory explicitly for every dynamic data structure like list. The advantage of garbage collection is simplicity of code and safety from memory leaks, the disadvantage is performance and stop-the-world events.
+
+- Could you describe how memory is allocated in ArrayList data structure when you insert a new value?
+  - A fixed size array with heuristic initial length is created underneath. When the length is reached, a new array is created with new length multiplied by a heuristic factor, like two, all values are then copied from old array to new array.
+
+- Can you tell me what Modulus arithmetic operator does?
+
+- What is Hash Map (aka Map, aka Dictionary, aka Associative Array)
+  - ожидаемый ответ: "мап предназначен для хранения и быстрого доступа к элементу по ключу (ключ как правило строка) за константное время"
+
+- How much will be 2 to the power of 10? Do you know what is the most notable use of this number?
+  - I wonder how obvious it will be. The intent here is to make applicant say that 1024 is how many bytes are there in a kibibyte.
+
+- What is the difference between interpreted languages (javascript, php, lua, python) and compiled languages (c, c++, Go, Rust)
+  - Interpreted languages are compiled in real time, so you execute the code directly. Compiled languages can't be executed directly, they have to be first compiled into a binary .exe file with architecture-specific machine instructions.
+
+- What can you tell abount JIT: bytecode in Java or it's analog CIL/CLR in C#
+  - JIT languages are compiled into an intermediary abstract machine language that is not specific to any architecture. They are similarto compiled languages in that they can't be executed directly from source code, and they are also similar to interpreted languages in that their bytecode is interpreted into binary on execution.
+
+- Which of the following is better and why: exponential complexity O(2^N), constant compexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
+  - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
+
+- What is Decentralized Denial of Service attack?
+  - Evil programmers sending a lot of dummy requests to the server of good programmers to overburen it and make it inoperable.
+
+- What is the advantage of hosting application on a cloud (like Amazon, Google Cloud, Azure, etc...) over self-hosting it on a local machine
+  
