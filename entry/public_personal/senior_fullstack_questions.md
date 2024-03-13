@@ -100,6 +100,9 @@ It should be made clear to the applicant that they are not expected to answer al
 
 ## General programming questions (13 questions)
 
+- You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
+  - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
+
 - What is the difference between data structures: Set and List?
   - List does not store duplicate values and provides methods to check for presence of an element in constant time
 
