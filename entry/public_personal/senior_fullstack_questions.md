@@ -104,7 +104,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
 
 - What is the difference between data structures: Set and List?
-  - List does not store duplicate values and provides methods to check for presence of an element in constant time
+  - Set does not store duplicate values and provides methods to check for presence of an element in constant time
 
 - What is Binary Search?
   - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
