@@ -135,8 +135,11 @@ It should be made clear to the applicant that they are not expected to answer al
 - Which of the following is better and why: exponential complexity O(2^N), constant compexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
   - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
 
+- What makes shifting access permissions check from server side to client side a good practice.
+  - Nothing, this is a trap question to detect whether person is aware of the common mistake of checking permissions on client where they can be spoofed. Acess permissions must always be checked on server, not on client.
+
 - What is Decentralized Denial of Service attack?
   - Evil programmers sending a lot of dummy requests to the server of good programmers to overburen it and make it inoperable.
 
 - What is the advantage of hosting application on a cloud (like Amazon, Google Cloud, Azure, etc...) over self-hosting it on a local machine
-  
+
