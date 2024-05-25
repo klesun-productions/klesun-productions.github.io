@@ -1,6 +1,7 @@
 import Api from "./modules/Api.js";
 import Dom from "./modules/utils/Dom.js";
 
+
 const gui = {
     pack_list: document.getElementById('pack_list'),
     /** @type {HTMLAudioElement} */
@@ -11,7 +12,8 @@ const gui = {
 
 const api = Api();
 
-const DATA_DIR_URL = '/entry/ddr-songs-browser/data';
+const BACKEND_URL = "https://api.klesun.net";
+const DATA_DIR_URL = BACKEND_URL + '/entry/ddr-songs-browser/data';
 
 const playSong = ({pack, song, startAtSample = false}) => {
     const { smModifiedAt, totalBars, charts, restFileNames, smMd5 } = song;

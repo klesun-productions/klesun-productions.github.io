@@ -64,21 +64,28 @@ const main = async () => {
             });
         }
     };
-    const server = https.createServer({
-        key: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/privkey.pem'),
-        cert: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/fullchain.pem'),
-    }, handleRq).listen(443, '0.0.0.0', () => {
-        console.log('listening https://klesun-productions.com');
-    });
-    server.keepAliveTimeout = 3 * 60 * 1000; // 3 minutes, for fast browsing
-    http.createServer((rq, rs) => {
-        // force https
-        const host = rq.headers.host === 'trilema.online' ? 'trilemma.online' : rq.headers.host;
-        rs.writeHead(301, {'Location': 'https://' + host + rq.url});
-        rs.end();
-    }).listen(80, '0.0.0.0', () => {
-        console.log('listening http://klesun-productions.com');
-    });
+    if (process.argv.includes("--no-ssl")) {
+        const server = http.createServer(handleRq).listen(38153, '0.0.0.0', () => {
+            console.log('listening http://localhost:38153');
+        });
+        server.keepAliveTimeout = 3 * 60 * 1000; // 3 minutes, for fast browsing
+    } else {
+        const server = https.createServer({
+            key: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/privkey.pem'),
+            cert: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/fullchain.pem'),
+        }, handleRq).listen(443, '0.0.0.0', () => {
+            console.log('listening https://klesun-productions.com');
+        });
+        server.keepAliveTimeout = 3 * 60 * 1000; // 3 minutes, for fast browsing
+        http.createServer((rq, rs) => {
+            // force https
+            const host = rq.headers.host === 'trilema.online' ? 'trilemma.online' : rq.headers.host;
+            rs.writeHead(301, {'Location': 'https://' + host + rq.url});
+            rs.end();
+        }).listen(80, '0.0.0.0', () => {
+            console.log('listening http://klesun-productions.com');
+        });
+    }
 };
 
 main().catch(exc => {
