@@ -8,6 +8,7 @@ const gui = {
     active_song_player: document.getElementById('active_song_player'),
     active_song_details: document.getElementById('active_song_details'),
     play_random_song_btn: document.getElementById('play_random_song_btn'),
+    gamepads_states_list: document.getElementById('gamepads_states_list'),
 };
 
 const api = Api();
@@ -72,6 +73,54 @@ const playSong = ({pack, song, startAtSample = false}) => {
         gui.active_song_player.currentTime = +SAMPLESTART;
     }
 };
+
+const GAMEPAD_ID_TO_BUTTONS_STATE = {};
+
+function updateButtonClass(gamepadId, buttonIndex, state) {
+    let existing = null;
+    for (const gamepadDiv of gui.gamepads_states_list.children) {
+        if (gamepadDiv.getAttribute("data-id") === gamepadId) {
+            existing = gamepadDiv;
+            break;
+        }
+    }
+    if (existing === null) {
+        existing = document.createElement("div");
+        gui.gamepads_states_list.appendChild(existing);
+        existing.setAttribute("data-id", gamepadId);
+        for (let i = 0; i < 4; ++i) {
+            existing.appendChild(document.createElement("div"));
+        }
+        existing.children[0].textContent = "⇦";
+        existing.children[1].textContent = "⇨";
+        existing.children[2].textContent = "⇧";
+        existing.children[3].textContent = "⇩";
+    }
+    if (buttonIndex < existing.children.length) {
+        existing.children[buttonIndex].classList.toggle("pressed", state);
+    }
+}
+
+window.addEventListener("gamepadconnected", function onFirstGamepadConnected (e) {
+    window.removeEventListener("gamepadconnected", onFirstGamepadConnected);
+    setInterval(() => {
+        for (const gamepad of navigator.getGamepads().slice(1)) {
+            if (!gamepad) {
+                continue;
+            }
+            const oldState = GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] ?? [false, false, false, false];
+            const newState = gamepad.buttons.map(b => b.pressed);
+            for (let i = 0; i < newState.length; ++i) {
+                const oldPressed = oldState[i] ?? false;
+                const newPressed = newState[i];
+                if (oldPressed !== newPressed) {
+                    updateButtonClass(gamepad.id, i, newPressed);
+                }
+            }
+            GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] = gamepad.buttons.map(b => b.pressed);
+        }
+    });
+});
 
 const main = async () => {
     let packs = await fetch(DATA_DIR_URL + '/indexed_packs.json.gz')

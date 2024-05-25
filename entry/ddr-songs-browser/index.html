@@ -13,6 +13,7 @@
                 <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
             </div>
         </div>
+        <div id="gamepads_states_list"></div>
     </div>
     <div style="overflow-y: auto; flex: 1">
         <div class="header-message">
@@ -101,5 +102,13 @@
     }
     .song-details-item-list > * {
         margin-right: 6px;
+    }
+
+    #gamepads_states_list > * {
+        display: flex;
+        column-gap: 6px;
+    }
+    #gamepads_states_list > * > *.pressed {
+        color: blue;
     }
 </style>
