@@ -30,32 +30,18 @@ const main = async () => {
             // burn in hell, fag!
             return;
         }
-        if (['trilem.me'].includes(rq.headers.host)) {
+        if (['trilem.me', 'trilemme.klesun.net'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:23183'}, exc => {
 				console.error('ololo trilemma proxy error', exc);
 			});
-        } else if (['parsiql.app'].includes(rq.headers.host)) {
-            proxy.web(rq, rs, {target: 'http://localhost:13514'}, exc => {
-				console.error('ololo parsiql-runtime proxy error', exc);
-			});
-        } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent'].includes(rq.headers.host)) {
+        } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent', 'torr.rent', 'torrent.klesun.net', 'nyaa.lv'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36865'}, exc => {
-				console.error('ololo kunkka-torrent proxy error', exc);
-			});
-        } else if (['reibai.info'].includes(rq.headers.host)) {
+                console.error('ololo kunkka-torrent proxy error', exc);
+            });
+        } else if (['reibai.info', 'api.reibai.info'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36418'}, exc => {
-				console.error('ololo reibai.info proxy error', exc);
-			});
-        } else if (['sirual.site'].includes(rq.headers.host)) {
-            const pathname = url.parse(rq.url).pathname;
-            const port = pathname.startsWith('/api/') || pathname === '/api' ? 8000 : 42175;
-            proxy.web(rq, rs, {target: 'http://localhost:' + port}, exc => {
-				console.error('ololo lauris proxy error', exc);
-			});
-        } else if (['tronscam.io'].includes(rq.headers.host)) {
-			let absPath = __dirname + '/entry/tronscam.html';
-			rs.setHeader('Content-Type', 'text/html');
-			fsSync.createReadStream(absPath).pipe(rs);
+                console.error('ololo reibai.info proxy error', exc);
+            });
         } else {
             // klesun-productions.com
             const rootPath = __dirname;
@@ -79,8 +65,8 @@ const main = async () => {
         }
     };
     const server = https.createServer({
-        key: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0004/privkey.pem'),
-        cert: await fs.readFile('/etc/letsencrypt/live/klesun-productions.com-0004/fullchain.pem'),
+        key: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/privkey.pem'),
+        cert: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/fullchain.pem'),
     }, handleRq).listen(443, '0.0.0.0', () => {
         console.log('listening https://klesun-productions.com');
     });
