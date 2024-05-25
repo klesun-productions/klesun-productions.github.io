@@ -149,6 +149,7 @@ const main = async () => {
             ...!imgFileName ? [] : [
                 Dom('img', {
                     class: 'pack-banner',
+                    loading: "lazy",
                     src: subdirUrl + '/' + encodeURIComponent(imgFileName),
                 }),
             ],
