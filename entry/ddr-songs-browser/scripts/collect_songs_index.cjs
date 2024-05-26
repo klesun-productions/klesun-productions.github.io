@@ -76,9 +76,6 @@ const collectSongIndex = async ({ packName, subdir, songName, i }) => {
         smFileName: smFileName,
         smMd5: crypto.createHash('md5').update(smDataStr).digest("hex"),
         smModifiedAt: smStat.mtime,
-        // songFileName: ,
-        // songMd5: ,
-        // songModifiedAt: ,
         restFileNames: fileNames.filter(fileName => {
             return fileName !== smFileName
                 && fileName !== 'Thumbs.db';

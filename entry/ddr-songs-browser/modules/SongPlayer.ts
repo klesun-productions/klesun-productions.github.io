@@ -1,6 +1,7 @@
 import type { Song } from "../types/indexed_packs";
 import Dom from "./utils/Dom.js";
 import type { PlaySongParams } from "../types/SongPlayer";
+import { YaSmParser, YaSmParserError } from "./YaSmParser";
 
 function renderSmData(song: Song, songDirUrl: string) {
     const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
@@ -33,7 +34,7 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         active_song_details: HTMLElement,
     },
 }) {
-    const playSong = ({ pack, song }: PlaySongParams) => {
+    const playSong = async ({ pack, song }: PlaySongParams) => {
         const packSubdirUrl = DATA_DIR_URL + "/packs/" +
             encodeURIComponent(pack.packName) + "/" +
             encodeURIComponent(pack.subdir);
@@ -77,6 +78,22 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
             song.restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
         document.body.style.backgroundImage = !bgFileName ? "none" :
             "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
+
+        const smText = await fetch(songDirUrl + "/" + encodeURIComponent(song.smFileName))
+            .then(rs => rs.text());
+        console.log(smText.slice(0, 1000), "...");
+        let parsed;
+        try {
+            parsed = YaSmParser(smText);
+        } catch (error) {
+            if (error instanceof YaSmParserError) {
+                console.warn("Failed to parse .sm file: " + error.message);
+                console.info(error.parsed);
+            } else {
+                throw error;
+            }
+        }
+        console.log("SMParse result", parsed);
     };
 
     return { playSong };
