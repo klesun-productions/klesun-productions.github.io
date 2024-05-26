@@ -3,19 +3,19 @@
 </head>
 
 <body>
-    <div style="display: flex; flex-direction: column">
-        <div style="display: flex">
-            <audio id="active_song_player" controls="controls" style="flex: 1; height: 24px;"></audio>
-        </div>
-        <div style="display: flex; justify-content: space-between">
-            <div id="active_song_details" style="color: white"></div>
-            <div>
-                <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
+    <div style="flex: 1; display: flex; flex-direction: column; height: 100%">
+        <div style="display: flex; flex-direction: column">
+            <div style="display: flex">
+                <audio id="active_song_player" controls="controls" style="flex: 1; height: 24px;"></audio>
             </div>
+            <div style="display: flex; justify-content: space-between">
+                <div id="active_song_details" style="color: white"></div>
+                <div>
+                    <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
+                </div>
+            </div>
+            <div id="gamepads_states_list"></div>
         </div>
-        <div id="gamepads_states_list"></div>
-    </div>
-    <div style="display: flex; flex: 1">
         <div style="flex: 1; position: relative">
             <div class="fit-in-relative-parent" style="overflow-y: auto">
                 <div class="header-message">
@@ -27,8 +27,8 @@
                 <div id="pack_list"></div>
             </div>
         </div>
-        <div id="flying_arrows_box"></div>
     </div>
+    <div id="flying_arrows_box"></div>
     <script src="./index.js" type="module"></script>
 </body>
 
@@ -43,7 +43,6 @@
     body {
         background-color: #232323;
         display: flex;
-        flex-direction: column;
         height: 100%;
         margin: 0;
     }
@@ -133,11 +132,11 @@
         color: white;
         position: absolute;
         animation: 2s fly-arrow linear;
-        font-size: 20px;
-        bottom: -20px;
+        font-size: 40px;
+        bottom: -40px;
     }
     @keyframes fly-arrow {
-        0% { bottom: -20px }
+        0% { bottom: -40px }
         74.999% { color: white }
         75% { color: orange; }
         100% { bottom: 100% }

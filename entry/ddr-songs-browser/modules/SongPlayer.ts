@@ -1,7 +1,7 @@
 import type { Song } from "../types/indexed_packs";
 import Dom from "./utils/Dom.js";
 import type { PlaySongParams } from "../types/SongPlayer";
-import type { MeasureDivision } from "./YaSmParser";
+import type { BpmUpdate, Measure, MeasureDivision } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
 
 function renderSmData(song: Song, songDirUrl: string) {
@@ -26,6 +26,35 @@ function renderSmData(song: Song, songDirUrl: string) {
         }));
     }
     return items;
+}
+
+function beatsToMs(bpm: number, beats: number) {
+    const minute = beats / bpm;
+    return minute * 60 * 1000;
+}
+
+function getMsAt(allBpms: BpmUpdate[], measuresPassed: number) {
+    const beatsPassed = measuresPassed * 4;
+    const bpms = allBpms.filter(update => update.beat - beatsPassed < 0.000001);
+    let msSkipped = 0;
+    let beatsSkipped = 0;
+    for (let i = 0; i < bpms.length - 1; ++i) {
+        const intervalBeats = bpms[i + 1].beat - bpms[i].beat;
+        msSkipped += beatsToMs(bpms[i].bpm, intervalBeats);
+        beatsSkipped += intervalBeats;
+    }
+    const lastBpm = bpms[bpms.length - 1].bpm;
+    return msSkipped + beatsToMs(lastBpm, beatsPassed - beatsSkipped);
+}
+
+function countApm(bpms: BpmUpdate[], measures: Measure[]) {
+    const songDurationMs = getMsAt(bpms, measures.length + 1);
+    const songDurationMinutes = songDurationMs / 1000 / 60;
+    const actions = measures
+        .flatMap(m => m)
+        .flatMap(d => d)
+        .filter(v => v !== NoteValue.NONE).length;
+    return actions / songDurationMinutes;
 }
 
 export default function SongPlayer({ DATA_DIR_URL, gui }: {
@@ -129,16 +158,23 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
             return;
         }
 
-        const bpm = parsed.BPMS[0].bpm;
-        const chart = parsed.NOTES[0];
+        const { BPMS } = parsed;
+        const TARGET_APM = 200;
+        const chart = [...parsed.NOTES].sort((a,b) => {
+            const aTpm = countApm(BPMS, a.MEASURES);
+            const bTpm = countApm(BPMS, b.MEASURES);
+            return Math.abs(aTpm - TARGET_APM) - Math.abs(bTpm - TARGET_APM);
+        })[0];
         const firstBeatMs = -(parsed.OFFSET ?? 0) * 1000 - 1500;
         for (let measureIndex = 0; measureIndex < chart.MEASURES.length; ++measureIndex) {
             const measure = chart.MEASURES[measureIndex];
             const divider = measure.length;
             for (let divisionIndex = 0; divisionIndex < measure.length; ++divisionIndex) {
                 const division = measure[divisionIndex];
-                const minute = (measureIndex + divisionIndex / divider) / (bpm / 4);
-                const expectedMs = firstBeatMs + minute * 60 * 1000;
+                const expectedMs = firstBeatMs + getMsAt(
+                    BPMS,
+                    measureIndex + divisionIndex / divider
+                );
                 const waitMs = expectedMs - gui.active_song_player.currentTime * 1000;
                 if (waitMs >= 4) {
                     await new Promise(resolve => setTimeout(resolve, waitMs));

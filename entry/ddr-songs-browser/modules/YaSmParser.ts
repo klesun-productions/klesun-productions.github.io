@@ -33,8 +33,10 @@ export type Chart = {
     MEASURES: Measure[],
 };
 
+export type BpmUpdate = { beat: number, bpm: number };
+
 export type YaSmParsed = {
-    BPMS: { beat: number, bpm: number }[], // 0.000=100.00;
+    BPMS: BpmUpdate[], // 0.000=100.00;
     MUSIC: string, // ;
     TITLE?: string, // ;
     SUBTITLE?: string, // ;
