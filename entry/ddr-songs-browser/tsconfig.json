@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "ESNext",
+        "module": "esnext",
+        "jsx": "react",
+        "moduleResolution": "Node",
+        "lib": [
+            "ESNext",
+            "ESNext.AsyncIterable",
+            "DOM",
+            "dom.iterable"
+        ],
+        "skipLibCheck": true,
+        "allowJs": true,
+        "sourceMap": true,
+        "noEmit": true
+    },
+    "ts-node": {
+        "transpileOnly": true
+    }
+}

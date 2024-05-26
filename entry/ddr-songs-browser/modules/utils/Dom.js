@@ -1,3 +1,8 @@
+/**
+ * @param {string} tagName
+ * @param {Record<string, string | number | Function>} attributes
+ * @param {string | number | HTMLElement[]} children
+ */
 const Dom = (tagName, attributes = {}, children = []) => {
     const dom = document.createElement(tagName);
     for (const [name, value] of Object.entries(attributes)) {
