@@ -1,9 +1,8 @@
 
-import Dom from "./utils/Dom.js";
-import type { AnyFormatPack, Song } from "../types/indexed_packs";
-import type { PlaySongParams } from "../types/Player";
+import type { AnyFormatPack } from "../types/indexed_packs";
 import PackCard from "../components/PackCard";
 import GamepadControl from "./GamepadControl";
+import SongPlayer from "./SongPlayer";
 
 function getElementOfClassById<
     TCls extends abstract new (...args: never) => InstanceType<TCls>
@@ -26,76 +25,6 @@ const gui = {
     active_song_details: getElementById("active_song_details"),
     play_random_song_btn: getElementById("play_random_song_btn"),
     gamepads_states_list: getElementById("gamepads_states_list"),
-};
-
-function renderSmData(song: Song, songDirUrl: string) {
-    const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
-    const items = [];
-    items.unshift(
-        Dom("span", {}, TITLE ? " " + TITLE : ""),
-        Dom("span", {}, SUBTITLE ? " " + SUBTITLE : ""),
-        Dom("span", {}, ARTIST ? " by " + ARTIST : ""),
-        Dom("span", {}, " " + song.smModifiedAt),
-        Dom("span", {}, " " + song.smMd5),
-        Dom("span", {}, JSON.stringify(rest))
-    );
-    if (CDTITLE) {
-        items.unshift(Dom("img", {
-            src: songDirUrl + "/" + encodeURIComponent(CDTITLE),
-        }));
-    }
-    if (BANNER) {
-        items.unshift(Dom("img", {
-            src: songDirUrl + "/" + encodeURIComponent(BANNER),
-        }));
-    }
-    return items;
-}
-
-const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongParams) => {
-    const packSubdirUrl = DATA_DIR_URL + "/packs/" +
-        encodeURIComponent(pack.packName) + "/" +
-        encodeURIComponent(pack.subdir);
-    const songDirUrl = packSubdirUrl + "/" +
-        encodeURIComponent(song.songName);
-
-    const errorHolder = Dom("span", { style: "color: red" });
-    const fileNames = !song.format ? song.restFileNames : song.fileNames;
-    const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
-        fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
-    if (!songFileName) {
-        errorHolder.textContent = "Missing song file in " + fileNames.join(", ");
-    } else {
-        gui.active_song_player.src = songDirUrl + "/" + encodeURIComponent(songFileName);
-        gui.active_song_player.play();
-    }
-    if (startAtSample && !song.format && song.headers.SAMPLESTART) {
-        gui.active_song_player.currentTime = +song.headers.SAMPLESTART;
-    }
-
-    gui.active_song_details.innerHTML = "";
-    const detailsItemList = Dom("div", { class: "song-details-item-list" }, [errorHolder]);
-    gui.active_song_details.appendChild(
-        detailsItemList
-    );
-    if (pack.imgFileName) {
-        detailsItemList.prepend(Dom("img", {
-            src: packSubdirUrl +
-                encodeURIComponent(pack.imgFileName),
-        }));
-    }
-
-    if (song.format) {
-        return;
-    }
-
-    const items = renderSmData(song, songDirUrl);
-    detailsItemList.append(...items);
-    const { BACKGROUND } = song.headers;
-    const bgFileName = BACKGROUND && song.restFileNames.find(n => n.toLowerCase() === BACKGROUND.toLowerCase()) ||
-        song.restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
-    document.body.style.backgroundImage = !bgFileName ? "none" :
-        "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
 };
 
 function normalizePacks(anyFormatPacks: AnyFormatPack[]) {
@@ -142,6 +71,7 @@ export default async function ({
     whenPacks: Promise<AnyFormatPack[]>,
     whenFirstGamepadConnected: Promise<GamepadEvent>,
 }) {
+    const player = SongPlayer({ DATA_DIR_URL, gui });
     const gamepadControl = GamepadControl(gui);
     whenFirstGamepadConnected.then(e => {
         setInterval(() => gamepadControl.progressGameLoop());
@@ -155,7 +85,7 @@ export default async function ({
         const pack = havingValidSong[Math.floor(Math.random() * havingValidSong.length)];
         const validSongs = pack.songs.filter(s => !s.format);
         const song = validSongs[Math.floor(Math.random() * validSongs.length)];
-        playSong({ DATA_DIR_URL, pack, song, startAtSample: true });
+        player.playSong({ pack, song });
         gui.active_song_player.onended = playRandomSong;
     };
 
@@ -163,7 +93,7 @@ export default async function ({
 
     let i = 0;
     for (const pack of packs) {
-        const packDom = PackCard({ pack, DATA_DIR_URL, playSong });
+        const packDom = PackCard({ pack, DATA_DIR_URL, playSong: player.playSong });
         gui.pack_list.appendChild(packDom);
         if (++i % 10 === 0) {
             await new Promise(_ => setTimeout(_, 100));

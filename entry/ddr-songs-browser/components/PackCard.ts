@@ -1,5 +1,5 @@
 import type { Pack } from "../types/indexed_packs";
-import type { PlaySongParams } from "../types/Player";
+import type { PlaySongParams } from "../types/SongPlayer";
 import Dom from "../modules/utils/Dom.js";
 
 export default function PackCard({ pack, DATA_DIR_URL, playSong }: {
@@ -56,7 +56,7 @@ export default function PackCard({ pack, DATA_DIR_URL, playSong }: {
                     ...song.format ? [] : [
                         Dom("span", {
                             class: "play-song-item-btn",
-                            onclick: () => playSong({ DATA_DIR_URL, pack, song, startAtSample: true }),
+                            onclick: () => playSong({ pack, song }),
                         }, "▶"),
                     ],
                     Dom("span", {}, song.songName),
