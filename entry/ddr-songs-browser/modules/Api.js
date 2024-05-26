@@ -23,8 +23,8 @@ const makeGetUrl = (url, params = null) => {
                 ? [[k, v]]
                 : v.map(subV => [k, subV])
         );
-    const queryPart = !params ? '' :
-        '?' + new URLSearchParams(entries);
+    const queryPart = !params ? "" :
+        "?" + new URLSearchParams(entries);
     return url + queryPart;
 };
 
@@ -33,7 +33,7 @@ const makeGetUrl = (url, params = null) => {
  * tishe edesh dalshe budesh
  */
 const QueueingFetch = (maxWorkers = 10) => {
-    let requestsQueue = [];
+    const requestsQueue = [];
     let activeRequests = 0;
     const tryTakeNext = () => {
         if (activeRequests < maxWorkers) {
@@ -52,26 +52,26 @@ const QueueingFetch = (maxWorkers = 10) => {
     };
     return (...fetchArgs) => {
         return new Promise((resolve, reject) => {
-            requestsQueue.push({fetchArgs, resolve, reject});
+            requestsQueue.push({ fetchArgs, resolve, reject });
             tryTakeNext();
         });
     };
 };
 
 const Api = ({
-    baseUrl = '/ddr-songs-browser',
+    baseUrl = "/ddr-songs-browser",
 } = {}) => {
     const fetch = QueueingFetch(20);
 
     const toParseError = (route) => (error) => {
-        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        if (error instanceof TypeError && error.message === "Failed to fetch") {
             // details intentionally excluded by browser for security reasons
             // See https://stackoverflow.com/questions/28556398/how-to-catch-neterr-connection-refused
             error.message = !navigator.onLine
-                ? 'no internet connection'
-                : 'server incommunicable: ' + baseUrl;
+                ? "no internet connection"
+                : "server incommunicable: " + baseUrl;
         }
-        error.message = 'Cannot ' + route + ', ' + error.message;
+        error.message = "Cannot " + route + ", " + error.message;
         throw error;
     };
 
@@ -92,7 +92,7 @@ const Api = ({
      */
     const post = (route, params) => {
         return fetch(baseUrl + route, {
-            method: 'POST',
+            method: "POST",
             body: JSON.stringify(params),
         }).catch(toParseError(route))
             .then(parseResponse);

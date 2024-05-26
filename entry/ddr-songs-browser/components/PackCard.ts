@@ -7,7 +7,6 @@ export default function PackCard({ pack, DATA_DIR_URL, playSong }: {
     DATA_DIR_URL: string,
     playSong: (params: PlaySongParams) => void,
 }) {
-
     const packDetailsPanel = Dom("div", { class: "packed-content" }, []);
     const { imgFileName, subdir, packName } = pack;
     const decodedPackName = decodeURIComponent(

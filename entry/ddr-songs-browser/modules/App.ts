@@ -1,7 +1,7 @@
 
 import Dom from "./utils/Dom.js";
-import type {AnyFormatPack, AnyFormatSong, Pack} from "../types/indexed_packs";
-import type {PlaySongParams} from "../types/Player";
+import type { AnyFormatPack } from "../types/indexed_packs";
+import type { PlaySongParams } from "../types/Player";
 import PackCard from "../components/PackCard";
 
 function getElementOfClassById<
@@ -20,42 +20,42 @@ function getElementById(id: string): HTMLElement {
 }
 
 const gui = {
-    pack_list: getElementById('pack_list'),
-    active_song_player: getElementOfClassById('active_song_player', HTMLAudioElement),
-    active_song_details: getElementById('active_song_details'),
-    play_random_song_btn: getElementById('play_random_song_btn'),
-    gamepads_states_list: getElementById('gamepads_states_list'),
+    pack_list: getElementById("pack_list"),
+    active_song_player: getElementOfClassById("active_song_player", HTMLAudioElement),
+    active_song_details: getElementById("active_song_details"),
+    play_random_song_btn: getElementById("play_random_song_btn"),
+    gamepads_states_list: getElementById("gamepads_states_list"),
 };
 
-const playSong = ({DATA_DIR_URL, pack, song, startAtSample = false}: PlaySongParams) => {
-    const songDirUrl = DATA_DIR_URL + '/packs/' +
-        encodeURIComponent(pack.packName) + '/' +
-        encodeURIComponent(pack.subdir) + '/' +
+const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongParams) => {
+    const songDirUrl = DATA_DIR_URL + "/packs/" +
+        encodeURIComponent(pack.packName) + "/" +
+        encodeURIComponent(pack.subdir) + "/" +
         encodeURIComponent(song.songName);
 
-    const errorHolder = Dom('span', {style: 'color: red'});
+    const errorHolder = Dom("span", { style: "color: red" });
     const items = [
         errorHolder,
     ];
     if (pack.imgFileName) {
-        items.unshift(Dom('img', {
-            src: DATA_DIR_URL + '/packs/' +
-                encodeURIComponent(pack.packName) + '/' +
-                encodeURIComponent(pack.subdir) + '/' +
+        items.unshift(Dom("img", {
+            src: DATA_DIR_URL + "/packs/" +
+                encodeURIComponent(pack.packName) + "/" +
+                encodeURIComponent(pack.subdir) + "/" +
                 encodeURIComponent(pack.imgFileName),
         }));
     }
-    gui.active_song_details.innerHTML = '';
+    gui.active_song_details.innerHTML = "";
     gui.active_song_details.appendChild(
-        Dom('div', {class: 'song-details-item-list'}, items),
+        Dom("div", { class: "song-details-item-list" }, items)
     );
     const fileNames = !song.format ? song.restFileNames : song.fileNames;
     const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
         fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
     if (!songFileName) {
-        errorHolder.textContent = 'Missing song file in ' + fileNames.join(', ');
+        errorHolder.textContent = "Missing song file in " + fileNames.join(", ");
     } else {
-        gui.active_song_player.src = songDirUrl + '/' + encodeURIComponent(songFileName);
+        gui.active_song_player.src = songDirUrl + "/" + encodeURIComponent(songFileName);
         gui.active_song_player.play();
     }
 
@@ -66,27 +66,27 @@ const playSong = ({DATA_DIR_URL, pack, song, startAtSample = false}: PlaySongPar
     const { smModifiedAt, totalBars, charts, restFileNames, smMd5 } = song;
     const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
     items.unshift(
-        Dom('span', {}, TITLE ? ' ' + TITLE : ''),
-        Dom('span', {}, SUBTITLE ? ' ' + SUBTITLE : ''),
-        Dom('span', {}, ARTIST ? ' by ' + ARTIST : ''),
-        Dom('span', {}, ' ' + smModifiedAt),
-        Dom('span', {}, ' ' + smMd5),
-        Dom('span', {}, JSON.stringify(rest)),
+        Dom("span", {}, TITLE ? " " + TITLE : ""),
+        Dom("span", {}, SUBTITLE ? " " + SUBTITLE : ""),
+        Dom("span", {}, ARTIST ? " by " + ARTIST : ""),
+        Dom("span", {}, " " + smModifiedAt),
+        Dom("span", {}, " " + smMd5),
+        Dom("span", {}, JSON.stringify(rest))
     );
     if (CDTITLE) {
-        items.unshift(Dom('img', {
-            src: songDirUrl + '/' + encodeURIComponent(CDTITLE),
+        items.unshift(Dom("img", {
+            src: songDirUrl + "/" + encodeURIComponent(CDTITLE),
         }));
     }
     if (BANNER) {
-        items.unshift(Dom('img', {
-            src: songDirUrl + '/' + encodeURIComponent(BANNER),
+        items.unshift(Dom("img", {
+            src: songDirUrl + "/" + encodeURIComponent(BANNER),
         }));
     }
     const bgFileName = BACKGROUND && restFileNames.find(n => n.toLowerCase() === BACKGROUND.toLowerCase()) ||
         restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
-    document.body.style.backgroundImage = !bgFileName ? 'none' :
-        'url("' + songDirUrl + '/' + encodeURIComponent(bgFileName) + '")';
+    document.body.style.backgroundImage = !bgFileName ? "none" :
+        "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
     if (startAtSample && SAMPLESTART) {
         gui.active_song_player.currentTime = +SAMPLESTART;
     }
@@ -193,7 +193,7 @@ export default async function ({
         const pack = havingValidSong[Math.floor(Math.random() * havingValidSong.length)];
         const validSongs = pack.songs.filter(s => !s.format);
         const song = validSongs[Math.floor(Math.random() * validSongs.length)];
-        playSong({DATA_DIR_URL, pack, song, startAtSample: true});
+        playSong({ DATA_DIR_URL, pack, song, startAtSample: true });
         gui.active_song_player.onended = playRandomSong;
     };
 

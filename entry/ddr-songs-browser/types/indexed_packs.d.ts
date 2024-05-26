@@ -22,13 +22,13 @@ export type Song = {
   "restFileNames": ["VerTex^2-bg.png","VerTex^2.dwi","VerTex^2.ogg","VerTex^2.png"],
   "totalBars": 129,
   "charts": [
-    {"desc":"K. Ward","diff":"Easy","meter":"9","totalSteps":485},
-    {"type":"dance-double","desc":"M. Emirzian","diff":"Easy","meter":"5","totalSteps":233},
-    {"type":"dance-double","desc":"M. Emirzian","diff":"Hard","meter":"10","totalSteps":607},
-    {"type":"dance-double","desc":"M. Emirzian","diff":"Medium","meter":"8","totalSteps":380},
-    {"type":"dance-double","desc":"M. Emirzian","diff":"Challenge","meter":"13","totalSteps":820},
-    {"desc":"Copied from K. Ward","diff":"Medium","meter":"11","totalSteps":709},
-    {"desc":"Copied from","diff":"Hard","meter":"14","totalSteps":944}
+    { "desc":"K. Ward","diff":"Easy","meter":"9","totalSteps":485 },
+    { "type":"dance-double","desc":"M. Emirzian","diff":"Easy","meter":"5","totalSteps":233 },
+    { "type":"dance-double","desc":"M. Emirzian","diff":"Hard","meter":"10","totalSteps":607 },
+    { "type":"dance-double","desc":"M. Emirzian","diff":"Medium","meter":"8","totalSteps":380 },
+    { "type":"dance-double","desc":"M. Emirzian","diff":"Challenge","meter":"13","totalSteps":820 },
+    { "desc":"Copied from K. Ward","diff":"Medium","meter":"11","totalSteps":709 },
+    { "desc":"Copied from","diff":"Hard","meter":"14","totalSteps":944 }
   ],
   "format"?: undefined,
 };
@@ -37,7 +37,7 @@ export type AnyFormatSong = Song | {
     "format":"MISSING_SM_FILE",
     "songName":"I Run (So Far Away) (Gareth Emery Remix)",
     "fileNames":[],
-}
+};
 
 export type Pack = {
     packName: "DJKPack.zip",
