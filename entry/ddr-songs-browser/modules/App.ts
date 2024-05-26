@@ -3,6 +3,7 @@ import Dom from "./utils/Dom.js";
 import type { AnyFormatPack, Song } from "../types/indexed_packs";
 import type { PlaySongParams } from "../types/Player";
 import PackCard from "../components/PackCard";
+import GamepadControl from "./GamepadControl";
 
 function getElementOfClassById<
     TCls extends abstract new (...args: never) => InstanceType<TCls>
@@ -97,51 +98,6 @@ const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongP
         "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
 };
 
-const GAMEPAD_ID_TO_BUTTONS_STATE: Record<string, boolean[]> = {};
-
-function updateButtonClass(gamepadId: string, buttonIndex: number, state: boolean) {
-    let existing = null;
-    for (const gamepadDiv of gui.gamepads_states_list.children) {
-        if (gamepadDiv.getAttribute("data-id") === gamepadId) {
-            existing = gamepadDiv;
-            break;
-        }
-    }
-    if (existing === null) {
-        existing = document.createElement("div");
-        gui.gamepads_states_list.appendChild(existing);
-        existing.setAttribute("data-id", gamepadId);
-        for (let i = 0; i < 4; ++i) {
-            existing.appendChild(document.createElement("div"));
-        }
-        existing.children[0].textContent = "🡸";
-        existing.children[1].textContent = "🡺";
-        existing.children[2].textContent = "🡹";
-        existing.children[3].textContent = "🡻";
-    }
-    if (buttonIndex < existing.children.length) {
-        existing.children[buttonIndex].classList.toggle("pressed", state);
-    }
-}
-
-function progressGameLoop() {
-    for (const gamepad of navigator.getGamepads().slice(1)) {
-        if (!gamepad) {
-            continue;
-        }
-        const oldState = GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] ?? [false, false, false, false];
-        const newState = gamepad.buttons.map(b => b.pressed);
-        for (let i = 0; i < newState.length; ++i) {
-            const oldPressed = oldState[i] ?? false;
-            const newPressed = newState[i];
-            if (oldPressed !== newPressed) {
-                updateButtonClass(gamepad.id, i, newPressed);
-            }
-        }
-        GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] = gamepad.buttons.map(b => b.pressed);
-    }
-}
-
 function normalizePacks(anyFormatPacks: AnyFormatPack[]) {
     let packs = anyFormatPacks.flatMap(p => !p.format ? [p] : []);
     packs.sort((a, b) => {
@@ -184,10 +140,11 @@ export default async function ({
 }: {
     DATA_DIR_URL: string,
     whenPacks: Promise<AnyFormatPack[]>,
-    whenFirstGamepadConnected: Promise<void>,
+    whenFirstGamepadConnected: Promise<GamepadEvent>,
 }) {
+    const gamepadControl = GamepadControl(gui);
     whenFirstGamepadConnected.then(e => {
-        setInterval(() => progressGameLoop);
+        setInterval(() => gamepadControl.progressGameLoop());
     });
     const anyFormatPacks = await whenPacks;
     const packs = normalizePacks(anyFormatPacks);

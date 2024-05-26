@@ -1,12 +1,13 @@
-import { loadModule } from 'https://klesun.github.io/ts-browser/src/ts-browser.js';
+import { loadModule } from "https://klesun.github.io/ts-browser/src/ts-browser.js";
 
 const BACKEND_URL = "https://api.klesun.net";
-const DATA_DIR_URL = BACKEND_URL + '/entry/ddr-songs-browser/data';
+const DATA_DIR_URL = BACKEND_URL + "/entry/ddr-songs-browser/data";
 
-const whenPacks = fetch(DATA_DIR_URL + '/indexed_packs.json.gz')
+const whenPacks = fetch(DATA_DIR_URL + "/indexed_packs.json.gz")
     .then(rs => rs.json());
 
 const whenFirstGamepadConnected = new Promise(resolve => {
+    /** @param {GamepadEvent} e */
     window.addEventListener("gamepadconnected", function onFirstGamepadConnected (e) {
         window.removeEventListener("gamepadconnected", onFirstGamepadConnected);
         resolve(e);
