@@ -1,6 +1,6 @@
 
 import Dom from "./utils/Dom.js";
-import type { AnyFormatPack } from "../types/indexed_packs";
+import type { AnyFormatPack, Song } from "../types/indexed_packs";
 import type { PlaySongParams } from "../types/Player";
 import PackCard from "../components/PackCard";
 
@@ -27,29 +27,38 @@ const gui = {
     gamepads_states_list: getElementById("gamepads_states_list"),
 };
 
+function renderSmData(song: Song, songDirUrl: string) {
+    const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
+    const items = [];
+    items.unshift(
+        Dom("span", {}, TITLE ? " " + TITLE : ""),
+        Dom("span", {}, SUBTITLE ? " " + SUBTITLE : ""),
+        Dom("span", {}, ARTIST ? " by " + ARTIST : ""),
+        Dom("span", {}, " " + song.smModifiedAt),
+        Dom("span", {}, " " + song.smMd5),
+        Dom("span", {}, JSON.stringify(rest))
+    );
+    if (CDTITLE) {
+        items.unshift(Dom("img", {
+            src: songDirUrl + "/" + encodeURIComponent(CDTITLE),
+        }));
+    }
+    if (BANNER) {
+        items.unshift(Dom("img", {
+            src: songDirUrl + "/" + encodeURIComponent(BANNER),
+        }));
+    }
+    return items;
+}
+
 const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongParams) => {
-    const songDirUrl = DATA_DIR_URL + "/packs/" +
+    const packSubdirUrl = DATA_DIR_URL + "/packs/" +
         encodeURIComponent(pack.packName) + "/" +
-        encodeURIComponent(pack.subdir) + "/" +
+        encodeURIComponent(pack.subdir);
+    const songDirUrl = packSubdirUrl + "/" +
         encodeURIComponent(song.songName);
 
     const errorHolder = Dom("span", { style: "color: red" });
-    const baseItems = [
-        errorHolder,
-    ];
-    if (pack.imgFileName) {
-        baseItems.unshift(Dom("img", {
-            src: DATA_DIR_URL + "/packs/" +
-                encodeURIComponent(pack.packName) + "/" +
-                encodeURIComponent(pack.subdir) + "/" +
-                encodeURIComponent(pack.imgFileName),
-        }));
-    }
-    gui.active_song_details.innerHTML = "";
-    const detailsItemList = Dom("div", { class: "song-details-item-list" }, baseItems);
-    gui.active_song_details.appendChild(
-        detailsItemList
-    );
     const fileNames = !song.format ? song.restFileNames : song.fileNames;
     const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
         fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
@@ -59,38 +68,33 @@ const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongP
         gui.active_song_player.src = songDirUrl + "/" + encodeURIComponent(songFileName);
         gui.active_song_player.play();
     }
+    if (startAtSample && !song.format && song.headers.SAMPLESTART) {
+        gui.active_song_player.currentTime = +song.headers.SAMPLESTART;
+    }
+
+    gui.active_song_details.innerHTML = "";
+    const detailsItemList = Dom("div", { class: "song-details-item-list" }, [errorHolder]);
+    gui.active_song_details.appendChild(
+        detailsItemList
+    );
+    if (pack.imgFileName) {
+        detailsItemList.prepend(Dom("img", {
+            src: packSubdirUrl +
+                encodeURIComponent(pack.imgFileName),
+        }));
+    }
 
     if (song.format) {
         return;
     }
 
-    const { smModifiedAt, totalBars, charts, restFileNames, smMd5 } = song;
-    const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
-    detailsItemList.prepend(
-        Dom("span", {}, TITLE ? " " + TITLE : ""),
-        Dom("span", {}, SUBTITLE ? " " + SUBTITLE : ""),
-        Dom("span", {}, ARTIST ? " by " + ARTIST : ""),
-        Dom("span", {}, " " + smModifiedAt),
-        Dom("span", {}, " " + smMd5),
-        Dom("span", {}, JSON.stringify(rest))
-    );
-    if (CDTITLE) {
-        detailsItemList.prepend(Dom("img", {
-            src: songDirUrl + "/" + encodeURIComponent(CDTITLE),
-        }));
-    }
-    if (BANNER) {
-        detailsItemList.prepend(Dom("img", {
-            src: songDirUrl + "/" + encodeURIComponent(BANNER),
-        }));
-    }
-    const bgFileName = BACKGROUND && restFileNames.find(n => n.toLowerCase() === BACKGROUND.toLowerCase()) ||
-        restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
+    const items = renderSmData(song, songDirUrl);
+    detailsItemList.append(...items);
+    const { BACKGROUND } = song.headers;
+    const bgFileName = BACKGROUND && song.restFileNames.find(n => n.toLowerCase() === BACKGROUND.toLowerCase()) ||
+        song.restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
     document.body.style.backgroundImage = !bgFileName ? "none" :
         "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
-    if (startAtSample && SAMPLESTART) {
-        gui.active_song_player.currentTime = +SAMPLESTART;
-    }
 };
 
 const GAMEPAD_ID_TO_BUTTONS_STATE: Record<string, boolean[]> = {};
