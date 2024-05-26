@@ -137,20 +137,7 @@ function progressGameLoop() {
     }
 }
 
-export default async function ({
-    DATA_DIR_URL,
-    whenPacks,
-    whenFirstGamepadConnected,
-}: {
-    DATA_DIR_URL: string,
-    whenPacks: Promise<AnyFormatPack[]>,
-    whenFirstGamepadConnected: Promise<void>,
-}) {
-    whenFirstGamepadConnected.then(e => {
-        setInterval(() => progressGameLoop);
-    });
-
-    const anyFormatPacks = await whenPacks;
+function normalizePacks(anyFormatPacks: AnyFormatPack[]) {
     let packs = anyFormatPacks.flatMap(p => !p.format ? [p] : []);
     packs.sort((a, b) => {
         return new Date(b.subdirModifiedAt).getTime() - new Date(a.subdirModifiedAt).getTime();
@@ -182,6 +169,23 @@ export default async function ({
         return pack.songs.length > 0;
     });
     packs.sort((a, b) => Math.max(3, Math.min(b.songs.length, 40)) - Math.max(4, Math.min(a.songs.length, 40)));
+    return packs;
+}
+
+export default async function ({
+    DATA_DIR_URL,
+    whenPacks,
+    whenFirstGamepadConnected,
+}: {
+    DATA_DIR_URL: string,
+    whenPacks: Promise<AnyFormatPack[]>,
+    whenFirstGamepadConnected: Promise<void>,
+}) {
+    whenFirstGamepadConnected.then(e => {
+        setInterval(() => progressGameLoop);
+    });
+    const anyFormatPacks = await whenPacks;
+    const packs = normalizePacks(anyFormatPacks);
 
     const havingValidSong = packs.filter(p => p.songs.some(s => !s.format));
 
