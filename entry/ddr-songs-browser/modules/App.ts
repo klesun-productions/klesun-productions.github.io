@@ -34,11 +34,11 @@ const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongP
         encodeURIComponent(song.songName);
 
     const errorHolder = Dom("span", { style: "color: red" });
-    const items = [
+    const baseItems = [
         errorHolder,
     ];
     if (pack.imgFileName) {
-        items.unshift(Dom("img", {
+        baseItems.unshift(Dom("img", {
             src: DATA_DIR_URL + "/packs/" +
                 encodeURIComponent(pack.packName) + "/" +
                 encodeURIComponent(pack.subdir) + "/" +
@@ -46,8 +46,9 @@ const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongP
         }));
     }
     gui.active_song_details.innerHTML = "";
+    const detailsItemList = Dom("div", { class: "song-details-item-list" }, baseItems);
     gui.active_song_details.appendChild(
-        Dom("div", { class: "song-details-item-list" }, items)
+        detailsItemList
     );
     const fileNames = !song.format ? song.restFileNames : song.fileNames;
     const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
@@ -65,7 +66,7 @@ const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongP
 
     const { smModifiedAt, totalBars, charts, restFileNames, smMd5 } = song;
     const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
-    items.unshift(
+    detailsItemList.prepend(
         Dom("span", {}, TITLE ? " " + TITLE : ""),
         Dom("span", {}, SUBTITLE ? " " + SUBTITLE : ""),
         Dom("span", {}, ARTIST ? " by " + ARTIST : ""),
@@ -74,12 +75,12 @@ const playSong = ({ DATA_DIR_URL, pack, song, startAtSample = false }: PlaySongP
         Dom("span", {}, JSON.stringify(rest))
     );
     if (CDTITLE) {
-        items.unshift(Dom("img", {
+        detailsItemList.prepend(Dom("img", {
             src: songDirUrl + "/" + encodeURIComponent(CDTITLE),
         }));
     }
     if (BANNER) {
-        items.unshift(Dom("img", {
+        detailsItemList.prepend(Dom("img", {
             src: songDirUrl + "/" + encodeURIComponent(BANNER),
         }));
     }
