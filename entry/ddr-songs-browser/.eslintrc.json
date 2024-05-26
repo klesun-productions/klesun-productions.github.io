@@ -1,0 +1,53 @@
+{
+    "env": {
+        "browser": true,
+        "node": true
+    },
+    "plugins": [
+        "@typescript-eslint",
+        "unused-imports"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json",
+        "parser": "@typescript-eslint/parser",
+        "ecmaVersion": 2020,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "globals": {
+        "toastr": true
+    },
+    "rules": {
+        "prefer-const": "warn",
+        "no-undef": "error",
+        "no-var": "warn",
+        "no-mixed-spaces-and-tabs": "error",
+        "unused-imports/no-unused-imports": "error",
+        "no-trailing-spaces": "error",
+        "no-tabs": "error",
+        "space-before-blocks": "error",
+        "space-in-parens": "error",
+        "keyword-spacing": "error",
+        "brace-style": ["error", "1tbs", {"allowSingleLine": true}],
+        "space-infix-ops": ["error"],
+        "quotes": ["error", "double", {
+            "allowTemplateLiterals": true
+        }],
+        "object-curly-spacing": "off",
+
+        "@typescript-eslint/consistent-type-imports": ["error", {
+            "disallowTypeAnnotations": false
+        }],
+        "@typescript-eslint/member-delimiter-style": ["warn", {
+            "multiline": { "delimiter": "comma", "requireLast": true },
+            "singleline": { "delimiter": "comma", "requireLast": false }
+        }],
+        "@typescript-eslint/object-curly-spacing": ["error", "always"],
+        "@typescript-eslint/semi": ["error"],
+        "@typescript-eslint/switch-exhaustiveness-check": "error",
+        "@typescript-eslint/no-explicit-any": ["warn"]
+    }
+}
