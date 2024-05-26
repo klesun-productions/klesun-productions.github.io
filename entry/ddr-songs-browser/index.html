@@ -15,19 +15,31 @@
         </div>
         <div id="gamepads_states_list"></div>
     </div>
-    <div style="overflow-y: auto; flex: 1">
-        <div class="header-message">
-            <h2>DDR Songs Browser</h2>
-            <p>Hello. <a href="https://search.stepmaniaonline.net/">stepmaniaonline</a> rocks, but it does not have much filter criteria, does not show author, difficulty, etc.. and it's relatively slow</p>
-            <p>Here you can find a mirror of it's database which is supposedly easier to navigate to find interesting stuff</p>
-        </div>
+    <div style="display: flex; flex: 1">
+        <div style="flex: 1; position: relative">
+            <div class="fit-in-relative-parent" style="overflow-y: auto">
+                <div class="header-message">
+                    <h2>DDR Songs Browser</h2>
+                    <p>Hello. <a href="https://search.stepmaniaonline.net/">stepmaniaonline</a> rocks, but it does not have much filter criteria, does not show author, difficulty, etc.. and it's relatively slow</p>
+                    <p>Here you can find a mirror of it's database which is supposedly easier to navigate to find interesting stuff</p>
+                </div>
 
-        <div id="pack_list"></div>
+                <div id="pack_list"></div>
+            </div>
+        </div>
+        <div id="flying_arrows_box"></div>
     </div>
     <script src="./index.js" type="module"></script>
 </body>
 
 <style>
+    .fit-in-relative-parent {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
     body {
         background-color: #232323;
         display: flex;
@@ -110,5 +122,24 @@
     }
     #gamepads_states_list > * > *.pressed {
         color: blue;
+    }
+    #flying_arrows_box {
+        width: 400px;
+        background: linear-gradient(#484848 25%, black 25%);
+        position: relative;
+        overflow: hidden;
+    }
+    .flying-arrow {
+        color: white;
+        position: absolute;
+        animation: 2s fly-arrow linear;
+        font-size: 20px;
+        bottom: -20px;
+    }
+    @keyframes fly-arrow {
+        0% { bottom: -20px }
+        74.999% { color: white }
+        75% { color: orange; }
+        100% { bottom: 100% }
     }
 </style>

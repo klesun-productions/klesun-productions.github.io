@@ -1,5 +1,5 @@
 
-enum Column {
+export enum NoteValue {
     NONE = "0", // No note
     TAP = "1", // Normal note
     HOLD_HEAD = "2", // Hold head
@@ -12,9 +12,9 @@ enum Column {
     FAKE = "F", // Fake note
 }
 
-type MeasureFraction = (Column | string)[];
+export type MeasureDivision = (NoteValue | string)[];
 
-type Measure = MeasureFraction[];
+export type Measure = MeasureDivision[];
 
 //---------------dance-couple - ----------------
 // #NOTES:
@@ -24,7 +24,7 @@ type Measure = MeasureFraction[];
 //      6:
 //      0.728,0.754,1.000,0.000,0.034:
 
-type Chart = {
+export type Chart = {
     STEPSTYPE: "dance-single" | "dance-solo" | "dance-double" | "dance-couple" | string,
     DESCRIPTION: string,
     DIFFICULTY: "Beginner" | "Easy" | "Medium" | "Hard" | "Challenge" | "Edit" | string,
@@ -33,10 +33,9 @@ type Chart = {
     MEASURES: Measure[],
 };
 
-type YaSmParsed = {
-    BPMS: string, // 0.000=100.00;
+export type YaSmParsed = {
+    BPMS: { beat: number, bpm: number }[], // 0.000=100.00;
     MUSIC: string, // ;
-    NOTES: Chart[],
     TITLE?: string, // ;
     SUBTITLE?: string, // ;
     ARTIST?: string, // ;
@@ -48,12 +47,13 @@ type YaSmParsed = {
     BACKGROUND?: string, // ;
     LYRICSPATH?: string, // ;
     CDTITLE?: string, // ;
-    OFFSET?: string, // 0.000;
-    SAMPLESTART?: string, // 0.000;
-    SAMPLELENGTH?: string, // 0.000;
-    SELECTABLE?: string, // YES;
-    STOPS?: string, // ;
+    OFFSET?: number, // 0.000;
+    SAMPLESTART?: number, // 0.000;
+    SAMPLELENGTH?: number, // 0.000;
+    SELECTABLE?: boolean, // YES;
+    STOPS?: { beat: number, seconds: number }[], // ;
     BGCHANGES?: string, // ;
+    NOTES: Chart[],
     [k: string]: unknown,
 };
 
@@ -76,7 +76,7 @@ export class YaSmParserError extends Error {
 export function YaSmParser(smText: string): YaSmParsed {
     let offset = 0;
     const parsed: YaSmParsed = {
-        BPMS: "", MUSIC: "", NOTES: [],
+        BPMS: [], MUSIC: "", NOTES: [],
     };
 
     function trimStart() {
@@ -103,8 +103,35 @@ export function YaSmParser(smText: string): YaSmParsed {
         trimStart();
         const asHeader = smText.slice(offset).match(/^#\s*([^:]*?)\s*:\s*([^;]*?)\s*;/);
         if (asHeader && asHeader[1] !== "NOTES") {
-            const [, key, value] = asHeader;
-            parsed[key] = value;
+            const [, keyUntyped, value] = asHeader;
+            const key = keyUntyped as keyof YaSmParsed;
+            if (key === "BPMS") {
+                parsed.BPMS = value.split(/\s*,\s*/g).map(update => {
+                    const [beat, bpm] = update.split("=");
+                    return {
+                        beat: Number(beat),
+                        bpm: Number(bpm),
+                    };
+                });
+            } else if (key === "STOPS") {
+                parsed.STOPS = value.split(/\s*,\s*/g).map(update => {
+                    const [beat, seconds] = update.split("=");
+                    return {
+                        beat: Number(beat),
+                        seconds: Number(seconds),
+                    };
+                });
+            } else if (key === "OFFSET") {
+                parsed.OFFSET = Number(value);
+            } else if (key === "SAMPLESTART") {
+                parsed.SAMPLESTART = Number(value);
+            } else if (key === "SAMPLELENGTH") {
+                parsed.SAMPLELENGTH = Number(value);
+            } else if (key === "SELECTABLE") {
+                parsed.SELECTABLE = value === "YES" ? true : value === "NO" ? false : undefined;
+            } else {
+                parsed[key] = value;
+            }
             offset += asHeader[0].length;
         } else {
             break;
