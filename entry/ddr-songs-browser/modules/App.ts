@@ -1,6 +1,6 @@
 
 import Dom from "./utils/Dom.js";
-import {AnyFormatSong, Pack} from "../types/indexed_packs";
+import {AnyFormatPack, AnyFormatSong, Pack} from "../types/indexed_packs";
 
 function getElementOfClassById<
     TCls extends abstract new (...args: never) => InstanceType<TCls>
