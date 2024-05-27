@@ -57,6 +57,9 @@ function countApm(bpms: BpmUpdate[], measures: Measure[]) {
     return actions / songDurationMinutes;
 }
 
+const ARROW_FLY_SECONDS = 2;
+const ARROW_TARGET_PROGRESS = 0.80;
+
 export default function SongPlayer({ DATA_DIR_URL, gui }: {
     DATA_DIR_URL: string,
     gui: {
@@ -67,12 +70,14 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
 }) {
     let activePlaybackId = Symbol();
 
-    const launchNote = (measureDivision: MeasureDivision) => {
+    const launchNote = (measureDivision: MeasureDivision, divisionIndex: number, divider: number) => {
         for (let column = 0; column < measureDivision.length; ++column) {
             const value = measureDivision[column];
             if (value !== "0") {
                 const arrow = document.createElement("div");
                 arrow.classList.toggle("flying-arrow", true);
+                arrow.setAttribute("data-measure-progress", (divisionIndex / divider).toFixed(3));
+                arrow.setAttribute("data-column", String(column));
                 let displayValue = value;
                 if (value === NoteValue.TAP) {
                     displayValue = {
@@ -81,11 +86,14 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
                         2: "🡹",
                         3: "🡺",
                     }[column] ?? value;
+                } else if (value === NoteValue.MINE) {
+                    displayValue = "💣";
                 }
                 arrow.textContent = displayValue;
-                arrow.style.left = (column + 1) * 40 + "px";
+                arrow.style.left = (column + 1) * 60 + "px";
+                arrow.style.animationDuration = ARROW_FLY_SECONDS + "s";
                 gui.flying_arrows_box.appendChild(arrow);
-                setTimeout(() => arrow.remove(), 2000);
+                setTimeout(() => arrow.remove(), ARROW_FLY_SECONDS * 1000);
             }
         }
     };
@@ -159,13 +167,21 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         }
 
         const { BPMS } = parsed;
-        const TARGET_APM = 200;
-        const chart = [...parsed.NOTES].sort((a,b) => {
-            const aTpm = countApm(BPMS, a.MEASURES);
-            const bTpm = countApm(BPMS, b.MEASURES);
-            return Math.abs(aTpm - TARGET_APM) - Math.abs(bTpm - TARGET_APM);
-        })[0];
-        const firstBeatMs = -(parsed.OFFSET ?? 0) * 1000 - 1500;
+        const TARGET_APM = 150;
+        const chart = [...parsed.NOTES]
+            .filter(c => countApm(BPMS, c.MEASURES) > 0)
+            .filter(c => c.MEASURES.every(m => m.every(d => d.length < 5)))
+            .sort((a,b) => {
+                const aTpm = countApm(BPMS, a.MEASURES);
+                const bTpm = countApm(BPMS, b.MEASURES);
+                return Math.abs(aTpm - TARGET_APM) - Math.abs(bTpm - TARGET_APM);
+            })[0];
+        if (!chart) {
+            console.log("no 4-button charts");
+            return;
+        }
+        console.log("playing chart of APM " + countApm(BPMS, chart.MEASURES), chart);
+        const firstBeatMs = -(parsed.OFFSET ?? 0) * 1000 - 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
         for (let measureIndex = 0; measureIndex < chart.MEASURES.length; ++measureIndex) {
             const measure = chart.MEASURES[measureIndex];
             const divider = measure.length;
@@ -182,7 +198,7 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
                 if (playbackId !== activePlaybackId) {
                     return;
                 }
-                launchNote(division);
+                launchNote(division, divisionIndex, divider);
             }
         }
     };

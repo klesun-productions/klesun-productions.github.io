@@ -124,21 +124,37 @@
     }
     #flying_arrows_box {
         width: 400px;
-        background: linear-gradient(#484848 25%, black 25%);
+        background: linear-gradient(#1a1a1a 20%, black 20%);
         position: relative;
         overflow: hidden;
     }
     .flying-arrow {
-        color: white;
+        --base-color: #00ff00;
+    }
+    .flying-arrow[data-measure-progress="0.000"],
+    .flying-arrow[data-measure-progress="0.250"],
+    .flying-arrow[data-measure-progress="0.500"],
+    .flying-arrow[data-measure-progress="0.750"] {
+        --base-color: #ff6200;
+    }
+    .flying-arrow[data-measure-progress="0.125"],
+    .flying-arrow[data-measure-progress="0.375"],
+    .flying-arrow[data-measure-progress="0.625"],
+    .flying-arrow[data-measure-progress="0.875"] {
+        --base-color: #0095ff;
+    }
+    .flying-arrow {
+        color: var(--base-color);
         position: absolute;
-        animation: 2s fly-arrow linear;
-        font-size: 40px;
-        bottom: -40px;
+        animation-name: fly-arrow;
+        animation-timing-function: linear;
+        font-size: 48px;
+        bottom: -48px;
     }
     @keyframes fly-arrow {
-        0% { bottom: -40px }
-        74.999% { color: white }
-        75% { color: orange; }
-        100% { bottom: 100% }
+        0% { bottom: -48px }
+        79.999% { color: var(--base-color); opacity: 1; }
+        80% { color: white; opacity: 0.2; }
+        100% { color: white; opacity: 0.2; bottom: 100%; }
     }
 </style>
