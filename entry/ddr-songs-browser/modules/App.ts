@@ -22,17 +22,25 @@ function getElementById(id: string): HTMLElement {
 }
 
 const gui = {
-    pack_list: getElementById("pack_list"),
     active_song_player: getElementOfClassById("active_song_player", HTMLAudioElement),
-    active_song_details: getElementById("active_song_details"),
-    play_random_song_btn: getElementById("play_random_song_btn"),
+    current_song_view_banner: getElementOfClassById("current_song_view_banner", HTMLImageElement),
+    current_song_view_cdtitle: getElementOfClassById("current_song_view_cdtitle", HTMLImageElement),
+    current_song_view_title: getElementById("current_song_view_title"),
+    current_song_view_date: getElementById("current_song_view_date"),
+    current_song_view_artist: getElementById("current_song_view_artist"),
+    current_song_error_message_holder: getElementById("current_song_error_message_holder"),
+
+    current_pack_view_title: getElementById("current_pack_view_title"),
+    current_pack_view_banner: getElementOfClassById("current_pack_view_banner", HTMLImageElement),
+    current_pack_view_songs_list: getElementById("current_pack_view_songs_list"),
+
     gamepads_states_list: getElementById("gamepads_states_list"),
     hit_status_message_holder: getElementById("hit_status_message_holder"),
     hit_mean_error_message_holder: getElementById("hit_mean_error_message_holder"),
     flying_arrows_box: getElementById("flying_arrows_box"),
-    current_pack_view_title: getElementById("current_pack_view_title"),
-    current_pack_view_banner: getElementById("current_pack_view_banner"),
-    current_pack_view_songs_list: getElementById("current_pack_view_songs_list"),
+
+    play_random_song_btn: getElementById("play_random_song_btn"),
+    pack_list: getElementById("pack_list"),
 };
 
 function normalizePacks(anyFormatPacks: AnyFormatPack[]) {

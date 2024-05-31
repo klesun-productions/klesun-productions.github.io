@@ -1,0 +1,212 @@
+
+.playback-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 9px;
+}
+.playback-header-song-details-section {
+    display: flex;
+    column-gap: 9px;
+    flex-wrap: wrap;
+    color: white;
+    background-color: rgb(86 11 31 / 58%);
+}
+#current_song_view_cdtitle {
+    object-fit: contain;
+}
+#current_song_error_message_holder {
+    color: red;
+}
+button:not(:disabled) {
+    cursor: pointer;
+}
+.fit-in-relative-parent {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+body {
+    background-color: #232323;
+    display: flex;
+    height: 100%;
+    margin: 0;
+}
+.header-message {
+    color: white;
+}
+.pack-name-holder {
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    max-width: 180px;
+}
+.pack-item {
+    margin: 6px;
+    display: inline-block;
+    vertical-align: top;
+    border: solid #89ccf3 2px;
+    background-color: white;
+}
+.packed-content {
+    display: flex;
+    flex-direction: column;
+}
+.packed-content {
+    text-align: center;
+}
+.packed-content img {
+    max-width: 180px;
+}
+.song-list {
+    margin: 6px;
+    margin-right: 0px;
+    max-height: 600px;
+    overflow-y: auto;
+    text-align: left;
+    max-width: 180px;
+    overflow-x: hidden;
+    white-space: nowrap;
+    font-size: 12px;
+}
+.content-retrieval-error {
+    color: red;
+}
+img.song-banner,
+img.pack-banner {
+    width: 256px;
+    height: 80px;
+    background-color: #3e3e3e;
+}
+img.song-banner:not([src]),
+img.pack-banner:not([src]) {
+    display: none;
+}
+.play-song-item-btn {
+    margin-right: 3px;
+    cursor: pointer;
+    color: green;
+    border: solid 1px green;
+    border-radius: 50%;
+    padding-left: 3px;
+    padding-right: 1px;
+}
+.play-song-item-btn:hover {
+    color: cyan;
+}
+.current-pack-view {
+    background-color: rgb(11 11 90 / 62%);
+    padding: 18px;
+    text-align: right;
+}
+.current-pack-view-header {
+    display: inline-block;
+    text-align: center;
+    float: left;
+}
+.current-pack-view-header h2 {
+    margin: 0;
+    font-weight: bold;
+    color: #ffd868;
+}
+#current_pack_view_songs_list {
+    display: inline;
+}
+#current_pack_view_songs_list > * {
+    display: inline-block;
+    text-align: center;
+    width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 6px;
+    background-color: rgb(16 79 90 / 83%);
+    border-radius: 6px;
+    border: solid #697789 2px;
+}
+.current-pack-songs-list-entry {
+    cursor: pointer;
+}
+.current-pack-songs-list-entry:hover {
+    box-shadow: #315dcc 0 0 6px 3px;
+}
+.current-pack-songs-list-entry-header {
+    font-weight: bold;
+    color: white;
+}
+#current_pack_view_banner {
+    max-height: 420px;
+}
+#current_pack_view_songs_list > * img {
+    width: 100%;
+    object-fit: cover;
+    height: 80px;
+}
+#current_pack_view_songs_list > * img[src=""] {
+    opacity: 0;
+}
+
+#gamepads_states_list,
+#hit_status_message_holder,
+#hit_mean_error_message_holder {
+    margin-left: auto;
+    white-space: pre;
+}
+#hit_status_message_holder,
+#hit_mean_error_message_holder {
+    background-color: rgba(0, 0, 0, 0.58);
+    min-width: 120px;
+    text-align: right;
+}
+#hit_status_message_holder[data-status-kind="HIT"],
+#hit_mean_error_message_holder {
+    color: #00ff00;
+}
+#hit_status_message_holder[data-status-kind="MISS"] {
+    color: red;
+}
+#gamepads_states_list > * {
+    display: flex;
+    column-gap: 6px;
+}
+#gamepads_states_list > * > *.pressed {
+    color: blue;
+}
+#flying_arrows_box {
+    width: 400px;
+    background: linear-gradient(#1a1a1a 20%, black 20%);
+    position: relative;
+    overflow: hidden;
+}
+.flying-arrow {
+    --base-color: #00ff00;
+}
+.flying-arrow[data-measure-progress="0.000"],
+.flying-arrow[data-measure-progress="0.250"],
+.flying-arrow[data-measure-progress="0.500"],
+.flying-arrow[data-measure-progress="0.750"] {
+    --base-color: #ff6200;
+}
+.flying-arrow[data-measure-progress="0.125"],
+.flying-arrow[data-measure-progress="0.375"],
+.flying-arrow[data-measure-progress="0.625"],
+.flying-arrow[data-measure-progress="0.875"] {
+    --base-color: #0095ff;
+}
+.flying-arrow {
+    color: var(--base-color);
+    position: absolute;
+    animation-name: fly-arrow;
+    animation-timing-function: linear;
+    font-size: 48px;
+    bottom: -48px;
+}
+@keyframes fly-arrow {
+    0% { bottom: -48px }
+    79.999% { color: var(--base-color); opacity: 1; }
+    80% { color: white; opacity: 0.2; }
+    100% { color: white; opacity: 0.2; bottom: 100%; }
+}
+.flying-arrow.was-hit {
+    display: none;
+}

@@ -35,28 +35,31 @@ export type Chart = {
 
 export type BpmUpdate = { beat: number, bpm: number };
 
-export type YaSmParsed = {
+export type SmHeaders = {
     BPMS: BpmUpdate[], // 0.000=100.00;
-    MUSIC: string, // ;
-    TITLE?: string, // ;
-    SUBTITLE?: string, // ;
-    ARTIST?: string, // ;
+    MUSIC: string, // "VerTex^2.ogg",
+    TITLE?: string, // "VerTex²",
+    SUBTITLE?: string, // "[NATEBAT]",
+    ARTIST?: string, // "ZiGZaG",
     TITLETRANSLIT?: string, // ;
     SUBTITLETRANSLIT?: string, // ;
     ARTISTTRANSLIT?: string, // ;
     CREDIT?: string, // ;
-    BANNER?: string, // ;
-    BACKGROUND?: string, // ;
+    BANNER?: string, // "VerTex^2-bn.png",
+    BACKGROUND?: string, // "VerTex^2-bg.png",
     LYRICSPATH?: string, // ;
-    CDTITLE?: string, // ;
-    OFFSET?: number, // 0.000;
-    SAMPLESTART?: number, // 0.000;
-    SAMPLELENGTH?: number, // 0.000;
-    SELECTABLE?: boolean, // YES;
+    CDTITLE?: string, // "./CDTITLES/BEATMANIA IIDX.PNG",
+    OFFSET?: number, // "0.007",
+    SAMPLESTART?: number, // "40.980",
+    SAMPLELENGTH?: number, // "12.800",
+    SELECTABLE?: boolean, // "YES",
     STOPS?: { beat: number, seconds: number }[], // ;
     BGCHANGES?: string, // ;
-    NOTES: Chart[],
     [k: string]: unknown,
+};
+
+export type YaSmParsed = SmHeaders & {
+    NOTES: Chart[],
 };
 
 export class YaSmParserError extends Error {

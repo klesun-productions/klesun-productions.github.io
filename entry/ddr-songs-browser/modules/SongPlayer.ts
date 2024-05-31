@@ -1,30 +1,7 @@
-import type { AnyFormatSong, Song } from "../types/indexed_packs";
-import Dom from "./utils/Dom.js";
+import type { AnyFormatSong } from "../types/indexed_packs";
 import type { BpmUpdate, Measure, MeasureDivision } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
 import type { GamepadStateEvent } from "./types";
-
-function renderSmData(song: Song, songDirUrl: string) {
-    const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
-    const items = [];
-    items.unshift(
-        Dom("span", {}, ARTIST ? " by " + ARTIST : ""),
-        Dom("span", {}, " " + song.smModifiedAt?.slice(0, 10))
-    );
-    if (CDTITLE) {
-        items.unshift(Dom("img", {
-            class: "song-cdtitle",
-            src: songDirUrl + "/" + encodeURIComponent(CDTITLE),
-        }));
-    }
-    if (BANNER) {
-        items.unshift(Dom("img", {
-            class: "song-banner",
-            src: songDirUrl + "/" + encodeURIComponent(BANNER),
-        }));
-    }
-    return items;
-}
 
 function beatsToMs(bpm: number, beats: number) {
     const minute = beats / bpm;
@@ -76,10 +53,15 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
     DATA_DIR_URL: string,
     gui: {
         active_song_player: HTMLAudioElement,
-        active_song_details: HTMLElement,
         flying_arrows_box: HTMLElement,
         hit_status_message_holder: HTMLElement,
         hit_mean_error_message_holder: HTMLElement,
+        current_song_view_banner: HTMLImageElement,
+        current_song_view_cdtitle: HTMLImageElement,
+        current_song_view_title: HTMLElement,
+        current_song_view_date: HTMLElement,
+        current_song_view_artist: HTMLElement,
+        current_song_error_message_holder: HTMLElement,
     },
 }) {
     let activePlayback: null | ActivePlayback = null;
@@ -150,12 +132,18 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         const songDirUrl = packSubdirUrl + "/" +
             encodeURIComponent(song.songName);
 
-        const errorHolder = Dom("span", { style: "color: red" });
+        gui.current_song_view_banner.src = !song.format && song.headers.BANNER ? songDirUrl + "/" + encodeURIComponent(song.headers.BANNER) : "";
+        gui.current_song_view_cdtitle.src = !song.format && song.headers.CDTITLE ? songDirUrl + "/" + encodeURIComponent(song.headers.CDTITLE) : "";
+        gui.current_song_view_title.textContent = song.songName;
+        gui.current_song_view_date.textContent = !song.format ? song.smModifiedAt.slice(0, 10) : "";
+        gui.current_song_view_artist.textContent = !song.format && song.headers.ARTIST ? "by " + song.headers.ARTIST : "";
+        gui.current_song_error_message_holder.textContent = "";
+
         const fileNames = !song.format ? song.restFileNames : song.fileNames;
         const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
             fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
         if (!songFileName) {
-            errorHolder.textContent = "Missing song file in " + fileNames.join(", ");
+            gui.current_song_error_message_holder.textContent = "Missing song file in " + fileNames.join(", ");
         } else {
             gui.active_song_player.src = songDirUrl + "/" + encodeURIComponent(songFileName);
             gui.active_song_player.play();
@@ -164,20 +152,10 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         //     gui.active_song_player.currentTime = +song.headers.SAMPLESTART;
         // }
 
-        gui.active_song_details.innerHTML = "";
-        const detailsItemList = Dom("div", { class: "song-details-item-list" }, [
-            errorHolder, Dom("span", { class: "song-name" }, song.songName),
-        ]);
-        gui.active_song_details.appendChild(
-            detailsItemList
-        );
-
         if (song.format) {
             return;
         }
 
-        const items = renderSmData(song, songDirUrl);
-        detailsItemList.append(...items);
         const { BACKGROUND } = song.headers;
         const bgFileName = BACKGROUND && song.restFileNames.find(n => n.toLowerCase() === BACKGROUND.toLowerCase()) ||
             song.restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));

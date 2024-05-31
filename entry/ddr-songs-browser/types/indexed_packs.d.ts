@@ -1,20 +1,9 @@
+import type { SmHeaders } from "../modules/YaSmParser";
 
 
 export type Song = {
   "songName": "VerTex^2",
-  "headers": {
-    "MUSIC": "VerTex^2.ogg",
-    "OFFSET": "0.007",
-    "SAMPLESTART": "40.980",
-    "SAMPLELENGTH": "12.800",
-    "SELECTABLE": "YES",
-    "TITLE"?: "VerTex²",
-    "SUBTITLE"?: "[NATEBAT]",
-    "ARTIST"?: "ZiGZaG",
-    "BANNER"?: "VerTex^2-bn.png",
-    "BACKGROUND"?: "VerTex^2-bg.png",
-    "CDTITLE"?: "./CDTITLES/BEATMANIA IIDX.PNG",
-  },
+  "headers": Record<keyof SmHeaders, string>,
   "smFileName": "VerTex^2.sm",
   "smMd5": "89ea424ff6756b18d1a2368eabb2637f",
   "smModifiedAt": "2011-03-14T12:11:12.000Z",
