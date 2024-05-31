@@ -1,8 +1,10 @@
 
-import type { AnyFormatPack } from "../types/indexed_packs";
+import type { AnyFormatPack, AnyFormatSong, Pack } from "../types/indexed_packs";
 import PackCard from "../components/PackCard";
 import GamepadControl from "./GamepadControl";
 import SongPlayer from "./SongPlayer";
+import type { PlaySongParams } from "../types/SongPlayer";
+import Dom from "./utils/Dom.js";
 
 function getElementOfClassById<
     TCls extends abstract new (...args: never) => InstanceType<TCls>
@@ -28,6 +30,9 @@ const gui = {
     hit_status_message_holder: getElementById("hit_status_message_holder"),
     hit_mean_error_message_holder: getElementById("hit_mean_error_message_holder"),
     flying_arrows_box: getElementById("flying_arrows_box"),
+    current_pack_view_title: getElementById("current_pack_view_title"),
+    current_pack_view_banner: getElementById("current_pack_view_banner"),
+    current_pack_view_songs_list: getElementById("current_pack_view_songs_list"),
 };
 
 function normalizePacks(anyFormatPacks: AnyFormatPack[]) {
@@ -65,6 +70,41 @@ function normalizePacks(anyFormatPacks: AnyFormatPack[]) {
     return packs;
 }
 
+function initializeSelectedPackView(
+    pack: Pack,
+    packSubdirUrl: string,
+    chooseSong: (song: AnyFormatSong) => void
+) {
+    if (pack.imgFileName) {
+        const src = packSubdirUrl + "/" + encodeURIComponent(pack.imgFileName);
+        gui.current_pack_view_banner.setAttribute("src", src);
+    } else {
+        gui.current_pack_view_banner.removeAttribute("src");
+    }
+    gui.current_pack_view_title.textContent = decodeURIComponent(
+        pack.packName.replace(/\.zip(?:\.\d+)?$/, "")
+    );
+    gui.current_pack_view_songs_list.innerHTML = "";
+    for (const song of pack.songs) {
+        const songDirUrl = packSubdirUrl + "/" +
+            encodeURIComponent(song.songName);
+        gui.current_pack_view_songs_list.appendChild(Dom("li", {
+            class: "current-pack-songs-list-entry",
+            onclick: () => chooseSong(song),
+        }, [
+            Dom("div", {
+                class: "current-pack-songs-list-entry-header",
+            }, song.songName),
+            Dom("img", {
+                loading: "lazy",
+                class: "current-pack-songs-list-entry-image",
+                src: song.format || !song.headers.BANNER ? "" :
+                    songDirUrl + "/" + encodeURIComponent(song.headers.BANNER),
+            }),
+        ]));
+    }
+}
+
 export default async function ({
     DATA_DIR_URL,
     whenPacks,
@@ -86,11 +126,21 @@ export default async function ({
 
     const havingValidSong = packs.filter(p => p.songs.some(s => !s.format));
 
+    const playSong = ({ song, pack }: PlaySongParams) => {
+        const packSubdirUrl = DATA_DIR_URL + "/packs/" +
+            encodeURIComponent(pack.packName) + "/" +
+            encodeURIComponent(pack.subdir);
+        initializeSelectedPackView(pack, packSubdirUrl, song => {
+            player.playSong({ song, packSubdirUrl });
+        });
+        player.playSong({ song, packSubdirUrl });
+    };
+
     const playRandomSong = () => {
         const pack = havingValidSong[Math.floor(Math.random() * havingValidSong.length)];
         const validSongs = pack.songs.filter(s => !s.format);
         const song = validSongs[Math.floor(Math.random() * validSongs.length)];
-        player.playSong({ pack, song });
+        playSong({ pack, song });
         gui.active_song_player.onended = playRandomSong;
     };
 
@@ -98,7 +148,7 @@ export default async function ({
 
     let i = 0;
     for (const pack of packs) {
-        const packDom = PackCard({ pack, DATA_DIR_URL, playSong: player.playSong });
+        const packDom = PackCard({ pack, DATA_DIR_URL, playSong });
         gui.pack_list.appendChild(packDom);
         if (++i % 10 === 0) {
             await new Promise(_ => setTimeout(_, 100));

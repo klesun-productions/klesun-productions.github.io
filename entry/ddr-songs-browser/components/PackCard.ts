@@ -13,7 +13,7 @@ export default function PackCard({ pack, DATA_DIR_URL, playSong }: {
         packName.replace(/\.zip(?:\.\d+)?$/, "")
     );
     const packCard = Dom("div", { class: "pack-item" }, [
-        Dom("div", {}, pack.subdirModifiedAt),
+        Dom("div", {}, pack.subdirModifiedAt.slice(0, 10)),
         Dom("div", { class: "pack-name-holder" }, [
             Dom("span", {}, decodedPackName),
             Dom("a", {

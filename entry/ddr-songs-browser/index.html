@@ -4,7 +4,7 @@
 
 <body>
     <div style="flex: 1; display: flex; flex-direction: column; height: 100%">
-        <div style="display: flex; flex-direction: column">
+        <div class="playback-header">
             <div style="display: flex">
                 <audio id="active_song_player" controls="controls" style="flex: 1; height: 24px;"></audio>
             </div>
@@ -12,14 +12,22 @@
                 <div id="active_song_details" style="color: white"></div>
                 <div>
                     <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
+                    <div id="gamepads_states_list"> </div>
+                    <div id="hit_status_message_holder"> </div>
+                    <div id="hit_mean_error_message_holder"> </div>
                 </div>
             </div>
-            <div id="gamepads_states_list"> </div>
-            <div id="hit_status_message_holder"> </div>
-            <div id="hit_mean_error_message_holder"> </div>
         </div>
         <div style="flex: 1; position: relative">
             <div class="fit-in-relative-parent" style="overflow-y: auto">
+                <div class="current-pack-view">
+                    <div class="current-pack-view-header">
+                        <h2 id="current_pack_view_title"></h2>
+                        <img id="current_pack_view_banner"/>
+                    </div>
+                    <ul id="current_pack_view_songs_list"></ul>
+                    <br clear="all"/>
+                </div>
                 <div class="header-message">
                     <h2>DDR Songs Browser</h2>
                     <p>Hello. <a href="https://search.stepmaniaonline.net/">stepmaniaonline</a> rocks, but it does not have much filter criteria, does not show author, difficulty, etc.. and it's relatively slow</p>
@@ -35,6 +43,14 @@
 </body>
 
 <style>
+    .playback-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 9px;
+    }
+    button:not(:disabled) {
+        cursor: pointer;
+    }
     .fit-in-relative-parent {
         position: absolute;
         left: 0;
@@ -115,6 +131,52 @@
     }
     .song-details-item-list > * {
         margin-right: 6px;
+    }
+    .current-pack-view {
+        background-color: rgba(0, 0, 139, 0.45);
+        padding: 18px;
+        text-align: right;
+    }
+    .current-pack-view-header {
+        display: inline-block;
+        text-align: center;
+        float: left;
+    }
+    .current-pack-view-header h2 {
+        margin: 0;
+        font-weight: bold;
+        color: #ffd868;
+    }
+    #current_pack_view_songs_list {
+        display: inline;
+    }
+    #current_pack_view_songs_list > * {
+        display: inline-block;
+        text-align: center;
+        width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 6px;
+        background-color: rgb(16 79 90 / 60%);
+        border-radius: 6px;
+    }
+    .current-pack-songs-list-entry {
+        cursor: pointer;
+    }
+    .current-pack-songs-list-entry:hover {
+        box-shadow: #315dcc 0 0 6px 3px;
+    }
+    .current-pack-songs-list-entry-header {
+        font-weight: bold;
+        color: white;
+    }
+    #current_pack_view_songs_list > * img {
+        width: 100%;
+        object-fit: cover;
+        height: 80px;
+    }
+    #current_pack_view_songs_list > * img[src=""] {
+        opacity: 0;
     }
 
     #gamepads_states_list,

@@ -1,6 +1,5 @@
-import type { Song } from "../types/indexed_packs";
+import type { AnyFormatSong, Song } from "../types/indexed_packs";
 import Dom from "./utils/Dom.js";
-import type { PlaySongParams } from "../types/SongPlayer";
 import type { BpmUpdate, Measure, MeasureDivision } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
 import type { GamepadStateEvent } from "./types";
@@ -9,12 +8,8 @@ function renderSmData(song: Song, songDirUrl: string) {
     const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
     const items = [];
     items.unshift(
-        Dom("span", {}, TITLE ? " " + TITLE : ""),
-        Dom("span", {}, SUBTITLE ? " " + SUBTITLE : ""),
         Dom("span", {}, ARTIST ? " by " + ARTIST : ""),
-        Dom("span", {}, " " + song.smModifiedAt),
-        Dom("span", {}, " " + song.smMd5),
-        Dom("span", {}, JSON.stringify(rest))
+        Dom("span", {}, " " + song.smModifiedAt?.slice(0, 10))
     );
     if (CDTITLE) {
         items.unshift(Dom("img", {
@@ -145,16 +140,13 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         }
     };
 
-    const playSong = async ({ pack, song }: PlaySongParams) => {
+    const playSong = async ({ packSubdirUrl, song }: { packSubdirUrl: string, song: AnyFormatSong }) => {
         const playback: ActivePlayback = {
             launchedArrows: new Set(),
             hitErrorMsSum: 0,
             totalHits: 0,
         };
         activePlayback = playback;
-        const packSubdirUrl = DATA_DIR_URL + "/packs/" +
-            encodeURIComponent(pack.packName) + "/" +
-            encodeURIComponent(pack.subdir);
         const songDirUrl = packSubdirUrl + "/" +
             encodeURIComponent(song.songName);
 
@@ -173,16 +165,12 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         // }
 
         gui.active_song_details.innerHTML = "";
-        const detailsItemList = Dom("div", { class: "song-details-item-list" }, [errorHolder]);
+        const detailsItemList = Dom("div", { class: "song-details-item-list" }, [
+            errorHolder, Dom("span", { class: "song-name" }, song.songName),
+        ]);
         gui.active_song_details.appendChild(
             detailsItemList
         );
-        if (pack.imgFileName) {
-            detailsItemList.prepend(Dom("img", {
-                src: packSubdirUrl + "/" +
-                    encodeURIComponent(pack.imgFileName),
-            }));
-        }
 
         if (song.format) {
             return;
