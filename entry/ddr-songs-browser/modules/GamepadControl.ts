@@ -1,8 +1,9 @@
+import type { GamepadStateEvent } from "./types";
 
 export default function GamepadControl({ gamepads_states_list }: {
     gamepads_states_list: HTMLElement,
 }) {
-    const GAMEPAD_ID_TO_BUTTONS_STATE: Record<string, boolean[]> = {};
+    const GAMEPAD_ID_TO_BUTTONS_STATE: Record<string, Set<number>> = {};
 
     function updateButtonClass(gamepadId: string, buttonIndex: number, state: boolean) {
         let existing = null;
@@ -29,23 +30,49 @@ export default function GamepadControl({ gamepads_states_list }: {
         }
     }
 
-    function progressGameLoop() {
-        for (const gamepad of navigator.getGamepads()) {
+    function progressGameLoop(onStateChange: (event: GamepadStateEvent) => void) {
+        const gamepads = navigator.getGamepads();
+        for (let i = 0; i < gamepads.length; ++i) {
+            const gamepad = gamepads[i];
             if (!gamepad) {
                 continue;
             }
-            const oldState = GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] ?? [false, false, false, false];
-            const newState = gamepad.buttons.map(b => b.pressed);
-            for (let i = 0; i < newState.length; ++i) {
-                const oldPressed = oldState[i] ?? false;
-                const newPressed = newState[i];
+            if (!(gamepad.id in GAMEPAD_ID_TO_BUTTONS_STATE)) {
+                GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] = new Set();
+            }
+            const state = GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] ?? new Set();
+            const changes = [];
+            for (let j = 0; j < gamepad.buttons.length; ++j) {
+                const button = gamepad.buttons[j];
+                const oldPressed = state.has(j);
+                const newPressed = button.pressed || button.touched || button.value > 0;
                 if (oldPressed !== newPressed) {
-                    updateButtonClass(gamepad.id, i, newPressed);
+                    updateButtonClass(gamepad.id, j, newPressed);
+                    changes.push({
+                        buttonIndex: j,
+                        newState: newPressed,
+                    });
+                    if (newPressed) {
+                        state.add(j);
+                    } else {
+                        state.delete(j);
+                    }
                 }
             }
-            GAMEPAD_ID_TO_BUTTONS_STATE[gamepad.id] = gamepad.buttons.map(b => b.pressed);
+            if (changes.length > 0) {
+                onStateChange({
+                    gamepadId: gamepad.id,
+                    timestamp: gamepad.timestamp,
+                    changes,
+                });
+            }
         }
     }
 
-    return { progressGameLoop };
+    function startGameLoop(onStateChange: (event: GamepadStateEvent) => void) {
+        progressGameLoop(onStateChange);
+        setInterval(() => progressGameLoop(onStateChange));
+    }
+
+    return { startGameLoop };
 };

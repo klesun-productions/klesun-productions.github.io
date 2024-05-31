@@ -14,7 +14,9 @@
                     <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
                 </div>
             </div>
-            <div id="gamepads_states_list"></div>
+            <div id="gamepads_states_list"> </div>
+            <div id="hit_status_message_holder"> </div>
+            <div id="hit_mean_error_message_holder"> </div>
         </div>
         <div style="flex: 1; position: relative">
             <div class="fit-in-relative-parent" style="overflow-y: auto">
@@ -115,6 +117,25 @@
         margin-right: 6px;
     }
 
+    #gamepads_states_list,
+    #hit_status_message_holder,
+    #hit_mean_error_message_holder {
+        margin-left: auto;
+        white-space: pre;
+    }
+    #hit_status_message_holder,
+    #hit_mean_error_message_holder {
+        background-color: rgba(0, 0, 0, 0.58);
+        min-width: 120px;
+        text-align: right;
+    }
+    #hit_status_message_holder[data-status-kind="HIT"],
+    #hit_mean_error_message_holder {
+        color: #00ff00;
+    }
+    #hit_status_message_holder[data-status-kind="MISS"] {
+        color: red;
+    }
     #gamepads_states_list > * {
         display: flex;
         column-gap: 6px;
@@ -156,5 +177,8 @@
         79.999% { color: var(--base-color); opacity: 1; }
         80% { color: white; opacity: 0.2; }
         100% { color: white; opacity: 0.2; bottom: 100%; }
+    }
+    .flying-arrow.was-hit {
+        display: none;
     }
 </style>

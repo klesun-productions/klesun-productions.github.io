@@ -25,6 +25,8 @@ const gui = {
     active_song_details: getElementById("active_song_details"),
     play_random_song_btn: getElementById("play_random_song_btn"),
     gamepads_states_list: getElementById("gamepads_states_list"),
+    hit_status_message_holder: getElementById("hit_status_message_holder"),
+    hit_mean_error_message_holder: getElementById("hit_mean_error_message_holder"),
     flying_arrows_box: getElementById("flying_arrows_box"),
 };
 
@@ -74,10 +76,11 @@ export default async function ({
 }) {
     const player = SongPlayer({ DATA_DIR_URL, gui });
     const gamepadControl = GamepadControl(gui);
-    whenFirstGamepadConnected.then(e => {
-        gamepadControl.progressGameLoop();
-        setInterval(() => gamepadControl.progressGameLoop());
-    });
+    whenFirstGamepadConnected.then(
+        e => gamepadControl.startGameLoop(event => {
+            player.handleGamepadInput(event);
+        })
+    );
     const anyFormatPacks = await whenPacks;
     const packs = normalizePacks(anyFormatPacks);
 

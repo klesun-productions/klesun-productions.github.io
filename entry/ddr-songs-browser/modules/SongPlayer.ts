@@ -3,6 +3,7 @@ import Dom from "./utils/Dom.js";
 import type { PlaySongParams } from "../types/SongPlayer";
 import type { BpmUpdate, Measure, MeasureDivision } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
+import type { GamepadStateEvent } from "./types";
 
 function renderSmData(song: Song, songDirUrl: string) {
     const { TITLE, SUBTITLE, ARTIST, BANNER, BACKGROUND, CDTITLE, MUSIC, OFFSET, SAMPLESTART, SAMPLELENGTH, SELECTABLE, ...rest } = song.headers;
@@ -60,47 +61,95 @@ function countApm(bpms: BpmUpdate[], measures: Measure[]) {
 const ARROW_FLY_SECONDS = 2;
 const ARROW_TARGET_PROGRESS = 0.80;
 
+type LaunchedArrow = {
+    buttonIndex: number,
+    noteValue: NoteValue | string,
+    targetTimestamp: DOMHighResTimeStamp,
+    dom: HTMLElement,
+    wasHit: boolean,
+};
+
+type ActivePlayback = {
+    launchedArrows: Set<LaunchedArrow>,
+    hitErrorMsSum: number,
+    totalHits: number,
+};
+
 export default function SongPlayer({ DATA_DIR_URL, gui }: {
     DATA_DIR_URL: string,
     gui: {
         active_song_player: HTMLAudioElement,
         active_song_details: HTMLElement,
         flying_arrows_box: HTMLElement,
+        hit_status_message_holder: HTMLElement,
+        hit_mean_error_message_holder: HTMLElement,
     },
 }) {
-    let activePlaybackId = Symbol();
+    let activePlayback: null | ActivePlayback = null;
 
-    const launchNote = (measureDivision: MeasureDivision, divisionIndex: number, divider: number) => {
+    const launchNote = (
+        playback: ActivePlayback,
+        measureDivision: MeasureDivision,
+        targetTimestamp: DOMHighResTimeStamp,
+        divisionIndex: number,
+        divider: number
+    ) => {
         for (let column = 0; column < measureDivision.length; ++column) {
             const value = measureDivision[column];
             if (value !== "0") {
-                const arrow = document.createElement("div");
-                arrow.classList.toggle("flying-arrow", true);
-                arrow.setAttribute("data-measure-progress", (divisionIndex / divider).toFixed(3));
-                arrow.setAttribute("data-column", String(column));
+                const dom = document.createElement("div");
+                dom.classList.toggle("flying-arrow", true);
+                dom.setAttribute("data-measure-progress", (divisionIndex / divider).toFixed(3));
+                dom.setAttribute("data-column", String(column));
                 let displayValue = value;
                 if (value === NoteValue.TAP) {
                     displayValue = {
                         0: "🡸",
-                        1: "🡻",
+                        1: "🡺",
                         2: "🡹",
-                        3: "🡺",
+                        3: "🡻",
                     }[column] ?? value;
                 } else if (value === NoteValue.MINE) {
                     displayValue = "💣";
                 }
-                arrow.textContent = displayValue;
-                arrow.style.left = (column + 1) * 60 + "px";
-                arrow.style.animationDuration = ARROW_FLY_SECONDS + "s";
-                gui.flying_arrows_box.appendChild(arrow);
-                setTimeout(() => arrow.remove(), ARROW_FLY_SECONDS * 1000);
+                dom.textContent = displayValue;
+                const x = {
+                    0: 0,
+                    1: 3,
+                    2: 2,
+                    3: 1,
+                }[column] ?? column;
+                dom.style.left = (x + 1) * 60 + "px";
+                // TODO: use targetTimestamp and https://developer.mozilla.org/en-US/docs/Web/API/Animation/startTime
+                dom.style.animationDuration = ARROW_FLY_SECONDS + "s";
+                gui.flying_arrows_box.appendChild(dom);
+                const launchedArrow: LaunchedArrow = {
+                    buttonIndex: column,
+                    noteValue: value,
+                    targetTimestamp: targetTimestamp,
+                    dom: dom,
+                    wasHit: false,
+                };
+                playback.launchedArrows.add(launchedArrow);
+                setTimeout(() => {
+                    if (!launchedArrow.wasHit) {
+                        gui.hit_status_message_holder.textContent = "miss!";
+                        gui.hit_status_message_holder.setAttribute("data-status-kind", "MISS");
+                    }
+                    playback.launchedArrows.delete(launchedArrow);
+                    dom.remove();
+                }, ARROW_FLY_SECONDS * 1000);
             }
         }
     };
 
     const playSong = async ({ pack, song }: PlaySongParams) => {
-        const playbackId = Symbol();
-        activePlaybackId = playbackId;
+        const playback: ActivePlayback = {
+            launchedArrows: new Set(),
+            hitErrorMsSum: 0,
+            totalHits: 0,
+        };
+        activePlayback = playback;
         const packSubdirUrl = DATA_DIR_URL + "/packs/" +
             encodeURIComponent(pack.packName) + "/" +
             encodeURIComponent(pack.subdir);
@@ -187,21 +236,56 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
             const divider = measure.length;
             for (let divisionIndex = 0; divisionIndex < measure.length; ++divisionIndex) {
                 const division = measure[divisionIndex];
-                const expectedMs = firstBeatMs + getMsAt(
+                const expectedRelMs = firstBeatMs + getMsAt(
                     BPMS,
                     measureIndex + divisionIndex / divider
                 );
-                const waitMs = expectedMs - gui.active_song_player.currentTime * 1000;
+                const songProgressMs = gui.active_song_player.currentTime * 1000;
+                const waitMs = expectedRelMs - songProgressMs;
+                const targetTimestamp = window.performance.now() + waitMs + 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
                 if (waitMs >= 4) {
                     await new Promise(resolve => setTimeout(resolve, waitMs));
+                } else if (waitMs <= -ARROW_FLY_SECONDS) {
+                    continue; // song is ahead of arrows by several seconds: may happen if you fast-forward
                 }
-                if (playbackId !== activePlaybackId) {
+                if (playback !== activePlayback) {
                     return;
                 }
-                launchNote(division, divisionIndex, divider);
+                launchNote(playback, division, targetTimestamp, divisionIndex, divider);
             }
         }
     };
 
-    return { playSong };
+    const handleGamepadInput = (event: GamepadStateEvent) => {
+        if (!activePlayback) {
+            return;
+        }
+        const hitArrows = [...activePlayback.launchedArrows].filter(aa => {
+            return event.changes.some(change => {
+                if (aa.buttonIndex !== change.buttonIndex) {
+                    return false;
+                }
+                if (Math.abs(event.timestamp - aa.targetTimestamp) > 200) {
+                    return false;
+                }
+                return change.newState === true && aa.noteValue === NoteValue.TAP
+                    || change.newState === true && aa.noteValue === NoteValue.HOLD_HEAD
+                    || change.newState === true && aa.noteValue === NoteValue.ROLL_HEAD
+                    || change.newState === true && aa.noteValue === NoteValue.MINE
+                    || change.newState === false && aa.noteValue === NoteValue.TAIL;
+            });
+        });
+        for (const hitArrow of hitArrows) {
+            hitArrow.dom.classList.toggle("was-hit", true);
+            hitArrow.wasHit = true;
+            const errorMs = event.timestamp - hitArrow.targetTimestamp;
+            gui.hit_status_message_holder.textContent = errorMs.toFixed(1) + "ms hit!";
+            gui.hit_status_message_holder.setAttribute("data-status-kind", "HIT");
+            activePlayback.hitErrorMsSum += errorMs;
+            ++activePlayback.totalHits;
+            gui.hit_mean_error_message_holder.textContent = "AVG " + (activePlayback.hitErrorMsSum / activePlayback.totalHits).toFixed(1) + " ms hit!";
+        }
+    };
+
+    return { playSong, handleGamepadInput };
 };
