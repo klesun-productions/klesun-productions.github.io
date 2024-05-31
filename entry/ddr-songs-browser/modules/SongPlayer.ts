@@ -18,11 +18,13 @@ function renderSmData(song: Song, songDirUrl: string) {
     );
     if (CDTITLE) {
         items.unshift(Dom("img", {
+            class: "song-cdtitle",
             src: songDirUrl + "/" + encodeURIComponent(CDTITLE),
         }));
     }
     if (BANNER) {
         items.unshift(Dom("img", {
+            class: "song-banner",
             src: songDirUrl + "/" + encodeURIComponent(BANNER),
         }));
     }
@@ -177,7 +179,7 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         );
         if (pack.imgFileName) {
             detailsItemList.prepend(Dom("img", {
-                src: packSubdirUrl +
+                src: packSubdirUrl + "/" +
                     encodeURIComponent(pack.imgFileName),
             }));
         }
