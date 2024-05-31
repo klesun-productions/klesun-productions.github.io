@@ -3,7 +3,9 @@ import { loadModule } from "https://klesun.github.io/ts-browser/src/ts-browser.j
 const BACKEND_URL = "https://api.klesun.net";
 const DATA_DIR_URL = BACKEND_URL + "/entry/ddr-songs-browser/data";
 
-const whenPacks = fetch(DATA_DIR_URL + "/indexed_packs.json.gz")
+// const whenPacks = fetch(DATA_DIR_URL + "/indexed_packs.json.gz")
+// const whenPacks = fetch("https://drive.google.com/uc?export=download&id=10uuDp3NRtRiywShjmo1cPv_169SSLMhH")
+const whenPacks = fetch("https://klesun-misc.github.io/ddr-songs-index/indexed_packs.json")
     .then(rs => rs.json());
 
 const whenFirstGamepadConnected = new Promise(resolve => {

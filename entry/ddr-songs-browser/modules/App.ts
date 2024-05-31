@@ -2,7 +2,7 @@
 import type { AnyFormatPack, AnyFormatSong, Pack } from "../types/indexed_packs";
 import PackCard from "../components/PackCard";
 import GamepadControl from "./GamepadControl";
-import SongPlayer from "./SongPlayer";
+import SongPlayer, { getBgFileName, getBnFileName } from "./SongPlayer";
 import type { PlaySongParams } from "../types/SongPlayer";
 import Dom from "./utils/Dom.js";
 
@@ -32,13 +32,15 @@ const gui = {
 
     current_pack_view_title: getElementById("current_pack_view_title"),
     current_pack_view_banner: getElementOfClassById("current_pack_view_banner", HTMLImageElement),
-    current_pack_view_songs_list: getElementById("current_pack_view_songs_list"),
+    current_pack_view_songs_list: getElementOfClassById("current_pack_view_songs_list", HTMLUListElement),
 
+    current_song_difficulties_list: getElementOfClassById("current_song_difficulties_list", HTMLUListElement),
     gamepads_states_list: getElementById("gamepads_states_list"),
     hit_status_message_holder: getElementById("hit_status_message_holder"),
     hit_mean_error_message_holder: getElementById("hit_mean_error_message_holder"),
     flying_arrows_box: getElementById("flying_arrows_box"),
 
+    song_names_options: getElementById("song_names_options"),
     play_random_song_btn: getElementById("play_random_song_btn"),
     pack_list: getElementById("pack_list"),
 };
@@ -74,7 +76,17 @@ function normalizePacks(anyFormatPacks: AnyFormatPack[]) {
         });
         return pack.songs.length > 0;
     });
-    packs.sort((a, b) => Math.max(3, Math.min(b.songs.length, 40)) - Math.max(4, Math.min(a.songs.length, 40)));
+    packs.sort((a, b) => {
+        return Math.max(4, Math.min(b.songs.length, 40)) - Math.max(4, Math.min(a.songs.length, 40));
+    }).sort((a,b) => {
+        if (a.imgFileName && !b.imgFileName) {
+            return -1;
+        } else if (b.imgFileName && !a.imgFileName) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
     return packs;
 }
 
@@ -96,6 +108,7 @@ function initializeSelectedPackView(
     for (const song of pack.songs) {
         const songDirUrl = packSubdirUrl + "/" +
             encodeURIComponent(song.songName);
+        const imageName = getBnFileName(song) ?? getBgFileName(song);
         gui.current_pack_view_songs_list.appendChild(Dom("li", {
             class: "current-pack-songs-list-entry",
             onclick: () => chooseSong(song),
@@ -106,8 +119,8 @@ function initializeSelectedPackView(
             Dom("img", {
                 loading: "lazy",
                 class: "current-pack-songs-list-entry-image",
-                src: song.format || !song.headers.BANNER ? "" :
-                    songDirUrl + "/" + encodeURIComponent(song.headers.BANNER),
+                src: !imageName ? "" :
+                    songDirUrl + "/" + encodeURIComponent(imageName),
             }),
         ]));
     }
@@ -122,7 +135,7 @@ export default async function ({
     whenPacks: Promise<AnyFormatPack[]>,
     whenFirstGamepadConnected: Promise<GamepadEvent>,
 }) {
-    const player = SongPlayer({ DATA_DIR_URL, gui });
+    const player = SongPlayer({ gui });
     const gamepadControl = GamepadControl(gui);
     whenFirstGamepadConnected.then(
         e => gamepadControl.startGameLoop(event => {
@@ -131,6 +144,13 @@ export default async function ({
     );
     const anyFormatPacks = await whenPacks;
     const packs = normalizePacks(anyFormatPacks);
+    gui.song_names_options.append(...packs.flatMap(
+        pack => pack.songs.map(
+            song => Dom("option", {
+                value: song.songName,
+            }, decodeURIComponent(pack.packName.replace(/.zip$/, "")))
+        )
+    ));
 
     const havingValidSong = packs.filter(p => p.songs.some(s => !s.format));
 
@@ -156,7 +176,12 @@ export default async function ({
 
     let i = 0;
     for (const pack of packs) {
-        const packDom = PackCard({ pack, DATA_DIR_URL, playSong });
+        const packDom = PackCard({ pack, DATA_DIR_URL });
+        packDom.onclick = () => {
+            const randomIndex = Math.floor(Math.random() * pack.songs.length);
+            const randomSong = pack.songs[randomIndex];
+            playSong({ pack, song: randomSong });
+        };
         gui.pack_list.appendChild(packDom);
         if (++i % 10 === 0) {
             await new Promise(_ => setTimeout(_, 100));

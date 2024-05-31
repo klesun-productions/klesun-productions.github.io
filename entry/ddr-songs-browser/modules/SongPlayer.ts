@@ -2,6 +2,7 @@ import type { AnyFormatSong } from "../types/indexed_packs";
 import type { BpmUpdate, Measure, MeasureDivision } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
 import type { GamepadStateEvent } from "./types";
+import Dom from "./utils/Dom.js";
 
 function beatsToMs(bpm: number, beats: number) {
     const minute = beats / bpm;
@@ -49,10 +50,33 @@ type ActivePlayback = {
     totalHits: number,
 };
 
-export default function SongPlayer({ DATA_DIR_URL, gui }: {
-    DATA_DIR_URL: string,
+export function getBnFileName(song: AnyFormatSong) {
+    const fileNames = !song.format ? song.restFileNames : song.fileNames;
+    if (!song.format && song.headers.BANNER) {
+        const found = song.restFileNames.find(n => n.toLowerCase() === song.headers.BANNER.toLowerCase());
+        if (found) {
+            return found;
+        }
+    }
+    return fileNames.find(n => n.match(/bn.*\.(png|jpe?g|bmp)/i))
+        ?? fileNames.find(n => n.toLowerCase().startsWith(song.songName.toLowerCase()) && n.match(/\.(png|jpe?g|bmp)/i));
+}
+
+export function getBgFileName(song: AnyFormatSong) {
+    const fileNames = !song.format ? song.restFileNames : song.fileNames;
+    if (!song.format && song.headers.BACKGROUND) {
+        const found = song.restFileNames.find(n => n.toLowerCase() === song.headers.BACKGROUND.toLowerCase());
+        if (found) {
+            return found;
+        }
+    }
+    return fileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
+}
+
+export default function SongPlayer({ gui }: {
     gui: {
         active_song_player: HTMLAudioElement,
+        current_song_difficulties_list: HTMLUListElement,
         flying_arrows_box: HTMLElement,
         hit_status_message_holder: HTMLElement,
         hit_mean_error_message_holder: HTMLElement,
@@ -129,15 +153,18 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
             totalHits: 0,
         };
         activePlayback = playback;
+        console.log("ololo playing song", song);
         const songDirUrl = packSubdirUrl + "/" +
             encodeURIComponent(song.songName);
 
-        gui.current_song_view_banner.src = !song.format && song.headers.BANNER ? songDirUrl + "/" + encodeURIComponent(song.headers.BANNER) : "";
+        const bnFileName = getBnFileName(song);
+        gui.current_song_view_banner.src = bnFileName ? songDirUrl + "/" + encodeURIComponent(bnFileName) : "";
         gui.current_song_view_cdtitle.src = !song.format && song.headers.CDTITLE ? songDirUrl + "/" + encodeURIComponent(song.headers.CDTITLE) : "";
         gui.current_song_view_title.textContent = song.songName;
         gui.current_song_view_date.textContent = !song.format ? song.smModifiedAt.slice(0, 10) : "";
         gui.current_song_view_artist.textContent = !song.format && song.headers.ARTIST ? "by " + song.headers.ARTIST : "";
         gui.current_song_error_message_holder.textContent = "";
+        gui.current_song_difficulties_list.innerHTML = "";
 
         const fileNames = !song.format ? song.restFileNames : song.fileNames;
         const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
@@ -152,15 +179,13 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         //     gui.active_song_player.currentTime = +song.headers.SAMPLESTART;
         // }
 
+        const bgFileName = getBgFileName(song);
+        document.body.style.backgroundImage = !bgFileName ? "none" :
+            "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
+
         if (song.format) {
             return;
         }
-
-        const { BACKGROUND } = song.headers;
-        const bgFileName = BACKGROUND && song.restFileNames.find(n => n.toLowerCase() === BACKGROUND.toLowerCase()) ||
-            song.restFileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
-        document.body.style.backgroundImage = !bgFileName ? "none" :
-            "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
 
         const smText = await fetch(songDirUrl + "/" + encodeURIComponent(song.smFileName))
             .then(rs => rs.text());
@@ -185,18 +210,28 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
 
         const { BPMS } = parsed;
         const TARGET_APM = 150;
-        const chart = [...parsed.NOTES]
+        const charts = [...parsed.NOTES]
             .filter(c => countApm(BPMS, c.MEASURES) > 0)
-            .filter(c => c.MEASURES.every(m => m.every(d => d.length < 5)))
             .sort((a,b) => {
                 const aTpm = countApm(BPMS, a.MEASURES);
                 const bTpm = countApm(BPMS, b.MEASURES);
                 return Math.abs(aTpm - TARGET_APM) - Math.abs(bTpm - TARGET_APM);
-            })[0];
+            });
+        const chart = charts
+            .find(c => c.MEASURES.every(m => m.every(d => d.length < 5)));
+        gui.current_song_difficulties_list.append(...charts.map(c => Dom("li", {
+            class: c === chart ? "selected-chart" : "",
+        }, [
+            Dom("span", {}, countApm(BPMS, c.MEASURES).toFixed(1)),
+            Dom("span", {}, " "),
+            Dom("span", {}, c.DESCRIPTION + " " + c.DIFFICULTY + " " + c.METER),
+            Dom("span", {}, " "),
+            Dom("span", {}, "buttons: " + c.MEASURES.flatMap(m => m.map(d => d.length)).reduce((a,b) => Math.max(a, b), 0)),
+        ])));
         if (!chart) {
-            console.log("no 4-button charts");
             return;
         }
+
         console.log("playing chart of APM " + countApm(BPMS, chart.MEASURES), chart);
         const firstBeatMs = -(parsed.OFFSET ?? 0) * 1000 - 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
         for (let measureIndex = 0; measureIndex < chart.MEASURES.length; ++measureIndex) {

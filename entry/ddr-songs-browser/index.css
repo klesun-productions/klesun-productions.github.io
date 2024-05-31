@@ -4,6 +4,12 @@
     flex-direction: column;
     margin-bottom: 9px;
 }
+.playback-header-panel {
+    display: flex;
+    justify-content: space-between;
+    min-height: 180px;
+    align-items: flex-start;
+}
 .playback-header-song-details-section {
     display: flex;
     column-gap: 9px;
@@ -14,8 +20,22 @@
 #current_song_view_cdtitle {
     object-fit: contain;
 }
+#current_song_view_banner {
+    max-height: 300px;
+}
 #current_song_error_message_holder {
     color: red;
+}
+#current_song_difficulties_list {
+    color: white;
+    background-color: rgb(21 46 31 / 82%);
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+    padding: 6px;
+}
+li.selected-chart {
+    color: #5a70e3;
 }
 button:not(:disabled) {
     cursor: pointer;
@@ -120,13 +140,15 @@ img.pack-banner:not([src]) {
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 6px;
-    background-color: rgb(16 79 90 / 83%);
+    background-color: rgb(22 46 50 / 83%);
     border-radius: 6px;
     border: solid #697789 2px;
 }
+.pack-item,
 .current-pack-songs-list-entry {
     cursor: pointer;
 }
+.pack-item:hover,
 .current-pack-songs-list-entry:hover {
     box-shadow: #315dcc 0 0 6px 3px;
 }

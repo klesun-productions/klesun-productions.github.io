@@ -8,7 +8,7 @@
             <div style="display: flex">
                 <audio id="active_song_player" controls="controls" style="flex: 1; height: 24px;"></audio>
             </div>
-            <div style="display: flex; justify-content: space-between">
+            <div class="playback-header-panel">
                 <div class="playback-header-song-details-section">
                     <img id="current_song_view_banner"/>
                     <div>
@@ -20,12 +20,19 @@
                     <div id="current_song_error_message_holder"></div>
                 </div>
                 <div>
-                    <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
+                    <ul id="current_song_difficulties_list"></ul>
+                </div>
+                <div>
                     <div id="gamepads_states_list"> </div>
                     <div id="hit_status_message_holder"> </div>
                     <div id="hit_mean_error_message_holder"> </div>
                 </div>
             </div>
+        </div>
+        <div>
+            <button id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
+            <input type="text" list="song_names_options" id="song_search_by_name"/>
+            <datalist id="song_names_options"></datalist>
         </div>
         <div style="flex: 1; position: relative">
             <div class="fit-in-relative-parent" style="overflow-y: auto">

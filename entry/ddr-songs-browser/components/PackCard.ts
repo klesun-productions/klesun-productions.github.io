@@ -1,11 +1,9 @@
 import type { Pack } from "../types/indexed_packs";
-import type { PlaySongParams } from "../types/SongPlayer";
 import Dom from "../modules/utils/Dom.js";
 
-export default function PackCard({ pack, DATA_DIR_URL, playSong }: {
+export default function PackCard({ pack, DATA_DIR_URL }: {
     pack: Pack,
     DATA_DIR_URL: string,
-    playSong: (params: PlaySongParams) => void,
 }) {
     const packDetailsPanel = Dom("div", { class: "packed-content" }, []);
     const { imgFileName, subdir, packName } = pack;
@@ -40,33 +38,6 @@ export default function PackCard({ pack, DATA_DIR_URL, playSong }: {
                 src: subdirUrl + "/" + encodeURIComponent(imgFileName),
             }),
         ],
-        Dom("div", { class: "song-list" }, pack.songs.flatMap(song => {
-            const difficulties = song.format ? [] :
-                song.charts.map(c => c.meter).sort((a,b) => +a - +b);
-            const songDetailsPanel = Dom("div", {}, []);
-            if (!song.format && song.headers["BANNER"]) {
-                songDetailsPanel.appendChild(Dom("img", {
-                    class: "song-banner",
-                    // TODO: use same queueing as in http requests
-                    //src: songDirUrl + '/' + encodeURIComponent(indexedSong.headers['BANNER']),
-                }));
-            }
-            return [Dom("div", { class: "song-item" }, [
-                Dom("div", { class: "song-name-holder" }, [
-                    ...song.format ? [] : [
-                        Dom("span", {
-                            class: "play-song-item-btn",
-                            onclick: () => playSong({ pack, song }),
-                        }, "▶"),
-                    ],
-                    Dom("span", {}, song.songName),
-                    ...song.format ? [] : [
-                        Dom("span", {}, difficulties.join("/")),
-                    ],
-                ]),
-                songDetailsPanel,
-            ])];
-        })),
     ]);
     packDetailsPanel.appendChild(contentDom);
     return packCard;
