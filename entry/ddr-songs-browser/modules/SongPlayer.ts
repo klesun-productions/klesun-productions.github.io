@@ -260,8 +260,12 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
         if (!activePlayback) {
             return;
         }
-        const hitArrows = [...activePlayback.launchedArrows].filter(aa => {
-            return event.changes.some(change => {
+        const hitArrows: LaunchedArrow[] = [];
+        for (const change of event.changes) {
+            const firstArrow = [...activePlayback.launchedArrows].find(aa => {
+                if (aa.wasHit) {
+                    return false;
+                }
                 if (aa.buttonIndex !== change.buttonIndex) {
                     return false;
                 }
@@ -274,7 +278,10 @@ export default function SongPlayer({ DATA_DIR_URL, gui }: {
                     || change.newState === true && aa.noteValue === NoteValue.MINE
                     || change.newState === false && aa.noteValue === NoteValue.TAIL;
             });
-        });
+            if (firstArrow) {
+                hitArrows.push(firstArrow);
+            }
+        }
         for (const hitArrow of hitArrows) {
             hitArrow.dom.classList.toggle("was-hit", true);
             hitArrow.wasHit = true;
