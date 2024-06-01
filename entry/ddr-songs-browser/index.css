@@ -168,11 +168,15 @@ img.pack-banner:not([src]) {
     opacity: 0;
 }
 
+#gamepads_states_list {
+    min-height: 60px;
+}
 #gamepads_states_list,
 #hit_status_message_holder,
 #hit_mean_error_message_holder {
     margin-left: auto;
     white-space: pre;
+    font-size: 48px;
 }
 #hit_status_message_holder,
 #hit_mean_error_message_holder {
@@ -184,7 +188,32 @@ img.pack-banner:not([src]) {
 #hit_mean_error_message_holder {
     color: #00ff00;
 }
-#hit_status_message_holder[data-status-kind="MISS"] {
+#hit_mean_error_message_holder[data-last-precision-rating="BELOW_5ms"],
+#hit_status_message_holder[data-last-precision-rating="BELOW_5ms"] {
+    color: #00ffbb;
+}
+#hit_mean_error_message_holder[data-last-precision-rating="BELOW_10ms"],
+#hit_status_message_holder[data-last-precision-rating="BELOW_10ms"] {
+    color: #00ff00;
+}
+#hit_mean_error_message_holder[data-last-precision-rating="BELOW_30ms"],
+#hit_status_message_holder[data-last-precision-rating="BELOW_30ms"] {
+    color: #aaff00;
+}
+#hit_mean_error_message_holder[data-last-precision-rating="BELOW_60ms"],
+#hit_status_message_holder[data-last-precision-rating="BELOW_60ms"] {
+    color: yellow;
+}
+#hit_mean_error_message_holder[data-last-precision-rating="BELOW_90ms"],
+#hit_status_message_holder[data-last-precision-rating="BELOW_90ms"] {
+    color: orange;
+}
+#hit_mean_error_message_holder[data-last-precision-rating="OVER_90ms"],
+#hit_status_message_holder[data-last-precision-rating="OVER_90ms"] {
+    color: #ff6a00;
+}
+
+#hit_status_message_holder.colorize-error-ms[data-status-kind="MISS"] {
     color: red;
 }
 #gamepads_states_list > * {
@@ -195,7 +224,7 @@ img.pack-banner:not([src]) {
     color: blue;
 }
 #flying_arrows_box {
-    width: 400px;
+    width: 480px;
     background: linear-gradient(#1a1a1a 20%, black 20%);
     position: relative;
     overflow: hidden;
@@ -220,11 +249,17 @@ img.pack-banner:not([src]) {
     position: absolute;
     animation-name: fly-arrow;
     animation-timing-function: linear;
-    font-size: 48px;
-    bottom: -48px;
+    font-size: 60px;
+    bottom: -60px;
+    width: 120px;
+    text-align: center;
 }
+.flying-arrow[data-column="0"] { left: 0 }
+.flying-arrow[data-column="1"] { left: 120px }
+.flying-arrow[data-column="2"] { left: 240px }
+.flying-arrow[data-column="3"] { left: 360px }
 @keyframes fly-arrow {
-    0% { bottom: -48px }
+    0% { bottom: -60px }
     79.999% { color: var(--base-color); opacity: 1; }
     80% { color: white; opacity: 0.2; }
     100% { color: white; opacity: 0.2; bottom: 100%; }

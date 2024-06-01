@@ -1,5 +1,5 @@
 import type { AnyFormatSong } from "../types/indexed_packs";
-import type { BpmUpdate, Measure, MeasureDivision } from "./YaSmParser";
+import type { BpmUpdate, Measure, MeasureDivision, YaSmParsed } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
 import type { GamepadStateEvent } from "./types";
 import Dom from "./utils/Dom.js";
@@ -37,7 +37,7 @@ const ARROW_FLY_SECONDS = 2;
 const ARROW_TARGET_PROGRESS = 0.80;
 
 type LaunchedArrow = {
-    buttonIndex: number,
+    column: number,
     noteValue: NoteValue | string,
     targetTimestamp: DOMHighResTimeStamp,
     dom: HTMLElement,
@@ -58,8 +58,8 @@ export function getBnFileName(song: AnyFormatSong) {
             return found;
         }
     }
-    return fileNames.find(n => n.match(/bn.*\.(png|jpe?g|bmp)/i))
-        ?? fileNames.find(n => n.toLowerCase().startsWith(song.songName.toLowerCase()) && n.match(/\.(png|jpe?g|bmp)/i));
+    return fileNames?.find(n => n.match(/bn.*\.(png|jpe?g|bmp)/i))
+        ?? fileNames?.find(n => n.toLowerCase().startsWith(song.songName.toLowerCase()) && n.match(/\.(png|jpe?g|bmp)/i));
 }
 
 export function getBgFileName(song: AnyFormatSong) {
@@ -70,7 +70,7 @@ export function getBgFileName(song: AnyFormatSong) {
             return found;
         }
     }
-    return fileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
+    return fileNames?.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
 }
 
 export default function SongPlayer({ gui }: {
@@ -108,26 +108,19 @@ export default function SongPlayer({ gui }: {
                 if (value === NoteValue.TAP) {
                     displayValue = {
                         0: "🡸",
-                        1: "🡺",
+                        1: "🡻",
                         2: "🡹",
-                        3: "🡻",
+                        3: "🡺",
                     }[column] ?? value;
                 } else if (value === NoteValue.MINE) {
                     displayValue = "💣";
                 }
                 dom.textContent = displayValue;
-                const x = {
-                    0: 0,
-                    1: 3,
-                    2: 2,
-                    3: 1,
-                }[column] ?? column;
-                dom.style.left = (x + 1) * 60 + "px";
                 // TODO: use targetTimestamp and https://developer.mozilla.org/en-US/docs/Web/API/Animation/startTime
                 dom.style.animationDuration = ARROW_FLY_SECONDS + "s";
                 gui.flying_arrows_box.appendChild(dom);
                 const launchedArrow: LaunchedArrow = {
-                    buttonIndex: column,
+                    column: column,
                     noteValue: value,
                     targetTimestamp: targetTimestamp,
                     dom: dom,
@@ -138,6 +131,7 @@ export default function SongPlayer({ gui }: {
                     if (!launchedArrow.wasHit) {
                         gui.hit_status_message_holder.textContent = "miss!";
                         gui.hit_status_message_holder.setAttribute("data-status-kind", "MISS");
+                        gui.hit_status_message_holder.removeAttribute("data-last-precision-rating");
                     }
                     playback.launchedArrows.delete(launchedArrow);
                     dom.remove();
@@ -205,33 +199,53 @@ export default function SongPlayer({ gui }: {
         if (parsed.NOTES.length === 0 ||
             parsed.BPMS.length === 0
         ) {
+            console.error("Missing NOTES or BPMS");
             return;
         }
 
         const { BPMS } = parsed;
         const TARGET_APM = 150;
-        const charts = [...parsed.NOTES]
-            .filter(c => countApm(BPMS, c.MEASURES) > 0)
+        const charts = parsed.NOTES;
+        const chartsWithNotes = charts
+            .filter(c => countApm(BPMS, c.MEASURES) > 0);
+        const chart = [...chartsWithNotes]
             .sort((a,b) => {
                 const aTpm = countApm(BPMS, a.MEASURES);
                 const bTpm = countApm(BPMS, b.MEASURES);
                 return Math.abs(aTpm - TARGET_APM) - Math.abs(bTpm - TARGET_APM);
-            });
-        const chart = charts
+            })
             .find(c => c.MEASURES.every(m => m.every(d => d.length < 5)));
-        gui.current_song_difficulties_list.append(...charts.map(c => Dom("li", {
+        gui.current_song_difficulties_list.append(...chartsWithNotes.map(c => Dom("li", {
             class: c === chart ? "selected-chart" : "",
         }, [
-            Dom("span", {}, countApm(BPMS, c.MEASURES).toFixed(1)),
+            Dom("span", {}, "APM: " + countApm(BPMS, c.MEASURES).toFixed(1)),
             Dom("span", {}, " "),
-            Dom("span", {}, c.DESCRIPTION + " " + c.DIFFICULTY + " " + c.METER),
+            Dom("span", {}, c.DESCRIPTION + " " + c.STEPSTYPE + " " + c.METER),
             Dom("span", {}, " "),
-            Dom("span", {}, "buttons: " + c.MEASURES.flatMap(m => m.map(d => d.length)).reduce((a,b) => Math.max(a, b), 0)),
+            Dom("span", {}, c.MEASURES.flatMap(m => m.map(d => d.length)).reduce((a,b) => Math.max(a, b), 0) + "b"),
         ])));
         if (!chart) {
+            console.warn("No fitting chart found");
             return;
         }
+        const chartIndex = charts.indexOf(chart);
+        const reachedEnd = await playChart(playback, parsed, chartIndex);
+        if (reachedEnd) {
+            const LAST_HIGHSCORE_INDEX = +(window.localStorage.getItem("HIGHSCORE_INDEX") ?? "-1") + 1;
+            window.localStorage.setItem("HIGHSCORE_LAST_INDEX", String(LAST_HIGHSCORE_INDEX));
+            window.localStorage.setItem("HIGHSCORE_DATA_" + String(LAST_HIGHSCORE_INDEX).padStart(5, "0"), JSON.stringify({
+                smMd5: song.smMd5,
+                chartIndex: chartIndex,
+                totalHits: playback.totalHits,
+                hitErrorMsSum: playback.hitErrorMsSum,
+            }));
+            activePlayback = null;
+        }
+    };
 
+    const playChart = async (playback: ActivePlayback, parsed: YaSmParsed, chartIndex: number) => {
+        const { BPMS } = parsed;
+        const chart = parsed.NOTES[chartIndex];
         console.log("playing chart of APM " + countApm(BPMS, chart.MEASURES), chart);
         const firstBeatMs = -(parsed.OFFSET ?? 0) * 1000 - 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
         for (let measureIndex = 0; measureIndex < chart.MEASURES.length; ++measureIndex) {
@@ -252,10 +266,30 @@ export default function SongPlayer({ gui }: {
                     continue; // song is ahead of arrows by several seconds: may happen if you fast-forward
                 }
                 if (playback !== activePlayback) {
-                    return;
+                    console.log("interrupting arrows launches due to new playback", { playback, activePlayback });
+                    return false;
                 }
                 launchNote(playback, division, targetTimestamp, divisionIndex, divider);
             }
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000 * ARROW_FLY_SECONDS));
+        return true;
+    };
+
+    const getPrecisionRating = (errorMs: number) => {
+        const errorMsAbs = Math.abs(errorMs);
+        if (errorMsAbs < 5) {
+            return "BELOW_5ms";
+        } else if (errorMsAbs < 10) {
+            return "BELOW_10ms";
+        } else if (errorMsAbs < 30) {
+            return "BELOW_30ms";
+        } else if (errorMsAbs < 60) {
+            return "BELOW_60ms";
+        } else if (errorMsAbs < 90) {
+            return "BELOW_90ms";
+        } else {
+            return "OVER_90ms";
         }
     };
 
@@ -269,10 +303,17 @@ export default function SongPlayer({ gui }: {
                 if (aa.wasHit) {
                     return false;
                 }
-                if (aa.buttonIndex !== change.buttonIndex) {
+                // most likely specific to dancepad manufacturer - need to add key
+                // mapping configuration screen and mb predefine mapping for known pads
+                const sameButton =
+                    aa.column === 0 && change.buttonIndex === 0 ||
+                    aa.column === 1 && change.buttonIndex === 3 ||
+                    aa.column === 2 && change.buttonIndex === 2 ||
+                    aa.column === 3 && change.buttonIndex === 1;
+                if (!sameButton) {
                     return false;
                 }
-                if (Math.abs(event.timestamp - aa.targetTimestamp) > 200) {
+                if (Math.abs(event.timestamp - aa.targetTimestamp) > 144) {
                     return false;
                 }
                 return change.newState === true && aa.noteValue === NoteValue.TAP
@@ -289,11 +330,15 @@ export default function SongPlayer({ gui }: {
             hitArrow.dom.classList.toggle("was-hit", true);
             hitArrow.wasHit = true;
             const errorMs = event.timestamp - hitArrow.targetTimestamp;
-            gui.hit_status_message_holder.textContent = errorMs.toFixed(1) + "ms hit!";
+            gui.hit_status_message_holder.textContent = errorMs.toFixed(1) + " ms hit!";
             gui.hit_status_message_holder.setAttribute("data-status-kind", "HIT");
-            activePlayback.hitErrorMsSum += errorMs;
+            gui.hit_status_message_holder.setAttribute("data-last-precision-rating", getPrecisionRating(errorMs));
+            activePlayback.hitErrorMsSum += Math.abs(errorMs);
             ++activePlayback.totalHits;
-            gui.hit_mean_error_message_holder.textContent = "AVG " + (activePlayback.hitErrorMsSum / activePlayback.totalHits).toFixed(1) + " ms hit!";
+            const avgErrorMs = activePlayback.hitErrorMsSum / activePlayback.totalHits;
+            gui.hit_mean_error_message_holder.textContent = "AVG " + avgErrorMs.toFixed(1) + " ms hit!";
+            gui.hit_mean_error_message_holder.textContent = "AVG " + avgErrorMs.toFixed(1) + " ms hit!";
+            gui.hit_mean_error_message_holder.setAttribute("data-last-precision-rating", getPrecisionRating(avgErrorMs));
         }
     };
 

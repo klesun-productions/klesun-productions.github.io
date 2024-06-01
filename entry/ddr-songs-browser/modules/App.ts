@@ -40,6 +40,7 @@ const gui = {
     hit_mean_error_message_holder: getElementById("hit_mean_error_message_holder"),
     flying_arrows_box: getElementById("flying_arrows_box"),
 
+    song_search_by_name: getElementOfClassById("song_search_by_name", HTMLInputElement),
     song_names_options: getElementById("song_names_options"),
     play_random_song_btn: getElementById("play_random_song_btn"),
     pack_list: getElementById("pack_list"),
@@ -144,13 +145,24 @@ export default async function ({
     );
     const anyFormatPacks = await whenPacks;
     const packs = normalizePacks(anyFormatPacks);
-    gui.song_names_options.append(...packs.flatMap(
-        pack => pack.songs.map(
-            song => Dom("option", {
-                value: song.songName,
-            }, decodeURIComponent(pack.packName.replace(/.zip$/, "")))
-        )
-    ));
+    const searchNameToSongs: Record<string, { song: AnyFormatSong, pack: Pack }[]> = {};
+    for (const pack of packs) {
+        for (const song of pack.songs) {
+            const searchName = song.songName + (!song.format ? " " + song.smMd5.slice(0, 4) : "");
+            const packName = decodeURIComponent(pack.packName.replace(/.zip$/, ""));
+            gui.song_names_options.append(Dom("option", {
+                value: searchName,
+            }, packName));
+            searchNameToSongs[searchName] = searchNameToSongs[searchName] ?? [];
+            searchNameToSongs[searchName].push({ song, pack });
+        }
+    }
+    gui.song_search_by_name.onchange = (event) => {
+        const matches = searchNameToSongs[gui.song_search_by_name.value] ?? [];
+        if (matches.length > 0) {
+            playSong(matches[0]);
+        }
+    };
 
     const havingValidSong = packs.filter(p => p.songs.some(s => !s.format));
 
