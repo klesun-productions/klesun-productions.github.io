@@ -141,7 +141,12 @@ function getAuthors(song: AnyFormatSong) {
     if (song.format) {
         return [];
     }
-    return [...new Set(song.charts.map(c => c.desc))];
+    const authors = new Set(song.charts.map(c => c.desc).filter(name => name?.trim()));
+    if (song.headers.ARTIST) {
+        // mixing both song artist and the chart creator - whatever
+        authors.add(song.headers.ARTIST);
+    }
+    return [...authors];
 }
 
 export default async function ({
@@ -202,7 +207,7 @@ export default async function ({
                     .filter(({ song, pack }) => {
                         return song.songName.toUpperCase().includes(namePart.toUpperCase())
                             || decodePackName(pack).toUpperCase().includes(namePart.toUpperCase())
-                            || (!song.format && song.charts.some(c => c.desc?.toUpperCase().includes(namePart.toUpperCase())));
+                            || getAuthors(song).some(name => name.toUpperCase().includes(namePart.toUpperCase()));
                     });
             }
             if (options.length > 0) {

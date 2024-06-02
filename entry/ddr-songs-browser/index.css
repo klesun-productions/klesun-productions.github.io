@@ -7,7 +7,7 @@
 .playback-header-panel {
     display: flex;
     justify-content: space-between;
-    min-height: 180px;
+    height: 180px;
     align-items: flex-start;
 }
 .playback-header-song-details-section {

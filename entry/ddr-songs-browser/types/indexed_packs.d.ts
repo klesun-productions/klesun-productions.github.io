@@ -11,7 +11,7 @@ export type Song = {
   "restFileNames": ["VerTex^2-bg.png","VerTex^2.dwi","VerTex^2.ogg","VerTex^2.png"],
   "totalBars": 129,
   "charts": [
-    { "desc":"K. Ward","diff":"Easy","meter":"9","totalSteps":485 },
+    { "desc":"K. Ward" | string,"diff":"Easy","meter":"9","totalSteps":485 },
     { "type":"dance-double","desc":"M. Emirzian","diff":"Easy","meter":"5","totalSteps":233 },
     { "type":"dance-double","desc":"M. Emirzian","diff":"Hard","meter":"10","totalSteps":607 },
     { "type":"dance-double","desc":"M. Emirzian","diff":"Medium","meter":"8","totalSteps":380 },
