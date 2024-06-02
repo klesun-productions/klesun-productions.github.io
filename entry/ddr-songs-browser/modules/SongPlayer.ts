@@ -1,5 +1,5 @@
 import type { AnyFormatSong } from "../types/indexed_packs";
-import type { BpmUpdate, Measure, MeasureDivision, YaSmParsed } from "./YaSmParser";
+import type { BpmUpdate, Chart, Measure, YaSmParsed } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
 import type { GamepadStateEvent } from "./types";
 import Dom from "./utils/Dom.js";
@@ -35,6 +35,7 @@ function countApm(bpms: BpmUpdate[], measures: Measure[]) {
 
 const ARROW_FLY_SECONDS = 2;
 const ARROW_TARGET_PROGRESS = 0.80;
+const HIT_WAIT_MS = 144;
 
 type LaunchedArrow = {
     column: number,
@@ -73,6 +74,142 @@ export function getBgFileName(song: AnyFormatSong) {
     return fileNames?.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
 }
 
+function ChartPlayback({ BPMS, OFFSET, chart, gui }: {
+    gui: {
+        active_song_player: HTMLAudioElement,
+        flying_arrows_box: HTMLElement,
+        measure_number_holder: HTMLElement,
+        tempo_holder: HTMLElement,
+    },
+    BPMS: YaSmParsed["BPMS"],
+    OFFSET: number,
+    chart: Chart,
+}) {
+    function getTail(measureIndex: number, divisionIndex: number, column: number) {
+        divisionIndex += 1;
+        for (let i = measureIndex; i < chart.MEASURES.length; ++i) {
+            const measure = chart.MEASURES[i];
+            for (let j = divisionIndex; j < measure.length; ++ j) {
+                const noteValue = measure[j][column] ?? NoteValue.NONE;
+                if (noteValue === NoteValue.TAIL) {
+                    return i + j / measure.length;
+                }
+            }
+            divisionIndex = 0;
+        }
+        // may happen in .sm files with human mistakes
+        return null;
+    }
+
+    function* launchNote(
+        targetTimestamp: DOMHighResTimeStamp,
+        measureIndex: number,
+        divisionIndex: number
+    ) {
+        const measure = chart.MEASURES[measureIndex];
+        const measureDivision = measure[divisionIndex];
+
+        for (let column = 0; column < measureDivision.length; ++column) {
+            const value = measureDivision[column];
+            if (value !== "0") {
+                const dom = document.createElement("div");
+                dom.classList.toggle("flying-arrow", true);
+                const measureProgress = divisionIndex / measure.length;
+                dom.setAttribute("data-measure-progress", measureProgress.toFixed(3));
+                dom.setAttribute("data-column", String(column));
+                dom.setAttribute("data-note-value", value);
+                let displayValue = value;
+                if (value === NoteValue.TAP ||
+                    value === NoteValue.HOLD_HEAD ||
+                    value === NoteValue.ROLL_HEAD
+                ) {
+                    displayValue = {
+                        0: "🡸",
+                        1: "🡻",
+                        2: "🡹",
+                        3: "🡺",
+                    }[column] ?? value;
+                } else if (value === NoteValue.MINE) {
+                    displayValue = "💣";
+                }
+                let lifetimeMs = ARROW_FLY_SECONDS * 1000;
+                let endPosition = 100;
+                if (value === NoteValue.HOLD_HEAD ||
+                    value === NoteValue.ROLL_HEAD
+                ) {
+                    const headMs = getMsAt(BPMS, measureIndex + measureProgress);
+                    const tailMeasures = getTail(measureIndex, divisionIndex, column);
+                    if (tailMeasures) {
+                        const trail = Dom("div", { class: "arrow-hold-trail" });
+                        const tailMs = getMsAt(BPMS, tailMeasures);
+                        const holdDurationMs = tailMs - headMs;
+                        const heightPercent = 100 * holdDurationMs / ARROW_FLY_SECONDS / 1000;
+                        endPosition += heightPercent;
+                        trail.style.height = heightPercent.toFixed(3) + "vh";
+                        dom.appendChild(Dom("div", { style: "position: relative" }, [
+                            trail,
+                        ]));
+                        lifetimeMs += holdDurationMs;
+                    }
+                }
+                dom.appendChild(Dom("div", { class: "arrow-head-image" }, displayValue));
+                const hitOffset = ARROW_TARGET_PROGRESS * ARROW_FLY_SECONDS * 1000 / lifetimeMs;
+                const animation = dom.animate([
+                    { offset: 0 , bottom: "-60px", color: "var(--base-color)", opacity: 1, visibility: "visible" },
+                    { offset: hitOffset - 0.00001, color: "var(--base-color)", opacity: 1 },
+                    { offset: hitOffset          , color: "white", opacity: 0.2 },
+                    { offset: 1 , bottom: "calc(" + endPosition.toFixed(3) + "% - 60px)", color: "white", opacity: 0.2, visibility: "visible" },
+                ], {
+                    duration: lifetimeMs,
+                    easing: "linear",
+                    iterations: 1,
+                });
+                animation.startTime = targetTimestamp - ARROW_TARGET_PROGRESS * ARROW_FLY_SECONDS * 1000;
+                animation.play();
+
+                gui.flying_arrows_box.appendChild(dom);
+                const launchedArrow: LaunchedArrow = {
+                    column: column,
+                    noteValue: value,
+                    targetTimestamp: targetTimestamp,
+                    dom: dom,
+                    wasHit: false,
+                };
+                yield launchedArrow;
+                setTimeout(() => {
+                    dom.remove();
+                }, lifetimeMs);
+            }
+        }
+    }
+
+    async function* play() {
+        const firstBeatMs = -OFFSET * 1000 - 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
+        for (let measureIndex = 0; measureIndex < chart.MEASURES.length; ++measureIndex) {
+            const measure = chart.MEASURES[measureIndex];
+            const divider = measure.length;
+            for (let divisionIndex = 0; divisionIndex < measure.length; ++divisionIndex) {
+                const measuresPassed = measureIndex + divisionIndex / divider;
+                const expectedRelMs = firstBeatMs + getMsAt(BPMS, measuresPassed);
+                const songProgressMs = gui.active_song_player.currentTime * 1000;
+                const waitMs = expectedRelMs - songProgressMs;
+                const targetTimestamp = window.performance.now() + waitMs + 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
+                if (waitMs >= 4) {
+                    await new Promise(resolve => setTimeout(resolve, waitMs));
+                } else if (waitMs <= -ARROW_FLY_SECONDS) {
+                    continue; // song is ahead of arrows by several seconds: may happen if you fast-forward
+                }
+                gui.measure_number_holder.textContent = measuresPassed.toFixed(3);
+                gui.tempo_holder.textContent = BPMS.filter(update => update.beat - measuresPassed * 4 < 0.000001).slice(-1)[0].bpm.toString();
+                yield * launchNote(targetTimestamp, measureIndex, divisionIndex);
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000 * ARROW_FLY_SECONDS));
+    }
+
+    return { play };
+}
+
 export default function SongPlayer({ gui }: {
     gui: {
         active_song_player: HTMLAudioElement,
@@ -80,6 +217,8 @@ export default function SongPlayer({ gui }: {
         flying_arrows_box: HTMLElement,
         hit_status_message_holder: HTMLElement,
         hit_mean_error_message_holder: HTMLElement,
+        measure_number_holder: HTMLElement,
+        tempo_holder: HTMLElement,
         current_song_view_banner: HTMLImageElement,
         current_song_view_cdtitle: HTMLImageElement,
         current_song_view_title: HTMLElement,
@@ -90,56 +229,6 @@ export default function SongPlayer({ gui }: {
 }) {
     let activePlayback: null | ActivePlayback = null;
 
-    const launchNote = (
-        playback: ActivePlayback,
-        measureDivision: MeasureDivision,
-        targetTimestamp: DOMHighResTimeStamp,
-        divisionIndex: number,
-        divider: number
-    ) => {
-        for (let column = 0; column < measureDivision.length; ++column) {
-            const value = measureDivision[column];
-            if (value !== "0") {
-                const dom = document.createElement("div");
-                dom.classList.toggle("flying-arrow", true);
-                dom.setAttribute("data-measure-progress", (divisionIndex / divider).toFixed(3));
-                dom.setAttribute("data-column", String(column));
-                let displayValue = value;
-                if (value === NoteValue.TAP) {
-                    displayValue = {
-                        0: "🡸",
-                        1: "🡻",
-                        2: "🡹",
-                        3: "🡺",
-                    }[column] ?? value;
-                } else if (value === NoteValue.MINE) {
-                    displayValue = "💣";
-                }
-                dom.textContent = displayValue;
-                // TODO: use targetTimestamp and https://developer.mozilla.org/en-US/docs/Web/API/Animation/startTime
-                dom.style.animationDuration = ARROW_FLY_SECONDS + "s";
-                gui.flying_arrows_box.appendChild(dom);
-                const launchedArrow: LaunchedArrow = {
-                    column: column,
-                    noteValue: value,
-                    targetTimestamp: targetTimestamp,
-                    dom: dom,
-                    wasHit: false,
-                };
-                playback.launchedArrows.add(launchedArrow);
-                setTimeout(() => {
-                    if (!launchedArrow.wasHit) {
-                        gui.hit_status_message_holder.textContent = "miss!";
-                        gui.hit_status_message_holder.setAttribute("data-status-kind", "MISS");
-                        gui.hit_status_message_holder.removeAttribute("data-last-precision-rating");
-                    }
-                    playback.launchedArrows.delete(launchedArrow);
-                    dom.remove();
-                }, ARROW_FLY_SECONDS * 1000);
-            }
-        }
-    };
-
     const playSong = async ({ packSubdirUrl, song }: { packSubdirUrl: string, song: AnyFormatSong }) => {
         const playback: ActivePlayback = {
             launchedArrows: new Set(),
@@ -147,7 +236,7 @@ export default function SongPlayer({ gui }: {
             totalHits: 0,
         };
         activePlayback = playback;
-        console.log("ololo playing song", song);
+        console.log("playing song", song);
         const songDirUrl = packSubdirUrl + "/" +
             encodeURIComponent(song.songName);
 
@@ -160,6 +249,10 @@ export default function SongPlayer({ gui }: {
         gui.current_song_error_message_holder.textContent = "";
         gui.current_song_difficulties_list.innerHTML = "";
 
+        const whenSmText = song.format ? null :
+            fetch(songDirUrl + "/" + encodeURIComponent(song.smFileName))
+                .then(rs => rs.text());
+
         const fileNames = !song.format ? song.restFileNames : song.fileNames;
         const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
             fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
@@ -167,7 +260,11 @@ export default function SongPlayer({ gui }: {
             gui.current_song_error_message_holder.textContent = "Missing song file in " + fileNames.join(", ");
         } else {
             gui.active_song_player.src = songDirUrl + "/" + encodeURIComponent(songFileName);
-            gui.active_song_player.play();
+            await gui.active_song_player.play();
+            if (playback !== activePlayback) {
+                console.log("interrupting cuz different song loaded");
+                return;
+            }
         }
         // if (!song.format && song.headers.SAMPLESTART) {
         //     gui.active_song_player.currentTime = +song.headers.SAMPLESTART;
@@ -177,12 +274,11 @@ export default function SongPlayer({ gui }: {
         document.body.style.backgroundImage = !bgFileName ? "none" :
             "url(\"" + songDirUrl + "/" + encodeURIComponent(bgFileName) + "\")";
 
-        if (song.format) {
+        if (whenSmText == null || song.format) {
             return;
         }
 
-        const smText = await fetch(songDirUrl + "/" + encodeURIComponent(song.smFileName))
-            .then(rs => rs.text());
+        const smText = await whenSmText;
         let parsed;
         try {
             parsed = YaSmParser(smText);
@@ -203,7 +299,7 @@ export default function SongPlayer({ gui }: {
             return;
         }
 
-        const { BPMS } = parsed;
+        const { BPMS, OFFSET } = parsed;
         const TARGET_APM = 150;
         const charts = parsed.NOTES;
         const chartsWithNotes = charts
@@ -220,7 +316,7 @@ export default function SongPlayer({ gui }: {
         }, [
             Dom("span", {}, "APM: " + countApm(BPMS, c.MEASURES).toFixed(1)),
             Dom("span", {}, " "),
-            Dom("span", {}, c.DESCRIPTION + " " + c.STEPSTYPE + " " + c.METER),
+            Dom("span", {}, (c.DESCRIPTION !== "Blank" ? c.DESCRIPTION : "") + " " + c.STEPSTYPE + " " + c.METER),
             Dom("span", {}, " "),
             Dom("span", {}, c.MEASURES.flatMap(m => m.map(d => d.length)).reduce((a,b) => Math.max(a, b), 0) + "b"),
         ])));
@@ -229,51 +325,33 @@ export default function SongPlayer({ gui }: {
             return;
         }
         const chartIndex = charts.indexOf(chart);
-        const reachedEnd = await playChart(playback, parsed, chartIndex);
-        if (reachedEnd) {
-            const LAST_HIGHSCORE_INDEX = +(window.localStorage.getItem("HIGHSCORE_INDEX") ?? "-1") + 1;
-            window.localStorage.setItem("HIGHSCORE_LAST_INDEX", String(LAST_HIGHSCORE_INDEX));
-            window.localStorage.setItem("HIGHSCORE_DATA_" + String(LAST_HIGHSCORE_INDEX).padStart(5, "0"), JSON.stringify({
-                smMd5: song.smMd5,
-                chartIndex: chartIndex,
-                totalHits: playback.totalHits,
-                hitErrorMsSum: playback.hitErrorMsSum,
-            }));
-            activePlayback = null;
-        }
-    };
-
-    const playChart = async (playback: ActivePlayback, parsed: YaSmParsed, chartIndex: number) => {
-        const { BPMS } = parsed;
-        const chart = parsed.NOTES[chartIndex];
         console.log("playing chart of APM " + countApm(BPMS, chart.MEASURES), chart);
-        const firstBeatMs = -(parsed.OFFSET ?? 0) * 1000 - 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
-        for (let measureIndex = 0; measureIndex < chart.MEASURES.length; ++measureIndex) {
-            const measure = chart.MEASURES[measureIndex];
-            const divider = measure.length;
-            for (let divisionIndex = 0; divisionIndex < measure.length; ++divisionIndex) {
-                const division = measure[divisionIndex];
-                const expectedRelMs = firstBeatMs + getMsAt(
-                    BPMS,
-                    measureIndex + divisionIndex / divider
-                );
-                const songProgressMs = gui.active_song_player.currentTime * 1000;
-                const waitMs = expectedRelMs - songProgressMs;
-                const targetTimestamp = window.performance.now() + waitMs + 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
-                if (waitMs >= 4) {
-                    await new Promise(resolve => setTimeout(resolve, waitMs));
-                } else if (waitMs <= -ARROW_FLY_SECONDS) {
-                    continue; // song is ahead of arrows by several seconds: may happen if you fast-forward
-                }
-                if (playback !== activePlayback) {
-                    console.log("interrupting arrows launches due to new playback", { playback, activePlayback });
-                    return false;
-                }
-                launchNote(playback, division, targetTimestamp, divisionIndex, divider);
+        const chartPlayback = ChartPlayback({ gui, BPMS, OFFSET: OFFSET || 0, chart });
+        for await (const launchedArrow of chartPlayback.play()) {
+            if (playback !== activePlayback) {
+                console.log("interrupting arrows launches due to new playback", { playback, activePlayback });
+                return;
             }
+            playback.launchedArrows.add(launchedArrow);
+            const msTillMiss = launchedArrow.targetTimestamp - window.performance.now() + HIT_WAIT_MS;
+            setTimeout(() => {
+                if (!launchedArrow.wasHit) {
+                    gui.hit_status_message_holder.textContent = "miss!";
+                    gui.hit_status_message_holder.setAttribute("data-status-kind", "MISS");
+                    gui.hit_status_message_holder.removeAttribute("data-last-precision-rating");
+                }
+                playback.launchedArrows.delete(launchedArrow);
+            }, msTillMiss);
         }
-        await new Promise(resolve => setTimeout(resolve, 1000 * ARROW_FLY_SECONDS));
-        return true;
+        const LAST_HIGHSCORE_INDEX = +(window.localStorage.getItem("HIGHSCORE_INDEX") ?? "-1") + 1;
+        window.localStorage.setItem("HIGHSCORE_LAST_INDEX", String(LAST_HIGHSCORE_INDEX));
+        window.localStorage.setItem("HIGHSCORE_DATA_" + String(LAST_HIGHSCORE_INDEX).padStart(5, "0"), JSON.stringify({
+            smMd5: song.smMd5,
+            chartIndex: chartIndex,
+            totalHits: playback.totalHits,
+            hitErrorMsSum: playback.hitErrorMsSum,
+        }));
+        activePlayback = null;
     };
 
     const getPrecisionRating = (errorMs: number) => {
@@ -313,7 +391,7 @@ export default function SongPlayer({ gui }: {
                 if (!sameButton) {
                     return false;
                 }
-                if (Math.abs(event.timestamp - aa.targetTimestamp) > 144) {
+                if (Math.abs(event.timestamp - aa.targetTimestamp) > HIT_WAIT_MS) {
                     return false;
                 }
                 return change.newState === true && aa.noteValue === NoteValue.TAP

@@ -15,7 +15,7 @@ export default function PackCard({ pack, DATA_DIR_URL }: {
         Dom("div", { class: "pack-name-holder" }, [
             Dom("span", {}, decodedPackName),
             Dom("a", {
-                href: "/ddr-songs-browser/ftp/pack.tar?" + new URLSearchParams({
+                href: "https://api.klesun.net/ddr-songs-browser/ftp/pack.tar?" + new URLSearchParams({
                     json: JSON.stringify({
                         packName: pack.packName,
                         subdir: subdir,

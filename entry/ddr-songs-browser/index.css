@@ -250,20 +250,27 @@ img.pack-banner:not([src]) {
     animation-name: fly-arrow;
     animation-timing-function: linear;
     font-size: 60px;
-    bottom: -60px;
+    visibility: hidden;
     width: 120px;
     text-align: center;
+    z-index: 0;
+}
+.flying-arrow .arrow-hold-trail {
+    background-color: grey;
+    position: absolute;
+    top: 36px;
+    left: 48px;
+    right: 48px;
+    z-index: -1;
+}
+.flying-arrow[data-note-value="4"] .arrow-hold-trail {
+    background-color: green; /* ROLL_HEAD */
 }
 .flying-arrow[data-column="0"] { left: 0 }
 .flying-arrow[data-column="1"] { left: 120px }
 .flying-arrow[data-column="2"] { left: 240px }
 .flying-arrow[data-column="3"] { left: 360px }
-@keyframes fly-arrow {
-    0% { bottom: -60px }
-    79.999% { color: var(--base-color); opacity: 1; }
-    80% { color: white; opacity: 0.2; }
-    100% { color: white; opacity: 0.2; bottom: 100%; }
-}
+
 .flying-arrow.was-hit {
     display: none;
 }

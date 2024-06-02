@@ -38,8 +38,11 @@ const gui = {
     gamepads_states_list: getElementById("gamepads_states_list"),
     hit_status_message_holder: getElementById("hit_status_message_holder"),
     hit_mean_error_message_holder: getElementById("hit_mean_error_message_holder"),
+    measure_number_holder: getElementById("measure_number_holder"),
+    tempo_holder: getElementById("tempo_holder"),
     flying_arrows_box: getElementById("flying_arrows_box"),
 
+    song_search_by_name_form: getElementOfClassById("song_search_by_name_form", HTMLFormElement),
     song_search_by_name: getElementOfClassById("song_search_by_name", HTMLInputElement),
     song_names_options: getElementById("song_names_options"),
     play_random_song_btn: getElementById("play_random_song_btn"),
@@ -127,6 +130,10 @@ function initializeSelectedPackView(
     }
 }
 
+function getRandom<T>(values: T[]): T {
+    return values[Math.floor(Math.random() * values.length)];
+}
+
 export default async function ({
     DATA_DIR_URL,
     whenPacks,
@@ -157,10 +164,11 @@ export default async function ({
             searchNameToSongs[searchName].push({ song, pack });
         }
     }
-    gui.song_search_by_name.onchange = (event) => {
+    gui.song_search_by_name_form.onsubmit = (event) => {
+        event.preventDefault();
         const matches = searchNameToSongs[gui.song_search_by_name.value] ?? [];
         if (matches.length > 0) {
-            playSong(matches[0]);
+            playSong(getRandom(matches));
         }
     };
 
@@ -177,9 +185,9 @@ export default async function ({
     };
 
     const playRandomSong = () => {
-        const pack = havingValidSong[Math.floor(Math.random() * havingValidSong.length)];
+        const pack = getRandom(havingValidSong);
         const validSongs = pack.songs.filter(s => !s.format);
-        const song = validSongs[Math.floor(Math.random() * validSongs.length)];
+        const song = getRandom(validSongs);
         playSong({ pack, song });
         gui.active_song_player.onended = playRandomSong;
     };
@@ -190,8 +198,7 @@ export default async function ({
     for (const pack of packs) {
         const packDom = PackCard({ pack, DATA_DIR_URL });
         packDom.onclick = () => {
-            const randomIndex = Math.floor(Math.random() * pack.songs.length);
-            const randomSong = pack.songs[randomIndex];
+            const randomSong = getRandom(pack.songs);
             playSong({ pack, song: randomSong });
         };
         gui.pack_list.appendChild(packDom);

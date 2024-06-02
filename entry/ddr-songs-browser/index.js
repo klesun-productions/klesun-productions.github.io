@@ -16,6 +16,8 @@ const whenFirstGamepadConnected = new Promise(resolve => {
     });
 });
 
+document.getElementById("song_search_by_name").focus();
+
 // language=file-reference
 loadModule("./modules/App.ts")
     .then(module => {
