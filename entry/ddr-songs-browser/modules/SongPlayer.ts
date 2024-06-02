@@ -348,14 +348,16 @@ export default function SongPlayer({ gui }: {
                 playback.launchedArrows.delete(launchedArrow);
             }, msTillMiss);
         }
-        const LAST_HIGHSCORE_INDEX = +(window.localStorage.getItem("HIGHSCORE_INDEX") ?? "-1") + 1;
-        window.localStorage.setItem("HIGHSCORE_LAST_INDEX", String(LAST_HIGHSCORE_INDEX));
-        window.localStorage.setItem("HIGHSCORE_DATA_" + String(LAST_HIGHSCORE_INDEX).padStart(5, "0"), JSON.stringify({
-            smMd5: song.smMd5,
-            chartIndex: chartIndex,
-            totalHits: playback.totalHits,
-            hitErrorMsSum: playback.hitErrorMsSum,
-        }));
+        if (playback.totalHits > 0) {
+            const LAST_HIGHSCORE_INDEX = +(window.localStorage.getItem("HIGHSCORE_LAST_INDEX") ?? "-1") + 1;
+            window.localStorage.setItem("HIGHSCORE_LAST_INDEX", String(LAST_HIGHSCORE_INDEX));
+            window.localStorage.setItem("HIGHSCORE_DATA_" + String(LAST_HIGHSCORE_INDEX).padStart(5, "0"), JSON.stringify({
+                smMd5: song.smMd5,
+                chartIndex: chartIndex,
+                totalHits: playback.totalHits,
+                hitErrorMsSum: playback.hitErrorMsSum,
+            }));
+        }
         activePlayback = null;
     };
 
