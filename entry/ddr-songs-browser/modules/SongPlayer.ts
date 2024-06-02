@@ -1,5 +1,5 @@
 import type { AnyFormatSong } from "../types/indexed_packs";
-import type { BpmUpdate, Chart, Measure, YaSmParsed } from "./YaSmParser";
+import type { Chart, Measure, SmHeaders, YaSmParsed } from "./YaSmParser";
 import { NoteValue, YaSmParser, YaSmParserError } from "./YaSmParser";
 import type { GamepadStateEvent } from "./types";
 import Dom from "./utils/Dom.js";
@@ -9,9 +9,12 @@ function beatsToMs(bpm: number, beats: number) {
     return minute * 60 * 1000;
 }
 
-function getMsAt(allBpms: BpmUpdate[], measuresPassed: number) {
+function getTempoStateAt(smHeaders: SmHeaders, measuresPassed: number) {
     const beatsPassed = measuresPassed * 4;
-    const bpms = allBpms.filter(update => update.beat - beatsPassed < 0.000001);
+    const passedStopsMs = (smHeaders.STOPS ?? [])
+        .filter(pause => pause.beat < beatsPassed)
+        .map(s => s.seconds * 1000).reduce((a,b) => a + b, 0);
+    const bpms = smHeaders.BPMS.filter(update => update.beat - beatsPassed < 0.000001);
     let msSkipped = 0;
     let beatsSkipped = 0;
     for (let i = 0; i < bpms.length - 1; ++i) {
@@ -19,12 +22,18 @@ function getMsAt(allBpms: BpmUpdate[], measuresPassed: number) {
         msSkipped += beatsToMs(bpms[i].bpm, intervalBeats);
         beatsSkipped += intervalBeats;
     }
+    msSkipped += passedStopsMs;
     const lastBpm = bpms[bpms.length - 1].bpm;
-    return msSkipped + beatsToMs(lastBpm, beatsPassed - beatsSkipped);
+    const msPassed = msSkipped + beatsToMs(lastBpm, beatsPassed - beatsSkipped);
+    return { lastBpm, msPassed };
 }
 
-function countApm(bpms: BpmUpdate[], measures: Measure[]) {
-    const songDurationMs = getMsAt(bpms, measures.length + 1);
+function getMsAt(smHeaders: SmHeaders, measuresPassed: number) {
+    return getTempoStateAt(smHeaders, measuresPassed).msPassed;
+}
+
+function countApm(smHeaders: SmHeaders, measures: Measure[]) {
+    const songDurationMs = getMsAt(smHeaders, measures.length + 1);
     const songDurationMinutes = songDurationMs / 1000 / 60;
     const actions = measures
         .flatMap(m => m)
@@ -74,15 +83,14 @@ export function getBgFileName(song: AnyFormatSong) {
     return fileNames?.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
 }
 
-function ChartPlayback({ BPMS, OFFSET, chart, gui }: {
+function ChartPlayback({ smHeaders, chart, gui }: {
     gui: {
         active_song_player: HTMLAudioElement,
         flying_arrows_box: HTMLElement,
         measure_number_holder: HTMLElement,
         tempo_holder: HTMLElement,
     },
-    BPMS: YaSmParsed["BPMS"],
-    OFFSET: number,
+    smHeaders: SmHeaders,
     chart: Chart,
 }) {
     function getTail(measureIndex: number, divisionIndex: number, column: number) {
@@ -137,11 +145,11 @@ function ChartPlayback({ BPMS, OFFSET, chart, gui }: {
                 if (value === NoteValue.HOLD_HEAD ||
                     value === NoteValue.ROLL_HEAD
                 ) {
-                    const headMs = getMsAt(BPMS, measureIndex + measureProgress);
+                    const headMs = getMsAt(smHeaders, measureIndex + measureProgress);
                     const tailMeasures = getTail(measureIndex, divisionIndex, column);
                     if (tailMeasures) {
                         const trail = Dom("div", { class: "arrow-hold-trail" });
-                        const tailMs = getMsAt(BPMS, tailMeasures);
+                        const tailMs = getMsAt(smHeaders, tailMeasures);
                         const holdDurationMs = tailMs - headMs;
                         const heightPercent = 100 * holdDurationMs / ARROW_FLY_SECONDS / 1000;
                         endPosition += heightPercent;
@@ -184,13 +192,13 @@ function ChartPlayback({ BPMS, OFFSET, chart, gui }: {
     }
 
     async function* play() {
-        const firstBeatMs = -OFFSET * 1000 - 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
+        const firstBeatMs = -(smHeaders.OFFSET ?? 0) * 1000 - 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
         for (let measureIndex = 0; measureIndex < chart.MEASURES.length; ++measureIndex) {
             const measure = chart.MEASURES[measureIndex];
             const divider = measure.length;
             for (let divisionIndex = 0; divisionIndex < measure.length; ++divisionIndex) {
                 const measuresPassed = measureIndex + divisionIndex / divider;
-                const expectedRelMs = firstBeatMs + getMsAt(BPMS, measuresPassed);
+                const expectedRelMs = firstBeatMs + getMsAt(smHeaders, measuresPassed);
                 const songProgressMs = gui.active_song_player.currentTime * 1000;
                 const waitMs = expectedRelMs - songProgressMs;
                 const targetTimestamp = window.performance.now() + waitMs + 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
@@ -200,7 +208,7 @@ function ChartPlayback({ BPMS, OFFSET, chart, gui }: {
                     continue; // song is ahead of arrows by several seconds: may happen if you fast-forward
                 }
                 gui.measure_number_holder.textContent = measuresPassed.toFixed(3);
-                gui.tempo_holder.textContent = BPMS.filter(update => update.beat - measuresPassed * 4 < 0.000001).slice(-1)[0].bpm.toString();
+                gui.tempo_holder.textContent = getTempoStateAt(smHeaders, measuresPassed).lastBpm.toString();
                 yield * launchNote(targetTimestamp, measureIndex, divisionIndex);
             }
         }
@@ -279,7 +287,7 @@ export default function SongPlayer({ gui }: {
         }
 
         const smText = await whenSmText;
-        let parsed;
+        let parsed: YaSmParsed;
         try {
             parsed = YaSmParser(smText);
         } catch (error) {
@@ -299,34 +307,33 @@ export default function SongPlayer({ gui }: {
             return;
         }
 
-        const { BPMS, OFFSET } = parsed;
         const TARGET_APM = 150;
         const charts = parsed.NOTES;
         const chartsWithNotes = charts
-            .filter(c => countApm(BPMS, c.MEASURES) > 0);
+            .filter((c) => countApm(parsed, c.MEASURES) > 0);
         const chart = [...chartsWithNotes]
             .sort((a,b) => {
-                const aTpm = countApm(BPMS, a.MEASURES);
-                const bTpm = countApm(BPMS, b.MEASURES);
+                const aTpm = countApm(parsed, a.MEASURES);
+                const bTpm = countApm(parsed, b.MEASURES);
                 return Math.abs(aTpm - TARGET_APM) - Math.abs(bTpm - TARGET_APM);
             })
-            .find(c => c.MEASURES.every(m => m.every(d => d.length < 5)));
+            .find(c => !c.MEASURES.some(m => m.some(d => d.length >= 5)));
         gui.current_song_difficulties_list.append(...chartsWithNotes.map(c => Dom("li", {
             class: c === chart ? "selected-chart" : "",
         }, [
-            Dom("span", {}, "APM: " + countApm(BPMS, c.MEASURES).toFixed(1)),
+            Dom("span", {}, "APM: " + countApm(parsed, c.MEASURES).toFixed(1)),
             Dom("span", {}, " "),
             Dom("span", {}, (c.DESCRIPTION !== "Blank" ? c.DESCRIPTION : "") + " " + c.STEPSTYPE + " " + c.METER),
             Dom("span", {}, " "),
             Dom("span", {}, c.MEASURES.flatMap(m => m.map(d => d.length)).reduce((a,b) => Math.max(a, b), 0) + "b"),
         ])));
         if (!chart) {
-            console.warn("No fitting chart found");
+            console.warn("No fitting chart found", chartsWithNotes, charts);
             return;
         }
         const chartIndex = charts.indexOf(chart);
-        console.log("playing chart of APM " + countApm(BPMS, chart.MEASURES), chart);
-        const chartPlayback = ChartPlayback({ gui, BPMS, OFFSET: OFFSET || 0, chart });
+        console.log("playing chart of APM " + countApm(parsed, chart.MEASURES), chart);
+        const chartPlayback = ChartPlayback({ gui, smHeaders: parsed, chart });
         for await (const launchedArrow of chartPlayback.play()) {
             if (playback !== activePlayback) {
                 console.log("interrupting arrows launches due to new playback", { playback, activePlayback });

@@ -111,7 +111,7 @@ export function YaSmParser(smText: string): YaSmParsed {
             const [, keyUntyped, value] = asHeader;
             const key = keyUntyped as keyof YaSmParsed;
             if (key === "BPMS") {
-                parsed.BPMS = value.split(/\s*,\s*/g).map(update => {
+                parsed.BPMS = !value ? [] : value.split(/\s*,\s*/g).map(update => {
                     const [beat, bpm] = update.split("=");
                     return {
                         beat: Number(beat),
@@ -119,7 +119,7 @@ export function YaSmParser(smText: string): YaSmParsed {
                     };
                 });
             } else if (key === "STOPS") {
-                parsed.STOPS = value.split(/\s*,\s*/g).map(update => {
+                parsed.STOPS = !value ? [] : value.split(/\s*,\s*/g).map(update => {
                     const [beat, seconds] = update.split("=");
                     return {
                         beat: Number(beat),
