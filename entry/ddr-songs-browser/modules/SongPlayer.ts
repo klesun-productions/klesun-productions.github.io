@@ -204,8 +204,6 @@ function ChartPlayback({ smHeaders, chart, gui }: {
                 const targetTimestamp = window.performance.now() + waitMs + 1000 * ARROW_FLY_SECONDS * ARROW_TARGET_PROGRESS;
                 if (waitMs >= 4) {
                     await new Promise(resolve => setTimeout(resolve, waitMs));
-                } else if (waitMs <= -ARROW_FLY_SECONDS) {
-                    continue; // song is ahead of arrows by several seconds: may happen if you fast-forward
                 }
                 gui.measure_number_holder.textContent = measuresPassed.toFixed(3);
                 gui.tempo_holder.textContent = getTempoStateAt(smHeaders, measuresPassed).lastBpm.toString();
