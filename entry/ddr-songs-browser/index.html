@@ -32,12 +32,10 @@
             </div>
         </div>
         <div>
-            <form id="song_search_by_name_form">
-                <input type="text" list="song_names_options" id="song_search_by_name" required minlength="3"/>
+            <form id="song_search_by_name_form" onsubmit="event.preventDefault(); alert('Pls wait for UI to load')">
+                <input type="text" list="song_names_options" id="song_search_by_name"/>
                 <datalist id="song_names_options"></datalist>
                 <button type="submit">Play</button>
-                <span>OR</span>
-                <button type="button" id="play_random_song_btn" onclick="alert('Pls wait for UI to load')">Play Random!</button>
             </form>
         </div>
         <div style="flex: 1; position: relative">

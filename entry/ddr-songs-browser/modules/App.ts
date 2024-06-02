@@ -45,7 +45,6 @@ const gui = {
     song_search_by_name_form: getElementOfClassById("song_search_by_name_form", HTMLFormElement),
     song_search_by_name: getElementOfClassById("song_search_by_name", HTMLInputElement),
     song_names_options: getElementById("song_names_options"),
-    play_random_song_btn: getElementById("play_random_song_btn"),
     pack_list: getElementById("pack_list"),
 };
 
@@ -94,6 +93,12 @@ function normalizePacks(anyFormatPacks: AnyFormatPack[]) {
     return packs;
 }
 
+function decodePackName(pack: Pack) {
+    return decodeURIComponent(
+        pack.packName.replace(/\.zip(?:\.\d+)?$/, "")
+    );
+}
+
 function initializeSelectedPackView(
     pack: Pack,
     packSubdirUrl: string,
@@ -105,9 +110,7 @@ function initializeSelectedPackView(
     } else {
         gui.current_pack_view_banner.removeAttribute("src");
     }
-    gui.current_pack_view_title.textContent = decodeURIComponent(
-        pack.packName.replace(/\.zip(?:\.\d+)?$/, "")
-    );
+    gui.current_pack_view_title.textContent = decodePackName(pack);
     gui.current_pack_view_songs_list.innerHTML = "";
     for (const song of pack.songs) {
         const songDirUrl = packSubdirUrl + "/" +
@@ -134,6 +137,13 @@ function getRandom<T>(values: T[]): T {
     return values[Math.floor(Math.random() * values.length)];
 }
 
+function getAuthors(song: AnyFormatSong) {
+    if (song.format) {
+        return [];
+    }
+    return [...new Set(song.charts.map(c => c.desc))];
+}
+
 export default async function ({
     DATA_DIR_URL,
     whenPacks,
@@ -152,27 +162,20 @@ export default async function ({
     );
     const anyFormatPacks = await whenPacks;
     const packs = normalizePacks(anyFormatPacks);
+    const havingValidSong = packs.filter(p => p.songs.some(s => !s.format));
+
     const searchNameToSongs: Record<string, { song: AnyFormatSong, pack: Pack }[]> = {};
-    for (const pack of packs) {
+    for (const pack of havingValidSong) {
         for (const song of pack.songs) {
             const searchName = song.songName + (!song.format ? " " + song.smMd5.slice(0, 4) : "");
             const packName = decodeURIComponent(pack.packName.replace(/.zip$/, ""));
             gui.song_names_options.append(Dom("option", {
                 value: searchName,
-            }, packName));
+            }, [...getAuthors(song), packName].join(" | ")));
             searchNameToSongs[searchName] = searchNameToSongs[searchName] ?? [];
             searchNameToSongs[searchName].push({ song, pack });
         }
     }
-    gui.song_search_by_name_form.onsubmit = (event) => {
-        event.preventDefault();
-        const matches = searchNameToSongs[gui.song_search_by_name.value] ?? [];
-        if (matches.length > 0) {
-            playSong(getRandom(matches));
-        }
-    };
-
-    const havingValidSong = packs.filter(p => p.songs.some(s => !s.format));
 
     const playSong = ({ song, pack }: PlaySongParams) => {
         const packSubdirUrl = DATA_DIR_URL + "/packs/" +
@@ -184,15 +187,39 @@ export default async function ({
         player.playSong({ song, packSubdirUrl });
     };
 
-    const playRandomSong = () => {
-        const pack = getRandom(havingValidSong);
-        const validSongs = pack.songs.filter(s => !s.format);
-        const song = getRandom(validSongs);
-        playSong({ pack, song });
-        gui.active_song_player.onended = playRandomSong;
-    };
+    const playRandomSongByNamePart = () => {
+        const namePart = gui.song_search_by_name.value;
+        let pack, song;
+        if (!namePart) {
+            pack = getRandom(havingValidSong);
+            const validSongs = pack.songs.filter(s => !s.format);
+            song = getRandom(validSongs);
+        } else {
+            let options = searchNameToSongs[namePart] ?? [];
+            if (options.length === 0) {
+                options = Object.values(searchNameToSongs)
+                    .flatMap(items => items)
+                    .filter(({ song, pack }) => {
+                        return song.songName.toUpperCase().includes(namePart.toUpperCase())
+                            || decodePackName(pack).toUpperCase().includes(namePart.toUpperCase())
+                            || (!song.format && song.charts.some(c => c.desc?.toUpperCase().includes(namePart.toUpperCase())));
+                    });
+            }
+            if (options.length > 0) {
+                ({ song, pack } = getRandom(options));
+            } else {
+                alert("No songs matched: " + namePart);
+                return;
+            }
+        }
+        playSong({ song, pack });
 
-    gui.play_random_song_btn.onclick = playRandomSong;
+        gui.active_song_player.onended = playRandomSongByNamePart;
+    };
+    gui.song_search_by_name_form.onsubmit = (event) => {
+        event.preventDefault();
+        playRandomSongByNamePart();
+    };
 
     let i = 0;
     for (const pack of packs) {
