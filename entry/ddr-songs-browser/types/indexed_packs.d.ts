@@ -25,7 +25,7 @@ export type Song = {
 export type AnyFormatSong = Song | {
     "format":"MISSING_SM_FILE",
     "songName":"I Run (So Far Away) (Gareth Emery Remix)",
-    "fileNames":[],
+    "fileNames"?:[],
 };
 
 export type Pack = {

@@ -7,8 +7,9 @@
 .playback-header-panel {
     display: flex;
     justify-content: space-between;
-    height: 180px;
+    min-height: 180px;
     align-items: flex-start;
+    flex-wrap: wrap;
 }
 .playback-header-song-details-section {
     display: flex;
@@ -271,6 +272,12 @@ img.pack-banner:not([src]) {
 .flying-arrow[data-column="2"] { left: 240px }
 .flying-arrow[data-column="3"] { left: 360px }
 
-.flying-arrow.was-hit {
+.flying-arrow.was-hit:not([data-note-value="2"]) {
     display: none;
+}
+.flying-arrow.was-hit[data-note-value="2"] {
+    opacity: 1;
+}
+.flying-arrow.was-hit[data-note-value="2"] .arrow-hold-trail {
+    background-color: #ccc041;
 }

@@ -42,7 +42,8 @@ function countApm(smHeaders: SmHeaders, measures: Measure[]) {
     return actions / songDurationMinutes;
 }
 
-const ARROW_FLY_SECONDS = 2;
+// const ARROW_FLY_SECONDS = 2;
+const ARROW_FLY_SECONDS = 3; // for portrait 4k
 const ARROW_TARGET_PROGRESS = 0.80;
 const HIT_WAIT_MS = 144;
 
@@ -61,26 +62,26 @@ type ActivePlayback = {
 };
 
 export function getBnFileName(song: AnyFormatSong) {
-    const fileNames = !song.format ? song.restFileNames : song.fileNames;
+    const fileNames = !song.format ? song.restFileNames : song.fileNames ?? [];
     if (!song.format && song.headers.BANNER) {
         const found = song.restFileNames.find(n => n.toLowerCase() === song.headers.BANNER.toLowerCase());
         if (found) {
             return found;
         }
     }
-    return fileNames?.find(n => n.match(/bn.*\.(png|jpe?g|bmp)/i))
-        ?? fileNames?.find(n => n.toLowerCase().startsWith(song.songName.toLowerCase()) && n.match(/\.(png|jpe?g|bmp)/i));
+    return fileNames.find(n => n.match(/bn.*\.(png|jpe?g|bmp)/i))
+        ?? fileNames.find(n => n.toLowerCase().startsWith(song.songName.toLowerCase()) && n.match(/\.(png|jpe?g|bmp)/i));
 }
 
 export function getBgFileName(song: AnyFormatSong) {
-    const fileNames = !song.format ? song.restFileNames : song.fileNames;
+    const fileNames = !song.format ? song.restFileNames : song.fileNames ?? [];
     if (!song.format && song.headers.BACKGROUND) {
         const found = song.restFileNames.find(n => n.toLowerCase() === song.headers.BACKGROUND.toLowerCase());
         if (found) {
             return found;
         }
     }
-    return fileNames?.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
+    return fileNames.find(n => n.match(/bg.*\.(png|jpe?g|bmp)/i));
 }
 
 function ChartPlayback({ smHeaders, chart, gui }: {
@@ -259,14 +260,23 @@ export default function SongPlayer({ gui }: {
             fetch(songDirUrl + "/" + encodeURIComponent(song.smFileName))
                 .then(rs => rs.text());
 
-        const fileNames = !song.format ? song.restFileNames : song.fileNames;
+        const fileNames = !song.format ? song.restFileNames : song.fileNames ?? [];
         const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
             fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
         if (!songFileName) {
             gui.current_song_error_message_holder.textContent = "Missing song file in " + fileNames.join(", ");
         } else {
             gui.active_song_player.src = songDirUrl + "/" + encodeURIComponent(songFileName);
-            await gui.active_song_player.play();
+            try {
+                await gui.active_song_player.play();
+            } catch (error) {
+                if (String(error).includes("The play() request was interrupted by a new load request")) {
+                    console.log("interrupted cuz different song loaded");
+                    return;
+                } else {
+                    throw error;
+                }
+            }
             if (playback !== activePlayback) {
                 console.log("interrupting cuz different song loaded");
                 return;
