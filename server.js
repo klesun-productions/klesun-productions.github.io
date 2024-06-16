@@ -45,13 +45,14 @@ const main = async () => {
         } else {
             // klesun-productions.com
             const rootPath = __dirname;
+            /** @param {http.ServerResponse} rs */
             HandleHttpRequest({rq, rs, rootPath}).catch(exc => {
                 const pathname = url.parse(rq.url).pathname;
                 rs.statusCode = exc.httpStatusCode || exc.statusCode || 500;
                 rs.statusMessage = ((exc || {}).message || exc + '' || '(empty error)')
                     // sanitize, as statusMessage seems to not allow special characters
                     .slice(0, 300).replace(/[^ -~]/g, '?');
-                rs.end(JSON.stringify({error: exc + '', stack: exc.stack}));
+                rs.write(JSON.stringify({error: exc + '', stack: exc.stack}));
                 const clientIp = rq.connection.remoteAddress
                     || rq.socket.remoteAddress
                     || (rq.connection.socket || {}).remoteAddress;
@@ -61,7 +62,7 @@ const main = async () => {
                 if (![204, 400].includes(rs.statusCode)) {
                     console.error(msg, exc);
                 }
-            });
+            }).finally(() => rs.end());
         }
     };
     if (process.argv.includes("--no-ssl")) {

@@ -8,6 +8,8 @@ const fs = require('fs').promises;
 const {PythonShell} = require('python-shell');
 const {getMimeByExt, removeDots, setCorsHeaders} = require('klesun-node-tools/src/Utils/HttpUtil.js');
 const tar = require('tar');
+const ActionsQueue = require("../utils/ActionsQueue.js");
+const { finished } = require("node:stream/promises");
 
 const readPost = (rq) => new Promise((ok, err) => {
     if (rq.method === 'POST') {
@@ -60,14 +62,22 @@ const serveRange = async (absPath, range, rs) => {
         'Content-Range': 'bytes ' + start + '-' + end + '/' + total,
         'Accept-Ranges': 'bytes',
         'Content-Length': chunkSize,
+        'cache-control': 'public, max-age=2592000',
     });
-    const stream = fsSync.createReadStream(absPath, {start, end})
-        .on('open', () => stream.pipe(rs))
-        .on('error', err => {
-            console.error('Error while streaming mkv file\n' + absPath + '\n', err);
-            rs.end(err);
-        });
+    const stream = fsSync.createReadStream(absPath, {start, end}).pipe(rs);
+    await finished(stream);
 };
+
+/**
+ * I think when serving files from HDD and making a bunch of parallel requests,
+ * if we try to read them at same time, they will only slow each other down,
+ * that would explain why fetching first byte of an mp3 takes 11 seconds when 20
+ * images are requested at same time
+ *
+ * Therefore, here, with a bit of promises magic, we ensure
+ * that no new read will start before previous one ended
+ */
+const DDR_HDD_RETRIEVALS = ActionsQueue();
 
 const serveStaticFile = async (rq, rs, rootPath) => {
     const parsedUrl = url.parse(rq.url);
@@ -103,10 +113,23 @@ const serveStaticFile = async (rq, rs, rootPath) => {
     if (mime) {
         rs.setHeader('Content-Type', mime);
     }
-    if (rq.headers.range) {
-        await serveRange(absPath, rq.headers.range, rs);
+    if (ext === "jpg" || ext === "jpeg" || ext === "png" || ext === "mp3" || ext === "ogg") {
+        rs.setHeader("cache-control", "public, max-age=2592000");
+    }
+    const startStreaming = async () => {
+        // disable range for songs in hope that this will make caching and full file buffering work
+        if (rq.headers.range/* && ext !== "mp3" && ext !== "ogg"*/) {
+            await serveRange(absPath, rq.headers.range, rs);
+        } else {
+            const stream = fsSync.createReadStream(absPath).pipe(rs);
+            await finished(stream);
+        }
+    };
+    const isHdd = pathname.startsWith("/entry/ddr-songs-browser/data/");
+    if (isHdd) {
+        await DDR_HDD_RETRIEVALS.enqueue(startStreaming);
     } else {
-        fsSync.createReadStream(absPath).pipe(rs);
+        await startStreaming();
     }
 };
 

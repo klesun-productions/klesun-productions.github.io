@@ -1,8 +1,8 @@
 {
-  "name": "klesun-productions.com",
-  "version": "1.0.0",
+  "name": "klesun.net",
+  "version": "1.0.1",
   "description": "Some random js apps, mostly related to MIDI song composition and playback",
-  "repository": "github.com/klesun/midiana.lv",
+  "repository": "https://github.com/klesun-productions/klesun-productions.github.io",
   "license": "MIT",
   "dependencies": {
     "http-proxy": "^1.18.0",
