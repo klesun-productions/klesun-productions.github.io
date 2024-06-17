@@ -35,6 +35,7 @@ export default function PackCard({ pack, DATA_DIR_URL }: {
             Dom("img", {
                 class: "pack-banner",
                 loading: "lazy",
+                fetchpriority: "low",
                 src: subdirUrl + "/" + encodeURIComponent(imgFileName),
             }),
         ],

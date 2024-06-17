@@ -6,17 +6,17 @@
     <div style="flex: 1; display: flex; flex-direction: column; height: 100%">
         <div class="playback-header">
             <div style="display: flex">
-                <audio id="active_song_player" controls="controls" style="flex: 1; height: 24px;"></audio>
+                <audio id="active_song_player" controls="controls" preload="auto" style="flex: 1; height: 24px;"></audio>
             </div>
             <div class="playback-header-panel">
                 <div class="playback-header-song-details-section">
-                    <img id="current_song_view_banner"/>
+                    <img id="current_song_view_banner" fetchpriority="low"/>
                     <div>
                         <h2 id="current_song_view_title"></h2>
                         <div id="current_song_view_date"></div>
                         <div id="current_song_view_artist"></div>
                     </div>
-                    <img id="current_song_view_cdtitle"/>
+                    <img id="current_song_view_cdtitle" fetchpriority="low"/>
                     <div id="current_song_error_message_holder"></div>
                 </div>
                 <div>
@@ -43,7 +43,7 @@
                 <div class="current-pack-view">
                     <div class="current-pack-view-header">
                         <h2 id="current_pack_view_title"></h2>
-                        <img id="current_pack_view_banner"/>
+                        <img id="current_pack_view_banner" fetchpriority="low"/>
                     </div>
                     <ul id="current_pack_view_songs_list"></ul>
                     <br clear="all"/>
