@@ -57,6 +57,9 @@ It should be made clear to the applicant that they are not expected to answer al
 - Could you explain what is the purpose of frameworks like React, Vue, Angular?
   - Coding using these frameworks lets you declaratively express the dependency of displayed elements on the data state of the application, so you only need to write code that will render html for a given variable values instead of imperatively updating every component when data it depends on changes.
 
+- What is race condition?
+  - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.  
+
 ## CSS questions (6 questions)
 
 - What is flex?
@@ -93,6 +96,15 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the difference between type union and type intersection ("or" and "and" types)?
   - Union broadens the type, allowing it to be either of the elements in the union, whereas intersection narrows the type, limiting allowed values to only those that match every condition of the intersection.
 
+
+## React questions
+
+- If you have a computation-heavy function used in the rendering, how to make it reuse cached result between re-renderings instead of getting called again and again? Assuming that this function is expressed through props.
+  - `useMemo()`. If answered "`useEffect()`", ask for a stateless alternative.
+
+- What is the second parameter of the `useEffect()`? The array that follows the callback parameter.
+  - List of values that trigger that callback every time any of them is changed.
+ 
 
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
