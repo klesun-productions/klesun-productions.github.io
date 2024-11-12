@@ -104,8 +104,15 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - What is the second parameter of the `useEffect()`? The array that follows the callback parameter.
   - List of values that trigger that callback every time any of them is changed.
- 
 
+ - What is the purpose of `key` attribute?
+  - It binds the state of the component to a specific string value: when that value changes between two renders, component is re-created resetting it's internal state.
+
+- When component re-render gets triggered?
+  - When any of the props values are changed or internal state is changed.
+
+- If you have an array variable in the state, and you want to add a value to that array, how would you do that and why?
+  - `setArr([...arr, newValue])`. `arr.push()` does not trigger re-render in React: object reference has to be changed. 
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
 
