@@ -11,6 +11,44 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - Can you tell us a bit about yourself?
 
+
+## General programming questions (13 questions)
+
+- What is the difference between data structures: Set and List?
+  - Set does not store duplicate values and provides methods to check for presence of an element in constant time
+
+- What is Binary Search?
+  - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
+
+- What is Garbage Collector?
+  - A mechanism that releases memory that was reserved for variables that are not referenced by the code anymore. It's contrary to manual memory allocation used in C and Rust where programmer has to allocate and release memory explicitly for every dynamic data structure like list. The advantage of garbage collection is simplicity of code and safety from memory leaks, the disadvantage is performance and stop-the-world events.
+
+- Could you describe how memory is allocated in ArrayList data structure when you insert a new value?
+  - A fixed size array with heuristic initial length is created underneath. When the length is reached, a new array is created with new length multiplied by a heuristic factor, like two, all values are then copied from old array to new array.
+
+- Can you tell me what Modulus arithmetic operator does? (more of a academic termin knowledge question rather than a programming question)
+
+- What is Hash Map (aka Map, aka Dictionary, aka Associative Array)
+  - ожидаемый ответ: "мап предназначен для хранения и быстрого доступа к элементу по ключу (ключ как правило строка) за константное время"
+
+- What is the difference between interpreted languages (javascript, php, lua, python) and compiled languages (c, c++, Go, Rust)
+  - Interpreted languages are compiled in real time, so you execute the code directly. Compiled languages can't be executed directly, they have to be first compiled into a binary .exe file with architecture-specific machine instructions.
+
+- What can you tell abount JIT: bytecode in Java or it's analog CIL/CLR in C#
+  - JIT languages are compiled into an intermediary abstract machine language that is not specific to any architecture. They are similarto compiled languages in that they can't be executed directly from source code, and they are also similar to interpreted languages in that their bytecode is interpreted into binary on execution.
+
+- Which of the following is better and why: exponential complexity O(2^N), constant compexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
+  - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
+
+- What are the advantages of shifting access permissions check from server side to client side?
+  - Nothing, this is a trap question to detect whether person is aware of the common mistake of checking permissions on client where they can be spoofed. Acess permissions must always be checked on server, not on client.
+
+- What is Decentralized Denial of Service attack?
+  - Evil programmers sending a lot of dummy requests to the server of good programmers to overburen it and make it inoperable.
+
+- What is the advantage of hosting application on a cloud (like Amazon, Google Cloud, Azure, etc...) over self-hosting it on a local machine
+
+
 ## Javascrpt questions (14 questions)
 
 - What is WebSockets?
@@ -169,42 +207,6 @@ It should be made clear to the applicant that they are not expected to answer al
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
 
-
-## General programming questions (13 questions)
-
-- What is the difference between data structures: Set and List?
-  - Set does not store duplicate values and provides methods to check for presence of an element in constant time
-
-- What is Binary Search?
-  - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
-
-- What is Garbage Collector?
-  - A mechanism that releases memory that was reserved for variables that are not referenced by the code anymore. It's contrary to manual memory allocation used in C and Rust where programmer has to allocate and release memory explicitly for every dynamic data structure like list. The advantage of garbage collection is simplicity of code and safety from memory leaks, the disadvantage is performance and stop-the-world events.
-
-- Could you describe how memory is allocated in ArrayList data structure when you insert a new value?
-  - A fixed size array with heuristic initial length is created underneath. When the length is reached, a new array is created with new length multiplied by a heuristic factor, like two, all values are then copied from old array to new array.
-
-- Can you tell me what Modulus arithmetic operator does? (more of a academic termin knowledge question rather than a programming question)
-
-- What is Hash Map (aka Map, aka Dictionary, aka Associative Array)
-  - ожидаемый ответ: "мап предназначен для хранения и быстрого доступа к элементу по ключу (ключ как правило строка) за константное время"
-
-- What is the difference between interpreted languages (javascript, php, lua, python) and compiled languages (c, c++, Go, Rust)
-  - Interpreted languages are compiled in real time, so you execute the code directly. Compiled languages can't be executed directly, they have to be first compiled into a binary .exe file with architecture-specific machine instructions.
-
-- What can you tell abount JIT: bytecode in Java or it's analog CIL/CLR in C#
-  - JIT languages are compiled into an intermediary abstract machine language that is not specific to any architecture. They are similarto compiled languages in that they can't be executed directly from source code, and they are also similar to interpreted languages in that their bytecode is interpreted into binary on execution.
-
-- Which of the following is better and why: exponential complexity O(2^N), constant compexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
-  - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
-
-- What are the advantages of shifting access permissions check from server side to client side?
-  - Nothing, this is a trap question to detect whether person is aware of the common mistake of checking permissions on client where they can be spoofed. Acess permissions must always be checked on server, not on client.
-
-- What is Decentralized Denial of Service attack?
-  - Evil programmers sending a lot of dummy requests to the server of good programmers to overburen it and make it inoperable.
-
-- What is the advantage of hosting application on a cloud (like Amazon, Google Cloud, Azure, etc...) over self-hosting it on a local machine
 
 ## Backend questions
 
