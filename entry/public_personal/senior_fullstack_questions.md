@@ -146,7 +146,7 @@ It should be made clear to the applicant that they are not expected to answer al
  - What is the purpose of `key` attribute?
   - It binds the state of the component to a specific string value: when that value changes between two renders, component is re-created resetting it's internal state.
 
-- When component re-render gets triggered?
+- (answer appears to be incorrect) When component re-render gets triggered?
   - When any of the props values are changed or internal state is changed.
 
 - If you have an array variable in the state, and you want to add a value to that array, how would you do that and why?
