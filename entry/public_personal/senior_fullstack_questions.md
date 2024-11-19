@@ -189,9 +189,6 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is Hash Map (aka Map, aka Dictionary, aka Associative Array)
   - ожидаемый ответ: "мап предназначен для хранения и быстрого доступа к элементу по ключу (ключ как правило строка) за константное время"
 
-- How much will be 2 to the power of 10? Do you know what is the most notable use of this number?
-  - I wonder how obvious it will be. The intent here is to make applicant say that 1024 is how many bytes are there in a kibibyte.
-
 - What is the difference between interpreted languages (javascript, php, lua, python) and compiled languages (c, c++, Go, Rust)
   - Interpreted languages are compiled in real time, so you execute the code directly. Compiled languages can't be executed directly, they have to be first compiled into a binary .exe file with architecture-specific machine instructions.
 
