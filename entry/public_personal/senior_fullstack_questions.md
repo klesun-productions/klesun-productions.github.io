@@ -176,7 +176,7 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the second parameter of the `useEffect()`? The array that follows the callback parameter.
   - List of values that trigger that callback every time any of them is changed.
 
- - What is the purpose of `key` attribute?
+- What is the purpose of `key` attribute?
   - It binds the state of the component to a specific string value: when that value changes between two renders, component is re-created resetting it's internal state.
 
 - (answer appears to be incorrect) When component re-render gets triggered?
