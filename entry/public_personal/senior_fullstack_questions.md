@@ -25,9 +25,6 @@ It should be made clear to the applicant that they are not expected to answer al
 - How does javascript deal with memory allocated for variables after you are done using them?
   - It garbage collects them
 
-- What is regular expressions?
-  - A language used to describe the pattern of a string to ensure that it matches a specific format and to extract particular parts of the string.
-
 - Can you describe the purpose of bundlers (webpack/esbuild/browserify/etc...)
   - Bundlers merge all javascript files in your project into a single file to reduce number of requests client has to make to fetch all of the application code. Bundlers also traditionally provide transformations to further optimize application's load speed, like minification of code, tree-shaking. Bundlers also usually allow you to use various language features that are unavailable to vanilla javascript, like jsx, typescript, esnext, etc...
 
@@ -43,8 +40,14 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is race condition?
   - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.  
 
-- How to execute multiple http requests in parallel rather than sequentially?
+- What are circular imports? Are they bad? Why?
+  - Circular imports is a co-dependency situation where module A imports module B while module B imports module A which makes neither of the imports resolvable without hacks like assuming one of them being imported as `undefined` until the other module is done evaluating. This is very bad as errors caused by circular references (often resulting in error messages like "undefined is not a constructor") are very hard to detect especially if code is designed in a way that circular imports are very numerous and you can't just un-circle them all by a tool like madge.   
+
+- Assuming you need to retrieve data from 3 different independent APIs urls using fetch. Each API takes around 3 seconds to execute. You need to get results from all 3 APIs as fast as possible. How would you do that? (How to execute multiple http requests in parallel rather than sequentially?)
   - Expected answer: using Promise.all() or calling first await after last request was started.
+
+- What is regular expressions?
+  - A language used to describe the pattern of a string to ensure that it matches a specific format and to extract particular parts of the string.
 
 - What is the most common cause of "Maximum call stack size exceeded" error, also known as "Stack Overflow"
   - Infinite recursion
@@ -60,6 +63,12 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - (this one will be tricky to explain) When you instantiate a Date class from a string in format `yyyy-MM-dd HH:mm:ss` (aka SQL datetime format), how will this string be interpreted? What will be the timezone offset of the resulting Date object?
   - It will interpret the string as a local time of user's browser. To interpret it as UTC, the string has to include Z or +0 suffix. Interpreting it as a timezone differing from UTC and from user's browser is not possible with native javascript Date class.   
+
+- How would you implement a form with file upload? How would you transfer these uploaded files to the server?
+  - Something along the lines is expected: I would use `<input type="file">` element, form type `multipart-form` or base64 encoded json or a separate API call for each file with buffer as the payload. Answers like "using some file upload component library in React" would not be wrong either, but would make this question invalid as there would be nothing to check in such case.
+ 
+- What is ArrayBuffer data structure? Or Uint8Array?
+  - A data structure representing binary data - an array of bytes, immutable. In this data structure you can store, for example, an image, or a pdf file or whatever. 
 
 (following questions are questionable, probably useless)
 
@@ -79,22 +88,31 @@ It should be made clear to the applicant that they are not expected to answer al
 
 ## CSS questions (6 questions)
 
-- What is flex?
-  - Flex is a relatively new way to describe positioning of elements in CSS that is all about stretching, centering, aligning elements around x/y axis and filling remaining space.
+- How do you center a div within it's parent?
+  - Using either margin:auto or `display:inline-block` + `text-align:center` or `display:flex` + `justify-content:center`.
+
+- If you want to apply different styles when same page is opened on mobile and desktop, what would you normally use?
+  - `@media screen max-width` block 
 
 - What are selectors?
   - A syntax to describe a subset of elements on the page to which the styling in the body of the selector will be applied
 
+- What is the difference between margin and padding?
+
+- What are differences between `display:inline-block`, `display:inline` and `display:block`
+  - `inline` interprets content as text, allowing it to wrap in the parent component, does not allow margin/padding. `block` interprets content as an unwrappable isolated rectangle rendered as a separate row. `inline-block` also interprets conent as isolated rectangle, but allows it to be _inlined_ between pieces of text or other inline blocks. 
+
+- How to make image fill/fit the container:
+  - In `<img>`: object-fit:..., in background: background-size:... 
+
 - How do the animations work in CSS?
   - You define animation keyframes with a unique name and for every keyframe, like 20%, 80% you specify the state of the style attributes of the element. You then reference that keyframes name in a selecter and specify parameters like duration, repetitions count, etc... The animation will play when element enters into the selector coverage.
 
-- Could you describe some of the filter attribute properties?
-  - Greyscale makes element greyscale, hue shifts colors, brightness changes brightness, sepia makes all yellow, drop-shadow makes a nice glow.
-
-- What is the difference between margin and padding?
-
 - What are advantages of using separate stylesheets and styling classes rather than inline styling directly in html? (assuming vanilla context, without tailwind and other modern stuff)
   - Separate stylesheets allow you the separate content from appearance rules which arguably makes code management easier. It also allows you to reuse same styles for more than one element.
+
+- Could you describe some of the filter attribute properties?
+  - Greyscale makes element greyscale, hue shifts colors, brightness changes brightness, sepia makes all yellow, drop-shadow makes a nice glow.
 
 ## Typescript questions (5 questions)
 
