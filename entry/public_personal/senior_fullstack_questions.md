@@ -17,6 +17,9 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the difference between data structures: Set and List?
   - Set does not store duplicate values and provides methods to check for presence of an element in constant time
 
+- What is the difference between data structures: Queue and Stack?
+  - Queue: first-in-first-out, Stack: last-in-first-out
+
 - What is Binary Search?
   - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
 
@@ -207,6 +210,12 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
   - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
-
-- What is the difference between data structures: Queue and Stack?
-  - Queue: first-in-first-out, Stack: last-in-first-out
+- What are keys/indexes neded for
+  - To speed up queries filtering by indexed columns. Without indexes filtering will work by linear search of the whole table.
+- What is Foreign Key
+  - A constraint that forces a column representing an ID in another table to be consistent, i.e. to guarantee that it exists in the said table 
+- What is LEFT JOIN
+  - Join that does not remove base table rows if there are no matches in the joined table 
+- How can you create a dead lock
+  - With transactions: with pessimistic lock, transaction A lock a row in table X, then a row in table Y; transaction B locks a row in table Y, then in table X
+  - Without transactions: lock a table and forget to unlock it 
