@@ -124,7 +124,7 @@ It should be made clear to the applicant that they are not expected to answer al
 
 ## CSS questions (6 questions)
 
-- How do you center a div within it's parent?
+- How do you center a div within its parent?
   - Using either margin:auto or `display:inline-block` + `text-align:center` or `display:flex` + `justify-content:center`.
 
 - If you want to apply different styles when same page is opened on mobile and desktop, what would you normally use?
@@ -219,4 +219,5 @@ It should be made clear to the applicant that they are not expected to answer al
 - How can you create a dead lock
   - With transactions: with pessimistic lock, transaction A lock a row in table X, then a row in table Y; transaction B locks a row in table Y, then in table X
   - Without transactions: lock a table and forget to unlock it 
+
 
