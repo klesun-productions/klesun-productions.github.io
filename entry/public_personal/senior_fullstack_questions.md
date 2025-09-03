@@ -79,7 +79,7 @@ It should be made clear to the applicant that they are not expected to answer al
 - What are circular imports? Are they bad? Why?
   - Circular imports is a co-dependency situation where module A imports module B while module B imports module A which makes neither of the imports resolvable without hacks like assuming one of them being imported as `undefined` until the other module is done evaluating. This is very bad as errors caused by circular references (often resulting in error messages like "undefined is not a constructor") are very hard to detect especially if code is designed in a way that circular imports are very numerous and you can't just un-circle them all by a tool like madge.   
 
-- Assuming you need to retrieve data from 3 different independent APIs urls using fetch. Each API takes around 3 seconds to execute. You need to get results from all 3 APIs as fast as possible. How would you do that? (How to execute multiple http requests in parallel rather than sequentially?)
+- How would you call http requests to make them run in parallel without blocking each other?
   - Expected answer: using Promise.all() or calling first await after last request was started.
 
 - What is regular expressions?
@@ -219,3 +219,4 @@ It should be made clear to the applicant that they are not expected to answer al
 - How can you create a dead lock
   - With transactions: with pessimistic lock, transaction A lock a row in table X, then a row in table Y; transaction B locks a row in table Y, then in table X
   - Without transactions: lock a table and forget to unlock it 
+
