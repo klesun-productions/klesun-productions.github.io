@@ -9,6 +9,8 @@ It should be made clear to the applicant that they are not expected to answer al
 
 ## Junior Developer questions
 
+- What is the difference between Integer and Floating Point data types in most programming languages? Can you tell me how Floating Point values are stored?
+  - Integer for whole numbers, floating point for non-whole numbers. Floating point numbers are stored as a binary sequence of digits (up to 15) and their base of 10
 - How many bits are there in a byte?
   - 8
 - What is a recursive function?
@@ -21,8 +23,6 @@ It should be made clear to the applicant that they are not expected to answer al
   - Its fields cannot change.
 - What is JSON?
   - A minimalistic data structure format consisting of primitives, arrays and objects. Replaced XML as the most popular format for transferring data via HTTP APIs.
-- What is the difference between Integer and Floating Point data types in most programming languages? Can you tell me how Floating Point values are stored?
-  - Integer for whole numbers, floating point for non-whole numbers. Floating point numbers are stored as a binary sequence of digits (up to 15) and their base of 10
 - What does “break” do inside a loop? And "continue"?
   - Answer: Exits the loop immediately.
 - What is the difference between text encoding UTF-8 and ASCII?
@@ -31,6 +31,21 @@ It should be made clear to the applicant that they are not expected to answer al
   - Processes running in parallel by utilizing multiple CPU cores (or emulation on a single core). Before async was popularized in programming languages, threads were the most common way of handling blocking operations like I/O reads.
 
 ## SysAdmin questions
+
+- Could you tell me what you know about NTFS, FAT32 and ext4 file systems?
+  - NTFS is a proprietary file system used by windows. FAT32 is mostly used by SD cards, has a limit of 4 GiB per file. Ext4 is a linux file system with logging that uses some smart algorithm for distribution of data that prevents fragmentation.
+
+- What is BitLocker
+  - Disk encryption
+
+- What does ping terminal command do?
+  - It checks whether there is a live server listening for connections on the specified IP address.
+
+- What is bad blocks
+  - Parts of the hard drive that are physically corrupted. An indication that device should be replaced.
+
+- What are advantages and disadvantages of 5 GHz wifi vs 2.4 GHz wifi?
+  - 5 Ghz has higher throughput, but lower range
 
 - What is the difference between http and https?
   - https uses ssl certificates to encrypt and sign requests and responses therefore protecting the contents of communication between server and client from ISPs
@@ -46,6 +61,20 @@ It should be made clear to the applicant that they are not expected to answer al
 - What http status codes do you know by heart?
   - 400 Bad Request, 401 Unauthorized, 403 Forbidden, 200 Success, 300 Redirect, 404 Not Found, 422 Unprocessable Entity, 500 Internal Server Error, 501 Not Implemented, 502 Bad Gateway
 
+- What is the difference between TCP and UDP protocols?
+  - TCP waits for confirmation of delivered data, UDP does not.
+
+## If has Linux background
+
+- What is sudo
+  - Executes next command as administrator
+
+- What is chmod 777 command in Linux
+  - chmod changes what kind of users can read/write/execute the file. 777 is usually a very bad idea since it gives full access to the file to guest users who may, for example, have connected via samba
+
+- What is ssh
+  - A command that lets you remotely connect to a linux server to execute terminal commands.
+
 ## General programming questions (13 questions)
 
 - What is the difference between data structures: Set and List?
@@ -54,7 +83,7 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the difference between data structures: Queue and Stack?
   - Queue: first-in-first-out, Stack: last-in-first-out
 
-- What is Binary Search?
+- What is Binary Search? | 0
   - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
 
 - What is Garbage Collector?
