@@ -13,6 +13,9 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the difference between 32-bit and 64-bit systems?
   - 32-bit limit is 4 GiB of RAM
 
+- What is fragmentation/defragmentation?
+  - when part of file is in one end of hard drive and another on another end
+
 - Could you tell me what you know about NTFS, FAT32 and ext4 file systems?
   - NTFS is a proprietary file system used by windows. FAT32 is mostly used by SD cards, has a limit of 4 GiB per file. Ext4 is a linux file system with logging that uses some smart algorithm for distribution of data that prevents fragmentation.
 
@@ -31,14 +34,14 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the difference between http and https?
   - https uses ssl certificates to encrypt and sign requests and responses therefore protecting the contents of communication between server and client from ISPs
 
-- What is the difference between TCP and UDP protocols?
-  - TCP waits for confirmation of delivered data, UDP does not.
-  
-- What is sha256
-  - A hashing algorithm
-
 - Can you describe the principle of public/private key encryption?
   - When you want to securely send some data, you encrypt it with recipient's public key and then only that specific recipient can decrypt it using his private key. Likewise, recipient can encrypt some data with his private key and then anyone will be able to descrypt it with his public key proving that data was indeed sent by that recipient.
+
+- What is the difference between TCP and UDP protocols?
+  - TCP waits for confirmation of delivered data, UDP does not.
+
+- What is sha256
+  - A hashing algorithm
 
 - What http status codes do you know by heart?
   - 400 Bad Request, 401 Unauthorized, 403 Forbidden, 200 Success, 300 Redirect, 404 Not Found, 422 Unprocessable Entity, 500 Internal Server Error, 501 Not Implemented, 502 Bad Gateway
@@ -53,7 +56,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - 8
 - What is a recursive function?
   - A function that calls itself essentially breaking the problem into simpler sub-problems.
-- Could you explain what are: linear complexity, constant complexity and exponential complexity?
+- Could you explain what are: linear complexity, constant complexity and exponential complexity? | 0.7
   - Linear: the number of operations is the same as the number of elements O(N).
   - Constant: the number of operations is fixed regardless of the number of elements O(1).
   - Exponential: the number of operations grows exponentially with the number of elements 2^O(N).
@@ -75,6 +78,8 @@ It should be made clear to the applicant that they are not expected to answer al
   - Function that is called when instance is destroyed. Intended to release the memory which was dynamically allocated by the class instance.
 - What is the difference between declaring a class variable locally and and the new operator?
   - Declaring locally will store in in stack, new operator will store it in heap and will need deallocation.
+- What is the difference between heap and stack.
+  - 
 - Why is it required to always call delete on all objects created with new?
   - Because otherwise they will stay in the heap as a memory leak since C++ does not have garbage collectors.
 
@@ -104,7 +109,7 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the difference between data structures: Queue and Stack?
   - Queue: first-in-first-out, Stack: last-in-first-out
 
-- What is Binary Search? | 0
+- What is Binary Search?
   - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
 
 - What is Garbage Collector?
@@ -144,7 +149,7 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
   - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
-- What are keys/indexes neded for
+- What are keys/indexes neded for | 0
   - To speed up queries filtering by indexed columns. Without indexes filtering will work by linear search of the whole table.
 - What is Foreign Key
   - A constraint that forces a column representing an ID in another table to be consistent, i.e. to guarantee that it exists in the said table 
