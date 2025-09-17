@@ -97,8 +97,8 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is WebWorkers?
   - Expected answer: an API in browsers that allows you to utilize more than one CPU cores in your application for computation heavy operations, like data compression and video coding
 
-- (this one will be tricky to explain) When you instantiate a Date class from a string in format `yyyy-MM-dd HH:mm:ss` (aka SQL datetime format), how will this string be interpreted? What will be the timezone offset of the resulting Date object?
-  - It will interpret the string as a local time of user's browser. To interpret it as UTC, the string has to include Z or +0 suffix. Interpreting it as a timezone differing from UTC and from user's browser is not possible with native javascript Date class.   
+- When you create a Date object by passing it a datetime string without timezone offset, in which timezone will it be interpreted?
+  - Local time from windows settingss
 
 - How would you implement a form with file upload? How would you transfer these uploaded files to the server?
   - Something along the lines is expected: I would use `<input type="file">` element, form type `multipart-form` or base64 encoded json or a separate API call for each file with buffer as the payload. Answers like "using some file upload component library in React" would not be wrong either, but would make this question invalid as there would be nothing to check in such case.
@@ -219,5 +219,6 @@ It should be made clear to the applicant that they are not expected to answer al
 - How can you create a dead lock
   - With transactions: with pessimistic lock, transaction A lock a row in table X, then a row in table Y; transaction B locks a row in table Y, then in table X
   - Without transactions: lock a table and forget to unlock it 
+
 
 
