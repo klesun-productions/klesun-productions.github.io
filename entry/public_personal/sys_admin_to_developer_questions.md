@@ -201,6 +201,8 @@ It should be made clear to the applicant that they are not expected to answer al
 - What software do you normally use to compile javascript code into an executable program?
   - Trap question. Javascript is an interpreted language, not compiled. Possible accepted alternate answers, though: webpack/bundler/vite/typescript/v8/browser/node/etc...
 
+- What is the difference in the behaviour of `this.` in arrow functions and traditional non-arrow functions
+  - In traditional non-arrow functions `this` references the object whose member called function is, in arrow functions this references same as this of the scope where this function is created.
 
 ## CSS questions (6 questions)
 
@@ -242,6 +244,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
 
 
 
