@@ -56,7 +56,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - 8
 - What is a recursive function?
   - A function that calls itself essentially breaking the problem into simpler sub-problems.
-- Could you explain what are: linear complexity, constant complexity and exponential complexity? | 0.7
+- Could you explain what are: linear complexity, constant complexity and exponential complexity?
   - Linear: the number of operations is the same as the number of elements O(N).
   - Constant: the number of operations is fixed regardless of the number of elements O(1).
   - Exponential: the number of operations grows exponentially with the number of elements 2^O(N).
@@ -149,7 +149,7 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
   - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
-- What are keys/indexes neded for | 0
+- What are keys/indexes neded for
   - To speed up queries filtering by indexed columns. Without indexes filtering will work by linear search of the whole table.
 - What is Foreign Key
   - A constraint that forces a column representing an ID in another table to be consistent, i.e. to guarantee that it exists in the said table 
@@ -230,4 +230,5 @@ It should be made clear to the applicant that they are not expected to answer al
   - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
 
