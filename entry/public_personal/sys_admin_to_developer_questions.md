@@ -172,6 +172,12 @@ It should be made clear to the applicant that they are not expected to answer al
   
 ## Javascrpt questions (14 questions)
 
+- What is the difference between let/var/const?
+  - Variables defined with const cannot be re-assigned. Variables defined with let are limited to the scope where they are defined. Variables defined with var are garbage.
+
+- What does the `fetch()` function do?
+  - Makes HTTP requests to an endpoint
+
 - What is the difference between POST and GET HTTP methods?
   - Expected answer: GET requests normally don't include the payload body and are cacheable on CDNs
 
@@ -193,7 +199,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - Local time from windows settingss
 
 - In javascript, what will be the result of 0.1 + 0.2? Not 0.3. Why?
-  - 0.30000000000000004
+  - 0.30000000000000004. Because floating point numbers are stored in binary form so there are rounding errors in representing them as decimal.
 
 - How many threads does javascript code normally use?
   - 1. Javascript handles concurrency with async callback and event loop rather than threads.
@@ -203,6 +209,10 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - What is the difference in the behaviour of `this.` in arrow functions and traditional non-arrow functions
   - In traditional non-arrow functions `this` references the object whose member called function is, in arrow functions this references same as this of the scope where this function is created.
+
+- What does the yield keyword do?
+  - Yields a value into an iterator
+
 
 ## CSS questions (6 questions)
 
@@ -244,6 +254,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
 
 
 
