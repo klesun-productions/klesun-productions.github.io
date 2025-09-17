@@ -189,6 +189,18 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is regular expressions?
   - A language used to describe the pattern of a string to ensure that it matches a specific format and to extract particular parts of the string.
 
+- When you create a Date object by passing it a datetime string without timezone offset, in which timezone will it be interpreted?
+  - Local time from windows settingss
+
+- In javascript, what will be the result of 0.1 + 0.2? Not 0.3. Why?
+  - 0.30000000000000004
+
+- How many threads does javascript code normally use?
+  - 1. Javascript handles concurrency with async callback and event loop rather than threads.
+
+- What software do you normally use to compile javascript code into an executable program?
+  - Trap question. Javascript is an interpreted language, not compiled. Possible accepted alternate answers, though: webpack/bundler/vite/typescript/v8/browser/node/etc...
+
 
 ## CSS questions (6 questions)
 
@@ -230,5 +242,6 @@ It should be made clear to the applicant that they are not expected to answer al
   - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
 
 
