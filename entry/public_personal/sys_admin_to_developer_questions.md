@@ -51,6 +51,11 @@ It should be made clear to the applicant that they are not expected to answer al
   - 400 Bad Request, 401 Unauthorized, 403 Forbidden, 200 Success, 300 Redirect, 404 Not Found, 422 Unprocessable Entity, 500 Internal Server Error, 501 Not Implemented, 502 Bad Gateway
 
 
+## Advanced
+- What is latency
+  - The time request spends going to server and back. The closer client is geographically to the server the lower is usually the latency. From Europe to America on best connection it is usually 170 ms.
+
+
 ## If M365 background
 - What is intune?
 
@@ -267,6 +272,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
 
 
 
