@@ -8,10 +8,16 @@ This document is to be used as a reference for the interviewing SysAdmin + Junio
 It should be made clear to the applicant that they are not expected to answer all of the questions, they should just try to answer as many questions they know answer to as possible, but it's ok if they don't have an answer for any of them.
 
 
+## SysAdmin questions If more than 10 years of experience
 
-## SysAdmin questions
+- What is the difference between SSD and HDD
+  - HDD has a physically rotating disk where data is read/written with a laser. SSD uses unmovable components for storing data
+
 - What is the difference between 32-bit and 64-bit systems?
   - 32-bit limit is 4 GiB of RAM
+
+- What is bad blocks
+  - Parts of the hard drive that are physically corrupted. An indication that device should be replaced.
 
 - What is fragmentation/defragmentation?
   - when part of file is in one end of hard drive and another on another end
@@ -19,14 +25,12 @@ It should be made clear to the applicant that they are not expected to answer al
 - Could you tell me what you know about NTFS, FAT32 and ext4 file systems?
   - NTFS is a proprietary file system used by windows. FAT32 is mostly used by SD cards, has a limit of 4 GiB per file. Ext4 is a linux file system with logging that uses some smart algorithm for distribution of data that prevents fragmentation.
 
+## SysAdmin questions
 - What is BitLocker
   - Disk encryption
 
 - What does ping terminal command do?
   - It checks whether there is a live server listening for connections on the specified IP address.
-
-- What is bad blocks
-  - Parts of the hard drive that are physically corrupted. An indication that device should be replaced.
 
 - What are advantages and disadvantages of 5 GHz wifi vs 2.4 GHz wifi?
   - 5 Ghz has higher throughput, but lower range
@@ -47,6 +51,13 @@ It should be made clear to the applicant that they are not expected to answer al
   - 400 Bad Request, 401 Unauthorized, 403 Forbidden, 200 Success, 300 Redirect, 404 Not Found, 422 Unprocessable Entity, 500 Internal Server Error, 501 Not Implemented, 502 Bad Gateway
 
 
+## If M365 background
+- What is intune?
+
+- What is Azure platform?
+
+- What is SharePoint?
+
 
 ## Junior Developer questions
 
@@ -54,6 +65,8 @@ It should be made clear to the applicant that they are not expected to answer al
   - Integer for whole numbers, floating point for non-whole numbers. Floating point numbers are stored as a binary sequence of digits (up to 15) and their base of 10
 - How many bits are there in a byte?
   - 8
+- What will be the decimal representation of the binary 101 number
+  - 5
 - What is a recursive function?
   - A function that calls itself essentially breaking the problem into simpler sub-problems.
 - Could you explain what are: linear complexity, constant complexity and exponential complexity?
@@ -254,6 +267,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
 
 
 
