@@ -32,6 +32,9 @@ It should be made clear to the applicant that they are not expected to answer al
 - What does ping terminal command do?
   - It checks whether there is a live server listening for connections on the specified IP address.
 
+- What is localhost?
+  - The alias for the 127.0.0.1 IP which points to the machine from which it is requested
+
 - What are advantages and disadvantages of 5 GHz wifi vs 2.4 GHz wifi?
   - 5 Ghz has higher throughput, but lower range
 
@@ -165,7 +168,9 @@ It should be made clear to the applicant that they are not expected to answer al
 
 ## Backend questions
 
-- You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
+- What are transactions?
+  - Rollback
+~ You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
   - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
 - What are keys/indexes neded for
   - To speed up queries filtering by indexed columns. Without indexes filtering will work by linear search of the whole table.
@@ -272,6 +277,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
 
 
 
