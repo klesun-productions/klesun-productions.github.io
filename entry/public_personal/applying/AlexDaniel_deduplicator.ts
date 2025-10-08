@@ -1,5 +1,3 @@
-// Run with `deno --allow-net deduplicator.ts`
-
 import anyAscii from "npm:any-ascii@0.3.3";
 import { distance } from "npm:fastest-levenshtein@1.0.16";
 
@@ -50,7 +48,7 @@ function lookSame(companyA: Company, companyB: Company): boolean {
   return levenshteinDistance <= MAX_DISTANCE;
 }
 
-function deduplicate(companies: Company[]): Map<Company, Company[]> {
+async function deduplicate(companies: Company[]): Promise<Map<Company, Company[]>> {
   console.warn("Find duplicates and set main companies…");
   for (let i = 0; i < companies.length; i++) {
     for (let j = i + 1; j < companies.length; j++) {
@@ -58,6 +56,7 @@ function deduplicate(companies: Company[]): Map<Company, Company[]> {
         companies[j].mainCompany = companies[i]?.mainCompany ?? companies[i];
       }
     }
+    // would be really nice to remove this to make this function non-async =D
     await Deno.stderr.write(new TextEncoder().encode(`\rProcessed ${i + 1}/${companies.length} companies...`));
   }
   
@@ -69,6 +68,7 @@ function deduplicate(companies: Company[]): Map<Company, Company[]> {
       groupedByMain.set(company, [company]);
     }
   }
+  return groupedByMain;
 }
 
 function printResult(groupedByMain: Map<Company, Company[]>) {
@@ -83,5 +83,5 @@ function printResult(groupedByMain: Map<Company, Company[]>) {
 }
 
 const companies = await retrieveCompanies();
-const groupedByMain = deduplicate(companies);
+const groupedByMain = await deduplicate(companies);
 printResult(groupedByMain);
