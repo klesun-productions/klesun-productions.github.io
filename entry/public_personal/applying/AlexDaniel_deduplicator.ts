@@ -59,15 +59,9 @@ async function deduplicate(companies: Company[]): Promise<Map<Company, Company[]
     // would be really nice to remove this to make this function non-async =D
     await Deno.stderr.write(new TextEncoder().encode(`\rProcessed ${i + 1}/${companies.length} companies...`));
   }
-  
-  const groupedByMain = new Map<Company, Company[]>();
-  for (const company of companies) {
-    if (company.mainCompany) {
-      groupedByMain.get(company.mainCompany)!.push(company);
-    } else {
-      groupedByMain.set(company, [company]);
-    }
-  }
+
+  const groupedByMain: Map<Company, Company[]> = Map
+    .groupBy(companies, company => company.mainCompany);
   return groupedByMain;
 }
 
