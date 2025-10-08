@@ -67,14 +67,17 @@ function deduplicate(companies: Company[]): Map<Company, Company[]> {
   }
 }
 
-const companies = await retrieveCompanies();
-const groupedByMain = deduplicate(companies);
-
-for (const [mainCompany, group] of groupedByMain) {
-  if (group.length > 1) {
-    console.log(`"${mainCompany.originalName}", variations:`);
-    for (const company of group) {
-      console.log(`  – "${company.originalName}"`);
+function printResult(groupedByMain: Map<Company, Company[]>) {
+  for (const [mainCompany, group] of groupedByMain) {
+    if (group.length > 1) {
+      console.log(`"${mainCompany.originalName}", variations:`);
+      for (const company of group) {
+        console.log(`  – "${company.originalName}"`);
+      }
     }
   }
 }
+
+const companies = await retrieveCompanies();
+const groupedByMain = deduplicate(companies);
+printResult(groupedByMain);
