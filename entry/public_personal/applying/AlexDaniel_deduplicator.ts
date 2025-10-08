@@ -42,15 +42,19 @@ async function retrieveCompanies(): Promise<Company[]> {
   return companies;
 }
 
+function lookSame(companyA: Company, companyB: Company): boolean {
+  if (Math.abs(companyA.normalized.length - companyB.normalized.length) > MAX_DISTANCE) {
+    return false;
+  }
+  const levenshteinDistance = distance(companies[i].normalized, companies[j].normalized);
+  return levenshteinDistance <= MAX_DISTANCE;
+}
+
 function deduplicate(companies: Company[]): Map<Company, Company[]> {
   console.warn("Find duplicates and set main companies…");
   for (let i = 0; i < companies.length; i++) {
     for (let j = i + 1; j < companies.length; j++) {
-      if (Math.abs(companies[i].normalized.length - companies[j].normalized.length) > MAX_DISTANCE) {
-        continue;
-      }
-      const levenshteinDistance = distance(companies[i].normalized, companies[j].normalized);
-      if (levenshteinDistance <= MAX_DISTANCE) {
+      if (lookSame(companies[i], companies[j])) {
         companies[j].mainCompany = companies[i]?.mainCompany ?? companies[i];
       }
     }
