@@ -12,7 +12,7 @@ const SUFFIXES_TO_REMOVE = [
   'software', 'tech', 'technology', 'digital', 'systems', 'solutions',
   'group', 'team', 'collective', 'works', 'factory', 'lab', 'labs'
 ]; // prettier-ignore
-const suffixPattern = new RegExp(`\\b(${SUFFIXES_TO_REMOVE.map(suffix => RegExp.escape(suffix)).join("|")})\\b$`, "i");
+const suffixPattern = new RegExp(`\\b(${SUFFIXES_TO_REMOVE.map(suffix => RegExp.escape(suffix)).join("|")})$`, "i");
 
 function normalize(name: string): string {
   return anyAscii(name.toLowerCase()).replace(suffixPattern, "").replace(/\s+/g, " ").trim();
