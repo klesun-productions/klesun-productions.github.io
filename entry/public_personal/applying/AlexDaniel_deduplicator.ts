@@ -26,18 +26,23 @@ interface Company {
   mainCompany: Company | null;
 }
 
-console.warn("Fetching companies data…");
-const response = await fetch(URL);
-if (!response.ok) {
-  throw new Error(`Failed to fetch companies data: ${response.status} ${response.statusText}`);
+async function retrieveCompanies(): Promise<Company[]> {
+  console.warn("Fetching companies data…");
+  const response = await fetch(URL);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch companies data: ${response.status} ${response.statusText}`);
+  }
+  const text = await response.text();
+  const companies: Company[] = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => ({ originalName: line, normalized: normalize(line), mainCompany: null }));
+  console.warn(`Found ${companies.length} companies`);
+  return companies;
 }
-const text = await response.text();
-const companies: Company[] = text
-  .split("\n")
-  .map((line) => line.trim())
-  .filter(Boolean)
-  .map((line) => ({ originalName: line, normalized: normalize(line), mainCompany: null }));
-console.warn(`Found ${companies.length} companies`);
+
+const companies = await retrieveCompanies();
 
 console.warn("Find duplicates and set main companies…");
 for (let i = 0; i < companies.length; i++) {
