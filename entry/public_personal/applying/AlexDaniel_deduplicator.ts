@@ -42,30 +42,33 @@ async function retrieveCompanies(): Promise<Company[]> {
   return companies;
 }
 
+function deduplicate(companies: Company[]): Map<Company, Company[]> {
+  console.warn("Find duplicates and set main companies…");
+  for (let i = 0; i < companies.length; i++) {
+    for (let j = i + 1; j < companies.length; j++) {
+      if (Math.abs(companies[i].normalized.length - companies[j].normalized.length) > MAX_DISTANCE) {
+        continue;
+      }
+      const levenshteinDistance = distance(companies[i].normalized, companies[j].normalized);
+      if (levenshteinDistance <= MAX_DISTANCE) {
+        companies[j].mainCompany = companies[i]?.mainCompany ?? companies[i];
+      }
+    }
+    await Deno.stderr.write(new TextEncoder().encode(`\rProcessed ${i + 1}/${companies.length} companies...`));
+  }
+  
+  const groupedByMain = new Map<Company, Company[]>();
+  for (const company of companies) {
+    if (company.mainCompany) {
+      groupedByMain.get(company.mainCompany)!.push(company);
+    } else {
+      groupedByMain.set(company, [company]);
+    }
+  }
+}
+
 const companies = await retrieveCompanies();
-
-console.warn("Find duplicates and set main companies…");
-for (let i = 0; i < companies.length; i++) {
-  for (let j = i + 1; j < companies.length; j++) {
-    if (Math.abs(companies[i].normalized.length - companies[j].normalized.length) > MAX_DISTANCE) {
-      continue;
-    }
-    const levenshteinDistance = distance(companies[i].normalized, companies[j].normalized);
-    if (levenshteinDistance <= MAX_DISTANCE) {
-      companies[j].mainCompany = companies[i]?.mainCompany ?? companies[i];
-    }
-  }
-  await Deno.stderr.write(new TextEncoder().encode(`\rProcessed ${i + 1}/${companies.length} companies...`));
-}
-
-const groupedByMain = new Map<Company, Company[]>();
-for (const company of companies) {
-  if (company.mainCompany) {
-    groupedByMain.get(company.mainCompany)!.push(company);
-  } else {
-    groupedByMain.set(company, [company]);
-  }
-}
+const groupedByMain = deduplicate(companies);
 
 for (const [mainCompany, group] of groupedByMain) {
   if (group.length > 1) {
