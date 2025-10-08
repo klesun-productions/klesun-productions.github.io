@@ -44,7 +44,7 @@ function lookSame(companyA: Company, companyB: Company): boolean {
   if (Math.abs(companyA.normalized.length - companyB.normalized.length) > MAX_DISTANCE) {
     return false;
   }
-  const levenshteinDistance = distance(companies[i].normalized, companies[j].normalized);
+  const levenshteinDistance = distance(companyA.normalized, companyB.normalized);
   return levenshteinDistance <= MAX_DISTANCE;
 }
 
