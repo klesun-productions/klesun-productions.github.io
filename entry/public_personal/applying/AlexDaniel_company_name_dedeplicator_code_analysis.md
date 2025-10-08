@@ -10,7 +10,7 @@ My task is to think about how this solution can be improved and optimised, check
 (To Be Added)
 
 ### Code Quality
-First thing catching my eye is that code is inlined on the script level. Considering how straightforward the task is, it would really be logical to define a pure function `deduplicate(names: string[]): string[][]` rather than write `for` loops right at the script level.
+- First thing catching my eye is that code is inlined on the script level. Considering how straightforward the task is, it would really be logical to define a pure function `deduplicate(names: string[]): string[][]` rather than write `for` loops right at the script level.
 
 ### Alternative Approaches
-ChatGPT is pretty good at finding similar names in a list, especially considering that false positives are acceptable.
+- ChatGPT is pretty good at finding similar names in a list, especially considering that false positives are acceptable.
