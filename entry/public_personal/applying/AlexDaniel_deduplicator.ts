@@ -61,7 +61,7 @@ async function deduplicate(companies: Company[]): Promise<Map<Company, Company[]
   }
 
   const groupedByMain: Map<Company, Company[]> = Map
-    .groupBy(companies, company => company.mainCompany);
+    .groupBy(companies, company => company.mainCompany ?? company);
   return groupedByMain;
 }
 
