@@ -1,10 +1,10 @@
 const HandleHttpRequest = require('./backend/actions/HandleHttpRequest.js');
 const http = require('http');
 const https = require('https');
+const http2 = require('http2');
 const url = require('url');
 const fs = require('fs').promises;
 const httpProxy = require('http-proxy');
-const fsSync = require('fs');
 
 const checkObviousExploit = (rq, rs) => {
     const pathname = url.parse(rq.url).pathname;
@@ -71,7 +71,7 @@ const main = async () => {
         });
         server.keepAliveTimeout = 3 * 60 * 1000; // 3 minutes, for fast browsing
     } else {
-        const server = https.createServer({
+        const server = http2.createSecureServer({
             key: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/privkey.pem'),
             cert: await fs.readFile('/etc/letsencrypt/live/torrent.klesun.net/fullchain.pem'),
         }, handleRq).listen(443, '0.0.0.0', () => {
