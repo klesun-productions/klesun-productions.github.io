@@ -30,15 +30,16 @@ const main = async () => {
             // burn in hell, fag!
             return;
         }
-        if (['trilem.me', 'trilemme.klesun.net'].includes(rq.headers.host)) {
+        const host = rq.headers[':authority'] || rq.headers['host'];
+        if (['trilem.me', 'trilemme.klesun.net'].includes(host)) {
             proxy.web(rq, rs, {target: 'http://localhost:23183'}, exc => {
 				console.error('ololo trilemma proxy error', exc);
 			});
-        } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent', 'torr.rent', 'torrent.klesun.net', 'nyaa.lv'].includes(rq.headers.host)) {
+        } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent', 'torr.rent', 'torrent.klesun.net', 'nyaa.lv'].includes(host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36865'}, exc => {
                 console.error('ololo kunkka-torrent proxy error', exc);
             });
-        } else if (['reibai.info', 'api.reibai.info'].includes(rq.headers.host)) {
+        } else if (['reibai.info', 'api.reibai.info'].includes(host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36418'}, exc => {
                 console.error('ololo reibai.info proxy error', exc);
             });
