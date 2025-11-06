@@ -1,6 +1,8 @@
 const HandleHttpRequest = require('./backend/actions/HandleHttpRequest.js');
 const http = require('http');
 const https = require('https');
+const http2 = require('http2');
+
 const url = require('url');
 const fs = require('fs').promises;
 const httpProxy = require('http-proxy');
@@ -37,6 +39,10 @@ const main = async () => {
         } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent', 'torr.rent', 'torrent.klesun.net', 'nyaa.lv'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36865'}, exc => {
                 console.error('ololo kunkka-torrent proxy error', exc);
+                rs.statusCode = 500;
+                rs.statusMessage = String(exc).replace(/\W/g, " ").slice(0, 100);
+                rs.write(String(exc));
+                rs.end();
             });
         } else if (['reibai.info', 'api.reibai.info'].includes(rq.headers.host)) {
             proxy.web(rq, rs, {target: 'http://localhost:36418'}, exc => {
