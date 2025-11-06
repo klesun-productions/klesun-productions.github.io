@@ -125,6 +125,7 @@ function initializeSelectedPackView(
             }, song.songName),
             Dom("img", {
                 loading: "lazy",
+                fetchpriority: "low",
                 class: "current-pack-songs-list-entry-image",
                 src: !imageName ? "" :
                     songDirUrl + "/" + encodeURIComponent(imageName),
@@ -186,10 +187,12 @@ export default async function ({
         const packSubdirUrl = DATA_DIR_URL + "/packs/" +
             encodeURIComponent(pack.packName) + "/" +
             encodeURIComponent(pack.subdir);
-        initializeSelectedPackView(pack, packSubdirUrl, song => {
-            player.playSong({ song, packSubdirUrl });
-        });
         player.playSong({ song, packSubdirUrl });
+        setTimeout(() => {
+            initializeSelectedPackView(pack, packSubdirUrl, song => {
+                player.playSong({ song, packSubdirUrl });
+            });
+        });
     };
 
     const playRandomSongByNamePart = () => {

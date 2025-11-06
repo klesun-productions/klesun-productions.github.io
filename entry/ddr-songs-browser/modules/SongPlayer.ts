@@ -247,28 +247,22 @@ export default function SongPlayer({ gui }: {
         const songDirUrl = packSubdirUrl + "/" +
             encodeURIComponent(song.songName);
 
-        const bnFileName = getBnFileName(song);
-        gui.current_song_view_banner.src = bnFileName ? songDirUrl + "/" + encodeURIComponent(bnFileName) : "";
-        gui.current_song_view_cdtitle.src = !song.format && song.headers.CDTITLE ? songDirUrl + "/" + encodeURIComponent(song.headers.CDTITLE) : "";
-        gui.current_song_view_title.textContent = song.songName;
-        gui.current_song_view_date.textContent = !song.format ? song.smModifiedAt.slice(0, 10) : "";
-        gui.current_song_view_artist.textContent = !song.format && song.headers.ARTIST ? "by " + song.headers.ARTIST : "";
-        gui.current_song_error_message_holder.textContent = "";
-        gui.current_song_difficulties_list.innerHTML = "";
+        const fileNames = !song.format ? song.restFileNames : song.fileNames ?? [];
+        const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
+            fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
 
         const whenSmText = song.format ? null :
             fetch(songDirUrl + "/" + encodeURIComponent(song.smFileName))
                 .then(rs => rs.text());
 
-        const fileNames = !song.format ? song.restFileNames : song.fileNames ?? [];
-        const songFileName = !song.format && fileNames.find(n => n.toLowerCase() === song.headers.MUSIC.toLowerCase()) ||
-            fileNames.find(n => n.match(/\.(ogg|wav|mp3|acc)$/i));
         if (!songFileName) {
             gui.current_song_error_message_holder.textContent = "Missing song file in " + fileNames.join(", ");
         } else {
             gui.active_song_player.src = songDirUrl + "/" + encodeURIComponent(songFileName);
+            gui.active_song_player.load();
+            const whenPlay = gui.active_song_player.play();
             try {
-                await gui.active_song_player.play();
+                await whenPlay;
             } catch (error) {
                 if (String(error).includes("The play() request was interrupted by a new load request")) {
                     console.log("interrupted cuz different song loaded");
@@ -282,6 +276,16 @@ export default function SongPlayer({ gui }: {
                 return;
             }
         }
+
+        const bnFileName = getBnFileName(song);
+        gui.current_song_view_banner.src = bnFileName ? songDirUrl + "/" + encodeURIComponent(bnFileName) : "";
+        gui.current_song_view_cdtitle.src = !song.format && song.headers.CDTITLE ? songDirUrl + "/" + encodeURIComponent(song.headers.CDTITLE) : "";
+        gui.current_song_view_title.textContent = song.songName;
+        gui.current_song_view_date.textContent = !song.format ? song.smModifiedAt.slice(0, 10) : "";
+        gui.current_song_view_artist.textContent = !song.format && song.headers.ARTIST ? "by " + song.headers.ARTIST : "";
+        gui.current_song_error_message_holder.textContent = "";
+        gui.current_song_difficulties_list.innerHTML = "";
+
         // if (!song.format && song.headers.SAMPLESTART) {
         //     gui.active_song_player.currentTime = +song.headers.SAMPLESTART;
         // }
