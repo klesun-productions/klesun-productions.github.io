@@ -5,6 +5,7 @@ const http2 = require('http2');
 const url = require('url');
 const fs = require('fs').promises;
 const httpProxy = require('http-proxy');
+const http2Proxy = require('http2-proxy');
 
 const checkObviousExploit = (rq, rs) => {
     const pathname = url.parse(rq.url).pathname;
@@ -22,9 +23,40 @@ const checkObviousExploit = (rq, rs) => {
     }
 };
 
+function stringifyErrorShallow(error) {
+    if (!error) {
+        return "(empty error)";
+    } else if (error && typeof error === "object"
+            && "message" in error
+            && typeof error.message === "string"
+    ) {
+        return String(error.message);
+    } else if (typeof error === "string") {
+        return error;
+    } else if (error + "" !== "[object Object]") {
+        return error + "";
+    } else {
+        return "Unknown format error: " + JSON.stringify(error);
+    }
+}
+
+/**
+ * many libraries throw objects that do not extend Error, this function attempts
+ * to extract the message from any kind of error object using popular conventions
+ * like having `toString()` implementation or `message` property
+ * @return {string}
+ */
+function stringifyError(error) {
+    if (error instanceof AggregateError) {
+        return error.errors.map(stringifyErrorShallow).join("\n");
+    } else {
+        return stringifyErrorShallow(error);
+    }
+}
+
 const main = async () => {
     const agent = new http.Agent();
-    const proxy = httpProxy.createProxy({ xfwd: true, agent: agent });
+    //const proxy = httpProxy.createProxy({ xfwd: true, agent: agent });
     const handleRq = (rq, rs) => {
         if (checkObviousExploit(rq, rs)) {
             // burn in hell, fag!
@@ -32,20 +64,28 @@ const main = async () => {
         }
         const host = rq.headers[':authority'] || rq.headers['host'];
         if (['trilem.me', 'trilemme.klesun.net'].includes(host)) {
-            proxy.web(rq, rs, {target: 'http://localhost:23183'}, exc => {
-				console.error('ololo trilemma proxy error', exc);
-			});
-        } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent', 'torr.rent', 'torrent.klesun.net', 'nyaa.lv'].includes(host)) {
-            proxy.web(rq, rs, {target: 'http://localhost:36865'}, exc => {
+            http2Proxy.web(rq, rs, { port: 23183 }).catch(exc => {
+                console.error('ololo trilemma proxy error', exc);
+                rs.statusCode = 500;
+                rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
+                rs.write(stringifyError(exc));
+                rs.end();
+            });
+        } else if (true || ['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent', 'torr.rent', 'torrent.klesun.net', 'nyaa.lv'].includes(host)) {
+            http2Proxy.web(rq, rs, { port: 36865 }).catch(exc => {
                 console.error('ololo kunkka-torrent proxy error', exc);
                 rs.statusCode = 500;
-                rs.statusMessage = String(exc).replace(/\W/g, " ").slice(0, 100);
-                rs.write(String(exc));
+                rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
+                rs.write(stringifyError(exc));
                 rs.end();
             });
         } else if (['reibai.info', 'api.reibai.info'].includes(host)) {
-            proxy.web(rq, rs, {target: 'http://localhost:36418'}, exc => {
+            http2Proxy.web(rq, rs, { port: 36418 }).catch(exc => {
                 console.error('ololo reibai.info proxy error', exc);
+                rs.statusCode = 500;
+                rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
+                rs.write(stringifyError(exc));
+                rs.end();
             });
         } else {
             // klesun-productions.com
