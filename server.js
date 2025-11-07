@@ -67,7 +67,7 @@ const main = async () => {
             http2Proxy.web(rq, rs, { port: 23183 }).catch(exc => {
                 console.error('ololo trilemma proxy error', exc);
                 rs.statusCode = 500;
-                rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
+                // rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
                 rs.write(stringifyError(exc));
                 rs.end();
             });
@@ -75,7 +75,7 @@ const main = async () => {
             http2Proxy.web(rq, rs, { port: 36865, useHttp1: true }).catch(exc => {
                 console.error('ololo kunkka-torrent proxy error at ' + rq.url, exc);
                 rs.statusCode = 500;
-                rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
+                // rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
                 rs.write(stringifyError(exc));
                 rs.end();
             });
@@ -83,7 +83,7 @@ const main = async () => {
             http2Proxy.web(rq, rs, { port: 36418 }).catch(exc => {
                 console.error('ololo reibai.info proxy error', exc);
                 rs.statusCode = 500;
-                rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
+                // rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
                 rs.write(stringifyError(exc));
                 rs.end();
             });
