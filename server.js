@@ -72,7 +72,7 @@ const main = async () => {
                 rs.end();
             });
         } else if (['kunkka-torrent.online', 'trutracker.club', 'kunkka-tor.rent', 'torr.rent', 'torrent.klesun.net', 'nyaa.lv'].includes(host)) {
-            http2Proxy.web(rq, rs, { port: 36865, useHttp1: true, timeout: 200 * 1000, sessionTimeout: 200 * 1000 }).catch(exc => {
+            http2Proxy.web(rq, rs, { port: 36865, useHttp1: true, timeout: 200 * 1000, sessionTimeout: 200 * 1000, proxyTimeout: 200 * 1000 }).catch(exc => {
                 console.error('ololo kunkka-torrent proxy error at ' + rq.url, exc);
                 rs.statusCode = 500;
                 // rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
