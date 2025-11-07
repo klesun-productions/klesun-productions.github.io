@@ -76,7 +76,8 @@ const main = async () => {
                 console.error('ololo kunkka-torrent proxy error at ' + rq.url, exc);
                 rs.statusCode = 500;
                 // rs.statusMessage = stringifyError(exc).replace(/\W/g, " ").slice(0, 100);
-                rs.write(stringifyError(exc));
+                rs.setHeader("content-type", "text/plain");
+                rs.write("Error while proxying request: " + stringifyError(exc));
                 rs.end();
             });
         } else if (['reibai.info', 'api.reibai.info'].includes(host)) {
