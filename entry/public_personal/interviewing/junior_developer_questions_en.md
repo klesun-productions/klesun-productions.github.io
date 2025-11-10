@@ -11,6 +11,7 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - What is the difference between Integer and Floating Point data types in most programming languages? Can you tell me how Floating Point values are stored?
   - Integer for whole numbers, floating point for non-whole numbers. Floating point numbers are stored as a binary sequence of digits (up to 15) and their base of 10
+- Can you tell me what Modulus arithmetic operator does? (more of a academic termin knowledge question rather than a programming question)
 - How many bits are there in a byte?
   - 8
 - What will be the decimal representation of the binary 101 number
@@ -63,25 +64,7 @@ It should be made clear to the applicant that they are not expected to answer al
 
 ## General programming questions (13 questions)
 
-- What is the difference between data structures: Set and List?
-  - Set does not store duplicate values and provides methods to check for presence of an element in constant time
-
-- What is the difference between data structures: Queue and Stack?
-  - Queue: first-in-first-out, Stack: last-in-first-out
-
-- What is Binary Search?
-  - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
-
-- What is Garbage Collector?
-  - A mechanism that releases memory that was reserved for variables that are not referenced by the code anymore. It's contrary to manual memory allocation used in C and Rust where programmer has to allocate and release memory explicitly for every dynamic data structure like list. The advantage of garbage collection is simplicity of code and safety from memory leaks, the disadvantage is performance and stop-the-world events.
-
-- Could you describe how memory is allocated in ArrayList data structure when you insert a new value?
-  - A fixed size array with heuristic initial length is created underneath. When the length is reached, a new array is created with new length multiplied by a heuristic factor, like two, all values are then copied from old array to new array.
-
-- What is Hash Map (aka Map, aka Dictionary, aka Associative Array)
-  - ожидаемый ответ: "мап предназначен для хранения и быстрого доступа к элементу по ключу (ключ как правило строка) за константное время"
-
-- Which of the following is better and why: exponential complexity O(2^N), constant compexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
+- Which of the following is better and why: exponential complexity O(2^N), constant complexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
   - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
 
 ## If has Linux background
@@ -129,52 +112,6 @@ It should be made clear to the applicant that they are not expected to answer al
   - It copies all history.
 - What is the difference between cloning repository via ssh and via https?
   - They are two different protocols. SSH uses private/public key pair to authenticate you, while https often either does not assume any authentication at all or uses conventional username/password authentication.
-  
-  
-  
-## Javascrpt questions (14 questions)
-
-- What is the difference between let/var/const?
-  - Variables defined with const cannot be re-assigned. Variables defined with let are limited to the scope where they are defined. Variables defined with var are garbage.
-
-- What does the `fetch()` function do?
-  - Makes HTTP requests to an endpoint
-
-- What is the difference between POST and GET HTTP methods?
-  - Expected answer: GET requests normally don't include the payload body and are cacheable on CDNs
-
-- What is CORS?
-
-- What is innerHTML property in DOM elements? Would you use innerHTML to insert a text content in an html element and how?
-  - Expected answer: either "I would rather use textContent" or "I would escape html entities first" because injection
-
-- What is race condition?
-  - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.  
-
-- How would you call http requests to make them run in parallel without blocking each other?
-  - Expected answer: using Promise.all() or calling first await after last request was started.
-
-- What is regular expressions?
-  - A language used to describe the pattern of a string to ensure that it matches a specific format and to extract particular parts of the string.
-
-- When you create a Date object by passing it a datetime string without timezone offset, in which timezone will it be interpreted?
-  - Local time from windows settingss
-
-- In javascript, what will be the result of 0.1 + 0.2? Not 0.3. Why?
-  - 0.30000000000000004. Because floating point numbers are stored in binary form so there are rounding errors in representing them as decimal.
-
-- How many threads does javascript code normally use?
-  - 1. Javascript handles concurrency with async callback and event loop rather than threads.
-
-- What software do you normally use to compile javascript code into an executable program?
-  - Trap question. Javascript is an interpreted language, not compiled. Possible accepted alternate answers, though: webpack/bundler/vite/typescript/v8/browser/node/etc...
-
-- What is the difference in the behaviour of `this.` in arrow functions and traditional non-arrow functions
-  - In traditional non-arrow functions `this` references the object whose member called function is, in arrow functions this references same as this of the scope where this function is created.
-
-- What does the yield keyword do?
-  - Yields a value into an iterator
-
 
 ## CSS questions (6 questions)
 

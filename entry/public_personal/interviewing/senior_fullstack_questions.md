@@ -7,11 +7,6 @@ This document is to be used as a reference for the interviewing Full Stack Devel
 
 It should be made clear to the applicant that they are not expected to answer all of the questions, they should just try to answer as many questions they know answer to as possible, but it's ok if they don't have an answer for any of them.
 
-## Introduction
-
-- Can you tell us a bit about yourself?
-
-
 ## General programming questions (13 questions)
 
 - What is the difference between data structures: Set and List?
@@ -29,8 +24,6 @@ It should be made clear to the applicant that they are not expected to answer al
 - Could you describe how memory is allocated in ArrayList data structure when you insert a new value?
   - A fixed size array with heuristic initial length is created underneath. When the length is reached, a new array is created with new length multiplied by a heuristic factor, like two, all values are then copied from old array to new array.
 
-- Can you tell me what Modulus arithmetic operator does? (more of a academic termin knowledge question rather than a programming question)
-
 - What is Hash Map (aka Map, aka Dictionary, aka Associative Array)
   - ожидаемый ответ: "мап предназначен для хранения и быстрого доступа к элементу по ключу (ключ как правило строка) за константное время"
 
@@ -47,13 +40,25 @@ It should be made clear to the applicant that they are not expected to answer al
   - Evil programmers sending a lot of dummy requests to the server of good programmers to overburen it and make it inoperable.
 
 
-## Javascrpt questions (14 questions)
+## Javascript questions (14 questions)
+
+- What is the difference between let/var/const?
+    - Variables defined with const cannot be re-assigned. Variables defined with let are limited to the scope where they are defined. Variables defined with var are garbage.
+
+- What does the `fetch()` function do?
+    - Makes HTTP requests to an endpoint
+
+- How would you call http requests to make them run in parallel without blocking each other?
+    - Expected answer: using Promise.all() or calling first await after last request was started.
+
+- What is the difference between http and https?
+    - https uses ssl certificates to encrypt and sign requests and responses therefore protecting the contents of communication between server and client from ISPs
+
+- What is race condition?
+    - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.
 
 - What is WebSockets?
   - Expected answer: a protocol used in browsers that allows sending messages from server to client, contrary to http where requests can only be sent from client to server.
-
-- What is the difference between http and https?
-  - https uses ssl certificates to encrypt and sign requests and responses therefore protecting the contents of communication between server and client from ISPs
 
 - How would you get the value of a specific URL query parameter from address bar?
   - Expected answer: using new URL(window.location.href).search or new URLSearchParams(window.location.search)
@@ -73,14 +78,8 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is innerHTML property in DOM elements? Would you use innerHTML to insert a text content in an html element and how?
   - Expected answer: either "I would rather use textContent" or "I would escape html entities first" because injection
 
-- What is race condition?
-  - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.  
-
 - What are circular imports? Are they bad? Why?
   - Circular imports is a co-dependency situation where module A imports module B while module B imports module A which makes neither of the imports resolvable without hacks like assuming one of them being imported as `undefined` until the other module is done evaluating. This is very bad as errors caused by circular references (often resulting in error messages like "undefined is not a constructor") are very hard to detect especially if code is designed in a way that circular imports are very numerous and you can't just un-circle them all by a tool like madge.   
-
-- How would you call http requests to make them run in parallel without blocking each other?
-  - Expected answer: using Promise.all() or calling first await after last request was started.
 
 - What is regular expressions?
   - A language used to describe the pattern of a string to ensure that it matches a specific format and to extract particular parts of the string.
@@ -97,14 +96,29 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is WebWorkers?
   - Expected answer: an API in browsers that allows you to utilize more than one CPU cores in your application for computation heavy operations, like data compression and video coding
 
-- When you create a Date object by passing it a datetime string without timezone offset, in which timezone will it be interpreted?
-  - Local time from windows settingss
-
 - How would you implement a form with file upload? How would you transfer these uploaded files to the server?
   - Something along the lines is expected: I would use `<input type="file">` element, form type `multipart-form` or base64 encoded json or a separate API call for each file with buffer as the payload. Answers like "using some file upload component library in React" would not be wrong either, but would make this question invalid as there would be nothing to check in such case.
  
 - What is ArrayBuffer data structure? Or Uint8Array?
   - A data structure representing binary data - an array of bytes, immutable. In this data structure you can store, for example, an image, or a pdf file or whatever. 
+
+- What is the difference in the behaviour of `this.` in arrow functions and traditional non-arrow functions
+    - In traditional non-arrow functions `this` references the object whose member called function is, in arrow functions this references same as this of the scope where this function is created.
+
+- What does the yield keyword do?
+    - Yields a value into an iterator
+
+- What software do you normally use to compile javascript code into an executable program?
+  - Trap question. Javascript is an interpreted language, not compiled. Possible accepted alternate answers, though: webpack/bundler/vite/typescript/v8/browser/node/etc...
+
+- How many threads does javascript code normally use?
+    - Javascript handles concurrency with async callback and event loop rather than threads.
+
+- In javascript, what will be the result of 0.1 + 0.2? Not 0.3. Why?
+    - 0.30000000000000004. Because floating point numbers are stored in binary form so there are rounding errors in representing them as decimal.
+
+- When you create a Date object by passing it a datetime string without timezone offset, in which timezone will it be interpreted?
+    - Local time from windows settings
 
 (following questions are questionable, probably useless)
 
@@ -121,6 +135,8 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - Could you explain what is the purpose of frameworks like React, Vue, Angular?
   - Coding using these frameworks lets you declaratively express the dependency of displayed elements on the data state of the application, so you only need to write code that will render html for a given variable values instead of imperatively updating every component when data it depends on changes.
+
+- What is CORS?
 
 ## CSS questions (6 questions)
 
