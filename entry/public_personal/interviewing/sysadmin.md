@@ -56,3 +56,25 @@
 - What is Azure platform?
 
 - What is SharePoint?
+
+
+## If has Linux background
+
+- What is sudo
+    - Executes next command as administrator
+
+- What is chmod 777 command in Linux
+    - chmod changes what kind of users can read/write/execute the file. 777 is usually a very bad idea since it gives full access to the file to guest users who may, for example, have connected via samba
+
+- What is ssh
+    - A command that lets you remotely connect to a linux server to execute terminal commands.
+
+- What is the GNU General Public License
+    - It is the license that allows you to use the licensed software under the condition that you will make your own software open source.
+- What programming language is Linux kernel written on?
+    - C
+- What command do you use in terminal to list files in current directory?
+    - ls
+- What command do you use to go into a directory?
+    - cd
+

@@ -62,48 +62,6 @@ It should be made clear to the applicant that they are not expected to answer al
   - Array has fixed length, list has dynamic length.
 
 
-## General programming questions (13 questions)
-
-- Which of the following is better and why: exponential complexity O(2^N), constant complexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
-  - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
-
-## If has Linux background
-
-- What is sudo
-  - Executes next command as administrator
-
-- What is chmod 777 command in Linux
-  - chmod changes what kind of users can read/write/execute the file. 777 is usually a very bad idea since it gives full access to the file to guest users who may, for example, have connected via samba
-
-- What is ssh
-  - A command that lets you remotely connect to a linux server to execute terminal commands.
-
-- What is the GNU General Public License
-  - It is the license that allows you to use the licensed software under the condition that you will make your own software open source.
-- What programming language is Linux kernel written on?
-  - C
-- What command do you use in terminal to list files in current directory?
-  - ls
-- What command do you use to go into a directory?
-  - cd
-
-
-## Backend questions
-
-- What are transactions?
-  - Rollback
-~ You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
-  - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
-- What are keys/indexes neded for
-  - To speed up queries filtering by indexed columns. Without indexes filtering will work by linear search of the whole table.
-- What is Foreign Key
-  - A constraint that forces a column representing an ID in another table to be consistent, i.e. to guarantee that it exists in the said table 
-- What is LEFT JOIN
-  - Join that does not remove base table rows if there are no matches in the joined table 
-- How can you create a dead lock
-  - With transactions: with pessimistic lock, transaction A lock a row in table X, then a row in table Y; transaction B locks a row in table Y, then in table X
-  - Without transactions: lock a table and forget to unlock it
-
 ## git
 
 - What does git stash command do?
@@ -120,37 +78,6 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - How to make image fill/fit the container:
   - In `<img>`: object-fit:..., in background: background-size:... 
-
-## Typescript questions (5 questions)
-
-- What is the difference between any and unknown?
-  - Any is a non-type-safe hack, whereas unknown is type safe.
-
-- What are the advantages of strict=true parameter in tsconfig?
-  - Without strict=true you lose a lot of type safety: implicit any in functions does not get reported and null checks are not enforced.
-
-- Do types exist at runtime.
-  - No. This is one of the official non-goals of the typescript.
-
-## React questions
-
-- What is state (`useState()`) and what is props?
-  - Props are immutable parameters coming from parent component, state are internal mutable variables.
-
-- If you have a computation-heavy function used in the rendering, how to make it reuse cached result between re-renderings instead of getting called again and again? Assuming that this function is expressed through props.
-  - `useMemo()`. If answered "`useEffect()`", ask for a stateless alternative.
-
-- What is the second parameter of the `useEffect()`? The array that follows the callback parameter.
-  - List of values that trigger that callback every time any of them is changed.
-
-- What is the purpose of `key` attribute?
-  - It binds the state of the component to a specific string value: when that value changes between two renders, component is re-created resetting it's internal state.
-
-- If you have an array variable in the state, and you want to add a value to that array, how would you do that and why?
-  - `setArr([...arr, newValue])`. `arr.push()` does not trigger re-render in React: object reference has to be changed. 
-
-- What is the difference between React's `onChange=...` attribute and vanilla html's `onchange="..."` attribute?
-  - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
 
