@@ -1,4 +1,4 @@
-Task: imlement a js program that takes a number (height) and prints a Pascal's Triangle of the specified height in the console.
+Task: implement a js program that takes a number (height) and prints a Pascal's Triangle of the specified height in the console.
 
 Example input: 5
 
