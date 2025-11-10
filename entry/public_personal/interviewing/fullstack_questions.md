@@ -19,18 +19,15 @@ It should be made clear to the applicant that they are not expected to answer al
   - 5
 - What is a recursive function?
   - A function that calls itself essentially breaking the problem into simpler sub-problems.
-- Could you explain what are: linear complexity, constant complexity and exponential complexity?
-  - Linear: the number of operations is the same as the number of elements O(N).
-  - Constant: the number of operations is fixed regardless of the number of elements O(1).
-  - Exponential: the number of operations grows exponentially with the number of elements 2^O(N).
-- What does it mean when object is immutable?
-  - Its fields cannot change.
 - What is JSON?
   - A minimalistic data structure format consisting of primitives, arrays and objects. Replaced XML as the most popular format for transferring data via HTTP APIs.
 - What does “break” do inside a loop? And "continue"?
   - Answer: Exits the loop immediately.
 - What is the difference between text encoding UTF-8 and ASCII?
   - Answer: ASCII uses 7 bits and represents 128 characters; UTF-8 uses 1–4 bytes and can represent all Unicode characters.
+
+- What is Decentralized Denial of Service attack?
+  - Evil programmers sending a lot of dummy requests to the server of good programmers to overburden it and make it inoperable.
 
 
 - (if background is not javascript) What are threads?
@@ -47,26 +44,28 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is Binary Search?
   - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
 
+- Could you explain what are: linear complexity, constant complexity and exponential complexity?
+  - Linear: the number of operations is the same as the number of elements O(N).
+  - Constant: the number of operations is fixed regardless of the number of elements O(1).
+  - Exponential: the number of operations grows exponentially with the number of elements 2^O(N).
+
+- Which of the following is better and why: exponential complexity O(2^N), constant complexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
+  - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
+
 - What is Garbage Collector?
   - A mechanism that releases memory that was reserved for variables that are not referenced by the code anymore. It's contrary to manual memory allocation used in C and Rust where programmer has to allocate and release memory explicitly for every dynamic data structure like list. The advantage of garbage collection is simplicity of code and safety from memory leaks, the disadvantage is performance and stop-the-world events.
-
-- Could you describe how memory is allocated in ArrayList data structure when you insert a new value?
-  - A fixed size array with heuristic initial length is created underneath. When the length is reached, a new array is created with new length multiplied by a heuristic factor, like two, all values are then copied from old array to new array.
 
 - What is Hash Map (aka Map, aka Dictionary, aka Associative Array)
   - ожидаемый ответ: "мап предназначен для хранения и быстрого доступа к элементу по ключу (ключ как правило строка) за константное время"
 
+- Could you describe how memory is allocated in ArrayList data structure when you insert a new value?
+  - A fixed size array with heuristic initial length is created underneath. When the length is reached, a new array is created with new length multiplied by a heuristic factor, like two, all values are then copied from old array to new array.
+
 - What is the difference between interpreted languages (javascript, php, lua, python) and compiled languages (c, c++, Go, Rust)
   - Interpreted languages are compiled in real time, so you execute the code directly. Compiled languages can't be executed directly, they have to be first compiled into a binary .exe file with architecture-specific machine instructions.
 
-- What can you tell abount JIT: bytecode in Java or it's analog CIL/CLR in C#
+- What can you tell about JIT: bytecode in Java or it's analog CIL/CLR in C#
   - JIT languages are compiled into an intermediary abstract machine language that is not specific to any architecture. They are similarto compiled languages in that they can't be executed directly from source code, and they are also similar to interpreted languages in that their bytecode is interpreted into binary on execution.
-
-- Which of the following is better and why: exponential complexity O(2^N), constant compexity O(1), linear complexity O(N), quadratic complexity O(N^2), logarithmic complexity O(log(N))
-  - constant > logarithmic > linear > quadratic > exponential. The complexity says how execution time of the program depends on the number of elements in the input. Constant and logarithmic are super fast, exponential is awfully slow.
-
-- What is Decentralized Denial of Service attack?
-  - Evil programmers sending a lot of dummy requests to the server of good programmers to overburen it and make it inoperable.
 
 
 ## Javascript questions (14 questions)
@@ -77,7 +76,7 @@ It should be made clear to the applicant that they are not expected to answer al
 - What does the `fetch()` function do?
   - Makes HTTP requests to an endpoint
 
-- How would you call http requests to make them run in parallel without blocking each other?
+- How would you make multiple http requests to run in parallel without blocking each other?
   - Expected answer: using Promise.all() or calling first await after last request was started.
 
 - What is the difference between http and https?
@@ -86,11 +85,11 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is race condition?
   - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.
 
+- What is regular expressions?
+  - A language used to describe the pattern of a string to ensure that it matches a specific format and to extract particular parts of the string.
+
 - What is WebSockets?
   - Expected answer: a protocol used in browsers that allows sending messages from server to client, contrary to http where requests can only be sent from client to server.
-
-- How would you get the value of a specific URL query parameter from address bar?
-  - Expected answer: using new URL(window.location.href).search or new URLSearchParams(window.location.search)
 
 - How does javascript deal with memory allocated for variables after you are done using them?
   - It garbage collects them
@@ -110,9 +109,6 @@ It should be made clear to the applicant that they are not expected to answer al
 - What are circular imports? Are they bad? Why?
   - Circular imports is a co-dependency situation where module A imports module B while module B imports module A which makes neither of the imports resolvable without hacks like assuming one of them being imported as `undefined` until the other module is done evaluating. This is very bad as errors caused by circular references (often resulting in error messages like "undefined is not a constructor") are very hard to detect especially if code is designed in a way that circular imports are very numerous and you can't just un-circle them all by a tool like madge.   
 
-- What is regular expressions?
-  - A language used to describe the pattern of a string to ensure that it matches a specific format and to extract particular parts of the string.
-
 - What is the most common cause of "Maximum call stack size exceeded" error, also known as "Stack Overflow"
   - Infinite recursion
 
@@ -125,47 +121,26 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is WebWorkers?
   - Expected answer: an API in browsers that allows you to utilize more than one CPU cores in your application for computation heavy operations, like data compression and video coding
 
-- How would you implement a form with file upload? How would you transfer these uploaded files to the server?
-  - Something along the lines is expected: I would use `<input type="file">` element, form type `multipart-form` or base64 encoded json or a separate API call for each file with buffer as the payload. Answers like "using some file upload component library in React" would not be wrong either, but would make this question invalid as there would be nothing to check in such case.
- 
 - What is ArrayBuffer data structure? Or Uint8Array?
   - A data structure representing binary data - an array of bytes, immutable. In this data structure you can store, for example, an image, or a pdf file or whatever. 
 
 - What is the difference in the behaviour of `this.` in arrow functions and traditional non-arrow functions
-    - In traditional non-arrow functions `this` references the object whose member called function is, in arrow functions this references same as this of the scope where this function is created.
+  - In traditional non-arrow functions `this` references the object whose member called function is, in arrow functions this references same as this of the scope where this function is created.
 
 - What does the yield keyword do?
-    - Yields a value into an iterator
+  - Yields a value into an iterator
 
 - What software do you normally use to compile javascript code into an executable program?
   - Trap question. Javascript is an interpreted language, not compiled. Possible accepted alternate answers, though: webpack/bundler/vite/typescript/v8/browser/node/etc...
 
 - How many threads does javascript code normally use?
-    - Javascript handles concurrency with async callback and event loop rather than threads.
+  - Javascript handles concurrency with async callback and event loop rather than threads.
 
 - In javascript, what will be the result of 0.1 + 0.2? Not 0.3. Why?
-    - 0.30000000000000004. Because floating point numbers are stored in binary form so there are rounding errors in representing them as decimal.
+  - 0.30000000000000004. Because floating point numbers are stored in binary form so there are rounding errors in representing them as decimal.
 
 - When you create a Date object by passing it a datetime string without timezone offset, in which timezone will it be interpreted?
-    - Local time from windows settings
-
-(following questions are questionable, probably useless)
-
-- What is canvas? How do you operate on it?
-  - Canvas is an element in html from which you can take a drawing context in javascript. Using drawing context, you can imperatively draw lines, shapes, image files.
-
-- What is the purpose of Connection: Keep-Alive header?
-  - Expected answer: Connection: Keep-Alive allows you to persist the connection with the server after request ends to reuse it for following requests, which is a significant performance boost especially for high latency requests. Browsers send this header by default.
-
-- What is the difference between POST and GET HTTP methods?
-  - Expected answer: GET requests normally don't include the payload body and are cacheable on CDNs
-
-- What is the OPTIONS method preflight request?
-
-- Could you explain what is the purpose of frameworks like React, Vue, Angular?
-  - Coding using these frameworks lets you declaratively express the dependency of displayed elements on the data state of the application, so you only need to write code that will render html for a given variable values instead of imperatively updating every component when data it depends on changes.
-
-- What is CORS?
+  - Local time from windows settings
 
 ## CSS questions (6 questions)
 
@@ -309,3 +284,32 @@ It should be made clear to the applicant that they are not expected to answer al
   - In `<img>`: object-fit:..., in background: background-size:... 
 
 Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
+
+
+(following questions are questionable, probably useless)
+
+- What is canvas? How do you operate on it?
+  - Canvas is an element in html from which you can take a drawing context in javascript. Using drawing context, you can imperatively draw lines, shapes, image files.
+
+- What is the purpose of Connection: Keep-Alive header?
+  - Expected answer: Connection: Keep-Alive allows you to persist the connection with the server after request ends to reuse it for following requests, which is a significant performance boost especially for high latency requests. Browsers send this header by default.
+
+- What is the difference between POST and GET HTTP methods?
+  - Expected answer: GET requests normally don't include the payload body and are cacheable on CDNs
+
+- What is the OPTIONS method preflight request?
+
+- What is CORS?
+
+- Could you explain what is the purpose of frameworks like React, Vue, Angular?
+  - Coding using these frameworks lets you declaratively express the dependency of displayed elements on the data state of the application, so you only need to write code that will render html for a given variable values instead of imperatively updating every component when data it depends on changes.
+
+- What does it mean when object is immutable?
+  - Its fields cannot change.
+
+- How would you get the value of a specific URL query parameter from address bar?
+  - Expected answer: using new URL(window.location.href).search or new URLSearchParams(window.location.search)
+
+- How would you implement a form with file upload? How would you transfer these uploaded files to the server?
+  - Something along the lines is expected: I would use `<input type="file">` element, form type `multipart-form` or base64 encoded json or a separate API call for each file with buffer as the payload. Answers like "using some file upload component library in React" would not be wrong either, but would make this question invalid as there would be nothing to check in such case.
+ 
