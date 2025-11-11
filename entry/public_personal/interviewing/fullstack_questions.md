@@ -67,6 +67,20 @@ It should be made clear to the applicant that they are not expected to answer al
 - What can you tell about JIT: bytecode in Java or it's analog CIL/CLR in C#
   - JIT languages are compiled into an intermediary abstract machine language that is not specific to any architecture. They are similarto compiled languages in that they can't be executed directly from source code, and they are also similar to interpreted languages in that their bytecode is interpreted into binary on execution.
 
+## Functional Programming
+
+- What is a pure function?
+  - A function that just takes input and returns output without side effects
+
+- What does it mean when object is immutable?
+  - Its fields cannot change.
+
+- What is a Monad?
+  - 
+
+- What is currying?
+
+- Can you tell me something I don't know about functional programming?
 
 ## Javascript questions (14 questions)
 
@@ -193,7 +207,7 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is state (`useState()`) and what is props?
   - Props are immutable parameters coming from parent component, state are internal mutable variables.
 
-- If you have a computation-heavy function used in the rendering, how to make it reuse cached result between re-renderings instead of getting called again and again? Assuming that this function is expressed through props.
+- If you have a CPU-heavy function used in the rendering, how to make it reuse cached result between re-renderings instead of getting called again and again? Assuming that this function is expressed through props.
   - `useMemo()`. If answered "`useEffect()`", ask for a stateless alternative.
 
 - What is the second parameter of the `useEffect()`? The array that follows the callback parameter.
@@ -205,11 +219,14 @@ It should be made clear to the applicant that they are not expected to answer al
 - (answer appears to be incorrect) When component re-render gets triggered?
   - When any of the props values are changed or internal state is changed.
 
+- What is the difference between React's `onChange=...` attribute and vanilla html's `onchange="..."` attribute?
+    - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur
+
 - If you have an array variable in the state, and you want to add a value to that array, how would you do that and why?
   - `setArr([...arr, newValue])`. `arr.push()` does not trigger re-render in React: object reference has to be changed. 
 
 - What will happen if rendering function of some component on the page, say, a button, throws an exception in default project setup and why?
-  - You'll see a blank page because that exception is effectively propagated to the root component's rendering function that effectively never returns. This is different, for example, than in Vue where template content is not part of executable js code.
+  - You'll see a blank page because that exception is effectively propagated to the root component's rendering function that effectively never returns. This is different, for example, than in Vue where template content is not part of executable js code. Or ErrorBoundary.
 
 - How can you manipulate scrollbar state or focus an element in React.
   - Using ref (I wonder if candidate will actually know a better approach...)
@@ -217,22 +234,16 @@ It should be made clear to the applicant that they are not expected to answer al
 - If you want to pass a callback to a child component without making child component re-render every time parent component is re-rendered despite child's props not changing since last re-render, how would you go about it? (passing a callback as `onChange={e => doStuff()}` will always trigger re-render of the child component)
   - By wrapping the callback in `useCallback()`
 
-- What is the difference between React's `onChange=...` attribute and vanilla html's `onchange="..."` attribute?
-  - React's `onChange=...` gets triggered on every character input, whereas html's `onchange="..."` is essentially only triggered on blur  
-
 - Can you tell me what is Next.js, how it works and why is it needed?
   - Next.js is a framework that lets you render html from React components on server side by using a principle called "hydration" of synchronizing the initial state of the component rendered on server with reactive state on client when browser javascript overtakes the control over the component. Next.js is needed for Server-Side Rendering to serve the page content as html instead of making user wait till his browser executes js code and produces the html to show on the page. This has benefits for performance, compatibility with low-end devices and, most notably, for making it easier for search engines to crawl your web page without executing javascript.   
 
-Ожидаемые ответы предоставлены чтоб помочь собеседователю понять суть вопроса, однако ответ собеседуемого вполне может оказаться более полным/точным, не списывайте такой случай как ошибку ;)
-
-
-## Backend questions
+## SQL Questions
 
 - What are transactions?
   - Rollback
 - You need to execute two SQL write operations together (say, insert a `comment` record and update the `last_commented_on` column in `person` table). How can you guarantee that if one of the operations fails (say, due to a database restart between the two calls), that the changes made by the other operation will not persist either, i.e. that there will be no inconsistent state in database caused by partial update.
   - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
-- What are keys/indexes neуded for
+- What are keys/indexes needed for
   - To speed up queries filtering by indexed columns. Without indexes filtering will work by linear search of the whole table.
 - What is Foreign Key
   - A constraint that forces a column representing an ID in another table to be consistent, i.e. to guarantee that it exists in the said table 
@@ -245,7 +256,7 @@ It should be made clear to the applicant that they are not expected to answer al
 ## If has C++ background
 - What is a destructor method
   - Function that is called when instance is destroyed. Intended to release the memory which was dynamically allocated by the class instance.
-- What is the difference between declaring a class variable locally and and the new operator?
+- What is the difference between declaring a class variable locally and using the new operator?
   - Declaring locally will store in in stack, new operator will store it in heap and will need deallocation.
 - What is the difference between heap and stack.
   - 
@@ -303,9 +314,6 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - Could you explain what is the purpose of frameworks like React, Vue, Angular?
   - Coding using these frameworks lets you declaratively express the dependency of displayed elements on the data state of the application, so you only need to write code that will render html for a given variable values instead of imperatively updating every component when data it depends on changes.
-
-- What does it mean when object is immutable?
-  - Its fields cannot change.
 
 - How would you get the value of a specific URL query parameter from address bar?
   - Expected answer: using new URL(window.location.href).search or new URLSearchParams(window.location.search)

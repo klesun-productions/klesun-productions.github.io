@@ -1,0 +1,14 @@
+- What is Transformer architecture
+  - The thing that made LLMs (like ChatGPT) possible, it's an algorithm that dramatically reduces the computational complexity of AI requests. It uses "Attention" mechanism.
+- What is LLM
+  - Large Language Model, ChatGPT, put here wikipedia definition I guess
+- Can you describe the core idea of machine learning:
+  - (how I would answer, even though I don't know shit =D) The core idea is that you feed some input to a machine learning software, it does some semi-random transformations of the input and outputs you the result of those transformations. You that tell the software how well does the result matches what you expected and depending on that the software will reduce the weights of the nodes (neurons) that gave unsatisfactory result. After quazilions of iterations only such randomm transformation will be left with significant weight that they would always give you something very close to the satisfactory result.
+- What is a perceptron?
+  - W: an algorithm for supervised learning of binary classifiers. A binary classifier is a function that can decide whether or not an input, represented by a vector of numbers, belongs to some specific class
+- What is a loss?
+  - The number representing how much actual result differs from the expected correct result... I guess.
+- Can you name some adaptive Gradient Descent algorithms?
+  - Adam (most popular), Adadelta, Adagrad. RMSProp. Following probably not adaptive, but accepted too: SGD. More options from ChatGPT: Nadam, AMSGrad, AdaBound
+- What is overfitting?
+  - If I understand correctly, it's when solution works well for a specific data set, but does not work well in general. Fixing symptoms I guess =D
