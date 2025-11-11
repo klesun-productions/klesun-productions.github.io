@@ -12,3 +12,9 @@
   - Adam (most popular), Adadelta, Adagrad. RMSProp. Following probably not adaptive, but accepted too: SGD. More options from ChatGPT: Nadam, AMSGrad, AdaBound
 - What is overfitting?
   - If I understand correctly, it's when solution works well for a specific data set, but does not work well in general. Fixing symptoms I guess =D
+- Can you name some popular python libraries for working with ML Models?
+  - TensorFlow, PyTorch 
+- What is an autoencoder?
+  - Unsupervised learning, latent variables
+- What is Generative adversarial network?
+  - Zero-sum game
