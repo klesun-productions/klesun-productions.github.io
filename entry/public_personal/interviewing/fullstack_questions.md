@@ -41,6 +41,8 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is the difference between data structures: Queue and Stack?
   - Queue: first-in-first-out, Stack: last-in-first-out
 
+- What is an iterator?
+
 - What is Binary Search?
   - ожидаемый ответ: "Из отсортированного массива берётся эелемент по середине и сравнивается с искомым значением: если элемент больше искомого, исключаем из поиска половину массива начиная со среднего элемента, иначе исключаем половину до середины. Из оставшейся половины снова берём элемент по середине и снова отсекаем половину, продолжаем до тех пор пока в ходе половинивания не останется 1 элемент - это и будет искомое значение. Логаритмическое время."
 
@@ -95,6 +97,9 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - What is the difference between http and https?
   - https uses ssl certificates to encrypt and sign requests and responses therefore protecting the contents of communication between server and client from ISPs
+
+- What HTTP Methods do you know?
+  - GET, POST, PUT, OPTIONS, UPDATE
 
 - What is race condition?
   - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.
@@ -276,6 +281,23 @@ It should be made clear to the applicant that they are not expected to answer al
   - Dictionary.
 - What is the difference between an array and a list.
   - Array has fixed length, list has dynamic length.
+
+## If has PHP background
+- What function would you use to combine two arrays into a single array?
+  - With `array_merge()`
+- What are interfaces?
+  - The things that allow polymorphism
+- What are advantages/disadvantages of using associative arrays compared to objects?
+  - For objects you can use static typing to describe their fields. Associative arrays require less coding due to lack of type definitions but they are dynamically-typed.
+- When you create an anonymous function (a closure), how can you access variables from the outer scope?
+  - By listing closure variables with `use()` or by using an arrow function
+- How are HTTP requests handled in PHP? Is there a long-running process that handles network communication?
+  - In php each http request spawns a separate process in operating system
+- How can you read a text file in php?
+  - With `file_get_contents()` for example
+- How can you make an outgoing http request in PHP?
+  - With `curl` usually 
+
 
 ## git
 

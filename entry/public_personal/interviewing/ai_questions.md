@@ -18,3 +18,5 @@
   - Unsupervised learning, latent variables
 - What is Generative adversarial network?
   - Zero-sum game
+- Can you name 3 basic machine learning paradigms (classes of learning problems) depending on the nature of the "signal" or "feedback" available to the learning system?
+  - Supervised Learning. Unsupervised Learning, Reinforcement Learning
