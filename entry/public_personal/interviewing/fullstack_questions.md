@@ -77,6 +77,8 @@ It should be made clear to the applicant that they are not expected to answer al
 - What does it mean when object is immutable?
   - Its fields cannot change.
 
+- Can you tell me what is reduce()
+
 - What is a Monad?
   - 
 
@@ -100,6 +102,9 @@ It should be made clear to the applicant that they are not expected to answer al
 
 - What HTTP Methods do you know?
   - GET, POST, PUT, OPTIONS, UPDATE
+
+- What http headers can you name and what is their purpose?
+  - Content-Type, Content-Length, Content-Encoding, Cache-Control, Connection, Content-Disposition, Range
 
 - What is race condition?
   - Poorly designed behaviour of the application that relies on the certain order of multiple async calls without means taken to guarantee the execution order.
@@ -166,6 +171,8 @@ It should be made clear to the applicant that they are not expected to answer al
 - How do you center a div within its parent?
   - Using either margin:auto or `display:inline-block` + `text-align:center` or `display:flex` + `justify-content:center`.
 
+- Ask something about font families
+
 - If you want to apply different styles when same page is opened on mobile and desktop, what would you normally use?
   - `@media screen max-width` block 
 
@@ -212,6 +219,9 @@ It should be made clear to the applicant that they are not expected to answer al
 - What is state (`useState()`) and what is props?
   - Props are immutable parameters coming from parent component, state are internal mutable variables.
 
+- What hooks do you know?
+  - useMemo(), use
+
 - If you have a CPU-heavy function used in the rendering, how to make it reuse cached result between re-renderings instead of getting called again and again? Assuming that this function is expressed through props.
   - `useMemo()`. If answered "`useEffect()`", ask for a stateless alternative.
 
@@ -250,9 +260,11 @@ It should be made clear to the applicant that they are not expected to answer al
   - By wrapping the operations in a transaction: https://en.wikipedia.org/wiki/Database_transaction
 - What are keys/indexes needed for
   - To speed up queries filtering by indexed columns. Without indexes filtering will work by linear search of the whole table.
+- Why is it not always a good idea to create a lot of indexes
+  - Memory wasted and insert speed slower 
 - What is Foreign Key
   - A constraint that forces a column representing an ID in another table to be consistent, i.e. to guarantee that it exists in the said table 
-- What is LEFT JOIN
+- What is the difference between regular (INNER) JOIN and LEFT JOIN
   - Join that does not remove base table rows if there are no matches in the joined table 
 - How can you create a dead lock
   - With transactions: with pessimistic lock, transaction A lock a row in table X, then a row in table Y; transaction B locks a row in table Y, then in table X
@@ -281,6 +293,8 @@ It should be made clear to the applicant that they are not expected to answer al
   - Dictionary.
 - What is the difference between an array and a list.
   - Array has fixed length, list has dynamic length.
+- What is the difference between class
+- What is `Task.run()`
 
 ## If has PHP background
 - What function would you use to combine two arrays into a single array?
@@ -297,7 +311,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - With `file_get_contents()` for example
 - How can you make an outgoing http request in PHP?
   - With `curl` usually 
-
+- What phpunit
 
 ## git
 
