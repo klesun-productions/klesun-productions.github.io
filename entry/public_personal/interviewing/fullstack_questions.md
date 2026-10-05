@@ -27,7 +27,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - Answer: ASCII uses 7 bits and represents 128 characters; UTF-8 uses 1–4 bytes and can represent all Unicode characters.
 
 - What is Decentralized Denial of Service attack?
-  - Evil programmers sending a lot of dummy requests to the server of good programmers to overburden it and make it inoperable.
+  - Evil programmers sending a lot of dummy requests to the server of good programmers to overburden it and make it inoperable. From many different IP addresses.
 
 
 - (if background is not javascript) What are threads?
