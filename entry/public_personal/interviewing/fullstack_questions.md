@@ -146,7 +146,7 @@ It should be made clear to the applicant that they are not expected to answer al
   - Expected answer: an API in browsers that allows you to utilize more than one CPU cores in your application for computation heavy operations, like data compression and video coding
 
 - What is ArrayBuffer data structure? Or Uint8Array?
-  - A data structure representing binary data - an array of bytes, immutable. In this data structure you can store, for example, an image, or a pdf file or whatever. 
+  - A data structure representing binary data - an array of bytes. In this data structure you can store, for example, an image, or a pdf file or whatever. It's much more efficient for storing bytes than a regular js array since it uses just one byte per element.
 
 - What is the difference in the behaviour of `this.` in arrow functions and traditional non-arrow functions
   - In traditional non-arrow functions `this` references the object whose member called function is, in arrow functions this references same as this of the scope where this function is created.
