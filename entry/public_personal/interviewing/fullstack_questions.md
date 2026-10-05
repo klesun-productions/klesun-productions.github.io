@@ -5,7 +5,7 @@
 
 This document is to be used as a reference for the interviewing Full Stack Developer position candidates to measure their knowledge/competence.
 
-It should be made clear to the applicant that they are not expected to answer all of the questions, they should just try to answer as many questions they know answer to as possible, but it's ok if they don't have an answer for any of them.
+It should be made clear to the applicant that they are not expected to answer all of the questions, they should just try to answer as many questions they know answer to as possible, but it's ok if they don't have an answer for some of them.
 
 
 ## Junior Developer questions
